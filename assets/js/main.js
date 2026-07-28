@@ -56,19 +56,40 @@
     ]},
   ];
 
-  /* --- Render del header ------------------------------------------------- */
+  /* --- Render del header (encabezado con "ola") ------------------------- */
+  // Reparte el menú a los lados del logo central.
+  const LEFT_IDS  = ["nosotros", "oferta", "estudiantes"];
+  const RIGHT_IDS = ["mas"];
+
   UW.renderHeader = function (mount) {
     const active = document.body.dataset.page || "inicio";
-    const items = NAV.map((item) => {
+    const byId = (id) => NAV.find((n) => n.id === id);
+
+    const renderItem = (item) => {
+      if (!item) return "";
       const isActive = item.id === active ? " is-active" : "";
       const hasDrop = item.children ? " has-dropdown" : "";
       const drop = item.children
         ? `<ul class="dropdown">${item.children.map((c) => `<li><a href="${c.href}">${c.label}</a></li>`).join("")}</ul>`
         : "";
-      return `<li class="nav__item${hasDrop}${isActive}">
-        <a class="nav__link" href="${item.href}">${item.label}</a>${drop}
+      return `<li class="wnav__item${hasDrop}${isActive}">
+        <a class="wnav__link" href="${item.href}">${item.label}</a>${drop}
       </li>`;
-    }).join("");
+    };
+
+    const left  = LEFT_IDS.map((id) => renderItem(byId(id))).join("");
+    const right = RIGHT_IDS.map((id) => renderItem(byId(id))).join("")
+      + `<li class="wnav__item"><a class="wnav__link" href="becas.html">Becas</a></li>`
+      + `<li class="wnav__item"><a class="btn btn--gold btn--sm" href="solicita-informacion.html">Solicita información</a></li>`;
+    const mobile = NAV.filter((n) => n.id !== "inicio").map(renderItem).join("");
+
+    // Ola institucional (SVG): el azul del header baja en ola con filo verde y dorado
+    const wave = `
+      <svg class="uw-wave" viewBox="0 0 1440 26" preserveAspectRatio="none" aria-hidden="true">
+        <path class="uw-wave__fill"  d="M0,0 H1440 V13 C1200,5 960,21 720,15 C480,9 240,23 0,15 Z"></path>
+        <path class="uw-wave__green" d="M0,15 C240,23 480,9 720,15 C960,21 1200,5 1440,13"></path>
+        <path class="uw-wave__gold"  d="M0,18 C240,26 480,12 720,18 C960,24 1200,8 1440,16"></path>
+      </svg>`;
 
     mount.innerHTML = `
       <div class="topbar">
@@ -77,24 +98,25 @@
           <ul class="topbar__links">
             <li><a href="biblioteca.html">Biblioteca</a></li>
             <li><a href="estudiantes.html#tramites">Alumnos</a></li>
-            <li><a href="solicita-informacion.html">Solicita información</a></li>
+            <li><a href="reglamentos.html">Reglamentos</a></li>
           </ul>
         </div>
       </div>
       <header class="site-header" id="siteHeader">
         <div class="container">
-          <nav class="nav" aria-label="Navegación principal">
-            <a class="brand" href="index.html">
-              <span class="brand__logo" aria-hidden="true">UW</span>
-              <span class="brand__name">Universidad Westhill<small>Vestigia Nulla Retrorsum</small></span>
+          <nav class="wnav" aria-label="Navegación principal">
+            <ul class="wnav__links wnav__links--left">${left}</ul>
+            <a class="wbrand" href="index.html" aria-label="Universidad Westhill — Inicio">
+              <img class="wbrand__img" src="assets/img/logo-westhill.png" alt="Universidad Westhill"
+                   onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">
+              <span class="wbrand__fallback" aria-hidden="true">UW<small>Universidad Westhill</small></span>
             </a>
-            <ul class="nav__menu" id="navMenu">${items}</ul>
-            <div class="nav__actions">
-              <a class="btn btn--gold" href="solicita-informacion.html">Solicita información</a>
-              <button class="nav__toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu"><span></span></button>
-            </div>
+            <ul class="wnav__links wnav__links--right">${right}</ul>
+            <button class="nav__toggle" id="navToggle" aria-label="Abrir menú" aria-expanded="false" aria-controls="navMenu"><span></span></button>
           </nav>
+          <ul class="nav__menu" id="navMenu">${mobile}</ul>
         </div>
+        ${wave}
       </header>`;
   };
 
@@ -182,7 +204,7 @@
         toggle.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
       });
       // En móvil, un tap en un item con submenú lo despliega en lugar de navegar a "#"
-      $$(".nav__item.has-dropdown > .nav__link", menu).forEach((link) => {
+      $$(".wnav__item.has-dropdown > .wnav__link", menu).forEach((link) => {
         link.addEventListener("click", (e) => {
           if (window.innerWidth <= 860 && link.getAttribute("href") === "#") {
             e.preventDefault();

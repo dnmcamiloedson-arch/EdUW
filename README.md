@@ -21,20 +21,30 @@ scroll, etc.).
 Están centralizados como variables CSS en `assets/css/styles.css` (`:root`).
 Cámbialos **solo ahí** para ajustar todo el sitio de una vez.
 
-| Token            | Valor      | Uso                                   |
-|------------------|------------|---------------------------------------|
-| `--uw-blue`      | `#0C56A5`  | Azul institucional (principal)        |
-| `--uw-blue-700`  | `#083B73`  | Azul oscuro (hover, secciones)        |
-| `--uw-navy`      | `#052A52`  | Navy profundo (footer, tarjetas)      |
-| `--uw-gold`      | `#F6B40A`  | Dorado institucional (acentos, CTA)   |
-| `--uw-green`     | `#4FA845`  | Verde acento (degradados)             |
+| Token             | Valor      | Uso                                   |
+|-------------------|------------|---------------------------------------|
+| `--uw-blue`       | `#276092`  | Azul Westhill (marca base)            |
+| `--uw-blue-600`   | `#1a4676`  | Azul medio                            |
+| `--uw-blue-700`   | `#0f2a4c`  | Azul oscuro                           |
+| `--uw-navy`       | `#0a1e3a`  | Azul marino profundo (fondos, header) |
+| `--uw-blue-mid`   | `#2c619b`  | Azul medio (degradados)               |
+| `--uw-blue-light` | `#8fb3d4`  | Azul claro (texto secundario)         |
+| `--uw-blue-pale`  | `#cdddec`  | Azul muy claro (texto de apoyo)       |
+| `--uw-gold`       | `#C9A227`  | Dorado institucional (base)           |
+| `--uw-gold-bright`| `#f2c94c`  | Dorado brillante (resaltes)           |
+| `--uw-gold-pale`  | `#fbe7a1`  | Dorado claro (degradados)             |
+| `--uw-gold-warm`  | `#e8b84b`  | Dorado cálido (detalles)              |
+| `--uw-green`      | `#28b060`  | Verde (detalles / filo de la "ola")   |
 
-> ⚠️ Estos valores se **muestrearon del diseño**. Si cuentas con el manual de
-> identidad oficial con los HEX exactos, ajústalos en `:root` para lograr
-> coincidencia al 100 %.
+Tipografía editorial (estilo Ivy League): **Fraunces** (serif de display para
+títulos) + **Inter** (texto e interfaz), cargadas desde Google Fonts. Si no
+cargan, el respaldo es Georgia (serif) y la fuente del sistema.
 
-Tipografía: **Poppins** (títulos) + **Open Sans** (texto), cargadas desde
-Google Fonts.
+### El encabezado con la "ola"
+El header es una franja azul marino con el **logo al centro** y la navegación
+repartida a los lados; en el borde inferior baja una **ola** (SVG) con filo
+verde y dorado, recreada con los colores institucionales. El logo se coloca en
+`assets/img/logo-westhill.png` (ver `assets/img/LEEME-logo.txt`).
 
 ---
 

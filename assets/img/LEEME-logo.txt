@@ -1,0 +1,19 @@
+COLOCA AQUÍ EL LOGOTIPO DE LA UNIVERSIDAD
+=========================================
+
+El encabezado (la "ola") muestra el logo al centro. Para que aparezca:
+
+1. Guarda el logo en ESTA carpeta con el nombre EXACTO:
+       logo-westhill.png
+   (recomendado: PNG con fondo transparente, alto mínimo ~140 px)
+
+   - Como el header es azul marino, usa preferentemente la versión del
+     logo en BLANCO o en colores claros para que contraste.
+
+2. ¡Listo! No hay que tocar código: el sitio ya lo busca en
+   assets/img/logo-westhill.png y lo coloca solo.
+
+Mientras no exista el archivo, se muestra un medallón provisional "UW".
+
+Si tu logo tiene otro nombre o formato (.svg, .webp), cámbialo en
+assets/js/main.js (busca "logo-westhill.png").
