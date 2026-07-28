@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Biblioteca | Universidad Westhill</title>
+  <meta name="description" content="Biblioteca de la Universidad Westhill: tu puerta al conocimiento, la investigación y la innovación. Acceso a biblioteca virtual y recursos digitales.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="mas">
+  <div data-uw-header></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <ul class="breadcrumb"><li><a href="index.html">Inicio</a></li><li>Biblioteca</li></ul>
+        <h1>Tu puerta al conocimiento, la investigación y la innovación</h1>
+        <p style="max-width:65ch;color:rgba(255,255,255,.9)">Más que un espacio lleno de libros: un centro vivo de aprendizaje, investigación y descubrimiento.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container split">
+        <div data-reveal="left">
+          <p>La Biblioteca de la Universidad Westhill es mucho más que un espacio lleno de libros: es un centro vivo de aprendizaje, investigación y descubrimiento. Aquí impulsamos tu desarrollo académico con recursos actualizados, herramientas digitales de vanguardia y el acompañamiento que necesitas para aprender, crear y crecer.</p>
+          <p>Desde el primer día, nuestro compromiso es brindarte un ambiente que fomente la curiosidad intelectual, el pensamiento crítico y el acceso libre al conocimiento. Cada estudiante y docente puede encontrar en la Biblioteca un aliado confiable: un lugar donde las ideas se fortalecen, los proyectos toman forma y los sueños académicos se vuelven posibles.</p>
+          <a class="btn btn--gold" href="#">Conoce la Biblioteca Virtual</a>
+        </div>
+        <!-- ACCESO -->
+        <form class="form-card" data-validate data-reveal="right">
+          <h3>Acceso a recursos</h3>
+          <div class="field"><label for="b-user">Usuario <span class="req">*</span></label><input id="b-user" name="usuario" required><span class="error-msg">Ingresa tu usuario.</span></div>
+          <div class="field"><label for="b-pass">Contraseña <span class="req">*</span></label><input id="b-pass" name="password" type="password" required><span class="error-msg">Ingresa tu contraseña.</span></div>
+          <button class="btn" type="submit" style="width:100%">Ingresar</button>
+          <p class="form-success text-center" hidden style="color:var(--uw-green-600);font-weight:600;margin-top:1rem">Validando acceso…</p>
+          <hr style="border:0;border-top:1px solid var(--c-border);margin:1.25rem 0">
+          <p class="text-muted mb-0" style="font-size:.9rem"><strong>Información:</strong><br>8851 7000 ext. 7041 y 7216<br>biblioteca@uw.edu.mx<br>Lunes a viernes de 7:00 a 19:00 hrs.</p>
+        </form>
+      </div>
+    </section>
+
+    <section class="section section--soft">
+      <div class="container">
+        <div class="section-head" data-reveal><span class="eyebrow">Parte de tu experiencia educativa</span><h2>Un pilar de nuestro modelo educativo</h2><hr class="rule-gold"><p>En Westhill entendemos que una educación de calidad requiere acceso a recursos confiables, actuales y accesibles.</p></div>
+        <ul class="grid grid-3" style="list-style:none">
+          <li class="card" data-reveal data-reveal-delay="1"><div class="card__body"><h3>Formación académica rigurosa</h3></div></li>
+          <li class="card" data-reveal data-reveal-delay="2"><div class="card__body"><h3>Aprendizaje autónomo</h3></div></li>
+          <li class="card" data-reveal data-reveal-delay="3"><div class="card__body"><h3>La investigación como hábito</h3></div></li>
+          <li class="card" data-reveal data-reveal-delay="1"><div class="card__body"><h3>Pensamiento crítico y analítico</h3></div></li>
+          <li class="card" data-reveal data-reveal-delay="2"><div class="card__body"><h3>Creatividad e innovación</h3></div></li>
+          <li class="card" data-reveal data-reveal-delay="3"><div class="card__body"><h3>Responsabilidad académica</h3></div></li>
+        </ul>
+        <div class="container" style="max-width:760px;margin-top:1.5rem"><p class="text-muted text-center">Nuestro compromiso es acompañarte en cada etapa de tu camino universitario, proporcionándote las herramientas necesarias para convertirte en un profesional competente, informado y preparado para enfrentar los retos del mundo actual.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <div data-uw-footer></div>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

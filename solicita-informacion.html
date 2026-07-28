@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Solicita información | Universidad Westhill</title>
+  <meta name="description" content="Déjanos tus datos y te ayudamos a encontrar la carrera perfecta para ti en la Universidad Westhill. Tu próximo capítulo empieza hoy.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="inicio">
+  <div data-uw-header></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <ul class="breadcrumb"><li><a href="index.html">Inicio</a></li><li>Solicita información</li></ul>
+        <h1>¡Bienvenido de nuevo! Tu camino profesional te espera en Westhill</h1>
+        <p style="max-width:65ch;color:rgba(255,255,255,.9)">Déjanos tus datos para ayudarte a encontrar la carrera perfecta para ti; estamos aquí para resolver cualquier duda y acompañarte en cada paso de tu proceso, porque tu próximo capítulo empieza hoy.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container split">
+        <div data-reveal="left">
+          <span class="eyebrow">¿Buscando tu futuro?</span>
+          <h2>En Westhill te ayudamos a encontrar la carrera que va contigo</h2>
+          <hr class="rule-gold" style="margin-inline:0">
+          <p class="text-muted">Déjanos tus datos y te damos el impulso que necesitas.</p>
+          <ul class="check-list" style="margin-top:1rem">
+            <li>Atención personalizada de nuestro equipo de Admisiones</li>
+            <li>Información de planes de estudio, becas y convenios</li>
+            <li>Acompañamiento durante todo tu proceso de admisión</li>
+          </ul>
+          <div style="margin-top:1.5rem">
+            <div class="info-row"><span class="ico">📞</span><div><strong>Teléfono</strong><br>(55) 8851 7010</div></div>
+            <div class="info-row"><span class="ico">✉️</span><div><strong>Correo</strong><br>admisiones@uw.edu.mx</div></div>
+            <div class="info-row"><span class="ico">📍</span><div><strong>Campus</strong><br>Domingo García Ramos 56, Santa Fe, CDMX 05610</div></div>
+          </div>
+        </div>
+
+        <form class="form-card" data-validate data-reveal="right">
+          <h3>Solicita información</h3>
+          <div class="field"><label for="s-nombre">Nombre <span class="req">*</span></label><input id="s-nombre" name="nombre" required><span class="error-msg">Ingresa tu nombre.</span></div>
+          <div class="field"><label for="s-email">Correo electrónico <span class="req">*</span></label><input id="s-email" name="email" type="email" required><span class="error-msg">Ingresa un correo válido.</span></div>
+          <div class="field"><label for="s-tel">Teléfono <span class="req">*</span></label><input id="s-tel" name="telefono" type="tel" required><span class="error-msg">Ingresa tu teléfono.</span></div>
+          <div class="field"><label for="s-campus">Campus</label><select id="s-campus" name="campus"><option>Santa Fe (SF)</option></select></div>
+          <div class="field"><label for="s-nivel">Nivel de interés</label>
+            <select id="s-nivel" name="nivel">
+              <option value="">Selecciona…</option>
+              <option>Licenciatura</option><option>Maestría</option><option>Especialidad</option>
+              <option>Diplomado</option><option>Facultad de Medicina</option>
+            </select>
+          </div>
+          <div class="field"><label for="s-msg">Mensaje (opcional)</label><textarea id="s-msg" name="mensaje" rows="3"></textarea></div>
+          <button class="btn btn--gold btn--lg" type="submit" style="width:100%">Enviar</button>
+          <p class="form-success text-center" hidden style="color:var(--uw-green-600);font-weight:600;margin-top:1rem">¡Gracias! Nos pondremos en contacto contigo pronto.</p>
+          <p class="text-muted text-center" style="font-size:.8rem;margin-top:.75rem">Al enviar aceptas nuestro <a href="https://www.uw.edu.mx/wp-content/uploads/2021/10/AVISO-DE-PRIVACIDAD-INSTITUTE-Y-UNIVERSIDAD-2021.pdf" target="_blank" rel="noopener">Aviso de privacidad</a>.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div data-uw-footer></div>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>
