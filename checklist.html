@@ -155,13 +155,16 @@
   .btn:active { transform: scale(.97); }
   .btn:focus-visible { outline: 2px solid rgba(96,165,250,.6); outline-offset: 2px; }
 
-  .od-btn { position: relative; overflow: hidden; }
-  .od-btn:hover { background: linear-gradient(140deg,#3B82F6,#1D4ED8) !important; color: #fff !important; border-color: #3B82F6 !important; box-shadow: 0 8px 26px -8px rgba(37,99,235,.8); }
+  .od-btn { position: relative; overflow: hidden; flex-shrink: 0; white-space: nowrap; align-self: center; display: inline-flex; align-items: center; gap: 9px; padding: 11px 17px; border-radius: 12px; font-size: 12.5px; font-weight: 600; text-decoration: none;
+    transition: background .5s cubic-bezier(.32,.72,0,1), color .5s, border-color .5s, box-shadow .5s, transform .4s cubic-bezier(.32,.72,0,1); }
+  .od-enabled { background: linear-gradient(140deg, rgba(59,130,246,.16), rgba(37,99,235,.06)); color: #A8CCFF; border: 1px solid rgba(96,165,250,.38); }
+  .od-enabled:hover { background: linear-gradient(140deg,#3B82F6,#1D4ED8); color: #fff; border-color: #3B82F6; box-shadow: 0 10px 28px -8px rgba(37,99,235,.85); transform: translate3d(0,-2px,0); }
+  .od-disabled { background: rgba(255,255,255,.025); color: #565B6E; border: 1px solid rgba(255,255,255,.07); cursor: not-allowed; }
   .od-sheen { position: absolute; top: 0; bottom: 0; left: 0; width: 50%; pointer-events: none;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); transform: translateX(-140%) skewX(-18deg); }
-  .od-btn:hover .od-sheen { animation: sheen .85s cubic-bezier(.32,.72,0,1); }
+  .od-enabled:hover .od-sheen { animation: sheen .85s cubic-bezier(.32,.72,0,1); }
   .od-arrow { transition: transform .5s cubic-bezier(.32,.72,0,1); }
-  .od-btn:hover .od-arrow { transform: translate3d(3px,-3px,0); }
+  .od-enabled:hover .od-arrow { transform: translate3d(3px,-3px,0); }
 
   .toolbar { transition: box-shadow .7s cubic-bezier(.32,.72,0,1), border-color .7s; }
   .toolbar.stuck { box-shadow: 0 14px 44px -18px rgba(0,0,0,.85); border-color: rgba(125,179,255,.22) !important; }
@@ -263,10 +266,7 @@
           </div>
         </div>
 
-        <h1 class="a-title" style="font-size: 58px; font-weight: 900; margin: 0 0 18px; letter-spacing: -2px; line-height: .98; background: linear-gradient(175deg, #FFFFFF 0%, #C9D3E8 48%, #7E88A4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Checklist para los faltantes<br/>de la Página Web</h1>
-        <p class="a-sub" style="font-size: 15.5px; color: #767A8C; margin: 0 0 30px; max-width: 660px; line-height: 1.7;">Cada tarea tiene un enlace directo a la carpeta de OneDrive con el asset solicitado. Deja comentarios en cada sección — se guardan y todo el equipo los ve.</p>
-
-        <div style="margin-bottom: 40px;"><span id="sync-status" class="sync-pill sync-local no-print"><span class="dot"></span><span id="sync-text">Comentarios: solo este dispositivo</span></span></div>
+        <h1 class="a-title" style="font-size: 58px; font-weight: 900; margin: 0 0 44px; letter-spacing: -2px; line-height: .98; background: linear-gradient(175deg, #FFFFFF 0%, #C9D3E8 48%, #7E88A4 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Checklist para los faltantes<br/>de la Página Web</h1>
 
         <div class="a-stats" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;">
           <div class="stat-card" style="background: linear-gradient(150deg, rgba(255,255,255,.035) 0%, rgba(255,255,255,.012) 100%); border: 1px solid rgba(255,255,255,.07); border-radius: 18px; padding: 22px 22px 24px;">
@@ -354,6 +354,9 @@
 
   /* ==========================================================================
      CONFIGURACIÓN DE FIREBASE (comentarios compartidos entre todos)
+     - Déjalo como null para que la página guarde SOLO en cada dispositivo.
+     - Pega aquí la config de tu proyecto Firebase para que los comentarios
+       se compartan en tiempo real con todo el equipo.
      ========================================================================== */
   var FIREBASE_CONFIG = {
     apiKey: "AIzaSyATcjUfb-vN6ZvtFc3MBw9ShPC-M7WFvHA",
@@ -389,6 +392,8 @@
     ["Información de licenciaturas", "IL", [], "Información disponible pero pendiente de definir qué assets se solicitarán. Revisar con coordinación académica."]
   ];
 
+  /* Enlaces de OneDrive por sección (código corto). Vacío = botón deshabilitado.
+     Pega aquí los links que te dará el equipo, ej: LINKS.VE = "https://1drv.ms/..."; */
   var LINKS = {
     IN:"", WW:"", BE:"", VE:"", CO:"", NO:"", LI:"", MA:"", DI:"", ES:"",
     ME:"", AL:"", EG:"", LG:"", MG:"", DG:"", AV:"", RE:"", IL:""
@@ -418,6 +423,9 @@
 
   var esc = function (str) { return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); };
 
+  /* ==========================  ALMACENAMIENTO  ==============================
+     Guarda done / notes / comments. Usa Firebase si hay config (compartido);
+     si no, localStorage (solo este dispositivo). Interfaz única para el resto. */
   var Store = (function () {
     var listeners = [], data = { done: {}, notes: {}, comments: {} }, mode = "local", db = null;
     function emit() { listeners.forEach(function (f) { f(data); }); }
@@ -468,6 +476,7 @@
     };
   })();
 
+  /* ==========================  UI local (no compartido)  =================== */
   var ui = { filter: "todas", view: "detailed", collapsed: {}, activeSec: 0 };
 
   function getName() {
@@ -492,12 +501,13 @@
     return dt.getDate() + " " + MM[dt.getMonth()] + " " + String(dt.getHours()).padStart(2,"0") + ":" + String(dt.getMinutes()).padStart(2,"0");
   }
 
+  /* ==========================  Construcción del DOM  ====================== */
   function sectionHTML(sec, si) {
     var tasksHTML = sec.tasks.map(function (t, ti) {
       var hasLink = !!LINKS[sec.shortCode];
-      var linkAttrs = hasLink
-        ? 'href="' + esc(LINKS[sec.shortCode]) + '" target="_blank" rel="noopener"'
-        : 'href="#" onclick="return false;" title="Enlace de OneDrive pendiente" style="opacity:.5; cursor:not-allowed;"';
+      var odAttrs = hasLink
+        ? 'href="' + esc(LINKS[sec.shortCode]) + '" target="_blank" rel="noopener" class="od-btn od-enabled"'
+        : 'href="#" onclick="return false;" title="Enlace de OneDrive pendiente" class="od-btn od-disabled"';
       return ''
         + '<div class="task-row" data-tid="' + t.id + '" style="--i:' + ti + '; display:flex; padding:18px 28px; border-top:1px solid rgba(255,255,255,.035); gap:17px; align-items:flex-start;">'
         +   '<div class="task-edge"></div>'
@@ -511,12 +521,11 @@
         +       '<span class="t-typelabel" style="font-size:10.5px; color:#5B5F72; font-weight:500; display:none;">· ' + esc(t.label) + '</span>'
         +     '</div>'
         +     '<div class="t-detail" style="display:flex; align-items:center; gap:16px; font-size:11px; color:#5B5F72; flex-wrap:wrap;">'
-        +       '<span style="display:inline-flex; align-items:center; gap:5px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>Asignado a Sistemas</span>'
         +       '<span style="display:inline-flex; align-items:center; gap:5px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' + esc(t.label) + '</span>'
         +     '</div>'
         +     '<div class="t-notes" style="display:block; margin-top:12px;"><div style="position:relative;"><textarea placeholder="Notas o comentarios para Sistemas..." style="width:100%; min-height:42px; padding:10px 12px 10px 34px; border:1px solid rgba(255,255,255,.06); border-radius:11px; font-family:inherit; font-size:12.5px; resize:vertical; color:#E8EBF2; background:rgba(255,255,255,.018);"></textarea><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3F4358" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position:absolute; left:12px; top:12px; pointer-events:none;"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></div></div>'
         +   '</div>'
-        +   '<a ' + linkAttrs + ' class="btn od-btn" style="flex-shrink:0; display:inline-flex; align-items:center; gap:8px; padding:10px 15px; background:rgba(255,255,255,.03); color:#7DB3FF; border-radius:11px; font-size:12.5px; font-weight:600; border:1px solid rgba(125,179,255,.14);"><span class="od-sheen"></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 15.5A5.5 5.5 0 0 0 17 6a7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0-1 8.9"></path><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>OneDrive<svg class="od-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>'
+        +   '<a ' + odAttrs + '><span class="od-sheen"></span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 15.5A5.5 5.5 0 0 0 17 6a7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0-1 8.9"></path><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>OneDrive<svg class="od-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>'
         + '</div>';
     }).join("");
 
@@ -564,7 +573,9 @@
   var cards = Array.prototype.slice.call(stack.querySelectorAll(".sec-card"));
   var railItems = Array.prototype.slice.call(document.querySelectorAll(".rail-item"));
 
+  /* ==========================  Sincronizar DOM desde datos  =============== */
   function applyData(data) {
+    // checkboxes + notas
     SECS.forEach(function (sec, si) {
       var card = cards[si];
       sec.tasks.forEach(function (t) {
@@ -665,12 +676,13 @@
     else { ui.collapsed[si] = true; card.classList.remove("open"); }
   }
 
+  /* ==========================  Eventos  ================================== */
   stack.addEventListener("click", function (e) {
     var del = e.target.closest(".cmt-del");
     if (del) { e.stopPropagation(); if (confirm("¿Eliminar este comentario?")) Store.deleteComment(del.getAttribute("data-sec"), del.getAttribute("data-id")); return; }
     var send = e.target.closest(".cmt-send");
     if (send) { submitComment(send.getAttribute("data-sec")); return; }
-    if (e.target.closest(".cmt-wrap")) return;
+    if (e.target.closest(".cmt-wrap")) return; // no togglear sección al usar comentarios
     var head = e.target.closest(".sec-head");
     if (head) { var card = head.closest(".sec-card"); if (card) toggleSection(Number(card.getAttribute("data-si"))); }
   });
@@ -726,6 +738,7 @@
     });
   });
 
+  /* ==========================  Reveal / glow / scroll  ==================== */
   var seen = new WeakSet();
   var io = new IntersectionObserver(function (entries) { entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("in-view"); io.unobserve(en.target); } }); }, { threshold: 0.06, rootMargin: "0px 0px -60px 0px" });
   Array.prototype.forEach.call(document.querySelectorAll(".reveal"), function (el) { if (!seen.has(el)) { seen.add(el); io.observe(el); } });
@@ -766,6 +779,7 @@
     if (idx !== ui.activeSec) { ui.activeSec = idx; railItems.forEach(function (it) { it.classList.toggle("active", Number(it.getAttribute("data-si")) === idx); }); }
   }
 
+  /* ==========================  Conteo inicial + fecha  =================== */
   (function () {
     var data = Store.get(), doneN = 0;
     SECS.forEach(function (sec) { sec.tasks.forEach(function (t) { if (data.done[t.id]) doneN++; }); });
@@ -784,11 +798,9 @@
     document.getElementById("hv-year").textContent = now.getFullYear();
   })();
 
+  /* ==========================  Arranque  ================================= */
   Store.onChange(applyData);
-  var mode = Store.init(FIREBASE_CONFIG);
-  var pill = document.getElementById("sync-status"), ptext = document.getElementById("sync-text");
-  if (mode === "firebase") { pill.className = "sync-pill sync-shared no-print"; ptext.textContent = "Comentarios: compartidos con el equipo"; }
-  else { pill.className = "sync-pill sync-local no-print"; ptext.textContent = "Comentarios: solo este dispositivo"; }
+  Store.init(FIREBASE_CONFIG);
   applyData(Store.get());
   applyView();
   frame();
