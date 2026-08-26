@@ -216,6 +216,50 @@
 
   @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important } .reveal{opacity:1;transform:none;filter:none} }
 
+  /* ===================== OPTIMIZACIÓN PARA CELULAR ===================== */
+  /* Solo se activa en pantallas <= 680px. La versión de escritorio no cambia. */
+  @media (max-width: 680px) {
+    /* Contenedor general con menos margen lateral */
+    .bg-top { height: 90px !important; }
+
+    /* HERO */
+    .hero-card { padding: 26px 18px 24px !important; border-radius: 20px !important; margin-bottom: 16px !important; }
+    .a-badge { flex-wrap: wrap !important; gap: 9px !important; margin-bottom: 24px !important; }
+    .a-logo { margin-bottom: 22px !important; }
+    .a-logo img { height: 52px !important; }
+    .a-title { font-size: 30px !important; letter-spacing: -1px !important; margin: 0 0 24px !important; }
+    .a-stats { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+    .stat-card { padding: 15px 14px 16px !important; border-radius: 14px !important; }
+    .stat-num { font-size: 28px !important; letter-spacing: -1px !important; }
+    .a-prog { margin-top: 22px !important; }
+
+    /* BARRA DE HERRAMIENTAS: no pegajosa y compacta en móvil */
+    .toolbar { position: static !important; top: auto !important; padding: 12px 13px !important; gap: 10px !important; border-radius: 14px !important; }
+    .toolbar > div { width: 100% !important; flex-wrap: wrap !important; }
+
+    /* ENCABEZADO DE SECCIÓN */
+    .sec-head { padding: 15px 14px !important; gap: 11px !important; }
+    .sec-code { width: 42px !important; height: 42px !important; border-radius: 11px !important; }
+    .sec-code span { font-size: 14px !important; }
+    .sec-head h2 { font-size: 15px !important; }
+    .sec-barwrap { display: none !important; }   /* oculta la barrita, deja el % */
+
+    /* FILAS DE TAREA: el botón OneDrive baja a lo ancho completo */
+    .task-row { padding: 15px 14px !important; gap: 12px !important; flex-wrap: wrap !important; }
+    .task-title { font-size: 14px !important; }
+    .task-row .od-btn { flex: 0 0 100% !important; width: 100% !important; justify-content: center !important; margin-top: 4px !important; }
+    .t-notes textarea { font-size: 16px !important; }  /* evita el zoom automático de iOS */
+
+    /* COMENTARIOS: caja de escribir apilada */
+    .cmt-wrap { padding: 16px 14px 18px !important; }
+    .cmt-compose { flex-direction: column !important; }
+    .cmt-compose textarea { font-size: 16px !important; }
+    .cmt-send { align-self: stretch !important; width: 100% !important; }
+
+    /* Botón volver arriba un poco más pegado a la esquina */
+    .to-top { right: 16px !important; bottom: 16px !important; }
+  }
+
   @media print {
     .no-print,.bg-root,.rail,.to-top,.scroll-rail,.cmt-compose { display: none !important; }
     body { background: #fff; color: #000; }
@@ -557,7 +601,7 @@
       +     '</div>'
       +     '<div style="display:flex; align-items:center; gap:14px; flex-shrink:0;">'
       +       '<div style="text-align:right;"><div class="sec-pct" style="font-size:19px; font-weight:800; font-family:\'JetBrains Mono\',monospace; line-height:1; letter-spacing:-.8px; font-variant-numeric:tabular-nums; transition:color .6s cubic-bezier(.32,.72,0,1);">0%</div><div style="font-size:8.5px; color:#3F4358; text-transform:uppercase; letter-spacing:1.4px; font-weight:700; margin-top:4px;">Progreso</div></div>'
-      +       '<div style="width:96px; height:5px; background:rgba(255,255,255,.04); border-radius:999px; overflow:hidden;"><div class="sec-bar" style="height:100%; border-radius:999px; width:0%; transition:width .8s cubic-bezier(.32,.72,0,1), background .6s;"></div></div>'
+      +       '<div class="sec-barwrap" style="width:96px; height:5px; background:rgba(255,255,255,.04); border-radius:999px; overflow:hidden;"><div class="sec-bar" style="height:100%; border-radius:999px; width:0%; transition:width .8s cubic-bezier(.32,.72,0,1), background .6s;"></div></div>'
       +     '</div>'
       +   '</div>'
       +   '<div class="sec-body"><div class="sec-inner">' + noteHTML + tasksHTML + commentsHTML + '</div></div>'
