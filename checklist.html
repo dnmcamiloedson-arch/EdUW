@@ -516,7 +516,9 @@
   })();
 
   /* ==========================  UI local (no compartido)  =================== */
-  var ui = { filter: "todas", view: "detailed", collapsed: {}, activeSec: 0 };
+  var collapsed0 = {};
+  SECS.forEach(function (_, i) { collapsed0[i] = true; });   // todas las secciones cerradas al abrir
+  var ui = { filter: "todas", view: "detailed", collapsed: collapsed0, activeSec: 0 };
 
   function getName() {
     var input = document.getElementById("me-name");
@@ -580,7 +582,7 @@
       + '</div>';
 
     return ''
-      + '<div class="sec-card reveal open" id="' + sec.anchor + '" data-si="' + si + '" style="background:linear-gradient(152deg, rgba(9,11,20,.94) 0%, rgba(11,14,28,.91) 100%); border:1px solid rgba(125,179,255,.09); border-radius:20px; margin-bottom:12px; overflow:hidden;">'
+      + '<div class="sec-card reveal" id="' + sec.anchor + '" data-si="' + si + '" style="background:linear-gradient(152deg, rgba(9,11,20,.94) 0%, rgba(11,14,28,.91) 100%); border:1px solid rgba(125,179,255,.09); border-radius:20px; margin-bottom:12px; overflow:hidden;">'
       +   '<div class="sec-head" role="button" tabindex="0" style="padding:22px 28px; display:flex; align-items:center; gap:18px;">'
       +     '<div style="width:26px; height:26px; border-radius:8px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.06); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><svg class="sec-chev" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#7DB3FF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg></div>'
       +     '<div class="sec-code" style="width:52px; height:52px; border-radius:14px; background:linear-gradient(145deg, rgba(20,26,50,.9), rgba(13,17,36,.9)); border:1px solid rgba(125,179,255,.18); display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; overflow:hidden;"><div style="position:absolute; inset:0; background:radial-gradient(circle at 28% 24%, rgba(96,165,250,.2), transparent 68%);"></div><span style="font-family:\'JetBrains Mono\',monospace; font-size:17px; font-weight:700; position:relative; z-index:1; background:linear-gradient(145deg,#A8CCFF,#3B82F6); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; letter-spacing:-.5px;">' + esc(sec.shortCode) + '</span></div>'
