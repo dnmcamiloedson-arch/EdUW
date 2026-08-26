@@ -384,10 +384,6 @@
     </div>
 
     <div id="fx-stack" style="padding-bottom: 18vh;"></div>
-
-    <div class="reveal" style="text-align: center; padding: 48px 20px 20px; color: #3F4358; font-size: 10.5px; font-family: 'JetBrains Mono', monospace; letter-spacing: 1.2px;">
-      <div style="display: inline-flex; align-items: center; gap: 10px;"><span style="width: 22px; height: 1px; background: linear-gradient(90deg, transparent, rgba(125,179,255,.35));"></span>WESTHILL UNIVERSITY · CHECKLIST UX/UI · <span id="hv-year"></span><span style="width: 22px; height: 1px; background: linear-gradient(90deg, rgba(125,179,255,.35), transparent);"></span></div>
-    </div>
   </div>
 </div>
 
@@ -837,7 +833,6 @@
   (function () {
     var now = new Date(), M = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
     document.getElementById("hv-date").textContent = String(now.getDate()).padStart(2, "0") + " " + M[now.getMonth()] + " " + now.getFullYear();
-    document.getElementById("hv-year").textContent = now.getFullYear();
   })();
 
   /* ==========================  Arranque  ================================= */
