@@ -438,14 +438,15 @@
   /* Enlaces de OneDrive por sección (código corto). Vacío = botón deshabilitado.
      Pega aquí los links que te dará el equipo, ej: LINKS.VE = "https://1drv.ms/..."; */
   var LINKS = {
-    IN:"", WW:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgBI2xi6DTzHS7zMMhUanENwAejtbbrgrndh_GU8YYu6m8s?e=fKs01d", BE:"", VE:"", CO:"", NO:"", LI:"", MA:"", DI:"", ES:"",
+    IN:"", WW:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgBI2xi6DTzHS7zMMhUanENwAejtbbrgrndh_GU8YYu6m8s?e=fKs01d", BE:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgAZX2Fip2bIQ5sBUDj2YaSnARcc6jMoN5Nbx8azY9BUq2Q?e=drDneN", VE:"", CO:"", NO:"", LI:"", MA:"", DI:"", ES:"",
     ME:"", AL:"", EG:"", LG:"", MG:"", DG:"", AV:"", RE:"", IL:""
   };
 
   // Tareas que se dejan en gris (pendientes) aunque su sección ya tenga carpeta,
   // porque ese asset específico todavía no está listo.
   var EXCLUDE = {
-    "UX-003": true   // Westhill Well · Textos (aún no disponible)
+    "UX-003": true,  // Westhill Well · Textos (aún no disponible)
+    "UX-007": true   // Becas · Imagen de estudiante referido (aún no disponible)
   };
 
   var s = function (inner) { return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>'; };
