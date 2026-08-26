@@ -438,15 +438,20 @@
   /* Enlaces de OneDrive por sección (código corto). Vacío = botón deshabilitado.
      Pega aquí los links que te dará el equipo, ej: LINKS.VE = "https://1drv.ms/..."; */
   var LINKS = {
-    IN:"", WW:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgBI2xi6DTzHS7zMMhUanENwAejtbbrgrndh_GU8YYu6m8s?e=fKs01d", BE:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgAZX2Fip2bIQ5sBUDj2YaSnARcc6jMoN5Nbx8azY9BUq2Q?e=drDneN", VE:"", CO:"", NO:"", LI:"", MA:"", DI:"", ES:"",
+    IN:"", WW:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgBI2xi6DTzHS7zMMhUanENwAejtbbrgrndh_GU8YYu6m8s?e=fKs01d", BE:"https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgAZX2Fip2bIQ5sBUDj2YaSnARcc6jMoN5Nbx8azY9BUq2Q?e=Ss77rg", VE:"", CO:"", NO:"", LI:"", MA:"", DI:"", ES:"",
     ME:"", AL:"", EG:"", LG:"", MG:"", DG:"", AV:"", RE:"", IL:""
   };
 
   // Tareas que se dejan en gris (pendientes) aunque su sección ya tenga carpeta,
   // porque ese asset específico todavía no está listo.
   var EXCLUDE = {
-    "UX-003": true,  // Westhill Well · Textos (aún no disponible)
-    "UX-007": true   // Becas · Imagen de estudiante referido (aún no disponible)
+    "UX-003": true   // Westhill Well · Textos (aún no disponible)
+  };
+
+  // Links POR TAREA (sobrescriben el link de la sección). Úsalo cuando un asset
+  // vive en una carpeta distinta a la del resto de su sección.
+  var TASK_LINKS = {
+    "UX-009": "https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgA_K0keXYh4TIlvzlhX4VoqAbaJ4qNAXQiE-OfbmvP8nmA?e=0mJ5gd"   // Vestigia · Portadas de las revistas (carpeta aparte)
   };
 
   var s = function (inner) { return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>'; };
@@ -556,9 +561,10 @@
   /* ==========================  Construcción del DOM  ====================== */
   function sectionHTML(sec, si) {
     var tasksHTML = sec.tasks.map(function (t, ti) {
-      var hasLink = !!LINKS[sec.shortCode] && !EXCLUDE[t.id];
+      var link = TASK_LINKS[t.id] || LINKS[sec.shortCode] || "";
+      var hasLink = !!link && !EXCLUDE[t.id];
       var odAttrs = hasLink
-        ? 'href="' + esc(LINKS[sec.shortCode]) + '" target="_blank" rel="noopener" class="od-btn od-enabled"'
+        ? 'href="' + esc(link) + '" target="_blank" rel="noopener" class="od-btn od-enabled"'
         : 'href="#" onclick="return false;" title="Enlace de OneDrive pendiente" class="od-btn od-disabled"';
       return ''
         + '<div class="task-row" data-tid="' + t.id + '" style="--i:' + ti + '; display:flex; padding:18px 28px; border-top:1px solid rgba(255,255,255,.035); gap:17px; align-items:flex-start;">'
