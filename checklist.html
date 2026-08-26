@@ -442,6 +442,12 @@
     ME:"", AL:"", EG:"", LG:"", MG:"", DG:"", AV:"", RE:"", IL:""
   };
 
+  // Tareas que se dejan en gris (pendientes) aunque su sección ya tenga carpeta,
+  // porque ese asset específico todavía no está listo.
+  var EXCLUDE = {
+    "UX-003": true   // Westhill Well · Textos (aún no disponible)
+  };
+
   var s = function (inner) { return '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + inner + '</svg>'; };
   var TYPE = {
     imagen: { svg: s('<rect x="3" y="3" width="18" height="18" rx="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline>'), label: "Imagen", c: "#7DB3FF", bg: "rgba(59,130,246,.09)", bd: "rgba(59,130,246,.24)" },
@@ -549,7 +555,7 @@
   /* ==========================  Construcción del DOM  ====================== */
   function sectionHTML(sec, si) {
     var tasksHTML = sec.tasks.map(function (t, ti) {
-      var hasLink = !!LINKS[sec.shortCode];
+      var hasLink = !!LINKS[sec.shortCode] && !EXCLUDE[t.id];
       var odAttrs = hasLink
         ? 'href="' + esc(LINKS[sec.shortCode]) + '" target="_blank" rel="noopener" class="od-btn od-enabled"'
         : 'href="#" onclick="return false;" title="Enlace de OneDrive pendiente" class="od-btn od-disabled"';
