@@ -405,6 +405,7 @@
         </div>
         <button class="btn" id="btn-collapse" title="Colapsar todo" style="width: 36px; height: 36px; border-radius: 11px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.03); color: #8E93A6; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"></polyline><polyline points="20 10 14 10 14 4"></polyline><line x1="14" y1="10" x2="21" y2="3"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg></button>
         <button class="btn" id="btn-expand" title="Expandir todo" style="width: 36px; height: 36px; border-radius: 11px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.03); color: #8E93A6; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg></button>
+        <button class="btn" id="btn-sound" title="Sonido de alertas" style="width: 36px; height: 36px; border-radius: 11px; border: 1px solid rgba(255,255,255,.06); background: rgba(255,255,255,.03); cursor: pointer; display: inline-flex; align-items: center; justify-content: center;"></button>
       </div>
     </div>
 
@@ -679,6 +680,36 @@
   function saveTs(v) { try { localStorage.setItem("lastSeenTs", String(v)); } catch (e) {} }
   var lastSeenTs = readTs();
 
+  // ---- Sonido de las alertas ----
+  var audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audioCtx = null; } }
+    if (audioCtx && audioCtx.state === "suspended") { audioCtx.resume().catch(function () {}); }
+    return audioCtx;
+  }
+  function soundEnabled() { try { return localStorage.getItem("soundOn") !== "0"; } catch (e) { return true; } }
+  function playPing() {
+    if (!soundEnabled()) return;
+    var ctx = ensureAudio(); if (!ctx) return;
+    try {
+      var now = ctx.currentTime;
+      [[880, 0], [1174.66, 0.11]].forEach(function (pair) {
+        var o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = "sine"; o.frequency.value = pair[0];
+        o.connect(g); g.connect(ctx.destination);
+        var s = now + pair[1];
+        g.gain.setValueAtTime(0.0001, s);
+        g.gain.exponentialRampToValueAtTime(0.22, s + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, s + 0.22);
+        o.start(s); o.stop(s + 0.24);
+      });
+    } catch (e) {}
+  }
+  // Desbloquea el audio en la primera interacción del usuario (autoplay policy).
+  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
+    window.addEventListener(ev, function unlock() { ensureAudio(); window.removeEventListener(ev, unlock); }, { once: true, passive: true });
+  });
+
   function currentName() {
     var i = document.getElementById("me-name");
     var v = i && i.value.trim();
@@ -702,24 +733,33 @@
     if (!all.length) return;
     var maxTs = all[all.length - 1].ts;
     var myName = (currentName() || "").trim().toLowerCase();
-    var unseen = all.filter(function (c) {
-      if (c.ts <= lastSeenTs) return false;
+    function notMine(c) {
       if (mutedIds[c.id]) return false;
       if (myName && (c.author || "").trim().toLowerCase() === myName) return false;
       return true;
-    });
-    if (maxTs > lastSeenTs) { lastSeenTs = maxTs; saveTs(lastSeenTs); }
-    if (!unseen.length) { notifEntered = true; return; }
+    }
     if (!notifEntered) {
       notifEntered = true;
-      showToast(unseen[unseen.length - 1], unseen.length - 1);  // al entrar: el más reciente + cuántos más
+      // AL ENTRAR: mostrar siempre el comentario más reciente de alguien más
+      // (aunque ya se haya visto antes), e indicar cuántos son realmente nuevos.
+      var others = all.filter(notMine);
+      if (others.length) {
+        var latest = others[others.length - 1];
+        var unseenExtra = others.filter(function (c) { return c.ts > lastSeenTs; }).length;
+        showToast(latest, Math.max(0, unseenExtra - 1));
+      }
+      if (maxTs > lastSeenTs) { lastSeenTs = maxTs; saveTs(lastSeenTs); }
     } else {
-      unseen.forEach(function (c) { showToast(c, 0); });         // en vivo: cada nuevo
+      // EN VIVO: cada comentario nuevo que llega mientras la página está abierta.
+      var fresh = all.filter(function (c) { return c.ts > lastSeenTs && notMine(c); });
+      if (maxTs > lastSeenTs) { lastSeenTs = maxTs; saveTs(lastSeenTs); }
+      fresh.forEach(function (c) { showToast(c, 0); });
     }
   }
   function showToast(c, moreCount) {
     var wrap = document.getElementById("toast-wrap");
     if (!wrap) return;
+    playPing();
     var preview = c.text.length > 90 ? c.text.slice(0, 90).replace(/\s+\S*$/, "") + "…" : c.text;
     var el = document.createElement("div");
     el.className = "toast";
@@ -877,6 +917,26 @@
   document.getElementById("btn-collapse").addEventListener("click", function () { SECS.forEach(function (_, i) { ui.collapsed[i] = true; cards[i].classList.remove("open"); }); });
   document.getElementById("btn-expand").addEventListener("click", function () { SECS.forEach(function (_, i) { delete ui.collapsed[i]; cards[i].classList.add("open"); }); });
   document.getElementById("fx-totop").addEventListener("click", function () { window.scrollTo({ top: 0, behavior: "smooth" }); });
+
+  // Botón de sonido (activar / silenciar las alertas)
+  var SPK_ON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>';
+  var SPK_OFF = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>';
+  var btnSound = document.getElementById("btn-sound");
+  function renderSound() {
+    var on = soundEnabled();
+    btnSound.innerHTML = on ? SPK_ON : SPK_OFF;
+    btnSound.style.color = on ? "#7DB3FF" : "#6A6D7E";
+    btnSound.style.borderColor = on ? "rgba(96,165,250,.3)" : "rgba(255,255,255,.06)";
+    btnSound.title = on ? "Sonido de alertas: activado (clic para silenciar)" : "Sonido de alertas: silenciado (clic para activar)";
+  }
+  btnSound.addEventListener("click", function () {
+    var next = soundEnabled() ? "0" : "1";
+    try { localStorage.setItem("soundOn", next); } catch (e) {}
+    ensureAudio();
+    renderSound();
+    if (soundEnabled()) playPing();   // pequeña muestra al activar
+  });
+  renderSound();
 
   var nameInput = document.getElementById("me-name");
   try { nameInput.value = localStorage.getItem("cmtName") || ""; } catch (e) {}
