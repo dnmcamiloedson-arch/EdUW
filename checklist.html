@@ -241,8 +241,9 @@
   .n-ico { width: 30px; height: 30px; border-radius: 9px; border: 1px solid; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
   /* Campana + contador */
-  #notif-bell.btn:hover { color: #7DB3FF; border-color: rgba(96,165,250,.3) !important; }
-  .bell-badge { position: absolute; top: -6px; right: -6px; min-width: 17px; height: 17px; padding: 0 4px; border-radius: 9px; background: #EF4444; color: #fff; font-size: 10px; font-weight: 800; display: none; align-items: center; justify-content: center; box-shadow: 0 0 0 2px rgba(9,11,20,.9); font-family: 'JetBrains Mono', monospace; }
+  #notif-bell { overflow: visible !important; }
+  #notif-bell:hover { color: #7DB3FF; border-color: rgba(96,165,250,.3) !important; }
+  .bell-badge { position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: #EF4444; color: #fff; font-size: 10.5px; font-weight: 800; line-height: 1; display: none; align-items: center; justify-content: center; box-shadow: 0 0 0 2px #0B0E15; font-family: 'JetBrains Mono', monospace; pointer-events: none; }
 
   /* Panel de notificaciones */
   .notif-panel { position: fixed; top: 70px; right: 18px; z-index: 220; width: 360px; max-width: calc(100vw - 32px); max-height: 72vh; display: flex; flex-direction: column; overflow: hidden;
@@ -276,8 +277,11 @@
   .snd-hint.show { display: flex; opacity: 1; transform: translateX(-50%); }
   .snd-hint-ico { font-size: 16px; flex-shrink: 0; }
   .snd-hint b { color: #fff; }
+  .snd-hint-btn { flex-shrink: 0; padding: 7px 14px; border-radius: 10px; border: 1px solid rgba(96,165,250,.55); background: linear-gradient(140deg,#3B82F6,#1D4ED8); color: #fff; font-family: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  .snd-hint-btn:hover { box-shadow: 0 8px 22px -8px rgba(37,99,235,.85); transform: translateY(-1px); }
   .snd-hint-x { background: none; border: none; color: #9FB8DF; font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; flex-shrink: 0; }
   .snd-hint-x:hover { color: #fff; }
+  @media (max-width: 680px) { .snd-hint { flex-wrap: wrap; justify-content: center; text-align: center; } }
 
   @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms !important; transition-duration:.01ms !important } .reveal{opacity:1;transform:none;filter:none} }
 
@@ -369,7 +373,8 @@
 
 <div class="snd-hint no-print" id="snd-hint">
   <span class="snd-hint-ico">🔔</span>
-  <span>Haz clic en cualquier parte de la página y activa el <b>🔊</b> para escuchar las alertas de nuevos comentarios y tareas.</span>
+  <span>Activa el sonido para escuchar las alertas de nuevos comentarios y tareas completadas.</span>
+  <button class="snd-hint-btn" id="snd-hint-activate">Activar sonido</button>
   <button class="snd-hint-x" id="snd-hint-x" aria-label="Cerrar">&times;</button>
 </div>
 
@@ -1097,14 +1102,20 @@
   });
   renderPanel(); updateBadge();
 
-  // Aviso de sonido (hasta que interactúen o lo cierren)
+  // Aviso de sonido: aparece cada sesión hasta que lo activen o lo cierren.
   var hint = document.getElementById("snd-hint");
-  function hideHint(persist) { hint.classList.remove("show"); if (persist) { try { localStorage.setItem("hintDismissed", "1"); } catch (e) {} } }
-  var hintDismissed = false; try { hintDismissed = localStorage.getItem("hintDismissed") === "1"; } catch (e) {}
-  if (!hintDismissed) setTimeout(function () { hint.classList.add("show"); }, 900);
+  function hideHint(persist) { hint.classList.remove("show"); if (persist) { try { localStorage.setItem("soundIntroDone", "1"); } catch (e) {} } }
+  var introDone = false; try { introDone = localStorage.getItem("soundIntroDone") === "1"; } catch (e) {}
+  if (!introDone) {
+    setTimeout(function () { hint.classList.add("show"); }, 900);
+    setTimeout(function () { if (localStorage.getItem("soundIntroDone") !== "1") hint.classList.remove("show"); }, 16000); // se oculta solo a los 16s (reaparece la próxima vez)
+  }
   document.getElementById("snd-hint-x").addEventListener("click", function (e) { e.stopPropagation(); hideHint(true); });
-  ["pointerdown", "keydown", "touchstart"].forEach(function (ev) {
-    window.addEventListener(ev, function h() { hideHint(true); window.removeEventListener(ev, h); }, { once: true, passive: true });
+  document.getElementById("snd-hint-activate").addEventListener("click", function (e) {
+    e.stopPropagation();
+    try { localStorage.setItem("soundOn", "1"); } catch (er) {}
+    ensureAudio(); renderSound(); playPing();   // desbloquea el audio y suena de muestra
+    hideHint(true);
   });
 
   var nameInput = document.getElementById("me-name");
