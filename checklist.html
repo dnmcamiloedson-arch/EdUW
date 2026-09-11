@@ -541,8 +541,8 @@
   // Valor = texto (estilo "listo" morado) o { text, kind:"updating" } (ámbar, en proceso).
   var TASK_NOTE = {
     "UX-003": "Añadido en la maqueta de Canva",           // Westhill Well · Textos
-    "UX-013": { text: "Actualizando", kind: "updating" }, // Noticiero · aviso importante
-    "UX-014": { text: "Actualizando", kind: "updating" }  // Noticiero · actividades West
+    "UX-013": { text: "Aún no habilitar · o dejarla como “En mantenimiento / Actualizando” en el sitio", kind: "updating" }, // Noticiero · aviso importante
+    "UX-014": { text: "Aún no habilitar · o dejarla como “En mantenimiento / Actualizando” en el sitio", kind: "updating" }  // Noticiero · actividades West
   };
 
   var VIDEOS_FORM = "https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgD-oW2AsWWmTaj0iG-4y6OpAeoG6HM-TivRdBMWmApzdik?e=Cth4ZN"; // Videos/imágenes de formularios de contacto
@@ -714,7 +714,7 @@
         noteIcon = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
       }
       var trailingHTML = noteText
-        ? '<span class="task-note" style="flex-shrink:0; display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border-radius:11px; ' + noteStyle + ' font-size:11.5px; font-weight:600; white-space:nowrap;">' + noteIcon + esc(noteText) + '</span>'
+        ? '<span class="task-note" style="flex-shrink:0; max-width:220px; display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border-radius:11px; ' + noteStyle + ' font-size:11.5px; font-weight:600; line-height:1.4;"><span style="flex-shrink:0; display:inline-flex;">' + noteIcon + '</span><span>' + esc(noteText) + '</span></span>'
         : '<a ' + odAttrs + '><span class="od-sheen"></span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 15.5A5.5 5.5 0 0 0 17 6a7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0-1 8.9"></path><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>OneDrive<svg class="od-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>';
       return ''
         + '<div class="task-row" data-tid="' + t.id + '" style="--i:' + ti + '; display:flex; padding:18px 28px; border-top:1px solid rgba(255,255,255,.035); gap:17px; align-items:flex-start;">'
