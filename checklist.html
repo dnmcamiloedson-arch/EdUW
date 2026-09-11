@@ -535,6 +535,11 @@
 
   // Links POR TAREA (sobrescriben el link de la sección). Úsalo cuando un asset
   // vive en una carpeta distinta a la del resto de su sección.
+  // Notas por tarea: en vez del botón de OneDrive, muestran una etiqueta informativa.
+  var TASK_NOTE = {
+    "UX-003": "Añadido en la maqueta de Canva"   // Westhill Well · Textos en sección Inscripción actividades West
+  };
+
   var VIDEOS_FORM = "https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgD-oW2AsWWmTaj0iG-4y6OpAeoG6HM-TivRdBMWmApzdik?e=Cth4ZN"; // Videos/imágenes de formularios de contacto
   var BROCHURES = "https://uwedumx-my.sharepoint.com/:f:/g/personal/marketing_universidad_uw_edu_mx/IgCpzy2YCzHYRrryt-E47pZAARMZ6XNFBz4vrQ8HfWqe9x8?e=DVeoaV"; // Brochures (carpeta compartida)
   var TASK_LINKS = {
@@ -689,9 +694,13 @@
     var tasksHTML = sec.tasks.map(function (t, ti) {
       var link = TASK_LINKS[t.id] || LINKS[sec.shortCode] || "";
       var hasLink = !!link && !EXCLUDE[t.id];
+      var taskNote = TASK_NOTE[t.id] || "";
       var odAttrs = hasLink
         ? 'href="' + esc(link) + '" target="_blank" rel="noopener" class="od-btn od-enabled"'
         : 'href="#" onclick="return false;" title="Enlace de OneDrive pendiente" class="od-btn od-disabled"';
+      var trailingHTML = taskNote
+        ? '<span class="task-note" style="flex-shrink:0; display:inline-flex; align-items:center; gap:7px; padding:9px 14px; border-radius:11px; background:rgba(139,92,246,.1); border:1px solid rgba(139,92,246,.28); color:#C4B5FD; font-size:11.5px; font-weight:600; white-space:nowrap;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' + esc(taskNote) + '</span>'
+        : '<a ' + odAttrs + '><span class="od-sheen"></span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 15.5A5.5 5.5 0 0 0 17 6a7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0-1 8.9"></path><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>OneDrive<svg class="od-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>';
       return ''
         + '<div class="task-row" data-tid="' + t.id + '" style="--i:' + ti + '; display:flex; padding:18px 28px; border-top:1px solid rgba(255,255,255,.035); gap:17px; align-items:flex-start;">'
         +   '<div class="task-edge"></div>'
@@ -708,7 +717,7 @@
         +       '<span style="display:inline-flex; align-items:center; gap:5px;"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' + esc(t.label) + '</span>'
         +     '</div>'
         +   '</div>'
-        +   '<a ' + odAttrs + '><span class="od-sheen"></span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 15.5A5.5 5.5 0 0 0 17 6a7 7 0 0 0-13.5 2.5 4.5 4.5 0 0 0-1 8.9"></path><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="12" x2="12" y2="21"></line></svg>OneDrive<svg class="od-arrow" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg></a>'
+        +   trailingHTML
         + '</div>';
     }).join("");
 
