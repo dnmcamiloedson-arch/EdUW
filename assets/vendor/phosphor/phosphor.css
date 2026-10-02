@@ -41,7 +41,6 @@
 .ph.ph-circle-notch:before { content: "\eb44"; }
 .ph.ph-dna:before { content: "\e924"; }
 .ph.ph-first-aid-kit:before { content: "\e570"; }
-.ph.ph-graduation-cap:before { content: "\e62c"; }
 .ph.ph-heartbeat:before { content: "\e2ac"; }
 .ph.ph-image:before { content: "\e2ca"; }
 .ph.ph-microscope:before { content: "\ec7a"; }
@@ -49,3 +48,4 @@
 .ph.ph-stethoscope:before { content: "\e7ea"; }
 .ph.ph-users-three:before { content: "\e68e"; }
 .ph.ph-whatsapp-logo:before { content: "\e5d0"; }
+.ph.ph-x:before { content: "\e4f6"; }

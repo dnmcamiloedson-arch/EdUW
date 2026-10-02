@@ -172,9 +172,14 @@ para reemplazarlos por la información real.
 - Librerías incluidas en `assets/vendor/` (sin CDN): GSAP + ScrollTrigger,
   Lenis (desplazamiento suave) y un subconjunto de Phosphor Icons.
 - Colores: azul `#276092` (marca), verde `#27ae60` (progreso y confirmación),
-  dorado `#f2c94c` (resaltes). Soporta modo oscuro y `prefers-reduced-motion`.
-- Fotos: URLs temporales de Unsplash. Si una no carga, se muestra un marcador
-  con la descripción de la foto que va en ese lugar (`data-label`).
+  dorado `#f2c94c` (resaltes). Tema claro único y soporte de
+  `prefers-reduced-motion`.
+- Imágenes en `assets/img/premedical/`: logo, ilustraciones de la mascota y
+  el avatar de la guía. Si una no carga, se muestra un marcador con la
+  descripción de la imagen que va en ese lugar (`data-label`).
+- Guía: la mascota aparece abajo a la izquierda y cambia su mensaje según la
+  sección. Los textos están en `GUIDE_LINES` dentro de
+  `assets/js/premedical.js`.
 - Formulario: valida en el navegador y simula el envío. Para conectarlo,
   pon la URL del CRM en `data-endpoint` del `<form>`; se envía un `POST` JSON
   con `ruta`, `nombre`, `apellidos`, `correo`, `telefono`, `generacion`,

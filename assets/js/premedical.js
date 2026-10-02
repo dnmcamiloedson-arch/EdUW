@@ -18,18 +18,31 @@
   if (!motion) root.classList.remove("js-motion");
   if (motion) gsap.registerPlugin(ScrollTrigger);
 
-  /* Fotos de cada ruta. EJEMPLO: reemplazar por fotos reales. */
+  /* Fotos de cada ruta. */
   const TRACK_IMAGES = {
     licenciatura: {
-      src: "https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&q=70&auto=format&fit=crop",
-      alt: "Grupo de aspirantes en una sesión del curso",
-      label: "Foto ruta Licenciatura: aspirantes en sesión (1200x900)",
+      src: "assets/img/premedical/caracal-3.webp",
+      alt: "La mascota Westhill explicando reanimación en el laboratorio de simulación",
+      label: "Foto ruta Licenciatura: laboratorio de simulación (1536x1024)",
     },
     maestria: {
-      src: "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&q=70&auto=format&fit=crop",
-      alt: "Profesionales de la salud revisando un caso clínico",
-      label: "Foto ruta Maestría: profesionales revisando un caso (1200x900)",
+      src: "assets/img/premedical/caracal-4.webp",
+      alt: "La mascota Westhill investigando en la biblioteca con una laptop",
+      label: "Foto ruta Maestría: biblioteca e investigación (1536x1024)",
     },
+  };
+
+  /* Mensajes de la guía por sección. EJEMPLO: ajustar el tono final. */
+  const GUIDE_LINES = {
+    hero: "¡Hola! Soy tu guía Westhill. Te acompaño en el recorrido.",
+    rutas: "¿Vienes de la prepa o ya eres profesional? Elige tu ruta.",
+    programa: "Así se ve tu mes, semana por semana. Sigue bajando.",
+    experiencia: "Grupos pequeños y un mentor médico para ti.",
+    voces: "Ellos ya lo vivieron. Arrastra las tarjetas.",
+    preguntas: "¿Dudas? Aquí respondo las más comunes.",
+    solicitud: "Solo 6 datos y apartamos tu lugar.",
+    listo: "¡Todo listo! Ya puedes enviar tu solicitud.",
+    enviado: "¡Nos vemos en el campus!",
   };
 
   /* ---------- Marcador cuando una foto no carga ---------- */
@@ -118,6 +131,74 @@
     btn.addEventListener("pointerleave", setOrigin);
   });
 
+  /* ---------- Separar una palabra en letras animables ---------- */
+  function splitLetters(el) {
+    if (!el) return [];
+    const text = el.textContent;
+    el.setAttribute("aria-label", text);
+    el.textContent = "";
+    return Array.from(text).map((c) => {
+      const s = document.createElement("span");
+      s.className = "ch";
+      s.setAttribute("aria-hidden", "true");
+      s.textContent = c;
+      el.append(s);
+      return s;
+    });
+  }
+
+  /* ---------- Guía: la mascota comenta cada sección ---------- */
+  const guide = $("[data-guide]");
+  const guideText = $("[data-guide-text]");
+  const guideToggle = $("[data-guide-toggle]");
+  const smallScreen = matchMedia("(max-width: 900px)");
+  let guideKey = "hero";
+  let guideMuted = false;
+  let guideTimer = 0;
+  try { guideMuted = localStorage.getItem("wh-guide-muted") === "1"; } catch (e) { /* sin almacenamiento */ }
+
+  function setGuideOpen(open) {
+    guide.classList.toggle("is-collapsed", !open);
+    guideToggle.setAttribute("aria-expanded", String(open));
+    clearTimeout(guideTimer);
+    // El globo se oculta solo tras unos segundos para no tapar contenido.
+    if (open) guideTimer = setTimeout(() => setGuideOpen(false), smallScreen.matches ? 4500 : 6500);
+  }
+  function say(key) {
+    if (!guide || !GUIDE_LINES[key] || key === guideKey) return;
+    guideKey = key;
+    guideText.textContent = GUIDE_LINES[key];
+    if (guideMuted) return;
+    setGuideOpen(true);
+    if (motion) {
+      gsap.fromTo("[data-guide-bubble]", { scale: 0.86, y: 8 }, { scale: 1, y: 0, duration: 0.6, ease: "back.out(2.4)" });
+      gsap.fromTo(guideToggle, { rotate: -10 }, { rotate: 0, duration: 0.8, ease: "elastic.out(1, .4)" });
+    }
+  }
+  function guideEnter() {
+    if (!guide) return;
+    gsap.fromTo(guide, { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: "back.out(1.8)" });
+  }
+  if (guide) {
+    setGuideOpen(!guideMuted);
+    $("[data-guide-close]").addEventListener("click", () => {
+      guideMuted = true;
+      try { localStorage.setItem("wh-guide-muted", "1"); } catch (e) { /* sin almacenamiento */ }
+      setGuideOpen(false);
+    });
+    guideToggle.addEventListener("click", () => {
+      const open = guide.classList.contains("is-collapsed");
+      guideMuted = !open;
+      try { localStorage.setItem("wh-guide-muted", open ? "0" : "1"); } catch (e) { /* sin almacenamiento */ }
+      setGuideOpen(open);
+    });
+    const guideObserver = new IntersectionObserver(
+      (entries) => entries.forEach((e) => e.isIntersecting && say(e.target.dataset.section)),
+      { rootMargin: "-45% 0px -50% 0px" }
+    );
+    $$("[data-section]").forEach((s) => guideObserver.observe(s));
+  }
+
   /* ---------- Utilidades de trazo SVG ---------- */
   function prepStroke(path, visible = 0) {
     const len = path.getTotalLength();
@@ -144,15 +225,35 @@
       { strokeDashoffset: -pulseLen, duration: 3.4, ease: "power1.inOut", repeat: -1, repeatDelay: 0.6, paused: true }
     );
 
+    // La palabra clave entra letra por letra, con un pequeño rebote, sin marcas previas.
+    const letters = splitLetters($("[data-letters]"));
+
     const tl = gsap.timeline({ defaults: { ease: "expo.out" } });
-    tl.to("[data-iris]", { clipPath: "circle(150% at 62% 42%)", duration: 1.7, ease: "expo.inOut" }, 0)
+    tl.to("[data-iris]", { clipPath: "circle(150% at 55% 40%)", duration: 1.7, ease: "expo.inOut" }, 0)
       .fromTo(".hero__photo img", { scale: 1.3 }, { scale: 1, duration: 2.2 }, 0.1)
       .fromTo(".hero__title .line > span", { y: 0, yPercent: 105 }, { y: 0, yPercent: 0, duration: 1.2, stagger: 0.12 }, 0.35)
-      .to("[data-hero-fade]", { opacity: 1, y: 0, duration: 1, stagger: 0.1 }, 0.6)
-      .to("[data-hero-inset]", { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: "back.out(1.5)" }, 0.95)
-      .to(".mark", { "--mark": "100%", duration: 0.9, ease: "power3.inOut" }, 1.15)
+      .fromTo(letters, { yPercent: 115, rotate: 14, opacity: 0 }, { yPercent: 0, rotate: 0, opacity: 1, duration: 0.9, stagger: 0.045, ease: "back.out(2.2)" }, 0.6)
+      .to("[data-hero-fade]", { opacity: 1, y: 0, duration: 1, stagger: 0.1 }, 0.7)
+      .fromTo("[data-hero-inset]", { opacity: 0, y: 50, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 1.3, ease: "back.out(1.5)" }, 0.95)
+      .fromTo("[data-orb]", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.9, stagger: 0.12, ease: "back.out(2.4)" }, 1.15)
       .to(ecgPath, { strokeDashoffset: 0, duration: 2.2, ease: "power2.inOut" }, 0.5)
-      .add(() => ScrollTrigger.isInViewport(hero) && pulse.play());
+      .add(() => ScrollTrigger.isInViewport(hero) && pulse.play())
+      .add(() => guideEnter(), 1.6);
+
+    // Profundidad con el cursor: cada capa se desplaza según su data-depth.
+    if (matchMedia("(pointer: fine)").matches) {
+      const layers = $$("[data-depth]").map((el) => ({
+        d: Number(el.dataset.depth),
+        x: gsap.quickTo(el, "x", { duration: 0.9, ease: "power3.out" }),
+        y: gsap.quickTo(el, "y", { duration: 0.9, ease: "power3.out" }),
+      }));
+      hero.addEventListener("pointermove", (e) => {
+        const nx = e.clientX / window.innerWidth - 0.5;
+        const ny = e.clientY / window.innerHeight - 0.5;
+        layers.forEach((l) => { l.x(nx * 18 * l.d); l.y(ny * 14 * l.d); });
+      });
+      hero.addEventListener("pointerleave", () => layers.forEach((l) => { l.x(0); l.y(0); }));
+    }
 
     ScrollTrigger.create({
       trigger: hero,
@@ -165,6 +266,28 @@
     gsap.to(".hero__photo", { yPercent: -6, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
     gsap.to("[data-hero-inset]", { yPercent: -35, ease: "none", scrollTrigger: { trigger: hero, start: "top top", end: "bottom top", scrub: true } });
     void len;
+  }
+
+  /* ---------- Marquesina: avanza sola y acelera con la velocidad del scroll ---------- */
+  const ticker = $("[data-ticker-track]");
+  if (ticker && motion) {
+    const set = $(".ticker__set", ticker);
+    const clone = set.cloneNode(true);
+    clone.setAttribute("aria-hidden", "true");
+    ticker.append(clone);
+    const loop = gsap.to(ticker, { xPercent: -50, duration: 28, ease: "none", repeat: -1 });
+    let boost = gsap.to({}, {});
+    ScrollTrigger.create({
+      start: 0,
+      end: "max",
+      onUpdate: (self) => {
+        const v = self.getVelocity();
+        const dir = v < 0 ? -1 : 1;
+        boost.kill();
+        loop.timeScale(dir * Math.min(5, 1 + Math.abs(v) / 400));
+        boost = gsap.to(loop, { timeScale: dir, duration: 1.2, ease: "power2.out" });
+      },
+    });
   }
 
   /* ---------- Declaración: las palabras se encienden con el scroll ---------- */
@@ -193,9 +316,11 @@
     if (motion) {
       wrapWords(words);
       const spans = $$(".w", words);
-      gsap.set(spans, { opacity: 0.16 });
+      gsap.set(spans, { opacity: 0.14 });
+      gsap.set($$(".hl .w", words), { yPercent: 30 });
       gsap.to(spans, {
         opacity: 1,
+        yPercent: 0,
         ease: "none",
         stagger: 0.08,
         scrollTrigger: { trigger: words, start: "top 80%", end: "bottom 40%", scrub: 0.6 },
@@ -245,8 +370,8 @@
       img.src = data.src;
       img.alt = data.alt;
       img.dataset.label = data.label;
-      img.width = 1200;
-      img.height = 900;
+      img.width = 1536;
+      img.height = 1024;
       Object.assign(img.style, { position: "absolute", inset: "0" });
       trackImg.style.position = "relative";
       trackImg.append(img);
@@ -506,6 +631,7 @@
     const done = PROGRESS_KEYS.filter((k) => RULES[k](fieldValue(k))).length;
     pulsePath.style.strokeDashoffset = `${pulseLen * (1 - done / PROGRESS_KEYS.length)}`;
     pulseWrap.classList.toggle("is-complete", done === PROGRESS_KEYS.length);
+    if (done === PROGRESS_KEYS.length) say("listo");
     pulseLabel.textContent = done === PROGRESS_KEYS.length ? "Tu solicitud está lista para enviarse" : `Tu solicitud: ${done} de ${PROGRESS_KEYS.length} datos`;
   }
 
@@ -566,6 +692,7 @@
   });
 
   function showSuccess(name) {
+    say("enviado");
     $("[data-success-name]").textContent = name ? `, ${name.trim().split(/\s+/)[0]}` : "";
     const beat = $(".success__beat", success);
     const swap = () => {
@@ -601,7 +728,11 @@
   /* ---------- Barra fija en móvil ---------- */
   const mbar = $("[data-mbar]");
   const vis = { hero: true, apply: false };
-  const syncBar = () => mbar.classList.toggle("is-visible", !vis.hero && !vis.apply);
+  const syncBar = () => {
+    const show = !vis.hero && !vis.apply;
+    mbar.classList.toggle("is-visible", show);
+    if (guide) guide.classList.toggle("is-lifted", show);
+  };
   new IntersectionObserver(([e]) => { vis.hero = e.isIntersecting; syncBar(); }).observe(hero);
   new IntersectionObserver(([e]) => { vis.apply = e.isIntersecting; syncBar(); }, { threshold: 0.05 }).observe($("#solicitud"));
 
