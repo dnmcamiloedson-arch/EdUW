@@ -157,3 +157,27 @@ Luego abre <http://localhost:8000>.
 ---
 
 *"Vestigia Nulla Retrorsum" — Nunca retrocedas sobre tus huellas.*
+
+---
+
+## Landing de Cursos Premedical (`premedical.html`)
+
+Página de captación independiente para los cursos Premedical (rutas
+Licenciatura y Maestría). Es un **esqueleto con contenido de ejemplo**: textos,
+fechas, cifras, testimonios y fotos están marcados con comentarios `EJEMPLO`
+para reemplazarlos por la información real.
+
+- Archivos: `premedical.html`, `assets/css/premedical.css`,
+  `assets/js/premedical.js`.
+- Librerías incluidas en `assets/vendor/` (sin CDN): GSAP + ScrollTrigger,
+  Lenis (desplazamiento suave) y un subconjunto de Phosphor Icons.
+- Colores: azul `#276092` (marca), verde `#27ae60` (progreso y confirmación),
+  dorado `#f2c94c` (resaltes). Soporta modo oscuro y `prefers-reduced-motion`.
+- Fotos: URLs temporales de Unsplash. Si una no carga, se muestra un marcador
+  con la descripción de la foto que va en ese lugar (`data-label`).
+- Formulario: valida en el navegador y simula el envío. Para conectarlo,
+  pon la URL del CRM en `data-endpoint` del `<form>`; se envía un `POST` JSON
+  con `ruta`, `nombre`, `apellidos`, `correo`, `telefono`, `generacion`,
+  `mensaje` y `privacidad`.
+- Las fotos de cada ruta (Licenciatura / Maestría) se definen en
+  `TRACK_IMAGES` dentro de `assets/js/premedical.js`.

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cursos Premedical | Universidad Westhill</title>
+  <meta name="description" content="Cursos Premedical de la Universidad Westhill para aspirantes a licenciatura y maestría en ciencias de la salud. Vive la medicina antes de elegirla.">
+  <meta name="theme-color" content="#276092">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/vendor/phosphor/phosphor.css">
+  <link rel="stylesheet" href="assets/css/premedical.css">
+  <script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("js-motion")</script>
+</head>
+<!--
+  LANDING PREMEDICAL (esqueleto)
+  ------------------------------------------------------------------
+  Todo el texto, cifras, fechas, nombres y testimonios de esta página
+  son DE EJEMPLO. Búscalos por el comentario "EJEMPLO" y reemplázalos
+  con la información real antes de publicar.
+
+  Imágenes: cada <img> usa una foto temporal de Unsplash. Si no carga,
+  aparece un marcador azul con la descripción de la foto que va ahí
+  (atributo data-label). Sustituye "src" por las fotos reales.
+-->
+<body>
+  <a class="skip" href="#solicitud">Saltar al formulario</a>
+
+  <!-- NAVEGACIÓN -->
+  <header class="nav" data-nav>
+    <div class="nav__inner">
+      <a class="brand" href="index.html" aria-label="Universidad Westhill, inicio">
+        <span class="brand__mark" aria-hidden="true">W</span>
+        <span class="brand__name">Westhill<small>Facultad de Medicina</small></span>
+      </a>
+      <nav class="nav__links" aria-label="Secciones">
+        <a href="#rutas">Rutas</a>
+        <a href="#programa">Programa</a>
+        <a href="#experiencia">Experiencia</a>
+        <a href="#preguntas">Preguntas</a>
+      </nav>
+      <a class="btn btn--primary btn--sm" href="#solicitud" data-dir-hover><span>Aparta tu lugar</span></a>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="wrap hero__grid">
+        <div class="hero__copy">
+          <p class="eyebrow" data-hero-fade>Cursos Premedical 2027</p>
+          <h1 id="hero-title" class="hero__title">
+            <span class="line"><span>Vive la medicina</span></span>
+            <span class="line"><span>antes de <em class="mark">elegirla</em>.</span></span>
+          </h1>
+          <p class="hero__sub" data-hero-fade>Cuatro semanas de laboratorio, anatomía y simulación clínica para confirmar tu vocación con certeza.</p>
+          <div class="hero__actions" data-hero-fade>
+            <a class="btn btn--primary btn--lg" href="#solicitud" data-dir-hover><span>Aparta tu lugar</span><i class="ph ph-arrow-right" aria-hidden="true"></i></a>
+            <a class="btn btn--ghost btn--lg" href="#programa"><span>Ver el programa</span></a>
+          </div>
+        </div>
+
+        <div class="hero__media">
+          <figure class="hero__photo" data-iris>
+            <img src="https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=1400&q=75&auto=format&fit=crop"
+                 alt="Estudiante con estetoscopio en un aula de práctica clínica"
+                 data-label="Foto hero: estudiante con bata en práctica clínica (1400x1600)"
+                 width="1400" height="1600" fetchpriority="high">
+          </figure>
+          <figure class="hero__inset" data-hero-inset>
+            <img src="https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=700&q=70&auto=format&fit=crop"
+                 alt="Manos con guantes usando una pipeta en el laboratorio"
+                 data-label="Foto secundaria: laboratorio (700x700)"
+                 width="700" height="700" loading="lazy">
+          </figure>
+        </div>
+      </div>
+
+      <!-- Línea de electrocardiograma: se dibuja al cargar y late de forma sutil -->
+      <svg class="ecg ecg--hero" viewBox="0 0 1600 120" preserveAspectRatio="none" aria-hidden="true">
+        <path class="ecg__path" d="M0 70 H690 l14 -6 l14 6 H742 l10 16 l18 -84 l18 100 l14 -32 H830 l18 -9 l18 9 H1600" />
+        <path class="ecg__pulse" d="M0 70 H690 l14 -6 l14 6 H742 l10 16 l18 -84 l18 100 l14 -32 H830 l18 -9 l18 9 H1600" />
+      </svg>
+    </section>
+
+    <!-- DECLARACIÓN (las palabras se encienden con el scroll) -->
+    <section class="manifesto" aria-label="Por qué un curso Premedical">
+      <div class="wrap">
+        <p class="manifesto__text" data-words>
+          Antes de comprometerte con seis años de carrera, pasa un mes dentro de ella.
+          Trabaja en <span class="hl hl--green">laboratorio</span>, toca un modelo
+          anatómico real y resuelve tu primer caso en <span class="hl hl--gold">simulación clínica</span>,
+          acompañado por médicos que ejercen hoy.
+        </p>
+      </div>
+    </section>
+
+    <!-- RUTAS: LICENCIATURA / MAESTRÍA -->
+    <section class="tracks" id="rutas" aria-labelledby="rutas-title">
+      <div class="wrap">
+        <h2 id="rutas-title" class="h2" data-reveal>Dos rutas, una misma vocación</h2>
+        <div class="tracks__switch" role="tablist" aria-label="Elige tu ruta" data-reveal>
+          <span class="tracks__pill" aria-hidden="true"></span>
+          <button role="tab" id="tab-lic" aria-selected="true" aria-controls="panel-track" data-track="licenciatura">Licenciatura</button>
+          <button role="tab" id="tab-mae" aria-selected="false" aria-controls="panel-track" data-track="maestria" tabindex="-1">Maestría</button>
+        </div>
+
+        <!-- EJEMPLO: contenido de cada ruta. Se toma de los <template> de abajo -->
+        <div class="tracks__panel" id="panel-track" role="tabpanel" aria-labelledby="tab-lic" data-track-panel>
+          <figure class="tracks__img" data-track-img>
+            <img src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=1200&q=70&auto=format&fit=crop"
+                 alt="Grupo de aspirantes en una sesión del curso"
+                 data-label="Foto ruta Licenciatura: aspirantes en sesión (1200x900)"
+                 width="1200" height="900" loading="lazy">
+          </figure>
+          <div class="tracks__body" data-track-body></div>
+        </div>
+
+        <template data-track-tpl="licenciatura">
+          <h3 class="h3">Para quien va a entrar a Medicina</h3>
+          <p class="muted">Ideal si terminas la preparatoria o estás en el último semestre y quieres llegar al primer año con bases firmes.</p>
+          <dl class="facts">
+            <div><dt>Duración</dt><dd>4 semanas</dd></div>
+            <div><dt>Horario</dt><dd>Sábados, 9:00 a 14:00</dd></div>
+            <div><dt>Modalidad</dt><dd>Presencial, Santa Fe</dd></div>
+          </dl>
+          <ul class="ticks">
+            <li><i class="ph ph-dna" aria-hidden="true"></i>Biología celular y química aplicada</li>
+            <li><i class="ph ph-heartbeat" aria-hidden="true"></i>Introducción a anatomía y fisiología</li>
+            <li><i class="ph ph-first-aid-kit" aria-hidden="true"></i>Primer contacto con simulación clínica</li>
+            <li><i class="ph ph-certificate" aria-hidden="true"></i>Constancia con valor curricular</li>
+          </ul>
+        </template>
+        <template data-track-tpl="maestria">
+          <h3 class="h3">Para profesionales que quieren especializarse</h3>
+          <p class="muted">Pensado para licenciados en áreas de la salud o afines que evalúan una maestría en ciencias de la salud o educación médica.</p>
+          <dl class="facts">
+            <div><dt>Duración</dt><dd>6 semanas</dd></div>
+            <div><dt>Horario</dt><dd>Martes y jueves, 18:00 a 21:00</dd></div>
+            <div><dt>Modalidad</dt><dd>Híbrida</dd></div>
+          </dl>
+          <ul class="ticks">
+            <li><i class="ph ph-microscope" aria-hidden="true"></i>Investigación clínica y lectura de evidencia</li>
+            <li><i class="ph ph-chalkboard-teacher" aria-hidden="true"></i>Didáctica en ciencias de la salud</li>
+            <li><i class="ph ph-users-three" aria-hidden="true"></i>Mentoría con coordinadores de posgrado</li>
+            <li><i class="ph ph-certificate" aria-hidden="true"></i>Constancia con valor curricular</li>
+          </ul>
+        </template>
+      </div>
+    </section>
+
+    <!-- PROGRAMA: recorrido horizontal por semanas -->
+    <section class="program" id="programa" aria-labelledby="programa-title">
+      <div class="program__pin" data-pan>
+        <div class="program__head wrap">
+          <h2 id="programa-title" class="h2">Tu mes, semana por semana</h2>
+          <p class="muted">Desliza para recorrer el programa de la ruta Licenciatura.</p>
+        </div>
+        <div class="program__track" data-pan-track>
+          <!-- EJEMPLO: módulos del programa -->
+          <article class="module">
+            <figure class="module__img"><img src="https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=900&q=70&auto=format&fit=crop" alt="Microscopio en laboratorio" data-label="Semana 1: laboratorio de biología (900x700)" width="900" height="700" loading="lazy"></figure>
+            <p class="module__week">Semana 1</p>
+            <h3 class="h3">La célula y la química de la vida</h3>
+            <p class="muted">Prácticas de microscopía y reacciones que vas a usar todo primer año.</p>
+          </article>
+          <article class="module">
+            <figure class="module__img"><img src="https://images.unsplash.com/photo-1530026405186-ed1f139313f8?w=900&q=70&auto=format&fit=crop" alt="Modelo anatómico de un corazón" data-label="Semana 2: modelo anatómico (900x700)" width="900" height="700" loading="lazy"></figure>
+            <p class="module__week">Semana 2</p>
+            <h3 class="h3">Anatomía con modelos reales</h3>
+            <p class="muted">Sistemas cardiovascular y respiratorio en el anfiteatro de la facultad.</p>
+          </article>
+          <article class="module">
+            <figure class="module__img"><img src="https://images.unsplash.com/photo-1551076805-e1869033e561?w=900&q=70&auto=format&fit=crop" alt="Práctica en sala de simulación" data-label="Semana 3: sala de simulación clínica (900x700)" width="900" height="700" loading="lazy"></figure>
+            <p class="module__week">Semana 3</p>
+            <h3 class="h3">Simulación clínica</h3>
+            <p class="muted">Signos vitales, primeros auxilios y tu primer caso con paciente simulado.</p>
+          </article>
+          <article class="module">
+            <figure class="module__img"><img src="https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=900&q=70&auto=format&fit=crop" alt="Médica revisando un expediente en una tableta" data-label="Semana 4: médico por un día (900x700)" width="900" height="700" loading="lazy"></figure>
+            <p class="module__week">Semana 4</p>
+            <h3 class="h3">Médico por un día</h3>
+            <p class="muted">Acompañas a un mentor en su jornada y presentas un caso ante el comité.</p>
+          </article>
+          <article class="module module--end">
+            <i class="ph ph-graduation-cap" aria-hidden="true"></i>
+            <h3 class="h3">Terminas con claridad</h3>
+            <p>Constancia, retroalimentación personal y prioridad en el proceso de admisión.</p>
+            <a class="btn btn--light" href="#solicitud" data-dir-hover><span>Aparta tu lugar</span></a>
+          </article>
+        </div>
+        <svg class="ecg ecg--program" viewBox="0 0 1600 60" preserveAspectRatio="none" aria-hidden="true">
+          <path class="ecg__path" d="M0 40 H300 l10 -4 l10 4 H350 l8 10 l14 -46 l14 54 l10 -18 H430 H800 l10 -4 l10 4 H850 l8 10 l14 -46 l14 54 l10 -18 H930 H1300 l10 -4 l10 4 H1350 l8 10 l14 -46 l14 54 l10 -18 H1430 H1600" />
+        </svg>
+      </div>
+    </section>
+
+    <!-- EXPERIENCIA: bento -->
+    <section class="bento" id="experiencia" aria-labelledby="exp-title">
+      <div class="wrap">
+        <h2 id="exp-title" class="h2" data-reveal>Lo que vas a vivir en el campus</h2>
+        <div class="bento__grid">
+          <figure class="cell cell--photo cell--a" data-reveal data-spot>
+            <img src="https://images.unsplash.com/photo-1631217868264-e5b90bb7e133?w=1400&q=70&auto=format&fit=crop" alt="Estudiantes practicando en un maniquí de simulación" data-label="Bento grande: práctica con maniquí (1400x1000)" width="1400" height="1000" loading="lazy" data-parallax>
+            <figcaption>Sala de simulación de alta fidelidad</figcaption>
+          </figure>
+          <div class="cell cell--blue cell--b" data-reveal data-spot>
+            <!-- EJEMPLO: cifra -->
+            <p class="big"><span data-count="12">12</span></p>
+            <p>alumnos por grupo como máximo, con un mentor médico asignado.</p>
+          </div>
+          <div class="cell cell--gold cell--c" data-reveal data-spot>
+            <i class="ph ph-certificate" aria-hidden="true"></i>
+            <p class="cell__title">Constancia con valor curricular</p>
+            <p>Suma a tu expediente de admisión en Westhill y otras universidades.</p>
+          </div>
+          <figure class="cell cell--photo cell--d" data-reveal data-spot>
+            <img src="https://images.unsplash.com/photo-1607619056574-7b8d3ee536b2?w=900&q=70&auto=format&fit=crop" alt="Estudiante trabajando en el laboratorio" data-label="Bento: laboratorio (900x900)" width="900" height="900" loading="lazy" data-parallax>
+          </figure>
+          <div class="cell cell--green cell--e" data-reveal data-spot>
+            <!-- EJEMPLO: cifra -->
+            <p class="big"><span data-count="30" data-suffix="+">30+</span></p>
+            <p>años formando profesionales en Santa Fe.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIOS: pila que se desliza -->
+    <section class="voices" aria-labelledby="voices-title">
+      <div class="wrap voices__grid">
+        <div class="voices__intro" data-reveal>
+          <h2 id="voices-title" class="h2">Quienes ya lo vivieron</h2>
+          <p class="muted">Arrastra la tarjeta o usa las flechas.</p>
+          <div class="voices__ctrl">
+            <button class="icon-btn" type="button" data-stack-prev aria-label="Testimonio anterior"><i class="ph ph-arrow-left" aria-hidden="true"></i></button>
+            <button class="icon-btn" type="button" data-stack-next aria-label="Siguiente testimonio"><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+          </div>
+        </div>
+        <!-- EJEMPLO: testimonios ficticios -->
+        <div class="stack" data-stack aria-live="polite">
+          <blockquote class="quote">
+            <p>“Llegué con dudas y salí sabiendo que quería Medicina. La semana de simulación me cambió la perspectiva.”</p>
+            <footer><img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=160&h=160&q=70&auto=format&fit=crop" alt="" data-label="VO" width="56" height="56" loading="lazy"><span><strong>Valeria Ortiz Lozano</strong>Generación 2025, hoy en primer año</span></footer>
+          </blockquote>
+          <blockquote class="quote">
+            <p>“Como nutriólogo buscaba una maestría con sentido. El curso me dejó claro qué línea de investigación seguir.”</p>
+            <footer><img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=160&h=160&q=70&auto=format&fit=crop" alt="" data-label="EM" width="56" height="56" loading="lazy"><span><strong>Emiliano Mena Robles</strong>Ruta Maestría, 2025</span></footer>
+          </blockquote>
+          <blockquote class="quote">
+            <p>“Los mentores te tratan como colega. Presentar mi caso frente al comité fue lo mejor del mes.”</p>
+            <footer><img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=160&h=160&q=70&auto=format&fit=crop" alt="" data-label="RI" width="56" height="56" loading="lazy"><span><strong>Renata Ibarra Solís</strong>Generación 2024, hoy en tercer semestre</span></footer>
+          </blockquote>
+        </div>
+      </div>
+    </section>
+
+    <!-- PREGUNTAS FRECUENTES -->
+    <section class="faq" id="preguntas" aria-labelledby="faq-title">
+      <div class="wrap faq__wrap">
+        <h2 id="faq-title" class="h2" data-reveal>Preguntas frecuentes</h2>
+        <!-- EJEMPLO: respuestas por confirmar -->
+        <div class="faq__list" data-reveal>
+          <details class="qa" name="faq">
+            <summary>¿Necesito conocimientos previos?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+            <div class="qa__body"><p>No. Partimos de lo que viste en la preparatoria y lo llevamos a la práctica desde la primera sesión.</p></div>
+          </details>
+          <details class="qa" name="faq">
+            <summary>¿Cuánto cuesta y hay becas?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+            <div class="qa__body"><p>La inversión y los porcentajes de beca se confirman al registrarte. Tenemos descuentos por pronto pago y para alumnos Westhill.</p></div>
+          </details>
+          <details class="qa" name="faq">
+            <summary>¿El curso garantiza mi admisión?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+            <div class="qa__body"><p>No la garantiza, pero te da prioridad en el proceso y una carta de retroalimentación de tus mentores.</p></div>
+          </details>
+          <details class="qa" name="faq">
+            <summary>¿Puedo tomarlo si estudio en otra universidad?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+            <div class="qa__body"><p>Sí. El curso está abierto a aspirantes de cualquier institución.</p></div>
+          </details>
+          <details class="qa" name="faq">
+            <summary>¿Qué necesito llevar?<i class="ph ph-plus" aria-hidden="true"></i></summary>
+            <div class="qa__body"><p>Bata blanca y ganas de aprender. El material de laboratorio y simulación lo ponemos nosotros.</p></div>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULARIO -->
+    <section class="apply" id="solicitud" aria-labelledby="apply-title">
+      <div class="wrap apply__grid">
+        <aside class="apply__side">
+          <h2 id="apply-title" class="h2">Aparta tu lugar</h2>
+          <p>Déjanos tus datos y un asesor te contacta en menos de 24 horas hábiles con fechas, costos y becas.</p>
+          <!-- EJEMPLO: fechas de generaciones -->
+          <ul class="cohorts">
+            <li><span>Generación enero</span><strong>17 ene 2027</strong></li>
+            <li><span>Generación abril</span><strong>10 abr 2027</strong></li>
+            <li><span>Generación julio</span><strong>3 jul 2027</strong></li>
+          </ul>
+          <div class="pulse" aria-hidden="true">
+            <svg viewBox="0 0 400 80" preserveAspectRatio="none"><path class="pulse__base" d="M0 50 H400" /><path class="pulse__beat" data-pulse d="M0 50 H40 l8 -4 l8 4 H70 l6 8 l10 -42 l10 50 l8 -16 H120 H160 l8 -4 l8 4 H190 l6 8 l10 -42 l10 50 l8 -16 H240 H280 l8 -4 l8 4 H310 l6 8 l10 -42 l10 50 l8 -16 H360 H400" /></svg>
+          </div>
+          <p class="pulse__label" data-pulse-label>Tu solicitud: 0 de 6 datos</p>
+          <p class="apply__contact"><i class="ph ph-whatsapp-logo" aria-hidden="true"></i>¿Prefieres escribirnos? <a href="https://wa.me/525500000000">55 0000 0000</a></p>
+        </aside>
+
+        <!-- data-endpoint: URL del CRM o servicio que recibirá los datos (pendiente) -->
+        <form class="form" data-form data-endpoint="" novalidate>
+          <fieldset class="field field--full">
+            <legend>¿Qué ruta te interesa?</legend>
+            <div class="choice">
+              <label><input type="radio" name="ruta" value="licenciatura" required><span><i class="ph ph-stethoscope" aria-hidden="true"></i>Licenciatura</span></label>
+              <label><input type="radio" name="ruta" value="maestria"><span><i class="ph ph-books" aria-hidden="true"></i>Maestría</span></label>
+            </div>
+            <p class="field__error" id="err-ruta" hidden>Elige una ruta.</p>
+          </fieldset>
+
+          <div class="field">
+            <label for="f-nombre">Nombre</label>
+            <input id="f-nombre" name="nombre" type="text" autocomplete="given-name" required aria-describedby="err-nombre">
+            <p class="field__error" id="err-nombre" hidden>Escribe tu nombre.</p>
+          </div>
+          <div class="field">
+            <label for="f-apellidos">Apellidos</label>
+            <input id="f-apellidos" name="apellidos" type="text" autocomplete="family-name" required aria-describedby="err-apellidos">
+            <p class="field__error" id="err-apellidos" hidden>Escribe tus apellidos.</p>
+          </div>
+          <div class="field">
+            <label for="f-correo">Correo electrónico</label>
+            <input id="f-correo" name="correo" type="email" autocomplete="email" inputmode="email" required aria-describedby="err-correo">
+            <p class="field__error" id="err-correo" hidden>Revisa tu correo, parece incompleto.</p>
+          </div>
+          <div class="field">
+            <label for="f-tel">Teléfono o WhatsApp</label>
+            <input id="f-tel" name="telefono" type="tel" autocomplete="tel" inputmode="tel" required pattern="[0-9 +()-]{10,}" aria-describedby="help-tel err-tel">
+            <p class="field__help" id="help-tel">10 dígitos, te contactamos por este número.</p>
+            <p class="field__error" id="err-tel" hidden>Necesitamos al menos 10 dígitos.</p>
+          </div>
+          <div class="field field--full">
+            <label for="f-gen">Generación de interés</label>
+            <div class="select">
+              <select id="f-gen" name="generacion" required aria-describedby="err-gen">
+                <option value="" selected disabled>Selecciona una fecha</option>
+                <option>Enero 2027</option>
+                <option>Abril 2027</option>
+                <option>Julio 2027</option>
+                <option>Aún no lo sé</option>
+              </select>
+              <i class="ph ph-caret-down" aria-hidden="true"></i>
+            </div>
+            <p class="field__error" id="err-gen" hidden>Elige una generación.</p>
+          </div>
+          <div class="field field--full">
+            <label for="f-msg">¿Algo que quieras contarnos? <span class="opt">Opcional</span></label>
+            <textarea id="f-msg" name="mensaje" rows="3"></textarea>
+          </div>
+          <label class="consent field--full">
+            <input type="checkbox" name="privacidad" required>
+            <span>Acepto el <a href="#">aviso de privacidad</a> y que Westhill me contacte.</span>
+          </label>
+          <p class="field__error field--full" id="err-privacidad" hidden>Necesitamos tu autorización para contactarte.</p>
+
+          <button class="btn btn--primary btn--lg btn--submit field--full" type="submit" data-dir-hover>
+            <span class="btn__label">Aparta tu lugar</span>
+            <span class="btn__loading" aria-hidden="true"><i class="ph ph-circle-notch"></i>Enviando</span>
+          </button>
+          <p class="form__status field--full" role="status" data-form-status></p>
+        </form>
+
+        <div class="success" data-success hidden tabindex="-1">
+          <svg viewBox="0 0 400 80" preserveAspectRatio="none" aria-hidden="true"><path class="success__beat" d="M0 50 H120 l8 -4 l8 4 H150 l6 8 l10 -42 l10 50 l8 -16 H200 H260 l8 -4 l8 4 H290 l6 8 l10 -42 l10 50 l8 -16 H340 H400" /></svg>
+          <h3 class="h3">Listo<span data-success-name></span>, ya estás en la lista.</h3>
+          <p>Un asesor te escribirá en menos de 24 horas hábiles. Revisa también tu bandeja de correo no deseado.</p>
+          <button class="btn btn--ghost" type="button" data-reset><span>Enviar otra solicitud</span></button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap foot__inner">
+      <p><strong>Universidad Westhill</strong>, Facultad de Medicina. Santa Fe, Ciudad de México.</p>
+      <nav aria-label="Enlaces del pie">
+        <a href="index.html">Sitio principal</a>
+        <a href="medicina.html">Facultad de Medicina</a>
+        <a href="#">Aviso de privacidad</a>
+      </nav>
+    </div>
+  </footer>
+
+  <!-- Barra fija en móvil -->
+  <div class="mbar" data-mbar>
+    <a class="btn btn--primary" href="#solicitud"><span>Aparta tu lugar</span></a>
+  </div>
+
+  <script src="assets/vendor/gsap.min.js" defer></script>
+  <script src="assets/vendor/ScrollTrigger.min.js" defer></script>
+  <script src="assets/vendor/lenis.min.js" defer></script>
+  <script src="assets/js/premedical.js" defer></script>
+</body>
+</html>

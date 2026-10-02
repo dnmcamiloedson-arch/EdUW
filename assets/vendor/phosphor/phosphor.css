@@ -1,0 +1,51 @@
+/* Phosphor Icons 2.1.2 (MIT), solo los iconos que usa premedical.html */
+@font-face {
+  font-family: "Phosphor";
+  src: url("./Phosphor.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+.ph {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: "Phosphor" !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Enable Ligatures ================ */
+  letter-spacing: 0;
+  -webkit-font-feature-settings: "liga";
+  -moz-font-feature-settings: "liga=1";
+  -moz-font-feature-settings: "liga";
+  -ms-font-feature-settings: "liga" 1;
+  font-feature-settings: "liga";
+  -webkit-font-variant-ligatures: discretionary-ligatures;
+  font-variant-ligatures: discretionary-ligatures;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.ph.ph-arrow-left:before { content: "\e058"; }
+.ph.ph-arrow-right:before { content: "\e06c"; }
+.ph.ph-books:before { content: "\e758"; }
+.ph.ph-caret-down:before { content: "\e136"; }
+.ph.ph-certificate:before { content: "\e766"; }
+.ph.ph-chalkboard-teacher:before { content: "\e600"; }
+.ph.ph-circle-notch:before { content: "\eb44"; }
+.ph.ph-dna:before { content: "\e924"; }
+.ph.ph-first-aid-kit:before { content: "\e570"; }
+.ph.ph-graduation-cap:before { content: "\e62c"; }
+.ph.ph-heartbeat:before { content: "\e2ac"; }
+.ph.ph-image:before { content: "\e2ca"; }
+.ph.ph-microscope:before { content: "\ec7a"; }
+.ph.ph-plus:before { content: "\e3d4"; }
+.ph.ph-stethoscope:before { content: "\e7ea"; }
+.ph.ph-users-three:before { content: "\e68e"; }
+.ph.ph-whatsapp-logo:before { content: "\e5d0"; }
