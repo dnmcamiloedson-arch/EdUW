@@ -37,11 +37,11 @@
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
 
-  color-scheme: light dark;
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0a1420;
     --surface: #0f1d2e;
     --surface-2: #142740;
@@ -51,7 +51,20 @@
     --accent-text: #8cbbe6;
     --green-text: #52c985;
     --shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+    color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --bg: #0a1420;
+  --surface: #0f1d2e;
+  --surface-2: #142740;
+  --ink: #e7edf5;
+  --muted: #a2b1c4;
+  --line: rgba(231, 237, 245, 0.12);
+  --accent-text: #8cbbe6;
+  --green-text: #52c985;
+  --shadow: 0 24px 60px -28px rgba(0, 0, 0, 0.7);
+  color-scheme: dark;
 }
 
 /* ---------- Base ---------- */
