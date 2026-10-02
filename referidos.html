@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Te invitaron a Westhill | Universidad Westhill</title>
+  <meta name="description" content="Alguien de la comunidad Westhill te invitó. Déjanos tus datos y Admisiones te acompaña a encontrar tu carrera.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="inicio">
+  <div data-uw-header></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <ul class="breadcrumb"><li><a href="index.html">Inicio</a></li><li>Programa de referidos</li></ul>
+        <p class="eyebrow" data-referidor hidden style="color:var(--uw-gold)"><span data-referidor-nombre></span> te invitó a Westhill</p>
+        <h1>Alguien de la comunidad Westhill pensó en ti</h1>
+        <p style="max-width:65ch;color:rgba(255,255,255,.9)">Déjanos tus datos y nuestro equipo de Admisiones te contactará para ayudarte a encontrar la carrera perfecta para ti.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container split">
+        <div data-reveal="left">
+          <span class="eyebrow">Programa de referidos</span>
+          <h2>Tu próximo capítulo empieza con una invitación</h2>
+          <hr class="rule-gold" style="margin-inline:0">
+          <ul class="check-list" style="margin-top:1rem">
+            <li>Atención personalizada de nuestro equipo de Admisiones</li>
+            <li>Información de planes de estudio, becas y convenios</li>
+            <li>Acompañamiento durante todo tu proceso de admisión</li>
+          </ul>
+          <div style="margin-top:1.5rem">
+            <div class="info-row"><span class="ico">📞</span><div><strong>Teléfono</strong><br>(55) 8851 7010</div></div>
+            <div class="info-row"><span class="ico">✉️</span><div><strong>Correo</strong><br>admisiones@uw.edu.mx</div></div>
+            <div class="info-row"><span class="ico">📍</span><div><strong>Campus</strong><br>Domingo García Ramos 56, Santa Fe, CDMX 05610</div></div>
+          </div>
+        </div>
+
+        <!-- Sin data-validate: la validación y el envío los hace assets/js/referidos.js -->
+        <form class="form-card" data-referidos-form novalidate data-reveal="right">
+          <h3>Regístrate</h3>
+          <input type="hidden" name="ref">
+          <div class="field"><label for="r-nombre">Nombre completo <span class="req">*</span></label><input id="r-nombre" name="nombre" autocomplete="name" required><span class="error-msg">Ingresa tu nombre.</span></div>
+          <div class="field"><label for="r-email">Correo electrónico <span class="req">*</span></label><input id="r-email" name="email" type="email" autocomplete="email" required><span class="error-msg">Ingresa un correo válido.</span></div>
+          <div class="field"><label for="r-tel">Teléfono <span class="req">*</span></label><input id="r-tel" name="telefono" type="tel" autocomplete="tel" required><span class="error-msg">Ingresa tu teléfono.</span></div>
+          <div class="field"><label for="r-nivel">Nivel de interés</label>
+            <select id="r-nivel" name="nivel">
+              <option value="">Selecciona…</option>
+              <option>Licenciatura</option><option>Maestría</option><option>Especialidad</option>
+              <option>Diplomado</option><option>Facultad de Medicina</option>
+            </select>
+          </div>
+          <div class="field"><label for="r-programa">Programa de interés (opcional)</label><input id="r-programa" name="programa" placeholder="Ej. Derecho, Psicología…"></div>
+          <div class="field"><label for="r-msg">Mensaje (opcional)</label><textarea id="r-msg" name="mensaje" rows="3"></textarea></div>
+          <div class="field">
+            <label style="display:flex;gap:.5rem;align-items:flex-start;font-family:var(--font-body,inherit);font-weight:400">
+              <input type="checkbox" name="aviso" required style="width:auto;margin-top:.25rem">
+              <span>Acepto el <a href="https://www.uw.edu.mx/wp-content/uploads/2021/10/AVISO-DE-PRIVACIDAD-INSTITUTE-Y-UNIVERSIDAD-2021.pdf" target="_blank" rel="noopener">Aviso de privacidad</a>.</span>
+            </label>
+            <span class="error-msg">Debes aceptar el aviso de privacidad.</span>
+          </div>
+          <button class="btn btn--gold btn--lg" type="submit" style="width:100%">Enviar registro</button>
+          <p class="form-success text-center" role="status" tabindex="-1" hidden style="color:var(--uw-green-600);font-weight:600;margin-top:1rem">¡Listo! Recibimos tu registro y Admisiones te contactará pronto.</p>
+          <p class="form-error text-center" role="alert" hidden style="color:#d64545;font-weight:600;margin-top:1rem"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <div data-uw-footer></div>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/referidos.js"></script>
+</body>
+</html>

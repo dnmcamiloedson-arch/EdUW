@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saca tu link de referidos | Universidad Westhill</title>
+  <meta name="description" content="Obtén tu link personal de referidos de la Universidad Westhill y compártelo con tus amigos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body data-page="inicio">
+  <div data-uw-header></div>
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <ul class="breadcrumb"><li><a href="index.html">Inicio</a></li><li>Saca tu link</li></ul>
+        <h1>Invita a tus amigos a Westhill</h1>
+        <p style="max-width:65ch;color:rgba(255,255,255,.9)">Escribe tu nombre y correo para obtener tu link personal. Cada persona que se registre desde tu link queda vinculada a ti.</p>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container split">
+        <div data-reveal="left">
+          <span class="eyebrow">Programa de referidos</span>
+          <h2>Comparte Westhill con quien más quieres</h2>
+          <hr class="rule-gold" style="margin-inline:0">
+          <ul class="check-list" style="margin-top:1rem">
+            <li>Saca tu link en segundos, solo con tu nombre y correo</li>
+            <li>Compártelo por WhatsApp, redes o donde quieras</li>
+            <li>Si ya tenías link, con tu mismo correo lo recuperas</li>
+          </ul>
+        </div>
+
+        <div data-reveal="right">
+          <form class="form-card" id="form-link" novalidate>
+            <h3>Saca tu link</h3>
+            <div class="field"><label for="l-nombre">Nombre completo <span class="req">*</span></label><input id="l-nombre" name="nombre" autocomplete="name" maxlength="80" required><span class="error-msg">Escribe tu nombre.</span></div>
+            <div class="field"><label for="l-correo">Correo electrónico <span class="req">*</span></label><input id="l-correo" name="correo" type="email" autocomplete="email" maxlength="120" required><span class="error-msg">Escribe un correo válido.</span></div>
+            <button class="btn btn--gold btn--lg" type="submit" style="width:100%">Generar mi link</button>
+            <p class="ref-error" role="alert" hidden></p>
+          </form>
+
+          <div class="form-card ref-resultado" id="resultado" hidden aria-live="polite">
+            <h3 id="r-titulo">¡Listo! Este es tu link</h3>
+            <p class="text-muted">Tu código es <strong id="r-codigo"></strong>.</p>
+            <div class="ref-link">
+              <input id="r-link" readonly aria-label="Tu link personal">
+              <button class="btn btn--gold" type="button" id="r-copiar">Copiar</button>
+            </div>
+            <div class="ref-acciones">
+              <a class="btn" id="r-whatsapp" target="_blank" rel="noopener">Compartir por WhatsApp</a>
+              <button class="btn" type="button" id="r-compartir" hidden>Compartir…</button>
+            </div>
+            <p class="text-center" style="margin-top:1rem"><button class="ref-otro" type="button" id="r-otro">Sacar otro link</button></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div data-uw-footer></div>
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/referidos.js"></script>
+  <script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    const form = $("form-link");
+    const boton = form.querySelector("button[type=submit]");
+    const error = form.querySelector(".ref-error");
+    const resultado = $("resultado");
+
+    function validar(input) {
+      const v = input.value.trim();
+      const ok = input.type === "email" ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v) : v !== "";
+      input.closest(".field").classList.toggle("is-invalid", !ok);
+      return ok;
+    }
+
+    function mostrarError(msg) {
+      error.textContent = msg;
+      error.hidden = !msg;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      mostrarError("");
+      const nombre = $("l-nombre"), correo = $("l-correo");
+      if (![nombre, correo].map(validar).every(Boolean)) return;
+
+      boton.disabled = true;
+      boton.textContent = "Generando…";
+      try {
+        const r = await Referidos.crearReferidor({ nombre: nombre.value.trim(), email: correo.value.trim() });
+        if (!r.ok) throw new Error(r.error || "No pudimos generar tu link.");
+        mostrarResultado(r);
+      } catch (err) {
+        mostrarError(err.message || "No pudimos generar tu link. Inténtalo de nuevo.");
+      } finally {
+        boton.disabled = false;
+        boton.textContent = "Generar mi link";
+      }
+    });
+
+    function mostrarResultado(r) {
+      const link = r.link || Referidos.linkPersonal(r.codigo);
+      const texto = "Te invito a conocer la Universidad Westhill. Regístrate aquí: " + link;
+      $("r-titulo").textContent = r.nuevo === false ? "¡Hola de nuevo! Este es tu link" : "¡Listo! Este es tu link";
+      $("r-codigo").textContent = r.codigo;
+      $("r-link").value = link;
+      $("r-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(texto);
+      $("r-compartir").hidden = !navigator.share;
+      $("r-compartir").onclick = () => navigator.share({ title: "Universidad Westhill", text: texto, url: link }).catch(() => {});
+      form.hidden = true;
+      resultado.hidden = false;
+      $("r-link").select();
+    }
+
+    $("r-copiar").addEventListener("click", async () => {
+      const input = $("r-link");
+      try { await navigator.clipboard.writeText(input.value); }
+      catch (_) { input.select(); document.execCommand("copy"); }
+      $("r-copiar").textContent = "¡Copiado!";
+      setTimeout(() => { $("r-copiar").textContent = "Copiar"; }, 2000);
+    });
+
+    $("r-otro").addEventListener("click", () => {
+      form.reset();
+      resultado.hidden = true;
+      form.hidden = false;
+      $("l-nombre").focus();
+    });
+  })();
+  </script>
+</body>
+</html>
