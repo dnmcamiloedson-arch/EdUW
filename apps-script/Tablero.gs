@@ -81,28 +81,31 @@ function crearTablero() {
 
   // Gráficas (sus rangos cubren filas vacías de sobra para crecer solas)
   var base = 25;
-  titulo_(t, "B" + (base - 1), "Gráficas");
   t.insertChart(t.newChart().setChartType(Charts.ChartType.BAR)
     .addRange(t.getRange("B10:C30")).setNumHeaders(1)
     .setPosition(base, 2, 0, 0)
     .setOption("title", "Invitados por referidor")
-    .setOption("colors", [UW.azul]).setOption("legend", { position: "none" })
+    .setOption("series", { 0: { color: UW.azul } }).setOption("legend", { position: "none" })
     .setOption("width", 520).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.PIE)
     .addRange(t.getRange("E10:F20")).setNumHeaders(1)
     .setPosition(base, 8, 0, 0)
     .setOption("title", "Registros por nivel").setOption("pieHole", 0.5)
-    .setOption("colors", [UW.azul, UW.dorado, UW.verde, UW.azulOscuro, "#a8811a", "#9cc3e6"])
+    .setOption("slices", { 0: { color: UW.azul }, 1: { color: UW.dorado }, 2: { color: UW.verde },
+      3: { color: UW.azulOscuro }, 4: { color: "#a8811a" }, 5: { color: "#9cc3e6" } })
     .setOption("width", 460).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.AREA)
     .addRange(t.getRange("M10:N400")).setNumHeaders(1)
+    .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.SHOW_BOTH)
     .setPosition(base + 17, 2, 0, 0)
     .setOption("title", "Registros por día")
-    .setOption("colors", [UW.verde]).setOption("legend", { position: "none" })
+    .setOption("series", { 0: { color: UW.verde } }).setOption("legend", { position: "none" })
     .setOption("width", 1000).setOption("height", 300).build());
 
+  // La serie por día solo alimenta la gráfica: se oculta
+  t.hideColumns(12, 3);
   t.setFrozenRows(3);
   libro.setActiveSheet(t);
 }
