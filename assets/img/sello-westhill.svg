@@ -3,13 +3,13 @@
   <defs>
     <linearGradient id="oro" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#fbe7a1"/>
-      <stop offset=".45" stop-color="#C9A227"/>
+      <stop offset=".45" stop-color="#f2c94c"/>
       <stop offset="1" stop-color="#a9861d"/>
     </linearGradient>
     <radialGradient id="azul" cx=".35" cy=".3" r=".9">
       <stop offset="0" stop-color="#2c619b"/>
       <stop offset=".55" stop-color="#0f2a4c"/>
-      <stop offset="1" stop-color="#0a1e3a"/>
+      <stop offset="1" stop-color="#276092"/>
     </radialGradient>
     <path id="arco" d="M100,100 m-71,0 a71,71 0 1,1 142,0 a71,71 0 1,1 -142,0"/>
   </defs>
@@ -21,5 +21,5 @@
   </text>
   <text x="100" y="114" text-anchor="middle" font-family="Fraunces, Georgia, serif" font-size="44" font-weight="600" fill="#fff" letter-spacing="-1">UW</text>
   <path d="M78 124 h44" stroke="url(#oro)" stroke-width="1.5"/>
-  <circle cx="100" cy="124" r="2.4" fill="#28b060"/>
+  <circle cx="100" cy="124" r="2.4" fill="#27ae60"/>
 </svg>

@@ -90,7 +90,7 @@
 
   /* --- Inclinación 3D del pase (manipulación directa) --------------------- */
   function initTilt(el) {
-    if (!el || el._tilt) return;
+    if (!el || el._tilt || reducido()) return;   // inclinar es movimiento puro: fuera con reduced-motion
     const MAX = 10; // grados
     const aplicar = () => {
       el.style.transform = `rotateX(${rx.value}deg) rotateY(${ry.value}deg) translateZ(0)`;
@@ -112,6 +112,7 @@
       else { ry.set(px * MAX); rx.set(-py * MAX); }
     };
     el.addEventListener("pointerdown", (e) => {
+      if (activo) return;                        // ignora un segundo dedo
       activo = true;
       el.setPointerCapture(e.pointerId);
       seguir(e);
@@ -126,28 +127,36 @@
   }
 
   /* --- Píldoras con selección que se desliza ------------------------------ */
+  // Técnica de Emil Kowalski para pestañas: una copia "activa" de la fila
+  // encima de la original, recortada con clip-path a la píldora elegida.
+  // Solo anima clip-path (sin layout) y el color del texto cambia exacto.
+  // Es una transición CSS: si se toca otra píldora a medio camino, se
+  // redirige desde donde va (interrumpible).
   function initPills(cont) {
-    const thumb = document.createElement("span");
-    thumb.className = "rf-thumb";
-    thumb.setAttribute("aria-hidden", "true");
-    cont.prepend(thumb);
-    const pintar = () => { thumb.style.transform = `translate(${x.value}px, ${y.value}px)`; };
-    const x = new Spring(0, { damping: 1, response: 0.36, onUpdate: pintar });
-    const y = new Spring(0, { damping: 1, response: 0.36, onUpdate: pintar }); // X e Y por separado
-    const w = new Spring(0, { damping: 1, response: 0.36, onUpdate: (v) => { thumb.style.width = v + "px"; } });
+    const capa = document.createElement("div");
+    capa.className = "rf-pills-active";
+    capa.setAttribute("aria-hidden", "true");
+    cont.querySelectorAll(".rf-pill span").forEach((s) => {
+      const c = document.createElement("span");
+      c.textContent = s.textContent;
+      capa.appendChild(c);
+    });
+    cont.appendChild(capa);
 
     const mover = (animar) => {
       const marcado = cont.querySelector("input:checked");
       cont.classList.toggle("has-value", !!marcado);
       if (!marcado) return;
       const pill = marcado.parentElement; // el <label>: su offsetParent es la fila
-      const dx = pill.offsetLeft, dy = pill.offsetTop, dw = pill.offsetWidth;
-      if (animar && cont.classList.contains("was-set")) { x.to(dx); y.to(dy); w.to(dw); }
-      else { x.set(dx); y.set(dy); w.set(dw); }
+      const W = cont.clientWidth, H = cont.clientHeight;
+      const t = pill.offsetTop, l = pill.offsetLeft;
+      const r = W - (l + pill.offsetWidth), b = H - (t + pill.offsetHeight);
+      capa.style.transition = animar && cont.classList.contains("was-set") ? "" : "none";
+      capa.style.clipPath = `inset(${t}px ${r}px ${b}px ${l}px round 999px)`;
+      if (capa.style.transition === "none") { void capa.offsetWidth; capa.style.transition = ""; }
       cont.classList.add("was-set");
     };
     cont.addEventListener("change", () => mover(true));
-    // Si el formulario se limpia (reset), la píldora desaparece
     const form = cont.closest("form");
     if (form) form.addEventListener("reset", () => setTimeout(() => { cont.classList.remove("has-value", "was-set"); }, 0));
     window.addEventListener("resize", () => mover(false));
@@ -224,7 +233,7 @@
     // --- Gesto: deslizar el sello hacia arriba abre la solapa (1:1) ---------
     let arrastre = null, arrastrado = false;
     sello.addEventListener("pointerdown", (e) => {
-      if (fase !== "cerrado") return;
+      if (fase !== "cerrado" || arrastre) return;  // ignora un segundo dedo
       sello.setPointerCapture(e.pointerId);
       arrastre = { y0: e.clientY, a0: solapa.value, hist: [{ y: e.clientY, t: e.timeStamp }] };
       arrastrado = false;
