@@ -172,16 +172,6 @@
     actualizar();
   }
 
-  /* --- Logotipo: usa logo-westhill.png si existe, si no el sello ---------- */
-  function initLogo() {
-    document.querySelectorAll("[data-logo]").forEach((img) => {
-      const marca = img.closest(".rf-brand");
-      const real = new Image();
-      real.onload = () => { img.src = real.src; if (marca) marca.classList.add("has-logo"); };
-      real.src = "assets/img/logo-westhill.png";
-    });
-  }
-
   /* --- referidos.html: invitación y estado "enviado" --------------------- */
   /* --- Proyección de impulso (función de Apple, como el scroll) ---------- */
   const proyectar = (v, d = 0.99) => (v / 1000) * d / (1 - d);
@@ -417,7 +407,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", () => {
-    initLogo();
     initNav();
     document.querySelectorAll("[data-pills]").forEach(initPills);
     initSobre();
