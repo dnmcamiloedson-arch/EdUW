@@ -52,44 +52,46 @@ function crearTablero() {
   indicador_(t, "J5", "Últimos 7 días", "=COUNTIFS(" + R + "A2:A,\">=\"&(TODAY()-6))", UW.azulOscuro);
 
   // Tablas dinámicas por fórmula (debajo de las gráficas para que crezcan sin taparse)
-  titulo_(t, "B44", "Ranking de referidores");
-  t.getRange("B45").setFormula(fx_(
+  titulo_(t, "B52", "Ranking de referidores");
+  t.getRange("B53").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select C, count(D) where C <> '' group by C order by count(D) desc " +
     "label C 'Referidor', count(D) 'Invitados'\",0),\"Aún no hay registros\")"));
 
-  titulo_(t, "E44", "Por nivel de estudios");
-  t.getRange("E45").setFormula(fx_(
+  titulo_(t, "E52", "Por nivel de estudios");
+  t.getRange("E53").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select G, count(D) where G <> '' group by G order by count(D) desc " +
     "label G 'Nivel', count(D) 'Registros'\",0),\"Aún no hay registros\")"));
 
-  titulo_(t, "H44", "Últimos registros");
-  t.getRange("H45").setFormula(fx_(
+  titulo_(t, "H52", "Últimos registros");
+  t.getRange("H53").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select A, D, G, C where D <> '' order by A desc limit 12 " +
     "label A 'Fecha', D 'Nombre', G 'Nivel', C 'Invitado por'\",0),\"Aún no hay registros\")"));
-  t.getRange("H46:H57").setNumberFormat("dd/mm/yyyy hh:mm");
+  t.getRange("H54:H65").setNumberFormat("dd/mm/yyyy hh:mm");
 
   // Serie por día (alimenta la gráfica de línea)
-  titulo_(t, "M44", "Por día");
-  t.getRange("M45").setFormula(fx_(
+  titulo_(t, "M52", "Por día");
+  t.getRange("M53").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select toDate(A), count(D) where D <> '' group by toDate(A) " +
     "order by toDate(A) label toDate(A) 'Día', count(D) 'Registros'\",0),\"—\")"));
-  t.getRange("M46:M500").setNumberFormat("dd/mm");
+  t.getRange("M54:M500").setNumberFormat("dd/mm");
 
-  [["B45:C45"], ["E45:F45"], ["H45:K45"], ["M45:N45"]].forEach(function (r) {
+  [["B53:C53"], ["E53:F53"], ["H53:K53"], ["M53:N53"]].forEach(function (r) {
     t.getRange(r[0]).setBackground(UW.fondo).setFontWeight("bold").setFontColor(UW.gris);
   });
 
   // Gráficas (sus rangos cubren filas vacías de sobra para crecer solas)
   var base = 9;
+  // Alto fijo en la zona de gráficas para que nunca invadan las tablas (empiezan en la fila 52)
+  t.setRowHeights(base, 43, 21);
   t.insertChart(t.newChart().setChartType(Charts.ChartType.BAR)
-    .addRange(t.getRange("B45:C95")).setNumHeaders(1)
+    .addRange(t.getRange("B53:C103")).setNumHeaders(1)
     .setPosition(base, 2, 0, 0)
     .setOption("title", "Invitados por referidor")
     .setOption("series", { 0: { color: UW.azul } }).setOption("legend", { position: "none" })
     .setOption("width", 520).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.PIE)
-    .addRange(t.getRange("E45:F55")).setNumHeaders(1)
+    .addRange(t.getRange("E53:F63")).setNumHeaders(1)
     .setPosition(base, 8, 0, 0)
     .setOption("title", "Registros por nivel").setOption("pieHole", 0.5)
     .setOption("slices", { 0: { color: UW.azul }, 1: { color: UW.dorado }, 2: { color: UW.verde },
@@ -97,9 +99,9 @@ function crearTablero() {
     .setOption("width", 460).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.AREA)
-    .addRange(t.getRange("M45:N500")).setNumHeaders(1)
+    .addRange(t.getRange("M53:N500")).setNumHeaders(1)
     .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.SHOW_BOTH)
-    .setPosition(base + 16, 2, 0, 0)
+    .setPosition(base + 20, 2, 0, 0)
     .setOption("title", "Registros por día")
     .setOption("series", { 0: { color: UW.verde } }).setOption("legend", { position: "none" })
     .setOption("width", 1000).setOption("height", 300).build());
