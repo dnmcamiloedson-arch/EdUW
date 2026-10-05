@@ -2,21 +2,32 @@
    Universidad Westhill — Datos de ejemplo para el tablero
    Va en el mismo proyecto que Codigo.gs y Tablero.gs.
    --------------------------------------------------------------------------
-   · cargarDemo: agrega 6 referidores y 15 invitados inventados de las
-     últimas 4 semanas para ver el Tablero y las gráficas con datos.
+   · cargarDemo: agrega TOTAL_DEMO invitados inventados (30 por defecto)
+     de las últimas 4 semanas para ver el Tablero y las gráficas con datos.
    · borrarDemo: quita SOLO esos registros (todos usan correos
      @ejemplo.com). Ejecútalo antes de lanzar.
    ========================================================================== */
 
 var DOMINIO_DEMO = "@ejemplo.com";
+// Cuántos invitados de ejemplo cargar. Cambia el número y vuelve a ejecutar cargarDemo.
+var TOTAL_DEMO = 30;
 
 function cargarDemo() {
   borrarDemo();
-  // [referidor, personas que invitó] — 15 invitados en total
-  var refs = [
-    ["Ana Lucía Torres", 4], ["Carlos Méndez", 3], ["Mariana López", 3],
-    ["Jorge Ramírez", 2], ["Fernanda Ruiz", 2], ["Diego Hernández", 1]
-  ];
+  // Se reparten los invitados entre referidores, unos con más que otros.
+  var todos = ["Ana Lucía Torres", "Carlos Méndez", "Mariana López", "Jorge Ramírez", "Fernanda Ruiz",
+    "Diego Hernández", "Valeria Castro", "Luis Ortega", "Sofía Navarro", "Ricardo Vega",
+    "Paola Jiménez", "Andrés Morales"];
+  var cuantos = Math.max(1, Math.min(todos.length, Math.round(TOTAL_DEMO / 4)));
+  var pesos = [], suma = 0;
+  for (var k = 0; k < cuantos; k++) { pesos.push(cuantos - k); suma += cuantos - k; }
+  var refs = [], asignados = 0;
+  for (k = 0; k < cuantos; k++) {
+    var n = Math.max(1, Math.round(TOTAL_DEMO * pesos[k] / suma));
+    if (k === cuantos - 1 || asignados + n > TOTAL_DEMO) n = Math.max(0, TOTAL_DEMO - asignados);
+    asignados += n;
+    if (n > 0) refs.push([todos[k], n]);
+  }
   var nombres = ["Alejandro", "Camila", "Daniel", "Regina", "Emiliano", "Ximena", "Santiago", "Renata",
     "Mateo", "Natalia", "Sebastián", "Daniela", "Leonardo", "Valentina", "Diego", "Isabela",
     "Rodrigo", "Andrea", "Iván", "Paulina", "Héctor", "Lucía", "Óscar", "Fernanda"];
