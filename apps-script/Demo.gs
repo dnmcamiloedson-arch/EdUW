@@ -2,8 +2,8 @@
    Universidad Westhill — Datos de ejemplo para el tablero
    Va en el mismo proyecto que Codigo.gs y Tablero.gs.
    --------------------------------------------------------------------------
-   · cargarDemo: agrega referidores y registros inventados de las últimas
-     4 semanas para ver el Tablero y las gráficas con datos.
+   · cargarDemo: agrega 6 referidores y 15 invitados inventados de las
+     últimas 4 semanas para ver el Tablero y las gráficas con datos.
    · borrarDemo: quita SOLO esos registros (todos usan correos
      @ejemplo.com). Ejecútalo antes de lanzar.
    ========================================================================== */
@@ -12,10 +12,10 @@ var DOMINIO_DEMO = "@ejemplo.com";
 
 function cargarDemo() {
   borrarDemo();
+  // [referidor, personas que invitó] — 15 invitados en total
   var refs = [
-    ["Ana Lucía Torres", 14], ["Carlos Méndez", 11], ["Mariana López", 9], ["Jorge Ramírez", 7],
-    ["Fernanda Ruiz", 6], ["Diego Hernández", 5], ["Valeria Castro", 4], ["Luis Ortega", 3],
-    ["Sofía Navarro", 3], ["Ricardo Vega", 2], ["Paola Jiménez", 1], ["Andrés Morales", 1]
+    ["Ana Lucía Torres", 4], ["Carlos Méndez", 3], ["Mariana López", 3],
+    ["Jorge Ramírez", 2], ["Fernanda Ruiz", 2], ["Diego Hernández", 1]
   ];
   var nombres = ["Alejandro", "Camila", "Daniel", "Regina", "Emiliano", "Ximena", "Santiago", "Renata",
     "Mateo", "Natalia", "Sebastián", "Daniela", "Leonardo", "Valentina", "Diego", "Isabela",
