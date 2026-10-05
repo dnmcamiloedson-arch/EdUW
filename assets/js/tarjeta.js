@@ -60,27 +60,29 @@
     ctx.textAlign = "center";
   }
 
-  /* --- QR con módulos redondeados y logo al centro ------------------------ */
-  function dibujarQR(ctx, texto, x, y, tam, sello) {
+  /* --- QR con módulos redondeados y sello circular al centro -------------- */
+  function dibujarQR(ctx, texto, x, y, tam, edificio) {
     const qr = qrcode(0, "H");
     qr.addData(texto);
     qr.make();
     const n = qr.getModuleCount();
     const m = tam / n;
-    const hueco = Math.ceil(n * 0.24) | 1;              // módulos libres para el logo (impar)
-    const h0 = (n - hueco) / 2, h1 = h0 + hueco;
+    const cx = x + tam / 2, cy = y + tam / 2;
+    const radio = tam * 0.15;                          // sello: ~7% del área, H corrige hasta 30%
+    const libre = radio + m * 0.9;                     // aire blanco alrededor del sello
     const esOjo = (r, c) => (r < 7 && c < 7) || (r < 7 && c >= n - 7) || (r >= n - 7 && c < 7);
 
     ctx.fillStyle = C.tinta;
     for (let r = 0; r < n; r++) {
       for (let c = 0; c < n; c++) {
         if (!qr.isDark(r, c) || esOjo(r, c)) continue;
-        if (r >= h0 && r < h1 && c >= h0 && c < h1) continue;
+        const mx = x + (c + 0.5) * m, my = y + (r + 0.5) * m;
+        if (Math.hypot(mx - cx, my - cy) < libre) continue;   // hueco redondo, no cuadrado
         redondeado(ctx, x + c * m + m * 0.04, y + r * m + m * 0.04, m * 0.92, m * 0.92, m * 0.3);
         ctx.fill();
       }
     }
-    // Ojos: marco redondeado azul + centro dorado oscuro sobre azul
+    // Ojos: marco azul marino y centro azul Westhill
     [[0, 0], [0, n - 7], [n - 7, 0]].forEach(([r, c]) => {
       const ox = x + c * m, oy = y + r * m;
       ctx.fillStyle = C.navy;
@@ -91,14 +93,22 @@
       redondeado(ctx, ox + 2 * m, oy + 2 * m, 3 * m, 3 * m, 1 * m); ctx.fill();
     });
 
-    // Sello al centro: cuadro azul con el edificio en blanco
-    const s = hueco * m - m * 0.6, sx = x + h0 * m + m * 0.3, sy = y + h0 * m + m * 0.3;
+    // Sello: medalla blanca con aro dorado, el edificio azul y WESTHILL debajo
+    ctx.save();
+    ctx.shadowColor = "rgba(19, 48, 77, .22)"; ctx.shadowBlur = radio * 0.35; ctx.shadowOffsetY = radio * 0.08;
+    ctx.fillStyle = "#fff";
+    ctx.beginPath(); ctx.arc(cx, cy, radio, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+    let g = ctx.createLinearGradient(cx - radio, cy - radio, cx + radio, cy + radio);
+    g.addColorStop(0, "#f8dc7a"); g.addColorStop(0.5, C.dorado); g.addColorStop(1, "#c99a1e");
+    ctx.strokeStyle = g; ctx.lineWidth = radio * 0.075;
+    ctx.beginPath(); ctx.arc(cx, cy, radio * 0.94, 0, Math.PI * 2); ctx.stroke();
+
+    const iw = radio * 1.3, ih = iw * edificio.height / edificio.width;
+    ctx.drawImage(edificio, cx - iw / 2, cy - ih * 0.95, iw, ih);
     ctx.fillStyle = C.navy;
-    redondeado(ctx, sx, sy, s, s, s * 0.24); ctx.fill();
-    ctx.strokeStyle = C.dorado; ctx.lineWidth = Math.max(3, s * 0.035);
-    redondeado(ctx, sx + s * 0.07, sy + s * 0.07, s * 0.86, s * 0.86, s * 0.18); ctx.stroke();
-    const iw = s * 0.8, ih = iw * sello.height / sello.width;
-    ctx.drawImage(sello, sx + (s - iw) / 2, sy + (s - ih) / 2, iw, ih);
+    ctx.font = `700 ${Math.round(radio * 0.17)}px ${SANS}`;
+    espaciado(ctx, "WESTHILL", cx, cy + radio * 0.36, radio * 0.05);
   }
 
   async function dibujar({ nombre, codigo, link }) {
@@ -107,7 +117,7 @@
         document.fonts.load(`500 80px ${SERIF}`), document.fonts.load(`italic 400 30px ${SERIF}`),
       ]).catch(() => {});
     }
-    const [logo, sello] = await Promise.all([imagen("logo-westhill-blanco.png"), imagen("edificio-westhill-blanco.png")]);
+    const [logo, sello] = await Promise.all([imagen("logo-westhill-blanco.png"), imagen("edificio-westhill.png")]);
 
     const cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
@@ -147,21 +157,21 @@
     ctx.fillText(quien, W / 2, 450);
 
     // Panel blanco con el QR
-    const px = 130, py = 520, pw = W - 260, ph = 690;
+    const px = 120, py = 530, pw = W - 240, ph = 740;
     ctx.save();
     ctx.shadowColor = "rgba(8, 24, 42, .45)"; ctx.shadowBlur = 60; ctx.shadowOffsetY = 26;
     ctx.fillStyle = "#fff";
     redondeado(ctx, px, py, pw, ph, 44); ctx.fill();
     ctx.restore();
 
-    const qs = 440;
-    dibujarQR(ctx, link, (W - qs) / 2, py + 50, qs, sello);
+    const qs = 480;
+    dibujarQR(ctx, link, (W - qs) / 2, py + 52, qs, sello);
 
     // Código en casillas (eco de los rodillos)
     const cod = String(codigo || "").toUpperCase();
     const bw = 66, bh = 82, gap = 12, total = cod.length * bw + (cod.length - 1) * gap;
     let bx = (W - total) / 2;
-    const by = py + 50 + qs + 36;
+    const by = py + 52 + qs + 38;
     ctx.font = `600 44px ${SANS}`;
     for (const ch of cod) {
       ctx.fillStyle = C.fondo;
@@ -175,13 +185,7 @@
 
     ctx.fillStyle = C.gris;
     ctx.font = `400 26px ${SANS}`;
-    ctx.fillText("Escanéalo o entra al link para registrarte", W / 2, by + bh + 50);
-
-    // Pie: el link escrito, por si alguien no puede escanear
-    const corto = String(link || "").replace(/^https?:\/\//, "");
-    ctx.fillStyle = "rgba(255, 255, 255, .72)";
-    ajustar(ctx, corto, 500, 28, SANS, W - 180);
-    ctx.fillText(corto, W / 2, py + ph + 74);
+    ctx.fillText("Escanéalo para registrarte", W / 2, by + bh + 50);
 
     return cv;
   }
