@@ -18,7 +18,7 @@
 
   const CONFIG = {
     // Pega aquí la URL de tu implementación (Implementar > Aplicación web).
-    ENDPOINT: "",
+    ENDPOINT: "https://script.google.com/macros/s/AKfycby9wt3InU4fI5Dk4RvvuUv4x-Kndl_0UCdin_ZEpYHwvb5B6NVGWT6szI8XuVjnz-4c/exec",
     PAGINA_FORMULARIO: "referidos.html",
     CLAVE_LOCAL: "uw_ref", // recuerda el código si la persona navega y vuelve
   };
