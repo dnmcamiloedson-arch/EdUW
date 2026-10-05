@@ -27,6 +27,7 @@ function crearTablero() {
   var previa = libro.getSheetByName(HOJA_TABLERO);
   if (previa) libro.deleteSheet(previa);
   var t = libro.insertSheet(HOJA_TABLERO, 0);
+  SEP = separador_(t);
   t.setHiddenGridlines(true);
   t.getRange("A1:N80").setFontFamily("Arial").setFontColor(UW.texto).setVerticalAlignment("middle");
   [24, 150, 90, 24, 150, 90, 24, 140, 180, 140, 160, 24, 110, 90].forEach(function (w, i) {
@@ -52,26 +53,26 @@ function crearTablero() {
 
   // Tablas dinámicas por fórmula
   titulo_(t, "B9", "Ranking de referidores");
-  t.getRange("B10").setFormula(
+  t.getRange("B10").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select C, count(D) where C <> '' group by C order by count(D) desc " +
-    "label C 'Referidor', count(D) 'Invitados'\",0),\"Aún no hay registros\")");
+    "label C 'Referidor', count(D) 'Invitados'\",0),\"Aún no hay registros\")"));
 
   titulo_(t, "E9", "Por nivel de estudios");
-  t.getRange("E10").setFormula(
+  t.getRange("E10").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select G, count(D) where G <> '' group by G order by count(D) desc " +
-    "label G 'Nivel', count(D) 'Registros'\",0),\"Aún no hay registros\")");
+    "label G 'Nivel', count(D) 'Registros'\",0),\"Aún no hay registros\")"));
 
   titulo_(t, "H9", "Últimos registros");
-  t.getRange("H10").setFormula(
+  t.getRange("H10").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select A, D, G, C where D <> '' order by A desc limit 12 " +
-    "label A 'Fecha', D 'Nombre', G 'Nivel', C 'Invitado por'\",0),\"Aún no hay registros\")");
+    "label A 'Fecha', D 'Nombre', G 'Nivel', C 'Invitado por'\",0),\"Aún no hay registros\")"));
   t.getRange("H11:H22").setNumberFormat("dd/mm/yyyy hh:mm");
 
   // Serie por día (alimenta la gráfica de línea)
   titulo_(t, "M9", "Por día");
-  t.getRange("M10").setFormula(
+  t.getRange("M10").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select toDate(A), count(D) where D <> '' group by toDate(A) " +
-    "order by toDate(A) label toDate(A) 'Día', count(D) 'Registros'\",0),\"—\")");
+    "order by toDate(A) label toDate(A) 'Día', count(D) 'Registros'\",0),\"—\")"));
   t.getRange("M11:M400").setNumberFormat("dd/mm");
 
   [["B10:C10"], ["E10:F10"], ["H10:K10"], ["M10:N10"]].forEach(function (r) {
@@ -108,12 +109,34 @@ function crearTablero() {
 
 /* --- Ayudantes ----------------------------------------------------------- */
 
+// En configuraciones como México o España las fórmulas separan con ";" en vez de ",".
+var SEP = ",";
+function separador_(t) {
+  var c = t.getRange("Z1");
+  c.setFormula("=SUM(1,2)");
+  SpreadsheetApp.flush();
+  var coma = c.getValue() === 3;
+  c.clearContent();
+  return coma ? "," : ";";
+}
+/** Cambia las comas que separan argumentos (no las de dentro de comillas). */
+function fx_(formula) {
+  if (SEP === ",") return formula;
+  var out = "", enTexto = false;
+  for (var i = 0; i < formula.length; i++) {
+    var ch = formula.charAt(i);
+    if (ch === '"') enTexto = !enTexto;
+    out += (ch === "," && !enTexto) ? SEP : ch;
+  }
+  return out;
+}
+
 function indicador_(t, celda, etiqueta, formula, color) {
   var c = t.getRange(celda);
   var fila = c.getRow(), col = c.getColumn();
   t.getRange(fila, col, 1, 2).merge().setValue(etiqueta)
     .setFontSize(10).setFontColor(UW.gris).setBackground(UW.fondo);
-  t.getRange(fila + 1, col, 1, 2).merge().setFormula(formula)
+  t.getRange(fila + 1, col, 1, 2).merge().setFormula(fx_(formula))
     .setFontSize(28).setFontWeight("bold").setFontColor(color).setBackground(UW.fondo)
     .setHorizontalAlignment("left");
   t.getRange(fila, col, 2, 2).setBorder(true, true, true, true, null, null, "#e3e9f1",
