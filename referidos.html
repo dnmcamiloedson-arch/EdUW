@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#060d19" media="(prefers-color-scheme: dark)">
-  <title>Te invitaron a Westhill | Universidad Westhill</title>
-  <meta name="description" content="Alguien de la comunidad Westhill te invitó. Déjanos tus datos y Admisiones te acompaña a encontrar tu carrera.">
+  <meta name="theme-color" content="#050c18">
+  <title>Tienes una invitación | Universidad Westhill</title>
+  <meta name="description" content="Alguien de la comunidad Westhill te invitó. Abre tu invitación y Admisiones te acompaña a encontrar tu carrera.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Inter solo como respaldo: en Apple se usa SF, la fuente del sistema -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+  <!-- Inter solo como respaldo (en Apple se usa SF); Fraunces solo en la papelería -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/css/referidos.css">
   <script>document.documentElement.classList.add("js");</script>
 </head>
@@ -27,113 +26,126 @@
 
   <main>
     <header class="rf-hero">
-      <div class="rf-aura" aria-hidden="true"></div>
       <p class="rf-invite" data-referidor hidden>
         <span class="rf-avatar" data-referidor-inicial aria-hidden="true"></span>
         <span><strong data-referidor-nombre></strong> te invitó a Westhill</span>
       </p>
-      <p class="rf-eyebrow" data-in style="--i:0">Programa de referidos</p>
-      <h1 class="rf-title" data-in style="--i:1">Tu lugar en Westhill te está <em>esperando.</em></h1>
-      <p class="rf-lead" data-in style="--i:2">Déjanos tus datos y nuestro equipo de Admisiones te ayudará a encontrar la carrera perfecta para ti.</p>
+      <h1 class="rf-title" data-in style="--i:0">Tienes una invitación a <em>Westhill.</em></h1>
+      <p class="rf-lead" data-in style="--i:1">Ábrela y confirma tu lugar. Nuestro equipo de Admisiones te acompaña desde ahí.</p>
     </header>
 
-    <div class="rf-main">
-      <section class="rf-sheet" data-in style="--i:3" aria-labelledby="t-form">
+    <div class="rf-scene" data-escena>
+
+      <!-- El sobre (decorativo + gesto; el botón de abajo hace lo mismo) -->
+      <div class="rf-env-wrap">
+        <div class="rf-env" data-in>
+          <div class="env-back"></div>
+          <div class="env-letter" aria-hidden="true">
+            <span class="k">Universidad Westhill</span>
+            <span class="t">R.S.V.P.</span>
+            <span class="rule"></span>
+          </div>
+          <div class="env-pocket"></div>
+          <p class="env-to" aria-hidden="true">De parte de<b data-firma>la comunidad Westhill</b></p>
+          <div class="env-stamp" aria-hidden="true"><span>UW</span></div>
+          <div class="env-flap">
+            <div class="env-flap-shape"></div>
+            <button class="env-seal" type="button" aria-label="Abrir invitación">
+              <img src="assets/img/sello-westhill.svg" alt="">
+            </button>
+          </div>
+        </div>
+        <p class="rf-hint" data-in style="--i:6">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+          Desliza el sello hacia arriba
+        </p>
+        <button class="rf-open-btn" type="button" data-abrir data-in style="--i:7">o toca aquí para abrirla</button>
+      </div>
+
+      <!-- La carta: formulario R.S.V.P. -->
+      <section class="rf-letter" data-stowed aria-labelledby="t-form">
+        <header class="rf-letter-head">
+          <span class="k" style="--i:0">Universidad Westhill</span>
+          <h2 id="t-form">Confirma tu lugar</h2>
+          <p>Toma menos de un minuto.</p>
+        </header>
+
         <!-- Sin data-validate: la validación y el envío los hace assets/js/referidos.js -->
         <form class="rf-form" data-referidos-form novalidate>
-          <div class="rf-fields">
-            <header class="rf-sheet-head">
-              <h2 id="t-form">Regístrate</h2>
-              <p>Toma menos de un minuto.</p>
-            </header>
+          <input type="hidden" name="ref">
 
-            <input type="hidden" name="ref">
+          <div class="rf-group">
+            <label class="rf-row field">
+              <span class="rf-row-label">Nombre completo</span>
+              <input class="rf-input" name="nombre" autocomplete="name" placeholder="Requerido" required>
+              <span class="rf-error-msg error-msg">Ingresa tu nombre.</span>
+            </label>
+            <label class="rf-row field">
+              <span class="rf-row-label">Correo</span>
+              <input class="rf-input" name="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@correo.com" required>
+              <span class="rf-error-msg error-msg">Ingresa un correo válido.</span>
+            </label>
+            <label class="rf-row field">
+              <span class="rf-row-label">Teléfono</span>
+              <input class="rf-input" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos" required>
+              <span class="rf-error-msg error-msg">Ingresa tu teléfono.</span>
+            </label>
+          </div>
+          <p class="rf-footnote">Solo Admisiones usará estos datos para contactarte.</p>
 
-            <div class="rf-group">
-              <label class="rf-row field">
-                <span class="rf-row-label">Nombre completo</span>
-                <input class="rf-input" name="nombre" autocomplete="name" placeholder="Requerido" required>
-                <span class="rf-error-msg error-msg">Ingresa tu nombre.</span>
-              </label>
-              <label class="rf-row field">
-                <span class="rf-row-label">Correo</span>
-                <input class="rf-input" name="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@correo.com" required>
-                <span class="rf-error-msg error-msg">Ingresa un correo válido.</span>
-              </label>
-              <label class="rf-row field">
-                <span class="rf-row-label">Teléfono</span>
-                <input class="rf-input" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos" required>
-                <span class="rf-error-msg error-msg">Ingresa tu teléfono.</span>
-              </label>
+          <fieldset class="rf-pills-wrap">
+            <legend class="rf-pills-label">¿Qué te interesa estudiar?</legend>
+            <div class="rf-pills" data-pills>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Licenciatura"><span>Licenciatura</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Maestría"><span>Maestría</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Especialidad"><span>Especialidad</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Diplomado"><span>Diplomado</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Facultad de Medicina"><span>Medicina</span></label>
             </div>
-            <p class="rf-footnote">Solo Admisiones usará estos datos para contactarte.</p>
+          </fieldset>
 
-            <fieldset class="rf-pills-wrap" style="border:0;padding:0;min-width:0">
-              <legend class="rf-pills-label">¿Qué te interesa estudiar?</legend>
-              <div class="rf-pills" data-pills>
-                <label class="rf-pill"><input type="radio" name="nivel" value="Licenciatura"><span>Licenciatura</span></label>
-                <label class="rf-pill"><input type="radio" name="nivel" value="Maestría"><span>Maestría</span></label>
-                <label class="rf-pill"><input type="radio" name="nivel" value="Especialidad"><span>Especialidad</span></label>
-                <label class="rf-pill"><input type="radio" name="nivel" value="Diplomado"><span>Diplomado</span></label>
-                <label class="rf-pill"><input type="radio" name="nivel" value="Facultad de Medicina"><span>Medicina</span></label>
-              </div>
-            </fieldset>
-
-            <div class="rf-group" style="margin-top:14px">
-              <label class="rf-row">
-                <span class="rf-row-label">Programa (opcional)</span>
-                <input class="rf-input" name="programa" placeholder="Ej. Derecho, Psicología…">
-              </label>
-              <label class="rf-row">
-                <span class="rf-row-label">Mensaje (opcional)</span>
-                <textarea class="rf-input" name="mensaje" rows="2" placeholder="¿Qué te gustaría saber?"></textarea>
-              </label>
-            </div>
-
-            <div class="rf-group field" style="margin-top:14px;margin-bottom:20px">
-              <div class="rf-switch-row">
-                <label class="txt" for="r-aviso">Acepto el <a href="https://www.uw.edu.mx/wp-content/uploads/2021/10/AVISO-DE-PRIVACIDAD-INSTITUTE-Y-UNIVERSIDAD-2021.pdf" target="_blank" rel="noopener">Aviso de privacidad</a></label>
-                <input class="rf-switch" id="r-aviso" type="checkbox" role="switch" name="aviso" required>
-              </div>
-              <span class="rf-error-msg error-msg" style="padding:0 16px 10px">Activa esta opción para continuar.</span>
-            </div>
-
-            <button class="rf-btn" type="submit">Enviar registro</button>
-            <p class="rf-form-error form-error" role="alert" hidden></p>
+          <div class="rf-group" style="margin-top:14px">
+            <label class="rf-row">
+              <span class="rf-row-label">Programa (opcional)</span>
+              <input class="rf-input" name="programa" placeholder="Ej. Derecho, Psicología…">
+            </label>
+            <label class="rf-row">
+              <span class="rf-row-label">Mensaje (opcional)</span>
+              <textarea class="rf-input" name="mensaje" rows="2" placeholder="¿Qué te gustaría saber?"></textarea>
+            </label>
           </div>
 
-          <div class="rf-success form-success" role="status" tabindex="-1" hidden>
-            <svg class="rf-check-mark" viewBox="0 0 72 72" aria-hidden="true" style="--i:0">
-              <circle cx="36" cy="36" r="36"/>
-              <path pathLength="1" d="M23 37 l9 9 l17 -19"/>
-            </svg>
-            <h2 style="--i:1">¡Gracias<span data-nombre-registro></span>!</h2>
-            <p style="--i:2">Recibimos tu registro. Nuestro equipo de Admisiones te contactará pronto.</p>
-            <div class="rf-actions" style="--i:3">
-              <a class="rf-btn" href="oferta-academica.html">Conoce la oferta académica</a>
-              <a class="rf-btn rf-btn--secondary rf-btn--sm" href="saca-tu-link.html">Invita tú también a alguien</a>
+          <div class="rf-group field" style="margin-top:14px;margin-bottom:20px">
+            <div class="rf-switch-row">
+              <label class="txt" for="r-aviso">Acepto el <a href="https://www.uw.edu.mx/wp-content/uploads/2021/10/AVISO-DE-PRIVACIDAD-INSTITUTE-Y-UNIVERSIDAD-2021.pdf" target="_blank" rel="noopener">Aviso de privacidad</a></label>
+              <input class="rf-switch" id="r-aviso" type="checkbox" role="switch" name="aviso" required>
             </div>
+            <span class="rf-error-msg error-msg" style="padding:0 16px 10px">Activa esta opción para continuar.</span>
           </div>
+
+          <button class="rf-btn" type="submit">Enviar confirmación</button>
+          <p class="rf-form-error form-error" role="alert" hidden></p>
+          <!-- Aviso para lectores de pantalla; lo muestra referidos.js -->
+          <p class="sr-only form-success" role="status" tabindex="-1" hidden>Recibimos tu registro. Admisiones te contactará pronto.</p>
         </form>
+      </section>
+
+      <!-- Después de que el sobre sale volando -->
+      <section class="rf-done" tabindex="-1" hidden aria-live="polite">
+        <svg class="check" viewBox="0 0 72 72" aria-hidden="true" style="--i:0"><circle cx="36" cy="36" r="36"/><path pathLength="1" d="M23 37 l9 9 l17 -19"/></svg>
+        <h2 style="--i:1">Va en camino<span data-nombre-registro></span>.</h2>
+        <p style="--i:2">Tu confirmación ya llegó a Admisiones. Te contactaremos muy pronto.</p>
+        <div class="rf-actions" style="--i:3">
+          <a class="rf-btn rf-btn--gold" href="oferta-academica.html">Conoce la oferta académica</a>
+          <a class="rf-btn rf-btn--glass rf-btn--sm" href="saca-tu-link.html">Invita tú también a alguien</a>
+        </div>
       </section>
     </div>
 
     <section class="rf-features" aria-label="Qué sigue">
-      <article class="rf-feature">
-        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
-        <h3>Atención personalizada</h3>
-        <p>Un asesor de Admisiones te acompaña de principio a fin.</p>
-      </article>
-      <article class="rf-feature">
-        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
-        <h3>Planes, becas y convenios</h3>
-        <p>Toda la información para decidir con calma.</p>
-      </article>
-      <article class="rf-feature">
-        <div class="ico"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></div>
-        <h3>Tu proceso de admisión</h3>
-        <p>Te guiamos en cada paso hasta tu inscripción.</p>
-      </article>
+      <article class="rf-feature"><span class="n">01</span><h3>Atención personalizada</h3><p>Un asesor de Admisiones te acompaña de principio a fin.</p></article>
+      <article class="rf-feature"><span class="n">02</span><h3>Planes, becas y convenios</h3><p>Toda la información para decidir con calma.</p></article>
+      <article class="rf-feature"><span class="n">03</span><h3>Tu proceso de admisión</h3><p>Te guiamos en cada paso hasta tu inscripción.</p></article>
     </section>
   </main>
 
@@ -141,7 +153,7 @@
     <span>© 2026 Universidad Westhill</span>
     <a href="tel:+525588517010">(55) 8851 7010</a>
     <a href="mailto:admisiones@uw.edu.mx">admisiones@uw.edu.mx</a>
-    <span>Santa Fe, CDMX</span>
+    <i>Vestigia Nulla Retrorsum</i>
   </footer>
 
   <script src="assets/js/referidos.js"></script>
