@@ -11,20 +11,28 @@
           · Quién tiene acceso: Cualquier persona
      5. Copia la URL que termina en /exec y pégala en
         assets/js/referidos.js (Referidos.CONFIG.ENDPOINT).
+     6. Escribe abajo la clave de Admisiones (CLAVE_ADMISIONES). Solo quien
+        la sepa puede generar códigos y ver la lista en admisiones.html.
+        Si la cambias: Implementar > Gestionar implementaciones > Nueva versión.
 
    Hojas:
-     · Referidores: quienes sacan su link personal (código único).
+     · Referidores: a quienes Admisiones les generó un código (link personal).
      · Referidos:   registros que llegan desde el formulario con ?ref=CODIGO.
 
    API:
      GET  ?accion=referidor&codigo=ABC123  → { ok, referidor: { codigo, nombre } }
      POST (cuerpo JSON en text/plain, evita el preflight CORS)
-          { accion: "crearReferidor",   nombre, email, telefono }
+          { accion: "crearReferidor",   clave, nombre, email, telefono }
             → { ok, codigo, nombre, nuevo }
+          { accion: "listarReferidores", clave }
+            → { ok, referidores: [{ codigo, nombre, correo, telefono, fecha, invitados }] }
           { accion: "registrarReferido", ref, nombre, email, telefono,
             nivel, programa, mensaje }
             → { ok, referidor: { codigo, nombre } | null }
    ========================================================================== */
+
+// Clave que pide admisiones.html. Cámbiala aquí (no la subas al repositorio).
+var CLAVE_ADMISIONES = "";
 
 var HOJA_REFERIDORES = "Referidores";
 var HOJA_REFERIDOS = "Referidos";
@@ -61,12 +69,19 @@ function doPost(e) {
     return json_({ ok: false, error: "Cuerpo inválido." });
   }
 
+  // Todo menos registrarse es solo para Admisiones
+  if (datos.accion !== "registrarReferido") {
+    var acceso = validarClave_(datos.clave);
+    if (!acceso.ok) return json_(acceso);
+  }
+
   // Evita códigos o filas duplicadas cuando llegan envíos simultáneos.
   var lock = LockService.getScriptLock();
   lock.waitLock(10000);
   try {
-    if (datos.accion === "crearReferidor") return json_(crearReferidor_(datos));
     if (datos.accion === "registrarReferido") return json_(registrarReferido_(datos));
+    if (datos.accion === "crearReferidor") return json_(crearReferidor_(datos));
+    if (datos.accion === "listarReferidores") return json_(listarReferidores_());
     return json_({ ok: false, error: "Acción desconocida." });
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message || err) });
@@ -109,6 +124,26 @@ function registrarReferido_(d) {
   return { ok: true, referidor: ref ? { codigo: ref.codigo, nombre: ref.nombre } : null };
 }
 
+function listarReferidores_() {
+  var refs = hoja_(HOJA_REFERIDORES, COLS_REFERIDORES).getDataRange().getValues().slice(1);
+  var regs = hoja_(HOJA_REFERIDOS, COLS_REFERIDOS).getDataRange().getValues().slice(1);
+  var cuenta = {};
+  regs.forEach(function (r) {
+    var c = String(r[1]).toUpperCase();
+    cuenta[c] = (cuenta[c] || 0) + 1;
+  });
+  var lista = refs.filter(function (r) { return r[1]; }).map(function (r) {
+    var c = String(r[1]).toUpperCase();
+    return {
+      codigo: c, nombre: String(r[2]), correo: String(r[3]), telefono: String(r[4]),
+      fecha: r[0] instanceof Date ? r[0].toISOString() : String(r[0]),
+      invitados: cuenta[c] || 0
+    };
+  });
+  lista.sort(function (a, b) { return a.fecha < b.fecha ? 1 : -1; });   // más recientes primero
+  return { ok: true, referidores: lista };
+}
+
 /* --- Utilidades ---------------------------------------------------------- */
 
 function buscarReferidor_(codigo) {
@@ -148,6 +183,15 @@ function hoja_(nombre, columnas) {
     hoja.getRange(1, 1, 1, columnas.length).setFontWeight("bold");
   }
   return hoja;
+}
+
+function validarClave_(clave) {
+  if (!CLAVE_ADMISIONES) return { ok: false, error: "Falta poner CLAVE_ADMISIONES en Codigo.gs." };
+  if (String(clave || "") !== CLAVE_ADMISIONES) {
+    Utilities.sleep(800);                       // frena a quien intente adivinar
+    return { ok: false, error: "Clave incorrecta.", clave: false };
+  }
+  return { ok: true };
 }
 
 function limpiar_(v) {

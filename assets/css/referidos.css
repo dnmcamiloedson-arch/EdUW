@@ -1,14 +1,15 @@
 /* ==========================================================================
    Universidad Westhill — Programa de referidos
-   Hoja propia de referidos.html y saca-tu-link.html (no carga styles.css).
+   Hoja propia de referidos.html y admisiones.html (no carga styles.css).
    --------------------------------------------------------------------------
    Concepto: la invitación como objeto físico.
      · referidos.html: un sobre con sello Westhill. Se abre deslizando el
        sello (o tocándolo); la carta sale del sobre y se convierte en el
        formulario R.S.V.P. Al enviarlo, la carta vuelve al sobre, se sella
        y sale volando hacia Admisiones.
-     · saca-tu-link.html: un pase tipo Wallet que se escribe en vivo con tu
-       nombre; al generarlo, el código cae en rodillos tipo tragamonedas.
+     · admisiones.html (solo Admisiones, con clave): un pase tipo Wallet que
+       se escribe en vivo; al generarlo el código cae en rodillos y sale la
+       tarjeta con QR para descargar o compartir. Abajo, todos los códigos.
    Movimiento (assets/js/referidos-ui.js): resortes interrumpibles que parten
    del valor y la velocidad actuales; el gesto manda (1:1 con el dedo) y al
    soltar se proyecta el impulso. Respuesta al presionar, nunca al soltar.
@@ -430,7 +431,7 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
 .rf-materialize > * { animation: rf-materialize 380ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 50ms); }
 
 /* ==========================================================================
-   EL PASE (saca-tu-link.html)
+   EL PASE (admisiones.html)
    ========================================================================== */
 .rf-forge {
   max-width: 1120px; margin: 0 auto;
@@ -584,6 +585,84 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
 @keyframes rf-spin { to { transform: rotate(360deg); } }
 @keyframes rf-nudge { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-5px); } 60% { transform: translateX(3px); } }
 
+/* ==========================================================================
+   PANEL DE ADMISIONES (admisiones.html)
+   ========================================================================== */
+button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: var(--on-stage-2); }
+.rf-gate { max-width: 420px; margin: 0 auto; padding: clamp(36px, 6vw, 64px) 20px 0; }
+
+/* Tarjeta con QR: se ve como un objeto (sombra + inclinación mínima al tocar) */
+.rf-card-preview {
+  margin: 0 auto 16px; width: min(260px, 72%);
+  border-radius: 18px; overflow: hidden;
+  box-shadow: 0 0 0 .5px rgba(19, 48, 77, .2), 0 28px 50px -26px rgba(19, 48, 77, .55);
+  transition: transform var(--press) var(--ease-out);
+}
+.rf-card-preview:active { transform: scale(.98); }
+.rf-card-preview img { display: block; width: 100%; height: auto; }
+.rf-share-full { grid-column: 1 / -1; }
+.rf-share #r-compartir[hidden] + .rf-share-full { grid-column: auto; }
+
+/* Lista de códigos */
+.rf-codes { max-width: 1120px; margin: 0 auto; padding: clamp(64px, 9vw, 112px) 20px 0; }
+.rf-codes-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 18px; }
+.rf-codes-head h2 { font-size: clamp(1.6rem, 3.4vw, 2.1rem); line-height: 1.1; letter-spacing: -.03em; font-weight: 700; color: var(--navy-ink); }
+.rf-codes-stats { margin-top: 6px; font-size: 15px; color: var(--on-stage-2); font-variant-numeric: tabular-nums; }
+.rf-codes-stats span { color: var(--navy); font-weight: 600; }
+.rf-codes-tools { display: flex; gap: 8px; flex: 1 1 320px; max-width: 420px; }
+.rf-search {
+  flex: 1; display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px;
+  border-radius: 12px; background: var(--glass); box-shadow: 0 0 0 .5px var(--glass-line) inset;
+  transition: box-shadow var(--ui) var(--ease-out), background-color var(--ui) var(--ease-out);
+}
+.rf-search:focus-within { background: #fff; box-shadow: 0 0 0 2px rgba(39, 96, 146, .35) inset; }
+.rf-search svg { width: 18px; height: 18px; flex: none; fill: none; stroke: var(--on-stage-3); stroke-width: 2; stroke-linecap: round; }
+.rf-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: 15px; color: var(--on-stage); }
+.rf-icon-btn {
+  flex: none; width: 44px; height: 44px; display: grid; place-items: center;
+  border: 0; border-radius: 12px; background: var(--glass); box-shadow: 0 0 0 .5px var(--glass-line) inset;
+  color: var(--navy); cursor: pointer; transition: transform var(--press) var(--ease-out);
+}
+.rf-icon-btn:active { transform: scale(.94); }
+.rf-icon-btn:focus-visible { outline: 3px solid rgba(39, 96, 146, .45); outline-offset: 2px; }
+.rf-icon-btn svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.rf-icon-btn.is-spinning svg { animation: rf-spin 700ms linear infinite; }
+
+.rf-codes-list { list-style: none; margin: 0; padding: 0; border-radius: 20px; background: #fff; box-shadow: 0 0 0 .5px var(--glass-line), 0 30px 60px -44px rgba(19, 48, 77, .45); overflow: hidden; }
+.rf-code-row {
+  display: grid; grid-template-columns: 36px minmax(0, 1fr) auto 84px auto; align-items: center; gap: 14px;
+  padding: 12px 14px 12px 18px;
+  animation: rf-materialize 380ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 30ms);
+}
+.rf-code-row + .rf-code-row { box-shadow: 0 -.5px 0 var(--glass-line); }
+.rf-code-row .rf-avatar { width: 36px; height: 36px; font-size: 15px; }
+.rf-code-row .who { display: grid; min-width: 0; }
+.rf-code-row .who b { font-weight: 600; font-size: 16px; color: var(--on-stage); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rf-code-row .who small { font-size: 13px; color: var(--on-stage-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rf-code-row .code {
+  padding: 5px 10px; border-radius: 8px; background: var(--glass); box-shadow: 0 0 0 .5px var(--glass-line) inset;
+  font: 600 15px/1 ui-monospace, "SF Mono", Menlo, monospace; letter-spacing: .12em; color: var(--navy);
+}
+.rf-code-row .count { display: grid; justify-items: end; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.rf-code-row .count b { font-size: 20px; font-weight: 700; color: var(--on-stage-3); }
+.rf-code-row.has-guests .count b { color: var(--green); }
+.rf-code-row .count small { font-size: 11px; color: var(--on-stage-3); }
+.rf-row-btn { width: auto; min-height: 38px; padding: 0 16px; font-size: 15px; }
+.rf-codes-empty { padding: 36px 0; text-align: center; color: var(--on-stage-3); }
+
+@media (hover: hover) and (pointer: fine) {
+  .rf-code-row { transition: background-color var(--ui) var(--ease-out); }
+  .rf-code-row:hover { background: rgba(39, 96, 146, .03); }
+}
+@media (max-width: 640px) {
+  .rf-code-row { grid-template-columns: 36px minmax(0, 1fr) auto; grid-template-areas: "av who count" "av code btn"; gap: 8px 12px; padding: 14px; }
+  .rf-code-row .rf-avatar { grid-area: av; align-self: start; }
+  .rf-code-row .who { grid-area: who; }
+  .rf-code-row .count { grid-area: count; }
+  .rf-code-row .code { grid-area: code; justify-self: start; }
+  .rf-code-row .rf-row-btn { grid-area: btn; }
+}
+
 /* --- Celular --------------------------------------------------------------- */
 @media (max-width: 860px) {
   .rf-forge { grid-template-columns: minmax(0, 1fr); padding-top: 28px; gap: 24px; }
@@ -611,7 +690,8 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
   .js [data-in], .js .rf-env[data-in], .rf-materialize > * { animation: rf-fade 200ms linear both !important; }
   .env-seal::before, .rf-row.is-invalid { animation: none; }
   .rf-done.rf-materialize .check path { animation: none; stroke-dashoffset: 0; }
-  .rf-btn:active, .rf-copy:active, .rf-pill input:active + span, .env-seal:active { transform: none; }
+  .rf-btn:active, .rf-copy:active, .rf-pill input:active + span, .env-seal:active, .rf-icon-btn:active, .rf-card-preview:active { transform: none; }
+  .rf-code-row { animation: none; }
   .rf-switch::after, .rf-pills-active { transition-duration: 1ms; }
   .js .rf-title em { animation: none; background-size: 100% 100%; }
 }

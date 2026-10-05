@@ -381,7 +381,7 @@
     }
   }
 
-  /* --- saca-tu-link.html: rodillos del código ----------------------------- */
+  /* --- admisiones.html: rodillos del código ------------------------------ */
   const LETRAS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   function rodillos(cont, codigo) {
     const reels = cont.querySelectorAll(".rf-reel");

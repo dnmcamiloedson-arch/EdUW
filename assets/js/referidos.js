@@ -8,7 +8,8 @@
      Referidos.codigoDesdeURL()       código del link (?ref=ABC123) o ""
      Referidos.linkPersonal(codigo)   URL absoluta del formulario con ?ref=
      Referidos.obtenerReferidor(c)    → { ok, referidor: { codigo, nombre } }
-     Referidos.crearReferidor(datos)  → { ok, codigo, nombre, nuevo, link }
+     Referidos.crearReferidor(datos)  → { ok, codigo, nombre, nuevo, link }  (datos.clave: Admisiones)
+     Referidos.listarReferidores(c)   → { ok, referidores: [...] }  (c: clave de Admisiones)
      Referidos.registrarReferido(d)   → { ok, referidor }
 
    Además conecta solo el <form data-referidos-form> si existe en la página.
@@ -72,6 +73,12 @@
   async function crearReferidor(datos) {
     const r = await enviar(Object.assign({}, datos, { accion: "crearReferidor" }));
     if (r.ok) r.link = linkPersonal(r.codigo);
+    return r;
+  }
+
+  async function listarReferidores(clave) {
+    const r = await enviar({ accion: "listarReferidores", clave });
+    if (r.ok) r.referidores.forEach((x) => { x.link = linkPersonal(x.codigo); });
     return r;
   }
 
@@ -143,7 +150,7 @@
 
   window.Referidos = {
     CONFIG, codigoDesdeURL, linkPersonal,
-    obtenerReferidor, crearReferidor, registrarReferido,
+    obtenerReferidor, crearReferidor, listarReferidores, registrarReferido,
   };
 
   document.addEventListener("DOMContentLoaded", () => {
