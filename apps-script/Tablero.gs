@@ -29,7 +29,7 @@ function crearTablero() {
   var t = libro.insertSheet(HOJA_TABLERO, 0);
   SEP = separador_(t);
   t.setHiddenGridlines(true);
-  t.getRange("A1:N80").setFontFamily("Arial").setFontColor(UW.texto).setVerticalAlignment("middle");
+  t.getRange("A1:N200").setFontFamily("Arial").setFontColor(UW.texto).setVerticalAlignment("middle");
   [24, 150, 90, 24, 150, 90, 24, 140, 180, 140, 160, 24, 110, 90].forEach(function (w, i) {
     t.setColumnWidth(i + 1, w);
   });
@@ -51,45 +51,45 @@ function crearTablero() {
   indicador_(t, "H5", "Registros de hoy", "=COUNTIFS(" + R + "A2:A,\">=\"&TODAY())", UW.dorado);
   indicador_(t, "J5", "Últimos 7 días", "=COUNTIFS(" + R + "A2:A,\">=\"&(TODAY()-6))", UW.azulOscuro);
 
-  // Tablas dinámicas por fórmula
-  titulo_(t, "B9", "Ranking de referidores");
-  t.getRange("B10").setFormula(fx_(
+  // Tablas dinámicas por fórmula (debajo de las gráficas para que crezcan sin taparse)
+  titulo_(t, "B44", "Ranking de referidores");
+  t.getRange("B45").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select C, count(D) where C <> '' group by C order by count(D) desc " +
     "label C 'Referidor', count(D) 'Invitados'\",0),\"Aún no hay registros\")"));
 
-  titulo_(t, "E9", "Por nivel de estudios");
-  t.getRange("E10").setFormula(fx_(
+  titulo_(t, "E44", "Por nivel de estudios");
+  t.getRange("E45").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select G, count(D) where G <> '' group by G order by count(D) desc " +
     "label G 'Nivel', count(D) 'Registros'\",0),\"Aún no hay registros\")"));
 
-  titulo_(t, "H9", "Últimos registros");
-  t.getRange("H10").setFormula(fx_(
+  titulo_(t, "H44", "Últimos registros");
+  t.getRange("H45").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select A, D, G, C where D <> '' order by A desc limit 12 " +
     "label A 'Fecha', D 'Nombre', G 'Nivel', C 'Invitado por'\",0),\"Aún no hay registros\")"));
-  t.getRange("H11:H22").setNumberFormat("dd/mm/yyyy hh:mm");
+  t.getRange("H46:H57").setNumberFormat("dd/mm/yyyy hh:mm");
 
   // Serie por día (alimenta la gráfica de línea)
-  titulo_(t, "M9", "Por día");
-  t.getRange("M10").setFormula(fx_(
+  titulo_(t, "M44", "Por día");
+  t.getRange("M45").setFormula(fx_(
     "=IFERROR(QUERY(" + R + "A2:I,\"select toDate(A), count(D) where D <> '' group by toDate(A) " +
     "order by toDate(A) label toDate(A) 'Día', count(D) 'Registros'\",0),\"—\")"));
-  t.getRange("M11:M400").setNumberFormat("dd/mm");
+  t.getRange("M46:M500").setNumberFormat("dd/mm");
 
-  [["B10:C10"], ["E10:F10"], ["H10:K10"], ["M10:N10"]].forEach(function (r) {
+  [["B45:C45"], ["E45:F45"], ["H45:K45"], ["M45:N45"]].forEach(function (r) {
     t.getRange(r[0]).setBackground(UW.fondo).setFontWeight("bold").setFontColor(UW.gris);
   });
 
   // Gráficas (sus rangos cubren filas vacías de sobra para crecer solas)
-  var base = 25;
+  var base = 9;
   t.insertChart(t.newChart().setChartType(Charts.ChartType.BAR)
-    .addRange(t.getRange("B10:C30")).setNumHeaders(1)
+    .addRange(t.getRange("B45:C95")).setNumHeaders(1)
     .setPosition(base, 2, 0, 0)
     .setOption("title", "Invitados por referidor")
     .setOption("series", { 0: { color: UW.azul } }).setOption("legend", { position: "none" })
     .setOption("width", 520).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.PIE)
-    .addRange(t.getRange("E10:F20")).setNumHeaders(1)
+    .addRange(t.getRange("E45:F55")).setNumHeaders(1)
     .setPosition(base, 8, 0, 0)
     .setOption("title", "Registros por nivel").setOption("pieHole", 0.5)
     .setOption("slices", { 0: { color: UW.azul }, 1: { color: UW.dorado }, 2: { color: UW.verde },
@@ -97,9 +97,9 @@ function crearTablero() {
     .setOption("width", 460).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.AREA)
-    .addRange(t.getRange("M10:N400")).setNumHeaders(1)
+    .addRange(t.getRange("M45:N500")).setNumHeaders(1)
     .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.SHOW_BOTH)
-    .setPosition(base + 17, 2, 0, 0)
+    .setPosition(base + 16, 2, 0, 0)
     .setOption("title", "Registros por día")
     .setOption("series", { 0: { color: UW.verde } }).setOption("legend", { position: "none" })
     .setOption("width", 1000).setOption("height", 300).build());
