@@ -1,14 +1,44 @@
 """Genera un fondo de portada/sección con el diseño institucional original (foto en curva + olas)
-usando cualquier foto vertical del campus.
-Uso: python3 make_intro_bg.py foto.jpg salida.jpg"""
+usando cualquier foto (vertical u horizontal).
+Uso: python3 make_intro_bg.py foto.jpg salida.jpg [--focus x0,y0,x1,y1]
+La curva solo deja ver una ventana de proporción ~1.15:1 de la foto. --focus indica, en fracciones
+(0–1) de la foto, la zona que debe quedar visible (personas, fachada). Sin --focus se usa la zona
+central más grande con esa proporción. El resto se rellena con la misma foto desenfocada."""
 import os, shutil, subprocess, sys, tempfile, zipfile
 from lxml import etree
-from PIL import Image
+from PIL import Image, ImageFilter
 
 SKILL = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NS = {'p': 'http://schemas.openxmlformats.org/presentationml/2006/main'}
 
-def main(photo, out):
+# Geometry of the photo slot in the original cover template: the picture is stretched to the
+# shape width and 1.75x its height (fillRect t=-28%, b=-47%), and the slide + bottom waves leave
+# only this window of the picture visible.
+CANVAS_ASPECT = 0.553
+WINDOW = (0.0, 0.27, 0.81, 0.66)  # x0, y0, x1, y1 as fractions of the canvas
+WINDOW_ASPECT = (WINDOW[2] - WINDOW[0]) * CANVAS_ASPECT / (WINDOW[3] - WINDOW[1])
+
+
+def compose(photo, focus=None):
+    im = Image.open(photo).convert('RGB'); W, H = im.size
+    if focus is None:
+        if W / H > WINDOW_ASPECT:
+            w = H * WINDOW_ASPECT; focus = ((W - w) / 2 / W, 0, (W + w) / 2 / W, 1)
+        else:
+            h = W / WINDOW_ASPECT; focus = (0, (H - h) / 2 / H, 1, (H + h) / 2 / H)
+    x0, y0, x1, y1 = int(focus[0] * W), int(focus[1] * H), int(focus[2] * W), int(focus[3] * H)
+    region = im.crop((x0, y0, x1, y1))
+    CW = 1400; CH = int(CW / CANVAS_ASPECT)
+    canvas = im.resize((CW, CH)).filter(ImageFilter.GaussianBlur(30))
+    wx0, wy0, wx1, wy1 = int(WINDOW[0] * CW), int(WINDOW[1] * CH), int(WINDOW[2] * CW), int(WINDOW[3] * CH)
+    ww, wh = wx1 - wx0, wy1 - wy0
+    s = max(ww / region.width, wh / region.height)
+    r = region.resize((int(region.width * s), int(region.height * s)), Image.LANCZOS)
+    canvas.paste(r, (wx0 + (ww - r.width) // 2, wy0 + (wh - r.height) // 2))
+    return canvas
+
+
+def main(photo, out, focus=None):
     work = tempfile.mkdtemp(prefix='westhill_bg_')
     src = os.path.join(work, 'src')
     with zipfile.ZipFile(os.path.join(SKILL, 'assets', 'plantilla_original.pptx')) as z:
@@ -23,7 +53,7 @@ def main(photo, out):
         if nv is None or nv.get('name') not in ('Group 2', 'Group 4'):
             tree.remove(el)
     t.write(sl, xml_declaration=True, encoding='UTF-8', standalone=True)
-    Image.open(photo).convert('RGB').save(os.path.join(src, 'ppt', 'media', 'image1.jpeg'), quality=92)
+    compose(photo, focus).save(os.path.join(src, 'ppt', 'media', 'image1.jpeg'), quality=92)
     deck = os.path.join(work, 'bg.pptx')
     with zipfile.ZipFile(deck, 'w', zipfile.ZIP_DEFLATED) as z:
         for root, _, files in os.walk(src):
@@ -39,4 +69,8 @@ def main(photo, out):
     print(out)
 
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2])
+    args = sys.argv[1:]
+    focus = None
+    if '--focus' in args:
+        i = args.index('--focus'); focus = tuple(float(v) for v in args[i + 1].split(',')); del args[i:i + 2]
+    main(args[0], args[1], focus)
