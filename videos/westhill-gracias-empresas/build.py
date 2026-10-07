@@ -3,21 +3,23 @@ import subprocess
 
 # Orden del video. Cambia "name" cuando tengas los nombres oficiales.
 BLOCKS = [
-    {"clip": "e1", "photo": "foto-1", "name": "Brigada Rotaria"},
+    {"clip": "e1", "photo": "foto-1", "name": "Fundación Club Rotario"},
     {"clip": "e2", "photo": "foto-5", "name": "Probecarios"},
     {"clip": "e3", "photo": "foto-4", "name": "INPI"},
     {"clip": "e4", "photo": "foto-6", "name": "CONFE"},
     {"clip": "e5", "photo": "foto-3", "name": "Integrando a Pato A.C."},
     {"clip": "e6", "photo": "foto-2", "name": "Seguros Monterrey"},
-    {"clip": "e7", "photo": "foto-7", "name": "Empresa 7"},
-    {"clip": "e8", "photo": "foto-8", "name": "Empresa 8"},
+    {"clip": "e7", "photo": "foto-7", "name": "The Anglo Foundation"},
+    {"clip": "e8", "photo": "foto-8", "name": "Fundación Ibero Meneses"},
 ]
-INTRO = 2.0
+INTRO = 3.0
+HONOR_STEP = 0.2
 CLIP = 2.0
 PHOTO = 1.5
 BLOCK = CLIP + PHOTO
 END = INTRO + BLOCK * len(BLOCKS)
-TOTAL = END + 5.0
+LOGO = END + 3.5
+TOTAL = END + 7.0
 
 
 def dur(n):
@@ -57,22 +59,37 @@ for i, b in enumerate(BLOCKS):
     sfx += [("whoosh" if i % 2 else "boom", t - (0.25 if i % 2 else 0), 0.8 if i % 2 else (1 if i == 0 else 0.7)),
             ("pop", t + 0.4, 0.55), ("pop-hi", t + 0.75, 0.5), ("shutter", tp - 0.02, 0.85), ("swish", tp + 0.05, 0.5)]
 
-# cierre
-script.append(f'''      flash({END}, 0.8);
-      tl.fromTo("#end-logo", {{ y: -60, opacity: 0, scale: 0.9 }}, {{ y: 0, opacity: 1, scale: 1, duration: 0.7, ease }}, {END + 0.1:.2f});
-      tl.fromTo("#end-title .w", {{ yPercent: 110 }}, {{ yPercent: 0, duration: 0.6, ease: "back.out(1.6)", stagger: 0.08 }}, {END + 0.4:.2f});
-      tl.fromTo("#end-pill", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.6, ease }}, {END + 1.0:.2f});
-      tl.fromTo("#end-grid .g", {{ scale: 0, rotate: -20 }}, {{ scale: 1, rotate: (i) => [-6, 4, -3, 7, -5, 3, -7, 5][i], duration: 0.45, ease: "back.out(1.8)", stagger: 0.09 }}, {END + 1.4:.2f});''')
-sfx += [("whoosh-long", END - 0.4, 0.8), ("ding", END + 0.2, 0.6), ("pop-hi", END + 1.0, 0.5)]
-sfx += [("tick", END + 1.4 + 0.09 * j, 0.6) for j in range(8)]
+# cierre: lista de honor + logo
+script.append(f'''      tl.fromTo("#end", {{ clipPath: "circle(0% at 50% 50%)" }}, {{ clipPath: "circle(80% at 50% 50%)", duration: 0.45, ease: "power3.out" }}, {END});
+      tl.fromTo("#strip-a", {{ x: 0 }}, {{ x: -900, duration: {TOTAL - END:.2f}, ease: "none" }}, {END});
+      tl.fromTo("#strip-b", {{ x: -900 }}, {{ x: 0, duration: {TOTAL - END:.2f}, ease: "none" }}, {END});
+      tl.fromTo(".strip .s", {{ y: 80, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.5, ease: "back.out(1.6)", stagger: 0.04 }}, {END + 0.15:.2f});
+      tl.fromTo("#honor-k", {{ scale: 0, rotate: -8 }}, {{ scale: 1, rotate: -3, duration: 0.45, ease: "back.out(2.4)" }}, {END + 0.3:.2f});
+      tl.fromTo("#honor .row", {{ x: -140, opacity: 0 }}, {{ x: 0, opacity: 1, duration: 0.4, ease, stagger: {HONOR_STEP} }}, {END + 0.55:.2f});
+      tl.fromTo("#honor .row i", {{ scale: 0 }}, {{ scale: 1, duration: 0.35, ease: "back.out(2.6)", stagger: {HONOR_STEP} }}, {END + 0.6:.2f});
+      tl.fromTo("#honor", {{ y: 0, opacity: 1 }}, {{ y: -120, opacity: 0, duration: 0.35, ease: "power3.in", immediateRender: false }}, {LOGO - 0.35:.2f});
+      flash({LOGO}, 0.7);
+      tl.fromTo("#end-logo", {{ scale: 0.6, opacity: 0 }}, {{ scale: 1, opacity: 1, duration: 0.7, ease: "back.out(1.6)" }}, {LOGO:.2f});
+      tl.fromTo("#end-title .w", {{ yPercent: 110 }}, {{ yPercent: 0, duration: 0.6, ease: "back.out(1.6)", stagger: 0.08 }}, {LOGO + 0.3:.2f});
+      tl.fromTo("#end-pill", {{ scaleX: 0 }}, {{ scaleX: 1, duration: 0.6, ease }}, {LOGO + 0.9:.2f});''')
+sfx += [("whoosh-long", END - 0.35, 0.8), ("pop-hi", END + 0.3, 0.5)]
+sfx += [("tick", END + 0.55 + HONOR_STEP * j, 0.7) for j in range(len(BLOCKS))]
+sfx += [("swish", LOGO - 0.35, 0.6), ("boom", LOGO, 0.75), ("ding", LOGO + 0.3, 0.6), ("pop", LOGO + 0.9, 0.5)]
 
-grid = "\n".join(f'          <div class="g"><img src="assets/img/{b["photo"]}.jpg" alt="" /></div>' for b in BLOCKS)
-audio = [f'      <audio id="music" src="assets/audio/music.mp3" data-start="0" data-duration="{TOTAL:.2f}" data-track-index="20" data-volume="0.5"></audio>',
-         '      <audio id="fxr" src="assets/audio/riser.mp3" data-start="0.1" data-duration="1.87" data-track-index="21" data-volume="0.7"></audio>']
+PH = [b["photo"] for b in BLOCKS]
+strip_a = "\n".join(f'          <div class="s"><img src="assets/img/{p}.jpg" alt="" /></div>' for p in PH)
+strip_b = "\n".join(f'          <div class="s"><img src="assets/img/{p}.jpg" alt="" /></div>' for p in PH[4:] + PH[:4])
+honor = "\n".join(f'          <div class="row"><i>{k + 1:02d}</i><span>{b["name"]}</span></div>' for k, b in enumerate(BLOCKS))
+# muro de fotos del intro: (x, y, giro)
+WALL = [(50, 110, -8), (560, 80, 6), (30, 590, 5), (590, 560, -5), (70, 1060, -4), (570, 1050, 7), (40, 1440, 6), (590, 1470, -6)]
+wall = "\n".join(f'          <div class="ip" style="left: {x}px; top: {y}px"><img src="assets/img/{p}.jpg" alt="" /></div>' for (x, y, r), p in zip(WALL, PH))
+audio = [f'      <audio id="music" src="assets/audio/music-gracias.mp3" data-start="0" data-duration="{TOTAL:.2f}" data-track-index="20" data-volume="0.55"></audio>',
+         '      <audio id="fxr" src="assets/audio/riser.mp3" data-start="1.1" data-duration="1.87" data-track-index="21" data-volume="0.7"></audio>']
 for j, (n, t, v) in enumerate(sfx):
     audio.append(f'      <audio id="fx{j:02d}" src="assets/audio/{n}.mp3" data-start="{t:.2f}" data-duration="{min(dur(n) - 0.03, TOTAL - t):.2f}" data-track-index="{22 + j}" data-volume="{v}"></audio>')
 
-strobe = "\n".join(f'        <div class="shot" id="h{j}"><video id="hv{j}" class="clip" src="assets/clips/{BLOCKS[j]["clip"]}.mp4" muted playsinline data-start="{j * 0.25:.2f}" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>' for j in range(8))
+sfx += [("tick", 0.15 + 0.11 * j, 0.6) for j in range(8)]
+sfx += [("pop-hi", 1.0, 0.5), ("swish", 1.75, 0.5), ("whoosh", 2.55, 0.7)]
 
 html = f'''<!doctype html>
 <html lang="es">
@@ -100,11 +117,16 @@ html = f'''<!doctype html>
       .shade {{ position: absolute; left: 0; right: 0; top: 1150px; height: 770px; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(5,12,22,.6) 55%, rgba(5,12,22,.8)); }}
       .topshade {{ position: absolute; left: 0; right: 0; top: 0; height: 380px; pointer-events: none; background: linear-gradient(180deg, rgba(5,12,22,.55), transparent); }}
 
-      .hook-dim {{ position: absolute; inset: 0; background: rgba(10,22,36,.5); }}
-      .echo {{ position: absolute; left: 0; right: 0; top: 500px; text-align: center; }}
-      .echo span {{ display: block; font: 800 170px/0.86 "Bricolage Grotesque", sans-serif; letter-spacing: -0.06em; color: rgba(255,255,255,.06); -webkit-text-stroke: 3px rgba(255,255,255,.75); }}
-      .echo span.solid {{ color: #fff; -webkit-text-stroke: 0; }}
-      .hook-pill {{ position: absolute; left: 90px; top: 1320px; width: 900px; height: 120px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--gold); color: var(--blue-ink); font: 800 54px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }}
+      .introbg {{ position: absolute; inset: 0; background: radial-gradient(120% 70% at 20% 0%, #3577b0 0%, var(--blue) 45%, var(--blue-deep) 100%); }}
+      #wall {{ position: absolute; inset: 0; }}
+      .ip {{ position: absolute; width: 450px; height: 560px; padding: 16px 16px 60px; background: #fff; box-shadow: 0 30px 60px -24px rgba(0,0,0,.7); }}
+      .ip img {{ display: block; width: 418px; height: 484px; object-fit: cover; }}
+      .intro-dim {{ position: absolute; inset: 0; background: rgba(10,22,36,.62); }}
+      .intro-k {{ position: absolute; left: 240px; width: 600px; top: 660px; padding: 14px 0; border-radius: 999px; text-align: center; background: rgba(15,42,69,.92); font: 700 40px/1 "Geist", sans-serif; letter-spacing: .02em; color: var(--gold); }}
+      .intro-t {{ position: absolute; left: 0; right: 0; top: 760px; text-align: center; font: 800 218px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.06em; color: #fff; white-space: nowrap; }}
+      .intro-t .m {{ display: inline-block; overflow: hidden; padding: 0 4px 10px; vertical-align: top; }}
+      .intro-t .l {{ display: inline-block; }}
+      .intro-pill {{ position: absolute; left: 90px; top: 1060px; width: 900px; height: 116px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--gold); color: var(--blue-ink); font: 800 52px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }}
 
       .thanks {{ position: absolute; left: 60px; right: 60px; top: 1450px; text-align: center; }}
       .thanks span {{ display: block; }}
@@ -115,16 +137,23 @@ html = f'''<!doctype html>
       .count i {{ font-style: normal; font-size: 30px; color: var(--gold); }}
 
       .endfield {{ position: absolute; inset: 0; background: radial-gradient(120% 70% at 80% 0%, #3577b0 0%, var(--blue) 45%, var(--blue-deep) 100%); }}
-      .end-logo {{ position: absolute; left: 240px; top: 230px; width: 600px; }}
+      .strip {{ position: absolute; left: 0; display: flex; gap: 22px; }}
+      .strip .s {{ flex: none; width: 230px; padding: 10px 10px 28px; background: #fff; box-shadow: 0 20px 40px -18px rgba(0,0,0,.6); }}
+      .strip .s img {{ display: block; width: 210px; height: 250px; object-fit: cover; }}
+      #honor {{ position: absolute; left: 60px; right: 60px; top: 520px; text-align: center; }}
+      .honor-k {{ display: inline-block; padding: 10px 30px 14px; border-radius: 999px; background: var(--gold); color: var(--blue-ink); font: 800 56px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }}
+      .rows {{ margin-top: 44px; display: flex; flex-direction: column; align-items: center; gap: 30px; }}
+      .row {{ display: flex; align-items: center; gap: 22px; font: 800 64px/1.05 "Bricolage Grotesque", sans-serif; letter-spacing: -.035em; }}
+      .row i {{ flex: none; width: 74px; height: 56px; border-radius: 16px; display: grid; place-items: center; background: rgba(15,42,69,.9); color: var(--gold); font: 500 28px/1 "Geist Mono", monospace; font-style: normal; }}
+      .end-logo {{ position: absolute; left: 240px; top: 560px; width: 600px; }}
       .end-logo img {{ width: 100%; display: block; }}
-      .end-title {{ position: absolute; left: 40px; right: 40px; top: 600px; text-align: center; font: 800 112px/0.98 "Bricolage Grotesque", sans-serif; letter-spacing: -.05em; }}
+      .end-title {{ position: absolute; left: 40px; right: 40px; top: 880px; text-align: center; font: 800 112px/0.98 "Bricolage Grotesque", sans-serif; letter-spacing: -.05em; }}
       .end-title .ln {{ display: block; overflow: hidden; padding-bottom: 8px; }}
       .end-title .w {{ display: inline-block; }}
       .end-title .gold {{ color: var(--gold); }}
-      .end-pill {{ position: absolute; left: 90px; top: 960px; width: 900px; padding: 26px 30px; border-radius: 40px; background: #fff; color: var(--blue-ink); text-align: center; font: 700 40px/1.25 "Geist", sans-serif; }}
-      #end-grid {{ position: absolute; left: 60px; top: 1210px; width: 960px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }}
-      .g {{ padding: 10px 10px 30px; background: #fff; box-shadow: 0 20px 40px -18px rgba(0,0,0,.6); }}
-      .g img {{ display: block; width: 100%; height: 270px; object-fit: cover; }}
+      .end-pill {{ position: absolute; left: 140px; top: 1190px; width: 800px; padding: 24px 30px 26px; border-radius: 40px; background: #fff; color: var(--blue-ink); text-align: center; }}
+      .end-pill b {{ display: block; font: 800 48px/1.1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }}
+      .end-pill span {{ display: block; margin-top: 8px; font: 600 32px/1.2 "Geist", sans-serif; color: var(--blue); }}
 
       .flash {{ position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }}
       .progress {{ position: absolute; left: 60px; right: 60px; top: 70px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; }}
@@ -136,27 +165,42 @@ html = f'''<!doctype html>
     <div id="root" data-composition-id="main" data-start="0" data-duration="{TOTAL:.2f}" data-width="1080" data-height="1920">
       <svg class="defs" aria-hidden="true"><filter id="hblur" x="-20%" y="0" width="140%" height="100%"><feGaussianBlur id="hblur-g" stdDeviation="0 0" /></filter></svg>
       <div id="stage" data-layout-allow-overflow>
-{strobe}
 {chr(10).join(shots)}
       </div>
       <div class="vignette"></div>
       <div class="topshade"></div>
       <div class="shade"></div>
 
-      <div class="hook-dim clip" id="hook-dim" data-start="0" data-duration="{INTRO}" data-track-index="10"></div>
-      <div class="echo clip" id="echo" data-start="0" data-duration="{INTRO}" data-track-index="11"><span>GRACIAS</span><span>GRACIAS</span><span class="solid">GRACIAS</span><span>GRACIAS</span><span>GRACIAS</span></div>
-      <div class="hook-pill clip" id="hook-pill" data-start="0" data-duration="{INTRO}" data-track-index="12">a las empresas que nos visitaron</div>
+      <div class="clip" id="intro" data-start="0" data-duration="{INTRO}" data-track-index="10" style="position: absolute; inset: 0">
+        <div class="introbg"></div>
+        <div id="wall">
+{wall}
+        </div>
+        <div class="intro-dim" id="intro-dim"></div>
+        <p class="intro-k" id="intro-k">Feria de Empleo Westhill</p>
+        <h1 class="intro-t" id="intro-t">{"".join(f'<span class="m"><span class="l">{c}</span></span>' for c in "GRACIAS")}</h1>
+        <div class="intro-pill" id="intro-pill">a las empresas que nos visitaron</div>
+      </div>
 
 {chr(10).join(overlays)}
 
       <div class="clip" id="end" data-start="{END:.2f}" data-duration="{TOTAL - END:.2f}" data-track-index="15" style="position: absolute; inset: 0">
         <div class="endfield"></div>
-        <div class="end-logo" id="end-logo"><img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" /></div>
-        <h2 class="end-title" id="end-title"><span class="ln"><span class="w">Gracias</span> <span class="w">por</span> <span class="w">abrir</span></span><span class="ln"><span class="w gold">oportunidades</span></span></h2>
-        <p class="end-pill" id="end-pill">a nuestros alumnos en la Feria de Empleo Westhill</p>
-        <div id="end-grid">
-{grid}
+        <div class="strip" id="strip-a" style="top: 90px" data-layout-allow-overflow>
+{strip_a}
         </div>
+        <div class="strip" id="strip-b" style="top: 1530px" data-layout-allow-overflow>
+{strip_b}
+        </div>
+        <div id="honor">
+          <span class="honor-k" id="honor-k">Gracias a</span>
+          <div class="rows">
+{honor}
+          </div>
+        </div>
+        <div class="end-logo" id="end-logo"><img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" /></div>
+        <h2 class="end-title" id="end-title"><span class="ln"><span class="w">Juntos</span> <span class="w">abrimos</span></span><span class="ln"><span class="w gold">oportunidades</span></span></h2>
+        <p class="end-pill" id="end-pill"><b>para nuestros alumnos</b><span>Feria de Empleo Westhill</span></p>
       </div>
 
       <div class="flash" id="flash"></div>
@@ -193,11 +237,16 @@ html = f'''<!doctype html>
         tl.fromTo(id + " .sub", {{ y: 20, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.4, ease }}, at + 0.5);
       }}
 
-      // Gancho
-      tl.fromTo("#echo span", {{ yPercent: 60, opacity: 0, scale: 1.4 }}, {{ yPercent: 0, opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)", stagger: {{ each: 0.08, from: "center" }} }}, 0.1);
-      tl.fromTo("#echo", {{ scale: 1 }}, {{ scale: 1.1, duration: 1.9, ease: "power1.in" }}, 0.1);
-      tl.fromTo("#hook-pill", {{ scale: 0, rotate: -8 }}, {{ scale: 1, rotate: -3, duration: 0.5, ease: "back.out(2.4)" }}, 0.9);
-      for (let j = 0; j < 8; j++) tl.fromTo("#h" + j, {{ scale: 1.18 }}, {{ scale: 1.02, duration: 0.25, ease: "power2.out" }}, j * 0.25);
+      // Intro: muro de fotos que cae, GRACIAS letra por letra y zoom a la primera toma
+      tl.fromTo("#wall .ip", {{ y: -1500, rotate: (i) => (i % 2 ? 30 : -30) }}, {{ y: 0, rotate: (i) => {[r for _, _, r in WALL]}[i], duration: 0.5, ease: "back.out(1.2)", stagger: 0.11 }}, 0.05);
+      tl.fromTo("#wall", {{ scale: 1 }}, {{ scale: 1.12, duration: 2.55, ease: "none" }}, 0);
+      tl.fromTo("#intro-dim", {{ opacity: 0 }}, {{ opacity: 1, duration: 0.35, ease: "none" }}, 0.85);
+      tl.fromTo("#intro-k", {{ y: 30, opacity: 0 }}, {{ y: 0, opacity: 1, duration: 0.4, ease }}, 0.95);
+      tl.fromTo("#intro-t .l", {{ yPercent: 110 }}, {{ yPercent: 0, duration: 0.5, ease: "back.out(1.8)", stagger: 0.05 }}, 1.0);
+      tl.fromTo("#intro-pill", {{ scale: 0, rotate: -8 }}, {{ scale: 1, rotate: -3, duration: 0.5, ease: "back.out(2.4)" }}, 1.75);
+      tl.fromTo("#wall .ip", {{ x: 0 }}, {{ x: (i) => (i % 2 ? 900 : -900), duration: 0.45, ease: "power3.in", immediateRender: false }}, 2.55);
+      tl.fromTo(["#intro-k", "#intro-pill"], {{ opacity: 1 }}, {{ opacity: 0, duration: 0.3, ease: "none", immediateRender: false }}, 2.6);
+      tl.fromTo("#intro-t", {{ scale: 1, opacity: 1 }}, {{ scale: 7, opacity: 0, duration: 0.45, ease: "power3.in", immediateRender: false }}, 2.55);
 
 {chr(10).join(script)}
 
