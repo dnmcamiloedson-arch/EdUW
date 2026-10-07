@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Reel Feria de Empleo Westhill</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/bricolage-grotesque-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: block; }
+      @font-face { font-family: "Geist"; src: url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+
+      :root {
+        --blue: #276092;
+        --blue-deep: #173d61;
+        --blue-ink: #0f2a45;
+        --green: #27ae60;
+        --green-text: #1d7f47;
+        --gold: #f2c94c;
+        --bg: #f6f9fc;
+        --ink: #0d2238;
+        --muted: #4a5d73;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--bg); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Geist", system-ui, sans-serif; color: var(--ink); }
+
+      /* Fondo claro con manchas de marca */
+      .ground { position: absolute; inset: 0; background: var(--bg); }
+      .blob { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .6; }
+      .blob--a { width: 900px; height: 900px; left: 420px; top: -260px; background: #b9d4ee; }
+      .blob--b { width: 640px; height: 640px; left: -220px; top: 1100px; background: #c9ecd7; }
+      .blob--c { width: 520px; height: 520px; left: 640px; top: 1400px; background: #fbe9b0; }
+      .grid {
+        position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(39,96,146,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(39,96,146,.06) 1px, transparent 1px);
+        background-size: 72px 72px;
+      }
+
+      .scene { position: absolute; inset: 0; opacity: 0; }
+
+      /* Títulos de escena */
+      .head { position: absolute; left: 80px; right: 80px; top: 150px; }
+      .step {
+        display: inline-flex; align-items: center; gap: 14px;
+        padding: 12px 22px; border-radius: 999px;
+        background: var(--blue); color: #fff;
+        font: 500 26px/1 "Geist Mono", monospace; letter-spacing: .08em;
+      }
+      .step b { color: var(--gold); font-weight: 500; }
+      .title { margin-top: 24px; font: 800 84px/0.98 "Bricolage Grotesque", sans-serif; letter-spacing: -0.045em; }
+      .title .ln { display: block; overflow: hidden; padding-bottom: 8px; white-space: nowrap; }
+      .title .w { display: inline-block; }
+      .title .k { color: var(--blue); }
+      .title .g { color: var(--green-text); }
+
+      /* Marco de foto o video */
+      .frame {
+        position: absolute; left: 70px; top: 500px; width: 940px; height: 1330px;
+        border-radius: 48px; overflow: hidden; background: #dfe8f1;
+        box-shadow: 0 60px 120px -40px rgba(23,61,97,.6), 0 0 0 8px #fff;
+      }
+      .frame .media { position: absolute; left: 0; top: 0; width: 940px; height: 1330px; }
+      .frame img.media, .frame video.media { object-fit: cover; }
+
+      /* Pila de tarjetas de stands */
+      .card {
+        position: absolute; left: 150px; top: 470px; width: 780px; height: 1240px;
+        border-radius: 44px; overflow: hidden; background: #dfe8f1;
+        box-shadow: 0 50px 110px -40px rgba(23,61,97,.65), 0 0 0 8px #fff;
+      }
+      .card img { position: absolute; left: 0; top: 0; width: 780px; height: 1240px; object-fit: cover; display: block; }
+      .label {
+        position: absolute; left: 110px; top: 1600px;
+        padding: 26px 34px; border-radius: 30px; background: #fff;
+        box-shadow: 0 30px 60px -24px rgba(23,61,97,.6);
+      }
+      .label .org { display: block; font: 500 26px/1 "Geist Mono", monospace; letter-spacing: .1em; color: var(--muted); }
+      .label .what { display: block; margin-top: 12px; font: 800 52px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+      .counter {
+        position: absolute; left: 860px; top: 430px; width: 130px; height: 130px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        background: var(--gold); color: var(--blue-ink);
+        font: 800 44px/1 "Bricolage Grotesque", sans-serif;
+        box-shadow: 0 20px 40px -16px rgba(23,61,97,.6);
+      }
+
+      .sticker {
+        position: absolute; padding: 20px 30px; border-radius: 26px;
+        font: 800 44px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em;
+        box-shadow: 0 20px 50px -20px rgba(23,61,97,.6);
+      }
+
+      /* Gancho y cierre en azul */
+      .bluefield { position: absolute; inset: 0; background: radial-gradient(120% 70% at 80% 0%, #3577b0 0%, var(--blue) 45%, var(--blue-deep) 100%); }
+      .hook-text { position: absolute; left: 80px; right: 80px; top: 430px; color: #fff; }
+      .hook-text .big { font: 800 116px/0.95 "Bricolage Grotesque", sans-serif; letter-spacing: -0.05em; }
+      .hook-text .big .ln { display: block; overflow: hidden; padding-bottom: 10px; white-space: nowrap; }
+      .hook-text .big .w { display: inline-block; }
+      .hook-text .gold { color: var(--gold); }
+      .hook-small { margin-top: 40px; font: 500 40px/1.3 "Geist", sans-serif; color: rgba(255,255,255,.92); }
+      .hook-photo {
+        position: absolute; left: 600px; top: 1300px; width: 400px; height: 520px; border-radius: 36px; overflow: hidden;
+        box-shadow: 0 0 0 8px #fff, 0 40px 80px -30px rgba(0,0,0,.5);
+      }
+      .hook-photo img { position: absolute; left: 0; top: 0; width: 400px; height: 520px; object-fit: cover; display: block; }
+      .mascot {
+        position: absolute; width: 280px; height: 280px; border-radius: 50%; overflow: hidden;
+        border: 10px solid #fff; box-shadow: 0 0 0 8px var(--gold), 0 40px 80px -30px rgba(0,0,0,.5);
+      }
+      .mascot img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .bubble {
+        position: absolute; padding: 26px 32px; border-radius: 34px 34px 34px 8px;
+        background: #fff; color: var(--ink); font: 600 40px/1.25 "Geist", sans-serif;
+        box-shadow: 0 30px 60px -30px rgba(0,0,0,.5);
+      }
+
+      .end-logo { position: absolute; left: 190px; top: 240px; width: 700px; padding: 40px 50px; border-radius: 40px; background: #fff; }
+      .end-logo img { width: 100%; display: block; }
+      .end-title { position: absolute; left: 60px; right: 60px; top: 700px; text-align: center; color: #fff; font: 800 120px/0.96 "Bricolage Grotesque", sans-serif; letter-spacing: -.045em; }
+      .end-title .gold { color: var(--gold); }
+      .cta {
+        position: absolute; left: 190px; top: 930px; width: 700px; height: 132px; border-radius: 999px;
+        background: var(--gold); color: var(--blue-ink);
+        display: flex; align-items: center; justify-content: center;
+        font: 800 54px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em;
+        box-shadow: 0 30px 60px -20px rgba(0,0,0,.45);
+      }
+      .end-note { position: absolute; left: 80px; right: 80px; top: 1110px; text-align: center; color: rgba(255,255,255,.92); font: 500 40px/1.3 "Geist", sans-serif; }
+
+      /* Barrido de color entre escenas */
+      .wipe { position: absolute; inset: 0; pointer-events: none; }
+      .wipe span { position: absolute; left: -400px; width: 1900px; height: 700px; display: block; }
+      .wipe span:nth-child(1) { top: -200px; background: var(--blue); }
+      .wipe span:nth-child(2) { top: 500px; background: var(--green); }
+      .wipe span:nth-child(3) { top: 1200px; background: var(--gold); }
+
+      /* Barra de progreso tipo Reel */
+      .progress { position: absolute; left: 60px; right: 60px; top: 70px; height: 10px; border-radius: 999px; background: rgba(13,34,56,.12); overflow: hidden; }
+      .progress span { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; display: block; background: linear-gradient(90deg, var(--blue), var(--green)); transform-origin: 0 50%; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="30" data-width="1080" data-height="1920">
+      <div class="ground">
+        <div class="blob blob--a" id="blob-a" data-layout-allow-overflow></div>
+        <div class="blob blob--b" id="blob-b" data-layout-allow-overflow></div>
+        <div class="blob blob--c" id="blob-c" data-layout-allow-overflow></div>
+        <div class="grid"></div>
+      </div>
+
+      <!-- 1. GANCHO -->
+      <div class="scene" id="s1" style="opacity: 1">
+        <div class="bluefield"></div>
+        <div class="hook-text">
+          <div class="big">
+            <span class="ln"><span class="w">¡La</span> <span class="w gold">Feria</span></span>
+            <span class="ln"><span class="w gold">de</span> <span class="w gold">Empleo</span></span>
+            <span class="ln"><span class="w">está</span> <span class="w">por</span></span>
+            <span class="ln"><span class="w">empezar!</span></span>
+          </div>
+          <p class="hook-small" id="s1-small">Vacantes, prácticas y servicio social en un solo lugar.</p>
+        </div>
+        <div class="hook-photo" id="s1-photo" data-layout-allow-overflow><img src="assets/img/foto-1.jpg" alt="Atrio de la Universidad Westhill con stands" /></div>
+        <div class="mascot" id="s1-mascot" style="left: 90px; top: 1500px"><img src="assets/img/guia-avatar.webp" alt="" /></div>
+      </div>
+
+      <!-- 2. VIDEO DEL ATRIO -->
+      <div class="scene" id="s2">
+        <div class="head">
+          <span class="step"><b>01</b> Hoy en el campus</span>
+          <h2 class="title"><span class="ln"><span class="w">Los</span> <span class="w">stands</span> <span class="w k">ya</span> <span class="w k">están</span></span><span class="ln"><span class="w">listos</span> <span class="w">en</span> <span class="w">el</span> <span class="w g">atrio</span></span></h2>
+        </div>
+        <div class="frame" id="s2-frame">
+          <div class="media" id="s2-cam"><video id="v-atrio" class="clip media" src="assets/clips/atrio.mp4" playsinline data-has-audio="true" data-volume="0.6" data-start="3" data-duration="5.5" data-track-index="1" style="position:absolute; left:0px; top:0px; width:940px; height:1330px; object-fit:cover"></video></div>
+        </div>
+        <div class="sticker" id="s2-sticker" style="left: 640px; top: 1700px; background: #f2c94c; color: #0f2a45">En vivo</div>
+      </div>
+
+      <!-- 3. FOTO GENERAL -->
+      <div class="scene" id="s3">
+        <div class="head">
+          <span class="step"><b>02</b> Ven a recorrerla</span>
+          <h2 class="title"><span class="ln"><span class="w">Empresas</span> <span class="w">e</span></span><span class="ln"><span class="w k">instituciones</span></span></h2>
+        </div>
+        <div class="frame" id="s3-frame">
+          <img class="media" id="s3-img" src="assets/img/foto-1.jpg" alt="Atrio de Westhill con la manta Talento que construye comunidad" />
+        </div>
+        <div class="sticker" id="s3-sticker" style="left: 60px; top: 1690px; background: #1d7f47; color: #fff">Te están esperando</div>
+      </div>
+
+      <!-- 4. STANDS -->
+      <div class="scene" id="s4">
+        <div class="head">
+          <span class="step"><b>03</b> Oportunidades</span>
+          <h2 class="title"><span class="ln"><span class="w">Checa</span> <span class="w">cada</span> <span class="w k">stand</span></span></h2>
+        </div>
+        <div class="card" id="c1" data-layout-allow-overflow><img src="assets/img/foto-2.jpg" alt="Stand del INPI con su programa de servicio social y prácticas profesionales" /></div>
+        <div class="card" id="c2" data-layout-allow-overflow><img src="assets/img/foto-3.jpg" alt="Stand de CONFE sobre inclusión laboral" /></div>
+        <div class="card" id="c3" data-layout-allow-overflow><img src="assets/img/foto-4.jpg" alt="Stand de Probecarios con vacantes para estudiantes" /></div>
+        <div class="label" id="l1"><span class="org">INPI</span><span class="what">Servicio social y prácticas</span></div>
+        <div class="label" id="l2"><span class="org">CONFE</span><span class="what">Inclusión laboral</span></div>
+        <div class="label" id="l3"><span class="org">PROBECARIOS</span><span class="what">Vacantes con beca</span></div>
+        <div class="counter" id="s4-counter"><span id="s4-n1">1/3</span></div>
+      </div>
+
+      <!-- 5. STAND WESTHILL -->
+      <div class="scene" id="s5">
+        <div class="head">
+          <span class="step"><b>04</b> Stand Westhill</span>
+          <h2 class="title"><span class="ln"><span class="w">Titúlate</span> <span class="w">con</span> <span class="w">un</span></span><span class="ln"><span class="w k">posgrado</span></span></h2>
+        </div>
+        <div class="frame" id="s5-frame">
+          <img class="media" id="s5-img" src="assets/img/foto-5.jpg" alt="Cartel de Westhill sobre titulación con posgrado" />
+        </div>
+        <div class="sticker" id="s5-sticker" style="left: 640px; top: 1690px; background: #276092; color: #fff">Pregunta aquí</div>
+      </div>
+
+      <!-- 6. CIERRE -->
+      <div class="scene" id="s6">
+        <div class="bluefield"></div>
+        <div class="end-logo" id="s6-logo"><img src="assets/img/logo-westhill.png" alt="Universidad Westhill" /></div>
+        <h2 class="end-title" id="s6-title">Feria de <span class="gold">Empleo</span></h2>
+        <div class="cta" id="s6-cta">Ven hoy al atrio</div>
+        <p class="end-note" id="s6-note">Trae tu CV y pregunta por las vacantes.</p>
+        <div class="mascot" id="s6-mascot" style="left: 80px; top: 1500px; width: 260px; height: 260px"><img src="assets/img/guia-avatar.webp" alt="" /></div>
+        <div class="bubble" id="s6-bubble" style="left: 370px; top: 1550px">¡Te esperamos!</div>
+      </div>
+
+      <div class="wipe" id="wipe" data-layout-allow-overflow><span></span><span></span><span></span></div>
+      <div class="progress"><span id="bar"></span></div>
+
+      <!-- Audio: música original y efectos por acción -->
+      <audio id="music" src="assets/beat.mp3" data-start="0" data-duration="30" data-track-index="5" data-volume="0.5"></audio>
+      <audio id="sfx-riser" src="assets/sfx/riser.mp3" data-start="0" data-duration="1.2" data-track-index="6" data-volume="0.6"></audio>
+      <audio id="sfx-impact1" src="assets/sfx/impact-bass-1.mp3" data-start="1.0" data-duration="1.5" data-track-index="7" data-volume="0.9"></audio>
+      <audio id="sfx-pop1" src="assets/sfx/pop.mp3" data-start="1.7" data-duration="0.3" data-track-index="8" data-volume="0.7"></audio>
+      <audio id="sfx-pop2" src="assets/sfx/pop.mp3" data-start="2.1" data-duration="0.3" data-track-index="9" data-volume="0.7"></audio>
+      <audio id="sfx-w1" src="assets/sfx/whoosh-cinematic.mp3" data-start="2.75" data-duration="1.2" data-track-index="6" data-volume="0.8"></audio>
+      <audio id="sfx-pop3" src="assets/sfx/pop.mp3" data-start="5.0" data-duration="0.3" data-track-index="8" data-volume="0.7"></audio>
+      <audio id="sfx-w2" src="assets/sfx/whoosh.mp3" data-start="8.3" data-duration="0.55" data-track-index="6" data-volume="0.8"></audio>
+      <audio id="sfx-pop4" src="assets/sfx/pop.mp3" data-start="10.2" data-duration="0.3" data-track-index="8" data-volume="0.7"></audio>
+      <audio id="sfx-w3" src="assets/sfx/whoosh.mp3" data-start="12.3" data-duration="0.55" data-track-index="6" data-volume="0.8"></audio>
+      <audio id="sfx-ping1" src="assets/sfx/ping.mp3" data-start="13.3" data-duration="0.8" data-track-index="7" data-volume="0.6"></audio>
+      <audio id="sfx-sw1" src="assets/sfx/whoosh-short.mp3" data-start="15.6" data-duration="0.5" data-track-index="8" data-volume="0.7"></audio>
+      <audio id="sfx-ping2" src="assets/sfx/ping.mp3" data-start="16.3" data-duration="0.8" data-track-index="7" data-volume="0.6"></audio>
+      <audio id="sfx-sw2" src="assets/sfx/whoosh-short.mp3" data-start="18.8" data-duration="0.5" data-track-index="8" data-volume="0.7"></audio>
+      <audio id="sfx-ping3" src="assets/sfx/ping.mp3" data-start="19.5" data-duration="0.8" data-track-index="7" data-volume="0.6"></audio>
+      <audio id="sfx-w4" src="assets/sfx/whoosh.mp3" data-start="21.8" data-duration="0.55" data-track-index="6" data-volume="0.8"></audio>
+      <audio id="sfx-pop5" src="assets/sfx/pop.mp3" data-start="23.8" data-duration="0.3" data-track-index="8" data-volume="0.7"></audio>
+      <audio id="sfx-w5" src="assets/sfx/whoosh-cinematic.mp3" data-start="25.75" data-duration="1.2" data-track-index="6" data-volume="0.8"></audio>
+      <audio id="sfx-impact2" src="assets/sfx/impact-bass-2.mp3" data-start="26.0" data-duration="1.5" data-track-index="7" data-volume="0.9"></audio>
+      <audio id="sfx-spark" src="assets/sfx/sparkle.mp3" data-start="27.0" data-duration="1.2" data-track-index="8" data-volume="0.6"></audio>
+      <audio id="sfx-notif" src="assets/sfx/notification.mp3" data-start="28.2" data-duration="0.9" data-track-index="9" data-volume="0.7"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const ease = "expo.out";
+      const SCENES = [["#s1", 0, 3], ["#s2", 3, 8.5], ["#s3", 8.5, 12.5], ["#s4", 12.5, 22], ["#s5", 22, 26], ["#s6", 26, 30]];
+
+      // Fondo y barra de progreso
+      tl.fromTo("#blob-a", { x: 0, y: 0 }, { x: -260, y: 180, duration: 30, ease: "sine.inOut" }, 0);
+      tl.fromTo("#blob-b", { x: 0, y: 0 }, { x: 260, y: -220, duration: 30, ease: "sine.inOut" }, 0);
+      tl.fromTo("#blob-c", { x: 0, y: 0 }, { x: -200, y: -160, duration: 30, ease: "sine.inOut" }, 0);
+      tl.fromTo("#bar", { scaleX: 0 }, { scaleX: 1, duration: 30, ease: "none" }, 0);
+
+      // Visibilidad de escenas (la primera arranca visible desde el CSS)
+      SCENES.forEach(([id, a, b]) => {
+        if (a > 0) tl.set(id, { opacity: 1 }, a);
+        tl.set(id, { opacity: 0 }, b);
+      });
+
+      // Barrido diagonal de los tres colores en cada corte
+      tl.set("#wipe", { rotate: -12 }, 0);
+      tl.set("#wipe span", { xPercent: -110 }, 0);
+      SCENES.slice(1).forEach(([, a]) => {
+        tl.fromTo("#wipe span", { xPercent: -110 }, { xPercent: 0, duration: 0.22, ease: "power3.in", stagger: 0.04 }, a - 0.3);
+        tl.fromTo("#wipe span", { xPercent: 0 }, { xPercent: 110, duration: 0.3, ease: "power3.out", stagger: 0.04, immediateRender: false }, a);
+      });
+
+      function titleIn(scene, at) {
+        tl.fromTo(scene + " .step", { y: 30, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2)" }, at + 0.1);
+        tl.fromTo(scene + " .title .w", { yPercent: 115, rotate: 6 }, { yPercent: 0, rotate: 0, duration: 0.7, ease, stagger: 0.07 }, at + 0.2);
+      }
+      function stickerIn(sel, at, rot) {
+        tl.fromTo(sel, { scale: 0, rotate: rot * 3, opacity: 0 }, { scale: 1, rotate: rot, opacity: 1, duration: 0.6, ease: "back.out(2.6)" }, at);
+      }
+
+      // 1. Gancho
+      tl.fromTo("#s1 .big .w", { yPercent: 120 }, { yPercent: 0, duration: 0.55, ease: "back.out(1.6)", stagger: 0.08 }, 0.15);
+      tl.fromTo("#s1-small", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease }, 1.2);
+      tl.fromTo("#s1-photo", { y: 300, rotate: 14, opacity: 0 }, { y: 0, rotate: 6, opacity: 1, duration: 0.8, ease: "back.out(1.4)" }, 1.0);
+      tl.fromTo("#s1-mascot", { scale: 0, rotate: -30 }, { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" }, 1.7);
+
+      // 2. Video del atrio con acercamiento lento
+      titleIn("#s2", 3);
+      tl.fromTo("#s2-frame", { y: 500, rotate: 4, opacity: 0 }, { y: 0, rotate: 0, opacity: 1, duration: 0.8, ease }, 3.05);
+      tl.fromTo("#s2-cam", { scale: 1 }, { scale: 1.12, duration: 5.5, ease: "power1.inOut" }, 3);
+      stickerIn("#s2-sticker", 5.0, -6);
+
+      // 3. Foto general: acercamiento hacia la manta
+      titleIn("#s3", 8.5);
+      tl.fromTo("#s3-frame", { scale: 0.85, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.7, ease }, 8.55);
+      tl.fromTo("#s3-img", { scale: 1, transformOrigin: "50% 25%" }, { scale: 1.35, duration: 4, ease: "power2.inOut" }, 8.5);
+      stickerIn("#s3-sticker", 10.2, 4);
+
+      // 4. Pila de stands: cada tarjeta entra y la anterior se hace a un lado
+      titleIn("#s4", 12.5);
+      const CARDS = [["#c1", "#l1", 12.6], ["#c2", "#l2", 15.6], ["#c3", "#l3", 18.8]];
+      CARDS.forEach(([c, l, at], i) => {
+        tl.fromTo(c, { x: 900, rotate: 14, opacity: 0 }, { x: 0, rotate: i % 2 ? 3 : -3, opacity: 1, duration: 0.7, ease: "back.out(1.3)" }, at);
+        tl.fromTo(c + " img", { scale: 1.15 }, { scale: 1, duration: 3.4, ease: "power2.out" }, at);
+        tl.fromTo(l, { y: 80, opacity: 0, scale: 0.85 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(2.2)" }, at + 0.7);
+        if (i < CARDS.length - 1) {
+          const next = CARDS[i + 1][2];
+          tl.fromTo(c, { x: 0, scale: 1 }, { x: -620, scale: 0.85, rotate: -12, duration: 0.6, ease: "power3.in", immediateRender: false }, next - 0.1);
+          tl.fromTo(l, { opacity: 1 }, { opacity: 0, duration: 0.25, immediateRender: false }, next - 0.1);
+        }
+      });
+      tl.fromTo("#s4-counter", { scale: 0, rotate: -40 }, { scale: 1, rotate: 0, duration: 0.6, ease: "back.out(2.4)" }, 13.0);
+      tl.set("#s4-n1", { textContent: "2/3" }, 15.6);
+      tl.set("#s4-n1", { textContent: "3/3" }, 18.8);
+      tl.fromTo("#s4-counter", { scale: 1 }, { scale: 1.2, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, 15.6);
+      tl.fromTo("#s4-counter", { scale: 1 }, { scale: 1.2, duration: 0.2, yoyo: true, repeat: 1, ease: "power2.out", immediateRender: false }, 18.8);
+
+      // 5. Stand Westhill
+      titleIn("#s5", 22);
+      tl.fromTo("#s5-frame", { y: 500, rotate: -4, opacity: 0 }, { y: 0, rotate: 0, opacity: 1, duration: 0.8, ease }, 22.05);
+      tl.fromTo("#s5-img", { scale: 1.2, transformOrigin: "50% 55%" }, { scale: 1, duration: 4, ease: "power2.out" }, 22);
+      stickerIn("#s5-sticker", 23.8, 5);
+
+      // 6. Cierre
+      tl.fromTo("#s6-logo", { y: -80, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease }, 26.15);
+      tl.fromTo("#s6-title", { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease }, 26.4);
+      tl.fromTo("#s6-cta", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2.4)" }, 27.0);
+      tl.fromTo("#s6-cta", { scale: 1 }, { scale: 1.06, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 5, immediateRender: false }, 27.7);
+      tl.fromTo("#s6-note", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 27.5);
+      tl.fromTo("#s6-mascot", { scale: 0, rotate: -40 }, { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" }, 27.8);
+      tl.fromTo("#s6-bubble", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2.4)", transformOrigin: "0% 100%" }, 28.2);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
