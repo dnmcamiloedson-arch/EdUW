@@ -100,7 +100,7 @@
       .hook-text .gold { color: var(--gold); }
       .hook-small { margin-top: 40px; font: 500 40px/1.3 "Geist", sans-serif; color: rgba(255,255,255,.92); }
       .hook-photo {
-        position: absolute; left: 600px; top: 1300px; width: 400px; height: 520px; border-radius: 36px; overflow: hidden;
+        position: absolute; left: 340px; top: 1260px; width: 400px; height: 520px; border-radius: 36px; overflow: hidden;
         box-shadow: 0 0 0 8px #fff, 0 40px 80px -30px rgba(0,0,0,.5);
       }
       .hook-photo img { position: absolute; left: 0; top: 0; width: 400px; height: 520px; object-fit: cover; display: block; }
@@ -115,18 +115,18 @@
         box-shadow: 0 30px 60px -30px rgba(0,0,0,.5);
       }
 
-      .end-logo { position: absolute; left: 190px; top: 240px; width: 700px; padding: 40px 50px; border-radius: 40px; background: #fff; }
+      .end-logo { position: absolute; left: 190px; top: 440px; width: 700px; }
       .end-logo img { width: 100%; display: block; }
-      .end-title { position: absolute; left: 60px; right: 60px; top: 700px; text-align: center; color: #fff; font: 800 120px/0.96 "Bricolage Grotesque", sans-serif; letter-spacing: -.045em; }
+      .end-title { position: absolute; left: 60px; right: 60px; top: 860px; text-align: center; color: #fff; font: 800 120px/0.96 "Bricolage Grotesque", sans-serif; letter-spacing: -.045em; }
       .end-title .gold { color: var(--gold); }
       .cta {
-        position: absolute; left: 190px; top: 930px; width: 700px; height: 132px; border-radius: 999px;
+        position: absolute; left: 190px; top: 1090px; width: 700px; height: 132px; border-radius: 999px;
         background: var(--gold); color: var(--blue-ink);
         display: flex; align-items: center; justify-content: center;
         font: 800 54px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.02em;
         box-shadow: 0 30px 60px -20px rgba(0,0,0,.45);
       }
-      .end-note { position: absolute; left: 80px; right: 80px; top: 1110px; text-align: center; color: rgba(255,255,255,.92); font: 500 40px/1.3 "Geist", sans-serif; }
+      .end-note { position: absolute; left: 80px; right: 80px; top: 1270px; text-align: center; color: rgba(255,255,255,.92); font: 500 40px/1.3 "Geist", sans-serif; }
 
       /* Barrido de color entre escenas */
       .wipe { position: absolute; inset: 0; pointer-events: none; }
@@ -161,17 +161,16 @@
           </div>
           <p class="hook-small" id="s1-small">Vacantes, prácticas y servicio social en un solo lugar.</p>
         </div>
-        <div class="hook-photo" id="s1-photo" data-layout-allow-overflow><img src="assets/img/foto-1.jpg" alt="Atrio de la Universidad Westhill con stands" /></div>
-        <div class="mascot" id="s1-mascot" style="left: 90px; top: 1500px"><img src="assets/img/guia-avatar.webp" alt="" /></div>
+        <div class="hook-photo" id="s1-photo" data-layout-allow-overflow><img src="assets/img/foto-1.jpg" alt="Patio central de la Universidad Westhill con stands" /></div>
       </div>
 
       <!-- 2. VIDEO DEL ATRIO -->
       <div class="scene" id="s2">
         <div class="head">
           <span class="step"><b>01</b> Hoy en el campus</span>
-          <h2 class="title"><span class="ln"><span class="w">Los</span> <span class="w">stands</span> <span class="w k">ya</span> <span class="w k">están</span></span><span class="ln"><span class="w">listos</span> <span class="w">en</span> <span class="w">el</span> <span class="w g">atrio</span></span></h2>
+          <h2 class="title"><span class="ln"><span class="w">Los</span> <span class="w">stands</span> <span class="w k">ya</span> <span class="w k">están</span></span><span class="ln"><span class="w">listos</span> <span class="w">en</span> <span class="w">el</span> <span class="w g">patio</span></span><span class="ln"><span class="w g">central,</span> <span class="w g">ala</span> <span class="w g">sur</span></span></h2>
         </div>
-        <div class="frame" id="s2-frame">
+        <div class="frame" id="s2-frame" style="top: 570px; height: 1270px">
           <div class="media" id="s2-cam"><video id="v-atrio" class="clip media" src="assets/clips/atrio.mp4" playsinline data-has-audio="true" data-volume="0.6" data-start="3" data-duration="5.5" data-track-index="1" style="position:absolute; left:0px; top:0px; width:940px; height:1330px; object-fit:cover"></video></div>
         </div>
         <div class="sticker" id="s2-sticker" style="left: 640px; top: 1700px; background: #f2c94c; color: #0f2a45">En vivo</div>
@@ -184,7 +183,7 @@
           <h2 class="title"><span class="ln"><span class="w">Empresas</span> <span class="w">e</span></span><span class="ln"><span class="w k">instituciones</span></span></h2>
         </div>
         <div class="frame" id="s3-frame">
-          <img class="media" id="s3-img" src="assets/img/foto-1.jpg" alt="Atrio de Westhill con la manta Talento que construye comunidad" />
+          <img class="media" id="s3-img" src="assets/img/foto-1.jpg" alt="Patio central de Westhill con la manta Talento que construye comunidad" />
         </div>
         <div class="sticker" id="s3-sticker" style="left: 60px; top: 1690px; background: #1d7f47; color: #fff">Te están esperando</div>
       </div>
@@ -219,12 +218,10 @@
       <!-- 6. CIERRE -->
       <div class="scene" id="s6">
         <div class="bluefield"></div>
-        <div class="end-logo" id="s6-logo"><img src="assets/img/logo-westhill.png" alt="Universidad Westhill" /></div>
+        <div class="end-logo" id="s6-logo"><img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" /></div>
         <h2 class="end-title" id="s6-title">Feria de <span class="gold">Empleo</span></h2>
-        <div class="cta" id="s6-cta">Ven hoy al atrio</div>
-        <p class="end-note" id="s6-note">Trae tu CV y pregunta por las vacantes.</p>
-        <div class="mascot" id="s6-mascot" style="left: 80px; top: 1500px; width: 260px; height: 260px"><img src="assets/img/guia-avatar.webp" alt="" /></div>
-        <div class="bubble" id="s6-bubble" style="left: 370px; top: 1550px">¡Te esperamos!</div>
+        <div class="cta" id="s6-cta">Ven al patio central</div>
+        <p class="end-note" id="s6-note">Ala sur. Ven a checar las oportunidades que las empresas tienen para ti.</p>
       </div>
 
       <div class="wipe" id="wipe" data-layout-allow-overflow><span></span><span></span><span></span></div>
@@ -291,9 +288,8 @@
       tl.fromTo("#s1 .big .w", { yPercent: 120 }, { yPercent: 0, duration: 0.55, ease: "back.out(1.6)", stagger: 0.08 }, 0.15);
       tl.fromTo("#s1-small", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease }, 1.2);
       tl.fromTo("#s1-photo", { y: 300, rotate: 14, opacity: 0 }, { y: 0, rotate: 6, opacity: 1, duration: 0.8, ease: "back.out(1.4)" }, 1.0);
-      tl.fromTo("#s1-mascot", { scale: 0, rotate: -30 }, { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" }, 1.7);
 
-      // 2. Video del atrio con acercamiento lento
+      // 2. Video del patio central con acercamiento lento
       titleIn("#s2", 3);
       tl.fromTo("#s2-frame", { y: 500, rotate: 4, opacity: 0 }, { y: 0, rotate: 0, opacity: 1, duration: 0.8, ease }, 3.05);
       tl.fromTo("#s2-cam", { scale: 1 }, { scale: 1.12, duration: 5.5, ease: "power1.inOut" }, 3);
@@ -336,8 +332,6 @@
       tl.fromTo("#s6-cta", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(2.4)" }, 27.0);
       tl.fromTo("#s6-cta", { scale: 1 }, { scale: 1.06, duration: 0.25, ease: "sine.inOut", yoyo: true, repeat: 5, immediateRender: false }, 27.7);
       tl.fromTo("#s6-note", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 27.5);
-      tl.fromTo("#s6-mascot", { scale: 0, rotate: -40 }, { scale: 1, rotate: 0, duration: 0.7, ease: "back.out(2.2)" }, 27.8);
-      tl.fromTo("#s6-bubble", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2.4)", transformOrigin: "0% 100%" }, 28.2);
 
       window.__timelines["main"] = tl;
     </script>

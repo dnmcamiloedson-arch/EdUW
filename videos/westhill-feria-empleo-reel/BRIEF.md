@@ -13,10 +13,10 @@ length: 30s
 
 Reel vertical con la misma composición del Reel Premedical (títulos cinéticos,
 barridos de color de marca, barra de progreso, música original y efectos),
-usando las fotos y el video tomados en el atrio durante la Feria de Empleo.
+usando las fotos y el video tomados en el patio central, ala sur durante la Feria de Empleo.
 
 ## Assets
 
-- `assets/clips/atrio.mp4`: video del atrio con los stands (con su audio ambiente).
-- `assets/img/foto-1..5.jpg`: atrio, stand INPI, stand CONFE, stand Probecarios,
+- `assets/clips/atrio.mp4`: video del patio central con los stands (con su audio ambiente).
+- `assets/img/foto-1..5.jpg`: patio central, stand INPI, stand CONFE, stand Probecarios,
   cartel de posgrado Westhill.
