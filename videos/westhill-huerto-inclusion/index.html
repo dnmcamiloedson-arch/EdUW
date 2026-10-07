@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Huerto Inclusión Westhill</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Cormorant"; src: url("assets/fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2"); font-weight: 400; font-display: block; }
+      @font-face { font-family: "Cormorant"; src: url("assets/fonts/cormorant-garamond-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: block; }
+      @font-face { font-family: "Caveat"; src: url("assets/fonts/caveat-latin-700-normal.woff2") format("woff2"); font-weight: 700; font-display: block; }
+      @font-face { font-family: "Geist"; src: url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+      :root { --blue: #276092; --ink: #173d61; --green: #27ae60; --green-ink: #1d7f47; --gold: #f2c94c; --paper: #f5f0e4; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: var(--paper); }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Geist", sans-serif; color: var(--ink); background: radial-gradient(110% 70% at 50% 40%, #fbf8f0 0%, var(--paper) 60%, #ebe3d0 100%); }
+      .bot { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; fill: none; stroke-linecap: round; stroke-linejoin: round; opacity: .55; }
+      .bot .d { stroke-dasharray: 1; stroke-dashoffset: 1; }
+
+      .head { position: absolute; left: 80px; right: 80px; top: 96px; display: flex; align-items: baseline; justify-content: space-between; }
+      .head b { font: 500 26px/1 "Geist Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--blue); }
+      .head span { font: 700 58px/1 "Caveat", cursive; color: var(--green-ink); }
+      .stem { position: absolute; left: 80px; right: 80px; top: 162px; height: 3px; border-radius: 3px; background: var(--green); transform-origin: 0 50%; }
+
+      .intro { position: absolute; inset: 0; }
+      .kick { position: absolute; left: 0; right: 0; top: 600px; text-align: center; font: 500 28px/1 "Geist Mono", monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--blue); }
+      .title { position: absolute; left: 60px; right: 60px; top: 670px; text-align: center; font: 700 120px/1.02 "Cormorant", serif; letter-spacing: -.01em; color: var(--ink); }
+      .title .ln { display: block; }
+      .m { display: inline-block; overflow: hidden; vertical-align: top; padding-bottom: 10px; }
+      .w { display: inline-block; }
+      .w.g { color: var(--green-ink); }
+      .hand { position: absolute; left: 0; right: 0; top: 1130px; text-align: center; font: 700 68px/1 "Caveat", cursive; color: var(--green-ink); }
+      .uline { position: absolute; left: 330px; top: 1200px; width: 420px; height: 40px; fill: none; stroke: var(--gold); stroke-width: 6px; stroke-linecap: round; }
+      .uline path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+
+      .scene { position: absolute; inset: 0; }
+      .card { position: absolute; background: #fffdf8; padding: 22px; box-shadow: 0 2px 0 rgba(23,61,97,.06), 0 40px 70px -40px rgba(23,61,97,.55); }
+      .card.main { left: 120px; top: 230px; width: 840px; height: 1200px; transform: rotate(var(--r)); }
+      .card.insert { left: 50px; top: 250px; width: 420px; height: 560px; padding: 16px; }
+      .win { position: relative; width: 100%; height: 100%; overflow: hidden; background: #e9e2d1; }
+      .media { position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: cover; }
+      .tape { position: absolute; width: 190px; height: 54px; }
+      .tape.t1 { left: -40px; top: 26px; transform: rotate(-38deg); background: rgba(242,201,76,.78); }
+      .tape.t2 { right: -40px; top: 26px; transform: rotate(38deg); background: rgba(39,174,96,.55); }
+      .tape.t3 { left: 120px; top: -22px; width: 170px; transform: rotate(-4deg); background: rgba(242,201,76,.78); }
+      .tag { position: absolute; left: 150px; width: 780px; top: 1370px; padding: 28px 40px 34px; background: #fffdf8; border: 2px solid rgba(39,96,146,.28); border-radius: 10px; box-shadow: 0 30px 50px -36px rgba(23,61,97,.6); text-align: left; }
+      .tag .no { display: block; font: 500 24px/1 "Geist Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--green-ink); }
+      .tag .tx { display: block; margin-top: 14px; font: 700 62px/1.04 "Cormorant", serif; color: var(--ink); }
+      .tag .note { display: block; margin-top: 10px; font: 700 46px/1 "Caveat", cursive; color: var(--blue); }
+      .skill { position: absolute; display: flex; align-items: center; gap: 16px; padding: 14px 30px 18px 22px; border-radius: 16px; background: #fffdf8; box-shadow: 0 18px 30px -18px rgba(23,61,97,.7); font: 700 54px/1 "Caveat", cursive; color: var(--green-ink); rotate: var(--r); }
+      .skill i { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--gold); }
+
+      .end { position: absolute; inset: 0; }
+      .end-logo { position: absolute; left: 230px; top: 620px; width: 620px; }
+      .end-logo img { display: block; width: 100%; }
+      .end-div { position: absolute; left: 390px; top: 920px; width: 300px; height: 60px; fill: none; stroke: var(--green); stroke-width: 3px; stroke-linecap: round; }
+      .end-div path { stroke-dasharray: 1; stroke-dashoffset: 1; }
+      .end-t { position: absolute; left: 60px; right: 60px; top: 1010px; text-align: center; font: 700 76px/1.05 "Cormorant", serif; color: var(--ink); }
+      .end-h { position: absolute; left: 0; right: 0; top: 1200px; text-align: center; font: 700 60px/1 "Caveat", cursive; color: var(--green-ink); }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="35.0" data-width="1080" data-height="1920">
+      <div id="botanica" data-layout-allow-overflow>
+        <svg id="b1" class="bot" viewBox="0 0 1080 1920" style="stroke: #27ae60; stroke-width: 3px"><path class="d" d="M-40.0 560.0 Q204.1 338.7 251.1 12.6" pathLength="1" /><path class="d" d="M15.7 505.4 Q35.9 415.1 -16.9 339.3 Q-37.1 429.5 15.7 505.4" pathLength="1" /><path class="d" d="M15.7 505.4 Q94.6 553.7 183.5 528.1 Q104.6 479.9 15.7 505.4" pathLength="1" /><path class="d" d="M47.5 469.9 Q62.2 384.4 9.0 315.8 Q-5.7 401.3 47.5 469.9" pathLength="1" /><path class="d" d="M47.5 469.9 Q123.7 511.4 205.8 483.3 Q129.6 441.8 47.5 469.9" pathLength="1" /><path class="d" d="M77.1 433.3 Q86.6 352.8 33.7 291.3 Q24.2 371.9 77.1 433.3" pathLength="1" /><path class="d" d="M77.1 433.3 Q150.2 468.4 225.5 438.1 Q152.3 403.1 77.1 433.3" pathLength="1" /><path class="d" d="M104.5 395.5 Q109.4 320.3 57.2 265.8 Q52.3 341.0 104.5 395.5" pathLength="1" /><path class="d" d="M104.5 395.5 Q174.1 424.5 242.5 392.8 Q172.9 363.8 104.5 395.5" pathLength="1" /><path class="d" d="M129.7 356.6 Q130.5 286.8 79.7 239.1 Q78.8 308.8 129.7 356.6" pathLength="1" /><path class="d" d="M129.7 356.6 Q195.4 379.9 257.0 347.2 Q191.3 323.9 129.7 356.6" pathLength="1" /><path class="d" d="M152.7 316.5 Q150.0 252.5 101.0 211.2 Q103.7 275.2 152.7 316.5" pathLength="1" /><path class="d" d="M152.7 316.5 Q214.1 334.6 269.0 301.6 Q207.6 283.4 152.7 316.5" pathLength="1" /><path class="d" d="M173.5 275.2 Q167.9 217.1 121.4 181.9 Q126.9 240.0 173.5 275.2" pathLength="1" /><path class="d" d="M173.5 275.2 Q230.3 288.7 278.6 256.0 Q221.8 242.5 173.5 275.2" pathLength="1" /><path class="d" d="M192.1 232.7 Q184.3 180.6 140.6 151.2 Q148.4 203.3 192.1 232.7" pathLength="1" /><path class="d" d="M192.1 232.7 Q244.0 242.2 286.0 210.4 Q234.1 200.9 192.1 232.7" pathLength="1" /><path class="d" d="M208.6 189.1 Q199.2 143.1 158.8 118.9 Q168.2 164.9 208.6 189.1" pathLength="1" /><path class="d" d="M208.6 189.1 Q255.2 195.1 291.1 164.8 Q244.5 158.8 208.6 189.1" pathLength="1" /><path class="d" d="M222.8 144.4 Q212.4 104.3 175.9 84.9 Q186.3 125.0 222.8 144.4" pathLength="1" /><path class="d" d="M222.8 144.4 Q264.0 147.5 294.2 119.2 Q253.0 116.1 222.8 144.4" pathLength="1" /><path class="d" d="M234.9 98.4 Q224.2 64.4 191.9 49.3 Q202.6 83.3 234.9 98.4" pathLength="1" /><path class="d" d="M234.9 98.4 Q270.5 99.3 295.2 73.6 Q259.6 72.8 234.9 98.4" pathLength="1" /><path class="d" d="M244.7 51.3 Q234.3 23.2 206.6 11.9 Q217.0 40.0 244.7 51.3" pathLength="1" /><path class="d" d="M244.7 51.3 Q274.7 50.6 294.4 28.0 Q264.4 28.7 244.7 51.3" pathLength="1" /></svg>
+        <svg id="b2" class="bot" viewBox="0 0 1080 1920" style="stroke: #27ae60; stroke-width: 3px"><path class="d" d="M1120.0 1500.0 Q840.7 1337.5 750.6 1027.2" pathLength="1" /><path class="d" d="M1055.7 1458.9 Q966.5 1452.0 901.1 1513.1 Q990.4 1520.0 1055.7 1458.9" pathLength="1" /><path class="d" d="M1055.7 1458.9 Q1091.1 1376.7 1054.3 1295.1 Q1019.0 1377.3 1055.7 1458.9" pathLength="1" /><path class="d" d="M1014.9 1428.3 Q932.3 1416.8 868.0 1470.0 Q950.6 1481.5 1014.9 1428.3" pathLength="1" /><path class="d" d="M1014.9 1428.3 Q1052.5 1353.8 1022.9 1275.8 Q985.4 1350.3 1014.9 1428.3" pathLength="1" /><path class="d" d="M976.6 1395.8 Q900.8 1380.3 838.2 1425.8 Q914.0 1441.2 976.6 1395.8" pathLength="1" /><path class="d" d="M976.6 1395.8 Q1015.8 1329.0 993.0 1255.1 Q953.9 1321.8 976.6 1395.8" pathLength="1" /><path class="d" d="M940.9 1361.2 Q872.1 1342.5 811.8 1380.7 Q880.6 1399.4 940.9 1361.2" pathLength="1" /><path class="d" d="M940.9 1361.2 Q980.9 1302.1 964.3 1232.8 Q924.3 1291.9 940.9 1361.2" pathLength="1" /><path class="d" d="M907.7 1324.7 Q846.0 1303.5 788.6 1334.8 Q850.4 1355.9 907.7 1324.7" pathLength="1" /><path class="d" d="M907.7 1324.7 Q947.8 1273.1 936.8 1208.8 Q896.7 1260.4 907.7 1324.7" pathLength="1" /><path class="d" d="M877.1 1286.2 Q822.5 1263.4 768.7 1288.2 Q823.3 1311.1 877.1 1286.2" pathLength="1" /><path class="d" d="M877.1 1286.2 Q916.4 1241.9 910.3 1183.0 Q871.0 1227.3 877.1 1286.2" pathLength="1" /><path class="d" d="M849.0 1245.7 Q801.4 1222.0 751.7 1241.2 Q799.4 1264.8 849.0 1245.7" pathLength="1" /><path class="d" d="M849.0 1245.7 Q886.8 1208.3 884.8 1155.2 Q847.0 1192.6 849.0 1245.7" pathLength="1" /><path class="d" d="M823.5 1203.3 Q782.7 1179.6 737.7 1193.6 Q778.5 1217.3 823.5 1203.3" pathLength="1" /><path class="d" d="M823.5 1203.3 Q859.1 1172.3 860.3 1125.2 Q824.7 1156.1 823.5 1203.3" pathLength="1" /><path class="d" d="M800.5 1158.8 Q766.3 1135.9 726.4 1145.7 Q760.5 1168.5 800.5 1158.8" pathLength="1" /><path class="d" d="M800.5 1158.8 Q833.1 1133.8 836.8 1092.9 Q804.2 1117.9 800.5 1158.8" pathLength="1" /><path class="d" d="M780.0 1112.3 Q752.1 1091.1 717.6 1097.3 Q745.5 1118.5 780.0 1112.3" pathLength="1" /><path class="d" d="M780.0 1112.3 Q809.1 1092.8 814.4 1058.2 Q785.3 1077.7 780.0 1112.3" pathLength="1" /><path class="d" d="M762.1 1063.9 Q740.1 1045.0 711.3 1048.4 Q733.3 1067.3 762.1 1063.9" pathLength="1" /><path class="d" d="M762.1 1063.9 Q787.1 1049.2 793.2 1020.8 Q768.2 1035.5 762.1 1063.9" pathLength="1" /></svg>
+        <svg id="b3" class="bot" viewBox="0 0 1080 1920" style="stroke: #276092; stroke-width: 2.5px"><path class="d" d="M880.0 330.0 Q839.2 199.7 703.8 182.2 Q744.6 312.5 880.0 330.0" pathLength="1" /><path class="d" d="M880.0 330.0 L703.8 182.2" pathLength="1" /><path class="d" d="M848.0 303.1 L807.0 305.2" pathLength="1" /><path class="d" d="M848.0 303.1 L843.0 262.4" pathLength="1" /><path class="d" d="M815.9 276.2 L780.0 278.1" pathLength="1" /><path class="d" d="M815.9 276.2 L811.5 240.5" pathLength="1" /><path class="d" d="M783.9 249.4 L753.0 251.0" pathLength="1" /><path class="d" d="M783.9 249.4 L780.1 218.6" pathLength="1" /><path class="d" d="M751.9 222.5 L726.0 223.8" pathLength="1" /><path class="d" d="M751.9 222.5 L748.7 196.7" pathLength="1" /><path class="d" d="M150.0 1640.0 Q268.6 1635.1 313.8 1525.3 Q195.2 1530.2 150.0 1640.0" pathLength="1" /><path class="d" d="M150.0 1640.0 L313.8 1525.3" pathLength="1" /><path class="d" d="M179.8 1619.1 L187.2 1584.3" pathLength="1" /><path class="d" d="M179.8 1619.1 L215.1 1624.1" pathLength="1" /><path class="d" d="M209.6 1598.3 L216.1 1567.7" pathLength="1" /><path class="d" d="M209.6 1598.3 L240.5 1602.6" pathLength="1" /><path class="d" d="M239.4 1577.4 L245.0 1551.1" pathLength="1" /><path class="d" d="M239.4 1577.4 L266.0 1581.2" pathLength="1" /><path class="d" d="M269.1 1556.6 L273.8 1534.5" pathLength="1" /><path class="d" d="M269.1 1556.6 L291.5 1559.7" pathLength="1" /></svg>
+      </div>
+
+      <div class="intro clip" id="intro" data-start="0" data-duration="5.0" data-track-index="1">
+        <p class="kick" id="kick">Inclusión y Diversidad Educativa</p>
+        <h1 class="title" id="title"><span class="ln"><span class="m"><span class="w ">Naturaleza</span></span></span><span class="ln"><span class="m"><span class="w ">que</span></span> <span class="m"><span class="w ">se</span></span> <span class="m"><span class="w ">transforma</span></span></span><span class="ln"><span class="m"><span class="w ">en</span></span> <span class="m"><span class="w g">aprendizaje</span></span></span></h1>
+        <p class="hand" id="hand">materia de Huerto</p>
+        <svg class="uline" viewBox="0 0 420 40"><path id="uline" d="M6 26 C 110 8, 220 34, 414 14" pathLength="1" /></svg>
+      </div>
+
+      <div class="head clip" id="head" data-start="5.0" data-duration="25.0" data-track-index="4"><b>Inclusión y Diversidad Educativa</b><span>Huerto</span></div>
+      <div class="stem clip" id="stem" data-start="5.0" data-duration="25.0" data-track-index="5"></div>
+
+      <div class="scene" id="s2" style="opacity: 0">
+        <div class="card main" id="s2-card" style="--r: -2deg"><div class="win"><video id="s2-v" class="clip media" src="assets/clips/pegado.mp4" muted playsinline data-start="5" data-duration="5.0" data-media-start="0" data-track-index="2" style="object-position: 50% 50%; transform-origin: 50% 50%"></video></div><i class="tape t1"></i><i class="tape t2"></i></div>
+        <div class="tag" id="s2-tag"><span class="no">N.º 01 · Huerto</span><span class="tx">Observación, creatividad y trabajo manual</span><span class="note">materia de Huerto</span></div>
+      </div>
+      <div class="scene" id="s3" style="opacity: 0">
+        <div class="card main" id="s3-card" style="--r: 2deg"><div class="win"><img class="media" src="assets/img/foto-manos.jpg" alt="" style="object-position: 50% 60%; transform-origin: 50% 55%" /></div><i class="tape t1"></i><i class="tape t2"></i></div>
+        <div class="card insert" id="s3-ins"><div class="win"><img class="media" src="assets/img/foto-mesa.jpg" alt="" style="object-position: 62% 40%" /></div><i class="tape t3"></i></div>
+        <div class="tag" id="s3-tag"><span class="no">N.º 02 · Huerto</span><span class="tx">Prensado y composición botánica</span><span class="note">observar · elegir · componer</span></div>
+      </div>
+      <div class="scene" id="s4" style="opacity: 0">
+        <div class="card main" id="s4-card" style="--r: -1.5deg"><div class="win"><img class="media" src="assets/img/foto-equipo.jpg" alt="" style="object-position: 30% 50%; transform-origin: 40% 60%" /></div><i class="tape t1"></i><i class="tape t2"></i></div>
+        <div class="skill" id="s4-k0" style="left: 70px; top: 330px; --r: -6deg"><i></i>atención</div>
+        <div class="skill" id="s4-k1" style="left: 590px; top: 470px; --r: 5deg"><i></i>organización</div>
+        <div class="skill" id="s4-k2" style="left: 60px; top: 820px; --r: 4deg"><i></i>coordinación motriz</div>
+        <div class="skill" id="s4-k3" style="left: 520px; top: 1000px; --r: -5deg"><i></i>toma de decisiones</div>
+        <div class="tag" id="s4-tag"><span class="no">N.º 03 · Huerto</span><span class="tx">Habilidades que se cultivan</span></div>
+      </div>
+      <div class="scene" id="s5" style="opacity: 0">
+        <div class="card main" id="s5-card" style="--r: 2.5deg"><div class="win"><video id="s5-v" class="clip media" src="assets/clips/cuadro.mp4" muted playsinline data-start="20" data-duration="5.0" data-media-start="0" data-track-index="3" style="object-position: 8% 50%; transform-origin: 30% 45%"></video></div><i class="tape t1"></i><i class="tape t2"></i></div>
+        <div class="tag" id="s5-tag"><span class="no">N.º 04 · Huerto</span><span class="tx">Explorar formas, texturas y elementos naturales</span></div>
+      </div>
+      <div class="scene" id="s6" style="opacity: 0">
+        <div class="card main" id="s6-card" style="--r: -2deg"><div class="win"><img class="media" src="assets/img/foto-cuadro.jpg" alt="" style="object-position: 72% 40%; transform-origin: 62% 42%" /></div><i class="tape t1"></i><i class="tape t2"></i></div>
+        <div class="tag" id="s6-tag"><span class="no">N.º 05 · Huerto</span><span class="tx">Una experiencia para crear, participar y aprender desde lo concreto</span></div>
+      </div>
+
+      <div class="end clip" id="end" data-start="30.0" data-duration="5.0" data-track-index="12">
+        <div class="end-logo" id="end-logo"><img src="assets/img/logo-westhill-transp.png" alt="Universidad Westhill" /></div>
+        <svg class="end-div" viewBox="0 0 300 60"><path class="ed" d="M10 30 L290 30" pathLength="1" /><path class="ed" d="M150.0 30.0 Q146.2 4.3 122.9 -7.2 Q126.8 18.5 150.0 30.0" pathLength="1" /><path class="ed" d="M150.0 30.0 Q173.3 18.5 177.1 -7.1 Q153.9 4.3 150.0 30.0" pathLength="1" /></svg>
+        <h2 class="end-t" id="end-t">Inclusión y Diversidad Educativa</h2>
+        <p class="end-h" id="end-h">aprender desde lo concreto</p>
+      </div>
+
+      <audio id="music" src="assets/audio/music-huerto.mp3" data-start="0" data-duration="35.0" data-track-index="20" data-volume="0.75"></audio>
+      <audio id="fx00" src="assets/audio/swish.mp3" data-start="4.90" data-duration="0.28" data-track-index="21" data-volume="0.35"></audio>
+      <audio id="fx01" src="assets/audio/swish.mp3" data-start="12.20" data-duration="0.28" data-track-index="22" data-volume="0.3"></audio>
+      <audio id="fx02" src="assets/audio/swish.mp3" data-start="9.90" data-duration="0.28" data-track-index="23" data-volume="0.35"></audio>
+      <audio id="fx03" src="assets/audio/tick.mp3" data-start="16.30" data-duration="0.02" data-track-index="24" data-volume="0.35"></audio>
+      <audio id="fx04" src="assets/audio/tick.mp3" data-start="16.85" data-duration="0.02" data-track-index="25" data-volume="0.35"></audio>
+      <audio id="fx05" src="assets/audio/tick.mp3" data-start="17.40" data-duration="0.02" data-track-index="26" data-volume="0.35"></audio>
+      <audio id="fx06" src="assets/audio/tick.mp3" data-start="17.95" data-duration="0.02" data-track-index="27" data-volume="0.35"></audio>
+      <audio id="fx07" src="assets/audio/swish.mp3" data-start="14.90" data-duration="0.28" data-track-index="28" data-volume="0.35"></audio>
+      <audio id="fx08" src="assets/audio/swish.mp3" data-start="19.90" data-duration="0.28" data-track-index="29" data-volume="0.35"></audio>
+      <audio id="fx09" src="assets/audio/swish.mp3" data-start="24.90" data-duration="0.28" data-track-index="30" data-volume="0.35"></audio>
+      <audio id="fx10" src="assets/audio/ding.mp3" data-start="1.60" data-duration="0.91" data-track-index="31" data-volume="0.3"></audio>
+      <audio id="fx11" src="assets/audio/swish.mp3" data-start="29.90" data-duration="0.28" data-track-index="32" data-volume="0.35"></audio>
+      <audio id="fx12" src="assets/audio/ding.mp3" data-start="30.60" data-duration="0.91" data-track-index="33" data-volume="0.35"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const ease = "power3.out";
+
+      function enter(id, at, r) {
+        tl.set(id, { opacity: 1, y: 0 }, at);
+        tl.set(id, { opacity: 0 }, at + 5.0);
+        tl.fromTo(id + "-card", { y: 260, rotate: r + 6, opacity: 0 }, { y: 0, rotate: r, opacity: 1, duration: 0.9, ease }, at);
+        tl.fromTo(id + " .win .media", { scale: 1.12 }, { scale: 1.0, duration: 5.0, ease: "none" }, at);
+        tl.fromTo(id + "-tag", { y: 80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease }, at + 0.4);
+        tl.fromTo(id + "-tag .tx", { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6, ease }, at + 0.6);
+        tl.fromTo(id + "-tag .note", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.5, ease }, at + 1.0);
+      }
+      function leave(id, at) {
+        tl.fromTo(id, { y: 0, opacity: 1 }, { y: -160, opacity: 0, duration: 0.55, ease: "power2.in", immediateRender: false }, at - 0.55);
+      }
+
+      // Botánica: se dibuja al inicio y se mece suave durante todo el video
+      tl.fromTo("#b1 .d", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.4, ease: "power2.out", stagger: 0.03 }, 0.1);
+      tl.fromTo("#b2 .d", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.4, ease: "power2.out", stagger: 0.03 }, 0.5);
+      tl.fromTo("#b3 .d", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.2, ease: "power2.out", stagger: 0.04 }, 0.9);
+      tl.fromTo("#b1", { rotate: 0 }, { rotate: 3, duration: 35.0, ease: "sine.inOut", transformOrigin: "0% 30%" }, 0);
+      tl.fromTo("#b2", { rotate: 0 }, { rotate: -3, duration: 35.0, ease: "sine.inOut", transformOrigin: "100% 78%" }, 0);
+
+      // Intro
+      tl.fromTo("#kick", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease }, 0.3);
+      tl.fromTo("#title .w", { yPercent: 105 }, { yPercent: 0, duration: 0.9, ease, stagger: 0.12 }, 0.55);
+      tl.fromTo("#hand", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease }, 1.6);
+      tl.fromTo("#uline", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut" }, 1.9);
+      tl.fromTo("#intro", { y: 0, opacity: 1 }, { y: -160, opacity: 0, duration: 0.55, ease: "power2.in", immediateRender: false }, 4.45);
+      tl.fromTo("#head", { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7, ease }, 5.0);
+      tl.fromTo("#stem", { scaleX: 0 }, { scaleX: 1, duration: 25.0, ease: "none" }, 5.0);
+      tl.fromTo(["#head", "#stem"], { opacity: 1 }, { opacity: 0, duration: 0.4, ease: "none", immediateRender: false }, 29.55);
+
+      enter("#s2", 5, -2);
+      leave("#s2", 10.0);
+      enter("#s3", 10, 2);
+      leave("#s3", 15.0);
+      tl.fromTo("#s3-ins", { x: -500, rotate: -18, opacity: 0 }, { x: 0, rotate: -6, opacity: 1, duration: 0.8, ease: "power3.out" }, 12.2);
+      enter("#s4", 15, -1.5);
+      leave("#s4", 20.0);
+      tl.fromTo("#s4-k0", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 16.30);
+      tl.fromTo("#s4-k1", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 16.85);
+      tl.fromTo("#s4-k2", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 17.40);
+      tl.fromTo("#s4-k3", { scale: 0, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: "back.out(2)" }, 17.95);
+      enter("#s5", 20, 2.5);
+      leave("#s5", 25.0);
+      enter("#s6", 25, -2);
+
+      // Cierre
+      const E = 30.0;
+      tl.fromTo("#end-logo", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1.0, ease }, E + 0.2);
+      tl.fromTo("#end .ed", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.8, ease: "power2.inOut", stagger: 0.15 }, E + 0.8);
+      tl.fromTo("#end-t", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease }, E + 1.1);
+      tl.fromTo("#end-h", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease }, E + 1.5);
+
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
