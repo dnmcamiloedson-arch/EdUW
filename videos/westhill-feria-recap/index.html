@@ -26,6 +26,8 @@
       #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
       .shot { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
       .shot video { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+      /* Reencuadre fijo hacia los rostros en tomas abiertas */
+      .crop { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
 
       /* Pantalla dividida en tres franjas */
       .band { position: absolute; left: 0; width: 1080px; height: 640px; overflow: hidden; }
@@ -55,7 +57,7 @@
       .cap .w {
         display: inline-block; margin: 0 6px;
         font: 800 86px/1.02 "Bricolage Grotesque", sans-serif; letter-spacing: -.035em;
-        color: #fff; text-shadow: 0 6px 24px rgba(0,0,0,.45);
+        color: #fff; text-shadow: 0 0 3px rgba(5,12,22,.9), 0 4px 18px rgba(5,12,22,.8);
       }
       .cap .hi { background: var(--gold); color: var(--blue-ink); padding: 4px 18px 10px; border-radius: 18px; text-shadow: none; }
       .cap .hb { background: var(--blue); color: #fff; padding: 4px 18px 10px; border-radius: 18px; text-shadow: none; }
@@ -97,8 +99,8 @@
         <div class="shot" id="sh-h1"><video id="v-h1" class="clip" src="assets/clips/c0171.mp4" muted playsinline data-start="0" data-duration="0.25" data-media-start="2.0" data-track-index="1"></video></div>
         <div class="shot" id="sh-h2"><video id="v-h2" class="clip" src="assets/clips/c0164.mp4" muted playsinline data-start="0.25" data-duration="0.25" data-media-start="2.5" data-track-index="1"></video></div>
         <div class="shot" id="sh-h3"><video id="v-h3" class="clip" src="assets/clips/c0163.mp4" muted playsinline data-start="0.5" data-duration="0.25" data-media-start="1.0" data-track-index="1"></video></div>
-        <div class="shot" id="sh-h4"><video id="v-h4" class="clip" src="assets/clips/c0187.mp4" muted playsinline data-start="0.75" data-duration="0.25" data-media-start="3.0" data-track-index="1"></video></div>
-        <div class="shot" id="sh-h5"><video id="v-h5" class="clip" src="assets/clips/c0182.mp4" muted playsinline data-start="1.0" data-duration="0.25" data-media-start="2.0" data-track-index="1"></video></div>
+        <div class="shot" id="sh-h4"><video id="v-h4" class="clip" src="assets/clips/c0165.mp4" muted playsinline data-start="0.75" data-duration="0.25" data-media-start="2.0" data-track-index="1"></video></div>
+        <div class="shot" id="sh-h5"><video id="v-h5" class="clip" src="assets/clips/c0186.mp4" muted playsinline data-start="1.0" data-duration="0.25" data-media-start="1.0" data-track-index="1"></video></div>
         <div class="shot" id="sh-h6"><video id="v-h6" class="clip" src="assets/clips/c0190.mp4" muted playsinline data-start="1.25" data-duration="0.25" data-media-start="1.0" data-track-index="1"></video></div>
         <div class="shot" id="sh-h7"><video id="v-h7" class="clip" src="assets/clips/c0166.mp4" muted playsinline data-start="1.5" data-duration="0.25" data-media-start="4.0" data-track-index="1"></video></div>
         <div class="shot" id="sh-h8"><video id="v-h8" class="clip" src="assets/clips/c0176.mp4" muted playsinline data-start="1.75" data-duration="0.25" data-media-start="3.0" data-track-index="1"></video></div>
@@ -112,24 +114,22 @@
         <div class="shot" id="sh-b2"><video id="v-b2" class="clip" src="assets/clips/c0165.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="7.5" data-duration="2.7" data-media-start="0.8" data-track-index="2"></video></div>
 
         <!-- 3. Probecarios -->
-        <div class="shot" id="sh-c1"><video id="v-c1" class="clip" src="assets/clips/c0166.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="9.8" data-duration="2.2" data-media-start="2.0" data-track-index="1"></video></div>
-        <div class="shot" id="sh-c2"><video id="v-c2" class="clip" src="assets/clips/c0187.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="12" data-duration="2" data-media-start="1.5" data-track-index="2"></video></div>
+        <div class="shot" id="sh-c1"><video id="v-c1" class="clip" src="assets/clips/c0166.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="9.8" data-duration="4.2" data-media-start="2.0" data-track-index="1"></video></div>
 
         <!-- 4. CONFE -->
         <div class="shot" id="sh-d1"><video id="v-d1" class="clip" src="assets/clips/c0186.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="14" data-duration="2.2" data-media-start="0.1" data-track-index="1"></video></div>
 
         <!-- 5. Pantalla dividida -->
         <div id="split" data-layout-allow-overflow>
-          <div class="band" id="band-1" style="top: 0px"><video id="v-s1" class="clip" src="assets/clips/c0164.mp4" muted playsinline data-start="16" data-duration="4" data-media-start="1.0" data-track-index="3"></video></div>
-          <div class="band" id="band-2" style="top: 640px"><video id="v-s2" class="clip" src="assets/clips/c0170.mp4" muted playsinline data-start="16" data-duration="4" data-media-start="0" data-playback-rate="0.82" data-track-index="4"></video></div>
-          <div class="band" id="band-3" style="top: 1280px"><video id="v-s3" class="clip" src="assets/clips/c0182.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="16" data-duration="4" data-media-start="1.0" data-track-index="5"></video></div>
+          <div class="band" id="band-1" style="top: 0px"><video id="v-s1" class="clip" style="object-position: 50% 28%" src="assets/clips/c0164.mp4" muted playsinline data-start="16" data-duration="4" data-media-start="1.0" data-track-index="3"></video></div>
+          <div class="band" id="band-2" style="top: 640px"><video id="v-s2" class="clip" style="object-position: 50% 22%" src="assets/clips/c0170.mp4" muted playsinline data-start="16" data-duration="4" data-media-start="0" data-playback-rate="0.82" data-track-index="4"></video></div>
+          <div class="band" id="band-3" style="top: 1280px"><video id="v-s3" class="clip" style="object-position: 50% 45%" src="assets/clips/c0163.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="16" data-duration="4" data-media-start="0" data-playback-rate="0.85" data-track-index="5"></video></div>
           <div class="band-line" id="bl-1" style="top: 636px"></div>
           <div class="band-line" id="bl-2" style="top: 1276px"></div>
         </div>
 
         <!-- 6. Palomitas -->
-        <div class="shot" id="sh-e1"><video id="v-e1" class="clip" src="assets/clips/c0188.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="20" data-duration="2" data-media-start="0.5" data-track-index="1"></video></div>
-        <div class="shot" id="sh-e2"><video id="v-e2" class="clip" src="assets/clips/c0181.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="22" data-duration="2.2" data-media-start="0" data-track-index="2"></video></div>
+        <div class="shot" id="sh-e1"><video id="v-e1" class="clip" src="assets/clips/c0188.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="20" data-duration="4.2" data-media-start="0" data-playback-rate="0.85" data-track-index="1"></video></div>
 
         <!-- 7. Stand Westhill -->
         <div class="shot" id="sh-f1"><video id="v-f1" class="clip" src="assets/clips/c0176.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="23.8" data-duration="4.2" data-media-start="0" data-track-index="1"></video></div>
@@ -137,10 +137,10 @@
         <!-- 8. Álbum de fotos -->
         <div class="dump" id="dump" style="opacity: 0"></div>
         <div class="pol" id="p1" style="opacity: 0"><img src="assets/img/foto-brigada.jpg" alt="Alumnas en el stand de la Brigada Rotaria" /></div>
-        <div class="pol" id="p2" style="opacity: 0"><img src="assets/img/still-c0187.jpg" alt="Alumnas en el stand de Probecarios" /></div>
+        <div class="pol" id="p2" style="opacity: 0"><img src="assets/img/still-c0165.jpg" alt="Alumno platicando con la Brigada Rotaria" /></div>
         <div class="pol" id="p3" style="opacity: 0"><img src="assets/img/still-c0164.jpg" alt="Alumnos en los stands de la feria" /></div>
         <div class="pol" id="p4" style="opacity: 0"><img src="assets/img/still-c0186.jpg" alt="Conversación en el stand de CONFE" /></div>
-        <div class="pol" id="p5" style="opacity: 0"><img src="assets/img/still-c0182.jpg" alt="Reclutadora platicando con alumnas" /></div>
+        <div class="pol" id="p5" style="opacity: 0"><img src="assets/img/still-c0163.jpg" alt="Alumnos en el stand de la Brigada Rotaria" /></div>
         <div class="pol" id="p6" style="opacity: 0"><img src="assets/img/still-c0176.jpg" alt="Stand de Westhill" /></div>
       </div>
 
@@ -181,18 +181,12 @@
         <p class="end-note" id="end-note">Nos vemos en la próxima edición.</p>
         <div class="thumb" id="t1" style="left: 130px"><img src="assets/img/still-c0164.jpg" alt="" /></div>
         <div class="thumb" id="t2" style="left: 400px"><img src="assets/img/foto-brigada.jpg" alt="" /></div>
-        <div class="thumb" id="t3" style="left: 670px"><img src="assets/img/still-c0187.jpg" alt="" /></div>
+        <div class="thumb" id="t3" style="left: 670px"><img src="assets/img/still-c0165.jpg" alt="" /></div>
       </div>
 
       <div class="flash" id="flash"></div>
       <div class="progress"><span id="bar"></span></div>
 
-      <!-- Grano de película (registro HyperFrames: grain-overlay) -->
-      <div id="grain-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100; overflow: hidden" data-layout-allow-overflow><div class="grain-texture"></div></div>
-      <style>
-        @keyframes hf-grain-noise { 0%, 100% { transform: translate(0, 0); } 10% { transform: translate(-5%, -5%); } 20% { transform: translate(-10%, 5%); } 30% { transform: translate(5%, -10%); } 40% { transform: translate(-5%, 15%); } 50% { transform: translate(-10%, 5%); } 60% { transform: translate(15%, 0); } 70% { transform: translate(0, 10%); } 80% { transform: translate(-15%, 0); } 90% { transform: translate(10%, 5%); } }
-        #grain-overlay .grain-texture { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E"); opacity: 0.1; animation: hf-grain-noise 0.5s steps(1) infinite; }
-      </style>
 
       <!-- Audio: música original 120 bpm y efectos por acción -->
       <audio id="music" src="assets/beat.mp3" data-start="0" data-duration="36" data-track-index="20" data-volume="0.6"></audio>
@@ -296,9 +290,7 @@
 
       // 3. Probecarios
       whip("#sh-b2", "#sh-c1", 10.0, 1);
-      punches("#sh-c1", 10.5, 12.0);
-      tl.fromTo("#sh-c2", { scale: 1.2 }, { scale: 1, duration: 0.5, ease }, 12.0);
-      punches("#sh-c2", 13.0, 14.0);
+      punches("#sh-c1", 10.5, 14.0);
       tag("#tag3", 10.2);
       cap("#cap3", 10.35);
 
@@ -322,12 +314,11 @@
       // 6. Palomitas
       flash(20.0);
       tl.fromTo("#sh-e1", { scale: 1.35, rotate: -4 }, { scale: 1, rotate: 0, duration: 1.2, ease }, 20.0);
-      tl.fromTo("#sh-e2", { scale: 1.2 }, { scale: 1, duration: 0.5, ease }, 22.0);
-      punches("#sh-e2", 22.5, 23.8);
+      punches("#sh-e1", 22.0, 23.8);
       cap("#cap6", 20.35);
 
       // 7. Stand Westhill
-      whip("#sh-e2", "#sh-f1", 24.0, -1);
+      whip("#sh-e1", "#sh-f1", 24.0, -1);
       tl.fromTo("#sh-f1", { scale: 1 }, { scale: 1.12, duration: 3.8, ease: "sine.inOut", immediateRender: false }, 24.2);
       tag("#tag7", 24.2);
       cap("#cap7", 24.35);
