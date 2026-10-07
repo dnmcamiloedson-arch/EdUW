@@ -1,0 +1,5 @@
+snapshots/
+renders/*
+!renders/recap-feria-empleo-hq.mp4
+node_modules/
+.hyperframes/cache/
