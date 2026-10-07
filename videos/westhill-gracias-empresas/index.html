@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <title>Gracias Empresas Feria de Empleo</title>
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face { font-family: "Bricolage Grotesque"; src: url("assets/fonts/bricolage-grotesque-latin-wght-normal.woff2") format("woff2"); font-weight: 200 800; font-display: block; }
+      @font-face { font-family: "Geist"; src: url("assets/fonts/geist-latin-wght-normal.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+      @font-face { font-family: "Geist Mono"; src: url("assets/fonts/geist-mono-latin-500-normal.woff2") format("woff2"); font-weight: 500; font-display: block; }
+      :root { --blue: #276092; --blue-deep: #173d61; --blue-ink: #0f2a45; --green: #27ae60; --gold: #f2c94c; --ink: #0d2238; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1920px; overflow: hidden; background: #0a1624; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; font-family: "Geist", system-ui, sans-serif; color: #fff; background: #0a1624; }
+      #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .shot { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
+      .shot video { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; }
+      .pshot { background: var(--blue-deep); }
+      .pbg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; object-fit: cover; filter: blur(30px) brightness(.6); }
+      .pol { position: absolute; left: 150px; top: 250px; width: 780px; height: 1180px; padding: 26px 26px 100px; background: #fff; box-shadow: 0 50px 100px -30px rgba(0,0,0,.7); }
+      .pol img { display: block; width: 728px; height: 1054px; object-fit: cover; }
+      .vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 80% at 50% 45%, transparent 55%, rgba(5,12,22,.55) 100%); }
+      .shade { position: absolute; left: 0; right: 0; top: 1150px; height: 770px; pointer-events: none; background: linear-gradient(180deg, transparent, rgba(5,12,22,.6) 55%, rgba(5,12,22,.8)); }
+      .topshade { position: absolute; left: 0; right: 0; top: 0; height: 380px; pointer-events: none; background: linear-gradient(180deg, rgba(5,12,22,.55), transparent); }
+
+      .hook-dim { position: absolute; inset: 0; background: rgba(10,22,36,.5); }
+      .echo { position: absolute; left: 0; right: 0; top: 500px; text-align: center; }
+      .echo span { display: block; font: 800 170px/0.86 "Bricolage Grotesque", sans-serif; letter-spacing: -0.06em; color: rgba(255,255,255,.06); -webkit-text-stroke: 3px rgba(255,255,255,.75); }
+      .echo span.solid { color: #fff; -webkit-text-stroke: 0; }
+      .hook-pill { position: absolute; left: 90px; top: 1320px; width: 900px; height: 120px; border-radius: 999px; display: flex; align-items: center; justify-content: center; background: var(--gold); color: var(--blue-ink); font: 800 54px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+
+      .thanks { position: absolute; left: 60px; right: 60px; top: 1450px; text-align: center; }
+      .thanks span { display: block; }
+      .thanks .small { display: inline-block; padding: 8px 26px 12px; border-radius: 999px; background: var(--gold); color: var(--blue-ink); font: 800 50px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+      .thanks .name { margin-top: 14px; font-weight: 800; font-family: "Bricolage Grotesque", sans-serif; line-height: .98; letter-spacing: -.045em; color: #fff; text-shadow: 0 0 3px rgba(5,12,22,.9), 0 6px 24px rgba(5,12,22,.85); }
+      .thanks .sub { margin-top: 16px; font: 600 36px/1.2 "Geist", sans-serif; color: rgba(255,255,255,.95); text-shadow: 0 2px 12px rgba(5,12,22,.9); }
+      .count { position: absolute; right: 60px; top: 130px; padding: 14px 24px; border-radius: 22px; background: rgba(15,42,69,.9); border-right: 8px solid var(--gold); font: 800 52px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.03em; }
+      .count i { font-style: normal; font-size: 30px; color: var(--gold); }
+
+      .endfield { position: absolute; inset: 0; background: radial-gradient(120% 70% at 80% 0%, #3577b0 0%, var(--blue) 45%, var(--blue-deep) 100%); }
+      .end-logo { position: absolute; left: 240px; top: 230px; width: 600px; }
+      .end-logo img { width: 100%; display: block; }
+      .end-title { position: absolute; left: 40px; right: 40px; top: 600px; text-align: center; font: 800 112px/0.98 "Bricolage Grotesque", sans-serif; letter-spacing: -.05em; }
+      .end-title .ln { display: block; overflow: hidden; padding-bottom: 8px; }
+      .end-title .w { display: inline-block; }
+      .end-title .gold { color: var(--gold); }
+      .end-pill { position: absolute; left: 90px; top: 960px; width: 900px; padding: 26px 30px; border-radius: 40px; background: #fff; color: var(--blue-ink); text-align: center; font: 700 40px/1.25 "Geist", sans-serif; }
+      #end-grid { position: absolute; left: 60px; top: 1210px; width: 960px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+      .g { padding: 10px 10px 30px; background: #fff; box-shadow: 0 20px 40px -18px rgba(0,0,0,.6); }
+      .g img { display: block; width: 100%; height: 270px; object-fit: cover; }
+
+      .flash { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+      .progress { position: absolute; left: 60px; right: 60px; top: 70px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; }
+      .progress span { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; display: block; background: linear-gradient(90deg, var(--gold), var(--green)); transform-origin: 0 50%; }
+      svg.defs { position: absolute; width: 0; height: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="35.00" data-width="1080" data-height="1920">
+      <svg class="defs" aria-hidden="true"><filter id="hblur" x="-20%" y="0" width="140%" height="100%"><feGaussianBlur id="hblur-g" stdDeviation="0 0" /></filter></svg>
+      <div id="stage" data-layout-allow-overflow>
+        <div class="shot" id="h0"><video id="hv0" class="clip" src="assets/clips/e1.mp4" muted playsinline data-start="0.00" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h1"><video id="hv1" class="clip" src="assets/clips/e2.mp4" muted playsinline data-start="0.25" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h2"><video id="hv2" class="clip" src="assets/clips/e3.mp4" muted playsinline data-start="0.50" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h3"><video id="hv3" class="clip" src="assets/clips/e4.mp4" muted playsinline data-start="0.75" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h4"><video id="hv4" class="clip" src="assets/clips/e5.mp4" muted playsinline data-start="1.00" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h5"><video id="hv5" class="clip" src="assets/clips/e6.mp4" muted playsinline data-start="1.25" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h6"><video id="hv6" class="clip" src="assets/clips/e7.mp4" muted playsinline data-start="1.50" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="h7"><video id="hv7" class="clip" src="assets/clips/e8.mp4" muted playsinline data-start="1.75" data-duration="0.25" data-media-start="0.8" data-track-index="1"></video></div>
+        <div class="shot" id="v1"><video id="vid1" class="clip" src="assets/clips/e1.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="2.00" data-duration="2.00" data-media-start="0" data-track-index="1"></video></div>
+        <div class="shot pshot" id="p1" style="opacity: 0"><img class="pbg" src="assets/img/foto-1.jpg" alt="" /><div class="pol"><img src="assets/img/foto-1.jpg" alt="Foto con Brigada Rotaria" /></div></div>
+        <div class="shot" id="v2"><video id="vid2" class="clip" src="assets/clips/e2.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="5.50" data-duration="2.00" data-media-start="0" data-track-index="2"></video></div>
+        <div class="shot pshot" id="p2" style="opacity: 0"><img class="pbg" src="assets/img/foto-5.jpg" alt="" /><div class="pol"><img src="assets/img/foto-5.jpg" alt="Foto con Probecarios" /></div></div>
+        <div class="shot" id="v3"><video id="vid3" class="clip" src="assets/clips/e3.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="9.00" data-duration="2.00" data-media-start="0" data-track-index="1"></video></div>
+        <div class="shot pshot" id="p3" style="opacity: 0"><img class="pbg" src="assets/img/foto-4.jpg" alt="" /><div class="pol"><img src="assets/img/foto-4.jpg" alt="Foto con INPI" /></div></div>
+        <div class="shot" id="v4"><video id="vid4" class="clip" src="assets/clips/e4.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="12.50" data-duration="2.00" data-media-start="0" data-track-index="2"></video></div>
+        <div class="shot pshot" id="p4" style="opacity: 0"><img class="pbg" src="assets/img/foto-6.jpg" alt="" /><div class="pol"><img src="assets/img/foto-6.jpg" alt="Foto con CONFE" /></div></div>
+        <div class="shot" id="v5"><video id="vid5" class="clip" src="assets/clips/e5.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="16.00" data-duration="2.00" data-media-start="0" data-track-index="1"></video></div>
+        <div class="shot pshot" id="p5" style="opacity: 0"><img class="pbg" src="assets/img/foto-3.jpg" alt="" /><div class="pol"><img src="assets/img/foto-3.jpg" alt="Foto con Integrando a Pato A.C." /></div></div>
+        <div class="shot" id="v6"><video id="vid6" class="clip" src="assets/clips/e6.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="19.50" data-duration="2.00" data-media-start="0" data-track-index="2"></video></div>
+        <div class="shot pshot" id="p6" style="opacity: 0"><img class="pbg" src="assets/img/foto-2.jpg" alt="" /><div class="pol"><img src="assets/img/foto-2.jpg" alt="Foto con Seguros Monterrey" /></div></div>
+        <div class="shot" id="v7"><video id="vid7" class="clip" src="assets/clips/e7.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="23.00" data-duration="2.00" data-media-start="0" data-track-index="1"></video></div>
+        <div class="shot pshot" id="p7" style="opacity: 0"><img class="pbg" src="assets/img/foto-7.jpg" alt="" /><div class="pol"><img src="assets/img/foto-7.jpg" alt="Foto con Empresa 7" /></div></div>
+        <div class="shot" id="v8"><video id="vid8" class="clip" src="assets/clips/e8.mp4" playsinline data-has-audio="true" data-volume="0.3" data-start="26.50" data-duration="2.00" data-media-start="0" data-track-index="2"></video></div>
+        <div class="shot pshot" id="p8" style="opacity: 0"><img class="pbg" src="assets/img/foto-8.jpg" alt="" /><div class="pol"><img src="assets/img/foto-8.jpg" alt="Foto con Empresa 8" /></div></div>
+      </div>
+      <div class="vignette"></div>
+      <div class="topshade"></div>
+      <div class="shade"></div>
+
+      <div class="hook-dim clip" id="hook-dim" data-start="0" data-duration="2.0" data-track-index="10"></div>
+      <div class="echo clip" id="echo" data-start="0" data-duration="2.0" data-track-index="11"><span>GRACIAS</span><span>GRACIAS</span><span class="solid">GRACIAS</span><span>GRACIAS</span><span>GRACIAS</span></div>
+      <div class="hook-pill clip" id="hook-pill" data-start="0" data-duration="2.0" data-track-index="12">a las empresas que nos visitaron</div>
+
+      <div class="thanks clip" id="t1" data-start="2.15" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 80px">Brigada Rotaria</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k1" data-start="2.00" data-duration="3.50" data-track-index="14">01<i>/08</i></div>
+      <div class="thanks clip" id="t2" data-start="5.65" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 96px">Probecarios</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k2" data-start="5.50" data-duration="3.50" data-track-index="14">02<i>/08</i></div>
+      <div class="thanks clip" id="t3" data-start="9.15" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 112px">INPI</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k3" data-start="9.00" data-duration="3.50" data-track-index="14">03<i>/08</i></div>
+      <div class="thanks clip" id="t4" data-start="12.65" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 112px">CONFE</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k4" data-start="12.50" data-duration="3.50" data-track-index="14">04<i>/08</i></div>
+      <div class="thanks clip" id="t5" data-start="16.15" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 68px">Integrando a Pato A.C.</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k5" data-start="16.00" data-duration="3.50" data-track-index="14">05<i>/08</i></div>
+      <div class="thanks clip" id="t6" data-start="19.65" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 80px">Seguros Monterrey</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k6" data-start="19.50" data-duration="3.50" data-track-index="14">06<i>/08</i></div>
+      <div class="thanks clip" id="t7" data-start="23.15" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 112px">Empresa 7</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k7" data-start="23.00" data-duration="3.50" data-track-index="14">07<i>/08</i></div>
+      <div class="thanks clip" id="t8" data-start="26.65" data-duration="3.25" data-track-index="13"><span class="small">Gracias</span><span class="name" style="font-size: 112px">Empresa 8</span><span class="sub">por venir a la Feria de Empleo</span></div>
+      <div class="count clip" id="k8" data-start="26.50" data-duration="3.50" data-track-index="14">08<i>/08</i></div>
+
+      <div class="clip" id="end" data-start="30.00" data-duration="5.00" data-track-index="15" style="position: absolute; inset: 0">
+        <div class="endfield"></div>
+        <div class="end-logo" id="end-logo"><img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" /></div>
+        <h2 class="end-title" id="end-title"><span class="ln"><span class="w">Gracias</span> <span class="w">por</span> <span class="w">abrir</span></span><span class="ln"><span class="w gold">oportunidades</span></span></h2>
+        <p class="end-pill" id="end-pill">a nuestros alumnos en la Feria de Empleo Westhill</p>
+        <div id="end-grid">
+          <div class="g"><img src="assets/img/foto-1.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-5.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-4.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-6.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-3.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-2.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-7.jpg" alt="" /></div>
+          <div class="g"><img src="assets/img/foto-8.jpg" alt="" /></div>
+        </div>
+      </div>
+
+      <div class="flash" id="flash"></div>
+      <div class="progress"><span id="bar"></span></div>
+
+      <audio id="music" src="assets/audio/music.mp3" data-start="0" data-duration="35.00" data-track-index="20" data-volume="0.5"></audio>
+      <audio id="fxr" src="assets/audio/riser.mp3" data-start="0.1" data-duration="1.87" data-track-index="21" data-volume="0.7"></audio>
+      <audio id="fx00" src="assets/audio/boom.mp3" data-start="2.00" data-duration="1.62" data-track-index="22" data-volume="1"></audio>
+      <audio id="fx01" src="assets/audio/pop.mp3" data-start="2.40" data-duration="0.13" data-track-index="23" data-volume="0.55"></audio>
+      <audio id="fx02" src="assets/audio/pop-hi.mp3" data-start="2.75" data-duration="0.10" data-track-index="24" data-volume="0.5"></audio>
+      <audio id="fx03" src="assets/audio/shutter.mp3" data-start="3.98" data-duration="0.23" data-track-index="25" data-volume="0.85"></audio>
+      <audio id="fx04" src="assets/audio/swish.mp3" data-start="4.05" data-duration="0.28" data-track-index="26" data-volume="0.5"></audio>
+      <audio id="fx05" src="assets/audio/whoosh.mp3" data-start="5.25" data-duration="0.57" data-track-index="27" data-volume="0.8"></audio>
+      <audio id="fx06" src="assets/audio/pop.mp3" data-start="5.90" data-duration="0.13" data-track-index="28" data-volume="0.55"></audio>
+      <audio id="fx07" src="assets/audio/pop-hi.mp3" data-start="6.25" data-duration="0.10" data-track-index="29" data-volume="0.5"></audio>
+      <audio id="fx08" src="assets/audio/shutter.mp3" data-start="7.48" data-duration="0.23" data-track-index="30" data-volume="0.85"></audio>
+      <audio id="fx09" src="assets/audio/swish.mp3" data-start="7.55" data-duration="0.28" data-track-index="31" data-volume="0.5"></audio>
+      <audio id="fx10" src="assets/audio/boom.mp3" data-start="9.00" data-duration="1.62" data-track-index="32" data-volume="0.7"></audio>
+      <audio id="fx11" src="assets/audio/pop.mp3" data-start="9.40" data-duration="0.13" data-track-index="33" data-volume="0.55"></audio>
+      <audio id="fx12" src="assets/audio/pop-hi.mp3" data-start="9.75" data-duration="0.10" data-track-index="34" data-volume="0.5"></audio>
+      <audio id="fx13" src="assets/audio/shutter.mp3" data-start="10.98" data-duration="0.23" data-track-index="35" data-volume="0.85"></audio>
+      <audio id="fx14" src="assets/audio/swish.mp3" data-start="11.05" data-duration="0.28" data-track-index="36" data-volume="0.5"></audio>
+      <audio id="fx15" src="assets/audio/whoosh.mp3" data-start="12.25" data-duration="0.57" data-track-index="37" data-volume="0.8"></audio>
+      <audio id="fx16" src="assets/audio/pop.mp3" data-start="12.90" data-duration="0.13" data-track-index="38" data-volume="0.55"></audio>
+      <audio id="fx17" src="assets/audio/pop-hi.mp3" data-start="13.25" data-duration="0.10" data-track-index="39" data-volume="0.5"></audio>
+      <audio id="fx18" src="assets/audio/shutter.mp3" data-start="14.48" data-duration="0.23" data-track-index="40" data-volume="0.85"></audio>
+      <audio id="fx19" src="assets/audio/swish.mp3" data-start="14.55" data-duration="0.28" data-track-index="41" data-volume="0.5"></audio>
+      <audio id="fx20" src="assets/audio/boom.mp3" data-start="16.00" data-duration="1.62" data-track-index="42" data-volume="0.7"></audio>
+      <audio id="fx21" src="assets/audio/pop.mp3" data-start="16.40" data-duration="0.13" data-track-index="43" data-volume="0.55"></audio>
+      <audio id="fx22" src="assets/audio/pop-hi.mp3" data-start="16.75" data-duration="0.10" data-track-index="44" data-volume="0.5"></audio>
+      <audio id="fx23" src="assets/audio/shutter.mp3" data-start="17.98" data-duration="0.23" data-track-index="45" data-volume="0.85"></audio>
+      <audio id="fx24" src="assets/audio/swish.mp3" data-start="18.05" data-duration="0.28" data-track-index="46" data-volume="0.5"></audio>
+      <audio id="fx25" src="assets/audio/whoosh.mp3" data-start="19.25" data-duration="0.57" data-track-index="47" data-volume="0.8"></audio>
+      <audio id="fx26" src="assets/audio/pop.mp3" data-start="19.90" data-duration="0.13" data-track-index="48" data-volume="0.55"></audio>
+      <audio id="fx27" src="assets/audio/pop-hi.mp3" data-start="20.25" data-duration="0.10" data-track-index="49" data-volume="0.5"></audio>
+      <audio id="fx28" src="assets/audio/shutter.mp3" data-start="21.48" data-duration="0.23" data-track-index="50" data-volume="0.85"></audio>
+      <audio id="fx29" src="assets/audio/swish.mp3" data-start="21.55" data-duration="0.28" data-track-index="51" data-volume="0.5"></audio>
+      <audio id="fx30" src="assets/audio/boom.mp3" data-start="23.00" data-duration="1.62" data-track-index="52" data-volume="0.7"></audio>
+      <audio id="fx31" src="assets/audio/pop.mp3" data-start="23.40" data-duration="0.13" data-track-index="53" data-volume="0.55"></audio>
+      <audio id="fx32" src="assets/audio/pop-hi.mp3" data-start="23.75" data-duration="0.10" data-track-index="54" data-volume="0.5"></audio>
+      <audio id="fx33" src="assets/audio/shutter.mp3" data-start="24.98" data-duration="0.23" data-track-index="55" data-volume="0.85"></audio>
+      <audio id="fx34" src="assets/audio/swish.mp3" data-start="25.05" data-duration="0.28" data-track-index="56" data-volume="0.5"></audio>
+      <audio id="fx35" src="assets/audio/whoosh.mp3" data-start="26.25" data-duration="0.57" data-track-index="57" data-volume="0.8"></audio>
+      <audio id="fx36" src="assets/audio/pop.mp3" data-start="26.90" data-duration="0.13" data-track-index="58" data-volume="0.55"></audio>
+      <audio id="fx37" src="assets/audio/pop-hi.mp3" data-start="27.25" data-duration="0.10" data-track-index="59" data-volume="0.5"></audio>
+      <audio id="fx38" src="assets/audio/shutter.mp3" data-start="28.48" data-duration="0.23" data-track-index="60" data-volume="0.85"></audio>
+      <audio id="fx39" src="assets/audio/swish.mp3" data-start="28.55" data-duration="0.28" data-track-index="61" data-volume="0.5"></audio>
+      <audio id="fx40" src="assets/audio/whoosh-long.mp3" data-start="29.60" data-duration="0.91" data-track-index="62" data-volume="0.8"></audio>
+      <audio id="fx41" src="assets/audio/ding.mp3" data-start="30.20" data-duration="0.91" data-track-index="63" data-volume="0.6"></audio>
+      <audio id="fx42" src="assets/audio/pop-hi.mp3" data-start="31.00" data-duration="0.10" data-track-index="64" data-volume="0.5"></audio>
+      <audio id="fx43" src="assets/audio/tick.mp3" data-start="31.40" data-duration="0.02" data-track-index="65" data-volume="0.6"></audio>
+      <audio id="fx44" src="assets/audio/tick.mp3" data-start="31.49" data-duration="0.02" data-track-index="66" data-volume="0.6"></audio>
+      <audio id="fx45" src="assets/audio/tick.mp3" data-start="31.58" data-duration="0.02" data-track-index="67" data-volume="0.6"></audio>
+      <audio id="fx46" src="assets/audio/tick.mp3" data-start="31.67" data-duration="0.02" data-track-index="68" data-volume="0.6"></audio>
+      <audio id="fx47" src="assets/audio/tick.mp3" data-start="31.76" data-duration="0.02" data-track-index="69" data-volume="0.6"></audio>
+      <audio id="fx48" src="assets/audio/tick.mp3" data-start="31.85" data-duration="0.02" data-track-index="70" data-volume="0.6"></audio>
+      <audio id="fx49" src="assets/audio/tick.mp3" data-start="31.94" data-duration="0.02" data-track-index="71" data-volume="0.6"></audio>
+      <audio id="fx50" src="assets/audio/tick.mp3" data-start="32.03" data-duration="0.02" data-track-index="72" data-volume="0.6"></audio>
+    </div>
+
+    <script>
+      const tl = gsap.timeline({ paused: true });
+      const ease = "expo.out";
+      tl.fromTo("#bar", { scaleX: 0 }, { scaleX: 1, duration: 35.00, ease: "none" }, 0);
+
+      function flash(at, peak = 0.9) {
+        tl.fromTo("#flash", { opacity: 0 }, { opacity: peak, duration: 0.06, ease: "none", immediateRender: false }, at - 0.06);
+        tl.fromTo("#flash", { opacity: peak }, { opacity: 0, duration: 0.3, ease: "power2.out", immediateRender: false }, at);
+      }
+      tl.set("#hblur-g", { attr: { stdDeviation: "0 0" } }, 0);
+      function whip(a, b, at, dir = -1) {
+        const d = 0.4;
+        tl.set([a, b], { filter: "url(#hblur)" }, at - d / 2);
+        tl.fromTo(a, { x: 0 }, { x: dir * 1080, duration: d, ease: "power3.inOut", immediateRender: false }, at - d / 2);
+        tl.fromTo(b, { x: -dir * 1080 }, { x: 0, duration: d, ease: "power3.inOut", immediateRender: false }, at - d / 2);
+        tl.fromTo("#hblur-g", { attr: { stdDeviation: "0 0" } }, { attr: { stdDeviation: "40 0" }, duration: d / 2, ease: "power3.in", immediateRender: false }, at - d / 2);
+        tl.fromTo("#hblur-g", { attr: { stdDeviation: "40 0" } }, { attr: { stdDeviation: "0 0" }, duration: d / 2, ease: "power3.out", immediateRender: false }, at);
+        tl.set([a, b], { filter: "none" }, at + d / 2);
+      }
+      function shake(at) {
+        [18, -14, 10, -6, 3, 0].forEach((x, i) => tl.to("#stage", { x, y: -x * 0.6, duration: 0.04, ease: "none" }, at + i * 0.04));
+      }
+      function thanks(id, at) {
+        tl.fromTo(id + " .small", { scale: 0, rotate: -8 }, { scale: 1, rotate: -3, duration: 0.45, ease: "back.out(2.4)" }, at);
+        tl.fromTo(id + " .name", { y: 60, opacity: 0, scale: 0.85 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.8)" }, at + 0.2);
+        tl.fromTo(id + " .sub", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease }, at + 0.5);
+      }
+
+      // Gancho
+      tl.fromTo("#echo span", { yPercent: 60, opacity: 0, scale: 1.4 }, { yPercent: 0, opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.8)", stagger: { each: 0.08, from: "center" } }, 0.1);
+      tl.fromTo("#echo", { scale: 1 }, { scale: 1.1, duration: 1.9, ease: "power1.in" }, 0.1);
+      tl.fromTo("#hook-pill", { scale: 0, rotate: -8 }, { scale: 1, rotate: -3, duration: 0.5, ease: "back.out(2.4)" }, 0.9);
+      for (let j = 0; j < 8; j++) tl.fromTo("#h" + j, { scale: 1.18 }, { scale: 1.02, duration: 0.25, ease: "power2.out" }, j * 0.25);
+
+      flash(2.0, 1); shake(2.0);
+      tl.fromTo("#v1", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 2.0);
+      thanks("#t1", 2.15);
+      tl.fromTo("#k1", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 2.10);
+      flash(4.0, 1);
+      tl.set("#p1", { opacity: 1 }, 4.0);
+      tl.set("#p1", { opacity: 0 }, 5.75);
+      tl.fromTo("#p1 .pol", { y: -1400, rotate: 14, scale: 1.1 }, { y: 0, rotate: 4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 4.0);
+      tl.fromTo("#p1 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 4.0);
+      whip("#p1", "#v2", 5.5, -1);
+      tl.fromTo("#v2", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 5.5);
+      thanks("#t2", 5.65);
+      tl.fromTo("#k2", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 5.60);
+      flash(7.5, 1);
+      tl.set("#p2", { opacity: 1 }, 7.5);
+      tl.set("#p2", { opacity: 0 }, 9.00);
+      tl.fromTo("#p2 .pol", { y: -1400, rotate: -14, scale: 1.1 }, { y: 0, rotate: -4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 7.5);
+      tl.fromTo("#p2 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 7.5);
+      flash(9.0);
+      tl.fromTo("#v3", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 9.0);
+      thanks("#t3", 9.15);
+      tl.fromTo("#k3", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 9.10);
+      flash(11.0, 1);
+      tl.set("#p3", { opacity: 1 }, 11.0);
+      tl.set("#p3", { opacity: 0 }, 12.75);
+      tl.fromTo("#p3 .pol", { y: -1400, rotate: 14, scale: 1.1 }, { y: 0, rotate: 4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 11.0);
+      tl.fromTo("#p3 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 11.0);
+      whip("#p3", "#v4", 12.5, 1);
+      tl.fromTo("#v4", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 12.5);
+      thanks("#t4", 12.65);
+      tl.fromTo("#k4", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 12.60);
+      flash(14.5, 1);
+      tl.set("#p4", { opacity: 1 }, 14.5);
+      tl.set("#p4", { opacity: 0 }, 16.00);
+      tl.fromTo("#p4 .pol", { y: -1400, rotate: -14, scale: 1.1 }, { y: 0, rotate: -4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 14.5);
+      tl.fromTo("#p4 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 14.5);
+      flash(16.0);
+      tl.fromTo("#v5", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 16.0);
+      thanks("#t5", 16.15);
+      tl.fromTo("#k5", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 16.10);
+      flash(18.0, 1);
+      tl.set("#p5", { opacity: 1 }, 18.0);
+      tl.set("#p5", { opacity: 0 }, 19.75);
+      tl.fromTo("#p5 .pol", { y: -1400, rotate: 14, scale: 1.1 }, { y: 0, rotate: 4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 18.0);
+      tl.fromTo("#p5 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 18.0);
+      whip("#p5", "#v6", 19.5, -1);
+      tl.fromTo("#v6", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 19.5);
+      thanks("#t6", 19.65);
+      tl.fromTo("#k6", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 19.60);
+      flash(21.5, 1);
+      tl.set("#p6", { opacity: 1 }, 21.5);
+      tl.set("#p6", { opacity: 0 }, 23.00);
+      tl.fromTo("#p6 .pol", { y: -1400, rotate: -14, scale: 1.1 }, { y: 0, rotate: -4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 21.5);
+      tl.fromTo("#p6 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 21.5);
+      flash(23.0);
+      tl.fromTo("#v7", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 23.0);
+      thanks("#t7", 23.15);
+      tl.fromTo("#k7", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 23.10);
+      flash(25.0, 1);
+      tl.set("#p7", { opacity: 1 }, 25.0);
+      tl.set("#p7", { opacity: 0 }, 26.75);
+      tl.fromTo("#p7 .pol", { y: -1400, rotate: 14, scale: 1.1 }, { y: 0, rotate: 4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 25.0);
+      tl.fromTo("#p7 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 25.0);
+      whip("#p7", "#v8", 26.5, 1);
+      tl.fromTo("#v8", { scale: 1.18 }, { scale: 1.04, duration: 2.0, ease: "power2.out", immediateRender: false }, 26.5);
+      thanks("#t8", 26.65);
+      tl.fromTo("#k8", { x: 200, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease }, 26.60);
+      flash(28.5, 1);
+      tl.set("#p8", { opacity: 1 }, 28.5);
+      tl.set("#p8", { opacity: 0 }, 30.00);
+      tl.fromTo("#p8 .pol", { y: -1400, rotate: -14, scale: 1.1 }, { y: 0, rotate: -4, scale: 1, duration: 0.5, ease: "back.out(1.3)" }, 28.5);
+      tl.fromTo("#p8 .pbg", { scale: 1.25 }, { scale: 1.1, duration: 1.5, ease: "none" }, 28.5);
+      flash(30.0, 0.8);
+      tl.fromTo("#end-logo", { y: -60, opacity: 0, scale: 0.9 }, { y: 0, opacity: 1, scale: 1, duration: 0.7, ease }, 30.10);
+      tl.fromTo("#end-title .w", { yPercent: 110 }, { yPercent: 0, duration: 0.6, ease: "back.out(1.6)", stagger: 0.08 }, 30.40);
+      tl.fromTo("#end-pill", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease }, 31.00);
+      tl.fromTo("#end-grid .g", { scale: 0, rotate: -20 }, { scale: 1, rotate: (i) => [-6, 4, -3, 7, -5, 3, -7, 5][i], duration: 0.45, ease: "back.out(1.8)", stagger: 0.09 }, 31.40);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
