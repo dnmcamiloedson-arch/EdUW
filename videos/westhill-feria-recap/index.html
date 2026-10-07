@@ -87,6 +87,28 @@
       .progress { position: absolute; left: 60px; right: 60px; top: 70px; height: 8px; border-radius: 999px; background: rgba(255,255,255,.25); overflow: hidden; }
       .progress span { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; display: block; background: linear-gradient(90deg, var(--gold), var(--green)); transform-origin: 0 50%; }
       svg.defs { position: absolute; width: 0; height: 0; }
+      @font-face { font-family: "Phosphor"; src: url("assets/fonts/Phosphor.woff2") format("woff2"); font-display: block; }
+      .ic { font-family: "Phosphor"; font-style: normal; font-weight: normal; line-height: 1; }
+
+      /* Notificaciones tipo celular */
+      .toast { position: absolute; left: 60px; width: 960px; height: 132px; padding: 0 30px; border-radius: 34px; display: flex; align-items: center; gap: 24px; background: rgba(255,255,255,.96); color: var(--ink); box-shadow: 0 24px 50px -20px rgba(0,0,0,.55); }
+      .toast .app { flex: none; width: 84px; height: 84px; border-radius: 22px; display: grid; place-items: center; background: var(--blue); color: #fff; font-size: 48px; }
+      .toast .app.g { background: #1d7f47; } .toast .app.y { background: var(--gold); color: var(--blue-ink); }
+      .toast b { display: block; font: 700 36px/1.1 "Geist", sans-serif; }
+      .toast span { display: block; margin-top: 6px; font: 500 28px/1.1 "Geist", sans-serif; color: #4a5d73; }
+      .toast em { margin-left: auto; align-self: flex-start; margin-top: 30px; font: 500 24px/1 "Geist", sans-serif; font-style: normal; color: #5a6b80; }
+
+      /* Carrusel de oportunidades */
+      .carousel { position: absolute; inset: 0; background: #f6f9fc; }
+      .carousel .kicker { position: absolute; left: 0; right: 0; top: 330px; text-align: center; font: 800 92px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.045em; color: var(--ink); }
+      .carousel .kicker span { color: var(--blue); }
+      .ocard { position: absolute; left: 190px; top: 600px; width: 700px; height: 760px; border-radius: 56px; background: #fff; box-shadow: 0 50px 100px -40px rgba(23,61,97,.45), 0 0 0 3px rgba(39,96,146,.08); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 44px; }
+      .ocard .ic { font-size: 260px; color: var(--blue); }
+      .ocard b { font: 800 84px/1 "Bricolage Grotesque", sans-serif; letter-spacing: -.04em; color: var(--ink); }
+      .ocard b span { color: var(--blue); }
+      .arrow { position: absolute; top: 930px; font-size: 90px; color: var(--blue); }
+      .dots { position: absolute; left: 0; right: 0; top: 1450px; display: flex; justify-content: center; gap: 18px; }
+      .dots i { display: block; width: 22px; height: 22px; border-radius: 999px; background: rgba(39,96,146,.2); }
     </style>
   </head>
   <body>
@@ -121,15 +143,15 @@
 
         <!-- 5. Pantalla dividida -->
         <div id="split" data-layout-allow-overflow>
-          <div class="band" id="band-1" style="top: 0px"><video id="v-s1" class="clip" style="object-position: 50% 28%" src="assets/clips/c0164.mp4" muted playsinline data-start="16" data-duration="4" data-media-start="1.0" data-track-index="3"></video></div>
-          <div class="band" id="band-2" style="top: 640px"><video id="v-s2" class="clip" style="object-position: 50% 22%" src="assets/clips/c0170.mp4" muted playsinline data-start="16" data-duration="4" data-media-start="0" data-playback-rate="0.82" data-track-index="4"></video></div>
-          <div class="band" id="band-3" style="top: 1280px"><video id="v-s3" class="clip" style="object-position: 50% 45%" src="assets/clips/c0163.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="16" data-duration="4" data-media-start="0" data-playback-rate="0.85" data-track-index="5"></video></div>
+          <div class="band" id="band-1" style="top: 0px"><video id="v-s1" class="clip" style="object-position: 50% 28%" src="assets/clips/c0164.mp4" muted playsinline data-start="16" data-duration="2.2" data-media-start="1.0" data-track-index="3"></video></div>
+          <div class="band" id="band-2" style="top: 640px"><video id="v-s2" class="clip" style="object-position: 50% 22%" src="assets/clips/c0170.mp4" muted playsinline data-start="16" data-duration="2.2" data-media-start="0" data-playback-rate="0.82" data-track-index="4"></video></div>
+          <div class="band" id="band-3" style="top: 1280px"><video id="v-s3" class="clip" style="object-position: 50% 45%" src="assets/clips/c0163.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="16" data-duration="2.2" data-media-start="0" data-playback-rate="0.85" data-track-index="5"></video></div>
           <div class="band-line" id="bl-1" style="top: 636px"></div>
           <div class="band-line" id="bl-2" style="top: 1276px"></div>
         </div>
 
         <!-- 6. Palomitas -->
-        <div class="shot" id="sh-e1"><video id="v-e1" class="clip" src="assets/clips/c0188.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="20" data-duration="4.2" data-media-start="0" data-playback-rate="0.85" data-track-index="1"></video></div>
+        <div class="shot" id="sh-e1"><video id="v-e1" class="clip" src="assets/clips/c0188.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="20" data-duration="4.2" data-media-start="0" data-playback-rate="0.85" data-track-index="2"></video></div>
 
         <!-- 7. Stand Westhill -->
         <div class="shot" id="sh-f1"><video id="v-f1" class="clip" src="assets/clips/c0176.mp4" playsinline data-has-audio="true" data-volume="0.25" data-start="23.8" data-duration="4.2" data-media-start="0" data-track-index="1"></video></div>
@@ -160,7 +182,7 @@
       <div class="cap clip" id="cap2" data-start="6.3" data-duration="3.5" data-track-index="13"><span class="ln"><span class="w">Conocimos</span> <span class="w">su</span></span><span class="ln"><span class="w hb">labor</span> <span class="w">de</span> <span class="w">cerca</span></span></div>
       <div class="cap clip" id="cap3" data-start="10.3" data-duration="3.5" data-track-index="13"><span class="ln"><span class="w hi">Vacantes</span> <span class="w">y</span> <span class="w hi">becas</span></span><span class="ln"><span class="w">para</span> <span class="w">estudiantes</span></span></div>
       <div class="cap clip" id="cap4" data-start="14.2" data-duration="1.7" data-track-index="13"><span class="ln"><span class="w">La</span> <span class="w hb">inclusión</span> <span class="w hb">laboral</span></span><span class="ln"><span class="w">presente</span></span></div>
-      <div class="cap clip" id="cap5" data-start="16.6" data-duration="3.3" data-track-index="13" style="top: 830px"><span class="ln"><span class="w">Alumnos</span> <span class="w hi">conectando</span></span><span class="ln"><span class="w">con</span> <span class="w">empresas</span></span></div>
+      <div class="cap clip" id="cap5" data-start="16.6" data-duration="1.6" data-track-index="13" style="top: 830px"><span class="ln"><span class="w">Alumnos</span> <span class="w hi">conectando</span></span><span class="ln"><span class="w">con</span> <span class="w">empresas</span></span></div>
       <div class="cap clip" id="cap6" data-start="20.3" data-duration="3.5" data-track-index="13"><span class="ln"><span class="w">Y</span> <span class="w">no</span> <span class="w">faltaron</span></span><span class="ln"><span class="w">las</span> <span class="w hi">palomitas</span></span></div>
       <div class="cap clip" id="cap7" data-start="24.3" data-duration="3.5" data-track-index="13"><span class="ln"><span class="w">Titúlate</span> <span class="w">con</span></span><span class="ln"><span class="w">un</span> <span class="w hb">posgrado</span></span></div>
       <div class="cap clip" id="cap8" data-start="28.4" data-duration="2.5" data-track-index="13" style="top: 1420px"><span class="ln"><span class="w">Gracias</span> <span class="w">a</span> <span class="w">todos</span></span><span class="ln"><span class="w">los</span> <span class="w">que</span> <span class="w hi">vinieron</span></span></div>
@@ -184,37 +206,73 @@
         <div class="thumb" id="t3" style="left: 670px"><img src="assets/img/still-c0165.jpg" alt="" /></div>
       </div>
 
+      <!-- Notificaciones en Probecarios -->
+      <div class="toast clip" id="n1" data-start="10.6" data-duration="3.3" data-track-index="16" style="top: 330px"><i class="app ic">&#xe0ee;</i><div><b>Nueva vacante para ti</b><span>Feria de Empleo Westhill</span></div><em>ahora</em></div>
+      <div class="toast clip" id="n2" data-start="11.3" data-duration="2.6" data-track-index="17" style="top: 480px"><i class="app g ic">&#xe73e;</i><div><b>Programa con beca</b><span>No necesitas experiencia</span></div><em>ahora</em></div>
+      <div class="toast clip" id="n3" data-start="12.0" data-duration="1.9" data-track-index="18" style="top: 630px"><i class="app y ic">&#xe810;</i><div><b>Prácticas y servicio social</b><span>Postúlate en el stand</span></div><em>ahora</em></div>
+
+      <!-- Carrusel: lo que encontraron los alumnos -->
+      <div class="carousel clip" id="car" data-start="18.2" data-duration="1.8" data-track-index="19">
+        <h2 class="kicker">Lo que <span>encontraron</span></h2>
+        <i class="arrow ic" style="left: 70px">&#xe138;</i><i class="arrow ic" style="left: 920px">&#xe13a;</i>
+        <div class="ocard" id="oc1"><i class="ic">&#xe0ee;</i><b>Vacantes</b></div>
+        <div class="ocard" id="oc2"><i class="ic">&#xe62c;</i><b><span>Prácticas</span></b></div>
+        <div class="ocard" id="oc3"><i class="ic">&#xe810;</i><b>Servicio social</b></div>
+        <div class="ocard" id="oc4"><i class="ic">&#xe73e;</i><b><span>Becas</span></b></div>
+        <div class="dots"><i id="d1"></i><i id="d2"></i><i id="d3"></i><i id="d4"></i></div>
+      </div>
+
       <div class="flash" id="flash"></div>
       <div class="progress"><span id="bar"></span></div>
 
 
-      <!-- Audio: música original 120 bpm y efectos por acción -->
-      <audio id="music" src="assets/beat.mp3" data-start="0" data-duration="36" data-track-index="20" data-volume="0.6"></audio>
-      <audio id="sfx-riser" src="assets/sfx/riser.mp3" data-start="0.4" data-duration="1.6" data-track-index="21" data-volume="0.6"></audio>
-      <audio id="sfx-impact1" src="assets/sfx/impact-bass-1.mp3" data-start="2.0" data-duration="1.5" data-track-index="22" data-volume="1"></audio>
-      <audio id="sfx-w1" src="assets/sfx/whoosh-short.mp3" data-start="3.8" data-duration="0.5" data-track-index="23" data-volume="0.8"></audio>
-      <audio id="sfx-glitch1" src="assets/sfx/glitch-1.mp3" data-start="5.95" data-duration="0.4" data-track-index="24" data-volume="0.5"></audio>
-      <audio id="sfx-pop1" src="assets/sfx/pop.mp3" data-start="6.3" data-duration="0.3" data-track-index="25" data-volume="0.7"></audio>
-      <audio id="sfx-w2" src="assets/sfx/whoosh-short.mp3" data-start="9.8" data-duration="0.5" data-track-index="23" data-volume="0.8"></audio>
-      <audio id="sfx-pop2" src="assets/sfx/pop.mp3" data-start="10.3" data-duration="0.3" data-track-index="25" data-volume="0.7"></audio>
-      <audio id="sfx-glitch2" src="assets/sfx/glitch-2.mp3" data-start="13.95" data-duration="0.4" data-track-index="24" data-volume="0.5"></audio>
-      <audio id="sfx-pop3" src="assets/sfx/pop.mp3" data-start="14.2" data-duration="0.3" data-track-index="25" data-volume="0.7"></audio>
-      <audio id="sfx-w3" src="assets/sfx/whoosh.mp3" data-start="15.8" data-duration="0.55" data-track-index="23" data-volume="0.8"></audio>
-      <audio id="sfx-ping1" src="assets/sfx/ping.mp3" data-start="16.7" data-duration="0.8" data-track-index="26" data-volume="0.55"></audio>
-      <audio id="sfx-glitch3" src="assets/sfx/glitch-3.mp3" data-start="19.95" data-duration="0.4" data-track-index="24" data-volume="0.5"></audio>
-      <audio id="sfx-pop4" src="assets/sfx/pop.mp3" data-start="22.0" data-duration="0.3" data-track-index="25" data-volume="0.7"></audio>
-      <audio id="sfx-w4" src="assets/sfx/whoosh-short.mp3" data-start="23.8" data-duration="0.5" data-track-index="23" data-volume="0.8"></audio>
-      <audio id="sfx-pop5" src="assets/sfx/pop.mp3" data-start="24.3" data-duration="0.3" data-track-index="25" data-volume="0.7"></audio>
-      <audio id="sfx-impact2" src="assets/sfx/impact-bass-2.mp3" data-start="28.0" data-duration="1.2" data-track-index="22" data-volume="0.8"></audio>
-      <audio id="sfx-c1" src="assets/sfx/click.mp3" data-start="28.1" data-duration="0.36" data-track-index="26" data-volume="0.9"></audio>
-      <audio id="sfx-c2" src="assets/sfx/click.mp3" data-start="28.6" data-duration="0.36" data-track-index="27" data-volume="0.9"></audio>
-      <audio id="sfx-c3" src="assets/sfx/click.mp3" data-start="29.1" data-duration="0.36" data-track-index="26" data-volume="0.9"></audio>
-      <audio id="sfx-c4" src="assets/sfx/click.mp3" data-start="29.6" data-duration="0.36" data-track-index="27" data-volume="0.9"></audio>
-      <audio id="sfx-c5" src="assets/sfx/click.mp3" data-start="30.1" data-duration="0.36" data-track-index="26" data-volume="0.9"></audio>
-      <audio id="sfx-c6" src="assets/sfx/click.mp3" data-start="30.5" data-duration="0.36" data-track-index="27" data-volume="0.9"></audio>
-      <audio id="sfx-w5" src="assets/sfx/whoosh-cinematic.mp3" data-start="30.7" data-duration="1.2" data-track-index="23" data-volume="0.9"></audio>
-      <audio id="sfx-spark" src="assets/sfx/sparkle.mp3" data-start="31.6" data-duration="1.2" data-track-index="24" data-volume="0.6"></audio>
-      <audio id="sfx-chime" src="assets/sfx/chime.mp3" data-start="33.3" data-duration="1.5" data-track-index="25" data-volume="0.6"></audio>
+      <!-- Audio: música original (sintetizada, sin samples de terceros) y efectos por acción -->
+      <audio id="music" src="assets/audio/music.mp3" data-start="0" data-duration="36" data-track-index="20" data-volume="0.55"></audio>
+      <audio id="fx00" src="assets/audio/riser.mp3" data-start="0.1" data-duration="1.90" data-track-index="21" data-volume="0.7"></audio>
+      <audio id="fx01" src="assets/audio/boom.mp3" data-start="2.0" data-duration="1.62" data-track-index="22" data-volume="1"></audio>
+      <audio id="fx02" src="assets/audio/pop-hi.mp3" data-start="2.3" data-duration="0.10" data-track-index="23" data-volume="0.5"></audio>
+      <audio id="fx03" src="assets/audio/whoosh.mp3" data-start="3.75" data-duration="0.57" data-track-index="24" data-volume="0.8"></audio>
+      <audio id="fx04" src="assets/audio/swish.mp3" data-start="5.95" data-duration="0.28" data-track-index="25" data-volume="0.7"></audio>
+      <audio id="fx05" src="assets/audio/pop.mp3" data-start="6.4" data-duration="0.13" data-track-index="26" data-volume="0.55"></audio>
+      <audio id="fx06" src="assets/audio/whoosh.mp3" data-start="9.75" data-duration="0.57" data-track-index="27" data-volume="0.8"></audio>
+      <audio id="fx07" src="assets/audio/tick.mp3" data-start="10.2" data-duration="0.02" data-track-index="28" data-volume="0.6"></audio>
+      <audio id="fx08" src="assets/audio/notif.mp3" data-start="10.6" data-duration="0.70" data-track-index="29" data-volume="0.55"></audio>
+      <audio id="fx09" src="assets/audio/notif.mp3" data-start="11.3" data-duration="0.70" data-track-index="30" data-volume="0.5"></audio>
+      <audio id="fx10" src="assets/audio/notif.mp3" data-start="12.0" data-duration="0.70" data-track-index="31" data-volume="0.5"></audio>
+      <audio id="fx11" src="assets/audio/whoosh.mp3" data-start="13.45" data-duration="0.57" data-track-index="32" data-volume="0.5"></audio>
+      <audio id="fx12" src="assets/audio/swish.mp3" data-start="13.95" data-duration="0.28" data-track-index="33" data-volume="0.7"></audio>
+      <audio id="fx13" src="assets/audio/pop.mp3" data-start="14.3" data-duration="0.13" data-track-index="34" data-volume="0.55"></audio>
+      <audio id="fx14" src="assets/audio/whoosh.mp3" data-start="15.8" data-duration="0.57" data-track-index="35" data-volume="0.8"></audio>
+      <audio id="fx15" src="assets/audio/tick.mp3" data-start="16.0" data-duration="0.02" data-track-index="36" data-volume="0.6"></audio>
+      <audio id="fx16" src="assets/audio/tick.mp3" data-start="16.12" data-duration="0.02" data-track-index="37" data-volume="0.6"></audio>
+      <audio id="fx17" src="assets/audio/tick.mp3" data-start="16.24" data-duration="0.02" data-track-index="38" data-volume="0.6"></audio>
+      <audio id="fx18" src="assets/audio/whoosh-long.mp3" data-start="18.0" data-duration="0.91" data-track-index="39" data-volume="0.7"></audio>
+      <audio id="fx19" src="assets/audio/pop-hi.mp3" data-start="18.3" data-duration="0.10" data-track-index="40" data-volume="0.55"></audio>
+      <audio id="fx20" src="assets/audio/swish.mp3" data-start="18.65" data-duration="0.28" data-track-index="41" data-volume="0.45"></audio>
+      <audio id="fx21" src="assets/audio/pop-hi.mp3" data-start="18.7" data-duration="0.10" data-track-index="42" data-volume="0.5"></audio>
+      <audio id="fx22" src="assets/audio/swish.mp3" data-start="19.05" data-duration="0.28" data-track-index="43" data-volume="0.45"></audio>
+      <audio id="fx23" src="assets/audio/pop-hi.mp3" data-start="19.1" data-duration="0.10" data-track-index="44" data-volume="0.5"></audio>
+      <audio id="fx24" src="assets/audio/swish.mp3" data-start="19.45" data-duration="0.28" data-track-index="45" data-volume="0.45"></audio>
+      <audio id="fx25" src="assets/audio/pop-hi.mp3" data-start="19.5" data-duration="0.10" data-track-index="46" data-volume="0.5"></audio>
+      <audio id="fx26" src="assets/audio/boom.mp3" data-start="20.0" data-duration="1.62" data-track-index="47" data-volume="0.75"></audio>
+      <audio id="fx27" src="assets/audio/pop.mp3" data-start="20.4" data-duration="0.13" data-track-index="48" data-volume="0.55"></audio>
+      <audio id="fx28" src="assets/audio/whoosh.mp3" data-start="23.75" data-duration="0.57" data-track-index="49" data-volume="0.8"></audio>
+      <audio id="fx29" src="assets/audio/tick.mp3" data-start="24.2" data-duration="0.02" data-track-index="50" data-volume="0.6"></audio>
+      <audio id="fx30" src="assets/audio/pop.mp3" data-start="24.4" data-duration="0.13" data-track-index="51" data-volume="0.55"></audio>
+      <audio id="fx31" src="assets/audio/riser.mp3" data-start="26.1" data-duration="1.90" data-track-index="52" data-volume="0.45"></audio>
+      <audio id="fx32" src="assets/audio/boom.mp3" data-start="28.0" data-duration="1.62" data-track-index="53" data-volume="0.85"></audio>
+      <audio id="fx33" src="assets/audio/shutter.mp3" data-start="28.1" data-duration="0.23" data-track-index="54" data-volume="0.8"></audio>
+      <audio id="fx34" src="assets/audio/shutter.mp3" data-start="28.6" data-duration="0.23" data-track-index="55" data-volume="0.8"></audio>
+      <audio id="fx35" src="assets/audio/shutter.mp3" data-start="29.1" data-duration="0.23" data-track-index="56" data-volume="0.8"></audio>
+      <audio id="fx36" src="assets/audio/shutter.mp3" data-start="29.6" data-duration="0.23" data-track-index="57" data-volume="0.8"></audio>
+      <audio id="fx37" src="assets/audio/shutter.mp3" data-start="30.1" data-duration="0.23" data-track-index="58" data-volume="0.8"></audio>
+      <audio id="fx38" src="assets/audio/shutter.mp3" data-start="30.5" data-duration="0.23" data-track-index="59" data-volume="0.8"></audio>
+      <audio id="fx39" src="assets/audio/whoosh-long.mp3" data-start="30.6" data-duration="0.91" data-track-index="60" data-volume="0.8"></audio>
+      <audio id="fx40" src="assets/audio/ding.mp3" data-start="31.0" data-duration="0.91" data-track-index="61" data-volume="0.6"></audio>
+      <audio id="fx41" src="assets/audio/pop-hi.mp3" data-start="31.85" data-duration="0.10" data-track-index="62" data-volume="0.5"></audio>
+      <audio id="fx42" src="assets/audio/pop.mp3" data-start="33.3" data-duration="0.13" data-track-index="63" data-volume="0.5"></audio>
+      <audio id="fx43" src="assets/audio/pop.mp3" data-start="33.45" data-duration="0.13" data-track-index="64" data-volume="0.5"></audio>
+      <audio id="fx44" src="assets/audio/pop.mp3" data-start="33.6" data-duration="0.13" data-track-index="65" data-volume="0.5"></audio>
     </div>
 
     <script>
@@ -239,13 +297,6 @@
         tl.fromTo("#hblur-g", { attr: { stdDeviation: "0 0" } }, { attr: { stdDeviation: "40 0" }, duration: d / 2, ease: "power3.in", immediateRender: false }, at - d / 2);
         tl.fromTo("#hblur-g", { attr: { stdDeviation: "40 0" } }, { attr: { stdDeviation: "0 0" }, duration: d / 2, ease: "power3.out", immediateRender: false }, at);
         tl.set([a, b], { filter: "none" }, at + d / 2);
-      }
-
-      // Golpe de zoom en cada tiempo fuerte (cada 2 beats)
-      function punches(sel, from, to, every = 1, amt = 1.07) {
-        for (let t = from; t < to - 0.05; t += every) {
-          tl.fromTo(sel, { scale: amt }, { scale: 1, duration: 0.45, ease: "power3.out", immediateRender: false }, t);
-        }
       }
 
       // Temblor de cámara en la caída
@@ -275,28 +326,29 @@
 
       // 1. Así se vivió
       tl.fromTo("#sh-a1", { scale: 1.25 }, { scale: 1, duration: 0.8, ease }, 2.0);
-      punches("#sh-a1", 3.0, 3.8);
       whip("#sh-a1", "#sh-a2", 4.0, -1);
-      punches("#sh-a2", 4.5, 6.0);
       cap("#cap1", 2.25);
 
       // 2. Brigada Rotaria
       flash(6.0);
       tl.fromTo("#sh-b1", { scale: 1.2 }, { scale: 1, duration: 0.6, ease }, 6.0);
       tl.fromTo("#sh-b2", { scale: 1.15, rotate: 2 }, { scale: 1, rotate: 0, duration: 0.5, ease }, 7.5);
-      punches("#sh-b2", 8.0, 9.8);
       tag("#tag2", 6.2);
       cap("#cap2", 6.35);
 
       // 3. Probecarios
       whip("#sh-b2", "#sh-c1", 10.0, 1);
-      punches("#sh-c1", 10.5, 14.0);
       tag("#tag3", 10.2);
       cap("#cap3", 10.35);
+      [["#n1", 10.6], ["#n2", 11.3], ["#n3", 12.0]].forEach(([n, at]) => {
+        tl.fromTo(n, { y: -260, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.5, ease: "back.out(1.6)" }, at);
+      });
+      tl.fromTo(["#n1", "#n2", "#n3"], { x: 0 }, { x: 1100, duration: 0.35, ease: "power3.in", stagger: 0.05, immediateRender: false }, 13.5);
 
       // 4. CONFE
       flash(14.0);
       tl.fromTo("#sh-d1", { scale: 1.3 }, { scale: 1.05, duration: 2, ease: "power2.out" }, 14.0);
+      tl.fromTo("#sh-d1 video", { filter: "blur(28px)" }, { filter: "blur(0px)", duration: 0.5, ease: "power2.out" }, 14.0);
       tag("#tag4", 14.1);
       cap("#cap4", 14.25);
 
@@ -306,15 +358,30 @@
       tl.fromTo("#band-2", { x: -1080 }, { x: 0, duration: 0.45, ease }, 16.12);
       tl.fromTo("#band-3", { x: 1080 }, { x: 0, duration: 0.45, ease }, 16.24);
       tl.fromTo(["#bl-1", "#bl-2"], { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease, stagger: 0.1 }, 16.4);
-      tl.fromTo("#band-2 video", { scale: 1 }, { scale: 1.15, duration: 4, ease: "none" }, 16);
+      tl.fromTo("#band-2 video", { scale: 1 }, { scale: 1.1, duration: 2.2, ease: "none" }, 16);
       tl.fromTo("#shade", { opacity: 1 }, { opacity: 0, duration: 0.2 }, 16.0);
-      tl.fromTo("#shade", { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: false }, 20.0);
+      tl.fromTo("#shade", { opacity: 0 }, { opacity: 1, duration: 0.2, immediateRender: false }, 18.2);
       cap("#cap5", 16.6);
+
+      // Carrusel de oportunidades: tarjetas que se deslizan como en una app
+      tl.fromTo("#car", { clipPath: "circle(0% at 50% 50%)" }, { clipPath: "circle(80% at 50% 50%)", duration: 0.35, ease: "power3.out" }, 18.2);
+      tl.fromTo("#car .kicker", { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease }, 18.25);
+      const CARDS = [["#oc1", "#d1", 18.3], ["#oc2", "#d2", 18.7], ["#oc3", "#d3", 19.1], ["#oc4", "#d4", 19.5]];
+      tl.set(["#oc2", "#oc3", "#oc4"], { x: 900 }, 0);
+      CARDS.forEach(([c, d, at], i) => {
+        if (i === 0) tl.fromTo(c, { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)" }, at);
+        else tl.fromTo(c, { x: 900 }, { x: 0, duration: 0.3, ease: "power3.out", immediateRender: false }, at);
+        tl.fromTo(c + " .ic", { scale: 0.5, rotate: -12 }, { scale: 1, rotate: 0, duration: 0.35, ease: "back.out(2.6)" }, at + 0.05);
+        tl.fromTo(d, { width: 22, backgroundColor: "rgba(39,96,146,.2)" }, { width: 60, backgroundColor: "#276092", duration: 0.2, immediateRender: false }, at);
+        if (i < CARDS.length - 1) {
+          tl.fromTo(c, { x: 0, opacity: 1 }, { x: -700, opacity: 0, duration: 0.18, ease: "power3.in", immediateRender: false }, CARDS[i + 1][2] - 0.16);
+          tl.fromTo(d, { width: 60, backgroundColor: "#276092" }, { width: 22, backgroundColor: "rgba(39,96,146,.2)", duration: 0.2, immediateRender: false }, CARDS[i + 1][2]);
+        }
+      });
 
       // 6. Palomitas
       flash(20.0);
       tl.fromTo("#sh-e1", { scale: 1.35, rotate: -4 }, { scale: 1, rotate: 0, duration: 1.2, ease }, 20.0);
-      punches("#sh-e1", 22.0, 23.8);
       cap("#cap6", 20.35);
 
       // 7. Stand Westhill
@@ -347,7 +414,6 @@
       tl.fromTo("#t1", { y: 500, rotate: -20 }, { y: 0, rotate: -8, duration: 0.6, ease: "back.out(1.4)" }, 33.3);
       tl.fromTo("#t2", { y: 500, rotate: 10 }, { y: -30, rotate: 2, duration: 0.6, ease: "back.out(1.4)" }, 33.45);
       tl.fromTo("#t3", { y: 500, rotate: 20 }, { y: 0, rotate: 8, duration: 0.6, ease: "back.out(1.4)" }, 33.6);
-      tl.fromTo("#end-title", { y: 0 }, { y: -10, duration: 0.5, ease: "sine.inOut", yoyo: true, repeat: 3, immediateRender: false }, 33.4);
 
       window.__timelines["main"] = tl;
     </script>
