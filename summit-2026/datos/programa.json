@@ -1,0 +1,67 @@
+{
+  "_fuente": "Tríptico Programa_Westhill_Triptico.docx (versión más reciente, 06/10/2026 21:16) como fuente principal; Excel Programa_Westhill.xlsx solo donde el tríptico no trae el dato. Cualquier cambio de programa se hace AQUÍ y se regeneran todos los materiales. Ver REVISAR.md.",
+  "evento": {
+    "nombre": "WESTHILL MEDICAL LEADERSHIP SUMMIT 2026",
+    "nombre_corto": "Westhill Medical Leadership Summit 2026",
+    "lema": "Fronteras de la Medicina: actualización clínica y nuevas perspectivas en la práctica médica",
+    "organiza": "Facultad de Medicina",
+    "universidad": "Universidad Westhill",
+    "fechas": "21, 22 y 23 de octubre de 2026",
+    "fechas_cortas": "21–23 de octubre de 2026",
+    "sede": "Instalaciones de la Universidad Westhill",
+    "redes": "@univwesthill"
+  },
+  "dias": [
+    {
+      "id": "miercoles",
+      "dia": "Miércoles",
+      "fecha": "21 de octubre",
+      "fin": "12:30",
+      "actividades": [
+        { "inicio": "08:00", "fin": "08:30", "tipo": "ceremonia", "titulo": "Ceremonia de apertura" },
+        { "inicio": "08:30", "fin": "09:00", "tipo": "ponencia", "titulo": "Cirugía en el mundo real: visión de un experto", "ponente": "Dr. Juan Manuel Ruiz Molina" },
+        { "inicio": "09:00", "fin": "09:30", "tipo": "ponencia", "titulo": "Enfermedad por reflujo gastroesofágico", "ponente": "Dr. Norberto Ruiz Molina" },
+        { "inicio": "09:30", "fin": "10:30", "tipo": "receso", "titulo": "Coffee break" },
+        { "inicio": "10:30", "fin": "11:00", "tipo": "patrocinadores", "titulo": "Actividad de patrocinadores" },
+        { "inicio": "11:00", "fin": "11:30", "tipo": "ponencia", "titulo": "Sintomatología del tracto urinario inferior", "ponente": "Dra. Brenda Suaste Carmona" },
+        { "inicio": "11:30", "fin": "12:00", "tipo": "ponencia", "titulo": "Cómo presentarse a la vida como médico en redes sociales", "ponente": "Dr. Juan José Loera Pineda" },
+        { "inicio": "12:00", "fin": "12:30", "tipo": "ponencia", "titulo": "¿Qué pasa después de la carrera?", "ponente": "Dr. Alan Maximiliano de los Santos Bernal" }
+      ]
+    },
+    {
+      "id": "jueves",
+      "dia": "Jueves",
+      "fecha": "22 de octubre",
+      "fin": "14:30",
+      "actividades": [
+        { "inicio": "09:00", "fin": "09:30", "tipo": "ponencia", "titulo": "Imagenología", "ponente": "Dr. José Saúl Sánchez Hernández" },
+        { "inicio": "09:30", "fin": "10:00", "tipo": "ponencia", "titulo": "Electrofisiología: electromiografía en la clínica y en la práctica", "ponente": "Dr. Marcos Guillermo de la Rosa Viejo" },
+        { "inicio": "10:00", "fin": "10:30", "tipo": "ponencia", "titulo": "Leadership in Healthcare: Leading High-Performance Medical Teams", "ponente": "Dr. César A. Escalante Campillo" },
+        { "inicio": "10:30", "fin": "11:30", "tipo": "receso", "titulo": "Coffee break" },
+        { "inicio": "11:30", "fin": "12:00", "tipo": "ponencia", "titulo": "Anemias y leucemias", "ponente": "Dra. Guadalupe Rodríguez", "cargo": "Jefa de Hematología, La Raza" },
+        { "inicio": "12:00", "fin": "12:30", "tipo": "ponencia", "titulo": "Agonistas de GLP-1: un viaje a través del tiempo", "ponente": "Dr. Oscar Alejandro Romo Pérez" },
+        { "inicio": "12:30", "fin": "13:00", "tipo": "ponencia", "titulo": "Nutrición clínica", "ponente": "Dr. Samuel Alejandro Zimbrón" },
+        { "inicio": "13:00", "fin": "13:30", "tipo": "ponencia", "titulo": "AMIR", "ponente": "Dr. Jorge Macías Garza" },
+        { "inicio": "13:30", "fin": "14:00", "tipo": "ponencia", "titulo": "Interpretación rápida del paciente pediátrico: el ABCDE y el Triángulo de Evaluación Pediátrica", "ponente": "Dr. Alejandro Ortíz García-Robles" },
+        { "inicio": "14:00", "fin": "14:30", "tipo": "ponencia", "titulo": "Importancia del tamiz neonatal como factor preventivo de enfermedades metabólicas congénitas", "ponente": "Dr. Carlos Cortés Reyes" }
+      ]
+    },
+    {
+      "id": "viernes",
+      "dia": "Viernes",
+      "fecha": "23 de octubre",
+      "fin": "13:00",
+      "actividades": [
+        { "inicio": "08:00", "fin": "08:30", "tipo": "ponencia", "titulo": "Urgencias médico quirúrgicas / Toxicología Clínica", "ponente": "Dr. José Antonio Bandillo Torres" },
+        { "inicio": "08:30", "fin": "09:00", "tipo": "ponencia", "titulo": "Oncología para el médico interno de pregrado", "ponente": "Dr. Francisco Gutierez Delgado" },
+        { "inicio": "09:00", "fin": "09:30", "tipo": "ponencia", "titulo": "Hacks del ECG patológico", "ponente": "Dr. Iker Paris García Pérez" },
+        { "inicio": "09:30", "fin": "10:00", "tipo": "patrocinadores", "titulo": "Actividad de patrocinadores" },
+        { "inicio": "10:00", "fin": "11:00", "tipo": "receso", "titulo": "Coffee break" },
+        { "inicio": "11:00", "fin": "11:30", "tipo": "ponencia", "titulo": "Atención Primaria de la Salud y Cobertura Universal en Salud, el nuevo paradigma en la formación médica", "ponente": "Dr. Alejandro Alonso Altamirano" },
+        { "inicio": "11:30", "fin": "12:00", "tipo": "ponencia", "titulo": "Cómo usar la IA sin dejar de pensar clínicamente", "ponente": "Dr. Luis Armano Gervacio Blanco" },
+        { "inicio": "12:00", "fin": "12:30", "tipo": "mesa", "titulo": "Mesa redonda", "ponente": "Dr. Asisclo de Jesús Villagómez Ortíz" },
+        { "inicio": "12:30", "fin": "13:00", "tipo": "ceremonia", "titulo": "Ceremonia de cierre" }
+      ]
+    }
+  ]
+}

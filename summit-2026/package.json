@@ -1,0 +1,21 @@
+{
+  "name": "wmls-2026-materiales",
+  "version": "1.0.0",
+  "description": "Materiales gráficos Westhill Medical Leadership Summit 2026",
+  "scripts": {
+    "generar": "bash scripts/generar_todo.sh",
+    "verificar": "python3 scripts/verificar_datos.py"
+  },
+  "dependencies": {
+    "jszip": "^3.10.2",
+    "pptxgenjs": "^4.0.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "react-icons": "^5.7.0",
+    "sharp": "^0.35.5"
+  },
+  "private": true,
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
+}
