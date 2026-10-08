@@ -7,7 +7,7 @@ OUT="out/westhill-faltan-${DIAS}-dias.mp4"
 python3 scripts/make_audio.py public/audio/teaser.wav
 npx remotion render src/index.ts FaltanDias out/_video.mp4 \
 	--props="{\"dias\": ${DIAS}, \"fecha\": \"28 · 10\", \"mostrarFecha\": true}" \
-	--muted --crf=12 --concurrency="${CONCURRENCY:-4}" --gl=swiftshader
+	--muted --image-format=jpeg --jpeg-quality=95 --crf=12 --concurrency="${CONCURRENCY:-4}" --gl=swiftshader
 ffmpeg -y -hide_banner -loglevel error -i out/_video.mp4 -i public/audio/teaser.wav \
 	-map 0:v -map 1:a -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -profile:v high -level 4.2 \
 	-r 30 -g 30 -bf 2 -tune film -x264-params "aq-mode=3" \

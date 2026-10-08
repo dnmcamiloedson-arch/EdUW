@@ -361,10 +361,13 @@ export const SceneE: React.FC<{dias: number; fecha: string; mostrarFecha: boolea
 			<AbsoluteFill style={cam(1.25)}>
 				<Embers t={t} L={0.4 + 0.6 * lit} n={34} src={[120, 1150, 840, 650]} />
 			</AbsoluteFill>
-			{lf > -1 ? (
+			{/* motion blur solo mientras el texto se mueve (los springs se asientan antes de lf=45) */}
+			{lf > -1 && lf < 45 ? (
 				<CameraMotionBlur samples={6} shutterAngle={180}>
 					<TitleWrap lf={lf} dias={dias} fecha={fecha} mostrarFecha={mostrarFecha} fl={fl} />
 				</CameraMotionBlur>
+			) : lf >= 45 ? (
+				<TitleWrap lf={lf} dias={dias} fecha={fecha} mostrarFecha={mostrarFecha} fl={fl} />
 			) : null}
 			<AbsoluteFill style={{background: '#000', opacity: fade}} />
 		</AbsoluteFill>

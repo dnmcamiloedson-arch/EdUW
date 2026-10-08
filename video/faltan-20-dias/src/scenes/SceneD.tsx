@@ -213,9 +213,14 @@ export const SceneD: React.FC = () => {
 	const flash = Math.exp(-lf / 2.4);
 	return (
 		<AbsoluteFill style={{background: '#050201', overflow: 'hidden'}}>
-			<CameraMotionBlur samples={5} shutterAngle={200}>
+			{/* motion blur solo durante la sacudida del beat; después la imagen está casi quieta */}
+			{lf < 10 ? (
+				<CameraMotionBlur samples={5} shutterAngle={200}>
+					<Montage />
+				</CameraMotionBlur>
+			) : (
 				<Montage />
-			</CameraMotionBlur>
+			)}
 			{/* destello en el corte: la luz "empuja" el corte */}
 			<Light x={MP.x} y={MP.y} r={1000} color="#FFD58A" o={0.42 * flash} />
 		</AbsoluteFill>
