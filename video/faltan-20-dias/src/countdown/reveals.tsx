@@ -416,7 +416,7 @@ const PapelReveal: React.FC<{dias: number; fecha: string; variante?: string}> = 
 					position: 'absolute',
 					left: 0,
 					width: W,
-					top: by + BH + 50,
+					top: by + BH + 100,
 					textAlign: 'center',
 					opacity: ramp(lf, [hit + 10, hit + 30], [0, 0.95], E.out),
 				}}
