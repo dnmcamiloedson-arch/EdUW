@@ -61,8 +61,27 @@ def renumber(xml):
     return re.sub(r'<p:cNvPr id="\d+"', sub, xml)
 
 
+PPR = re.compile(r'<a:pPr\b[^>]*?(?:/>|>.*?</a:pPr>)', re.S)
+
+
+def single_ppr(xml):
+    """pptxgenjs writes an <a:pPr> before every run of a multi-run paragraph (and keeps the pPr of
+    empty runs). Only one pPr, as the first child, is valid; PowerPoint asks to repair otherwise."""
+    def fix(m):
+        p = m.group(0)
+        first = [True]
+        def keep(mm):
+            if first[0] and p.index(mm.group(0)) == len('<a:p>'):
+                first[0] = False
+                return mm.group(0)
+            return ''
+        return PPR.sub(keep, p)
+    return re.sub(r'<a:p>.*?</a:p>', fix, xml, flags=re.S)
+
+
 def process(xml):
     xml = renumber(xml)
+    xml = single_ppr(xml)
     groups = {}
     # find each shape element + its cNvPr
     for m in re.finditer(r'<p:cNvPr id="(\d+)" name="@(\d+)~', xml):
