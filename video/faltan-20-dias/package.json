@@ -1,0 +1,30 @@
+{
+  "name": "westhill-faltan-dias",
+  "version": "1.0.0",
+  "description": "Teaser vertical \"Faltan 20 días\" — Universidad Westhill (Remotion)",
+  "scripts": {
+    "studio": "remotion studio",
+    "audio": "python3 scripts/make_audio.py",
+    "render": "./scripts/render.sh",
+    "typecheck": "tsc -p ."
+  },
+  "author": "Universidad Westhill",
+  "license": "ISC",
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "@remotion/fonts": "4.0.534",
+    "@remotion/motion-blur": "4.0.534",
+    "@remotion/noise": "4.0.534",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "remotion": "4.0.534"
+  },
+  "devDependencies": {
+    "@fontsource/alike": "5.2.6",
+    "@fontsource/domine": "5.2.6",
+    "@fontsource/rye": "5.2.6",
+    "@types/react": "19.1.12",
+    "typescript": "5.9.2"
+  },
+  "private": true
+}
