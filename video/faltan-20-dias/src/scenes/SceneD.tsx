@@ -51,7 +51,7 @@ const ShotPan: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 		<Flame x={MP.x} y={MP.y} size={96} t={t} seed={3} fl={fl} />
 		<Light x={MP.x} y={MP.y - 50} r={160} color={C.flama} o={0.5 * fl} />
 		<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-			<g transform="translate(540 1362) scale(1.52)">
+			<g transform="translate(436 1366) scale(1.42)">
 				<PanDeMuerto lit={0.9 * fl} rim={fl} id="pd" />
 			</g>
 		</svg>

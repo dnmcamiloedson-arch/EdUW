@@ -57,9 +57,9 @@ export const SceneA: React.FC = () => {
 						style={{
 							transformOrigin: `${CX}px ${FLAME_Y}px`,
 							transform: 'scale(1.42)',
-							filter: 'blur(5px)',
+							filter: 'blur(9px)',
 							mixBlendMode: 'multiply',
-							opacity: 0.85 * ppLight,
+							opacity: 0.5 * ppLight,
 						}}
 					>
 						<PapelString cfg={FRONT} frame={ppFrame - 2} t={t - 0.06} light={1} shadow lightPos={[CX, FLAME_Y]} />

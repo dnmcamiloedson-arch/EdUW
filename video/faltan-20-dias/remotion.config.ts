@@ -7,5 +7,5 @@ Config.setVideoImageFormat('png');
 Config.setPixelFormat('yuv420p');
 Config.setCodec('h264');
 Config.setCrf(14);
-Config.setChromiumOpenGlRenderer('swangle');
+Config.setChromiumOpenGlRenderer('swiftshader'); // ~3× más rápido que swangle en este contenedor
 Config.setConcurrency(4);

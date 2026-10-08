@@ -319,7 +319,7 @@ export const SceneE: React.FC<{dias: number; fecha: string; mostrarFecha: boolea
 	const pb = ramp(f, [0, 68], [0, 1], E.soft);
 	const s = lerp(2.55, 1, pb) * ramp(f, [68, 150], [1, 1.03], E.inOut);
 	const ty = lerp(-690, 0, pb);
-	const fade = ramp(f, [144, 150], [0, 1], E.inOut);
+	const fade = ramp(f, [144, 149], [0, 1], E.inOut);
 	const lf = f - TITLE_IN;
 	const cam = (k: number): React.CSSProperties => ({
 		transformOrigin: `540px ${CROSS.y}px`,
