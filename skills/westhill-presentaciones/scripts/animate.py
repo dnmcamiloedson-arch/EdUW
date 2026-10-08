@@ -44,7 +44,18 @@ def timing(groups):
             '<p:nextCondLst><p:cond evt="onNext" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:nextCondLst></p:seq>'
             '</p:childTnLst></p:cTn></p:par></p:tnLst>' + (f'<p:bldLst>{bld}</p:bldLst>' if bld else '') + '</p:timing>')
 
+def renumber(xml):
+    """pptxgenjs can reuse a shape id (tables, slide number placeholder); PowerPoint then asks to repair.
+    Give every shape on the slide a unique id."""
+    n = [1]
+    def sub(m):
+        n[0] += 1
+        return f'<p:cNvPr id="{n[0]}"'
+    return re.sub(r'<p:cNvPr id="\d+"', sub, xml)
+
+
 def process(xml):
+    xml = renumber(xml)
     groups = {}
     # find each shape element + its cNvPr
     for m in re.finditer(r'<p:cNvPr id="(\d+)" name="@(\d+)~', xml):
