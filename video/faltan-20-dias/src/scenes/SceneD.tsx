@@ -4,7 +4,6 @@ import {CameraMotionBlur} from '@remotion/motion-blur';
 import {noise2D} from '@remotion/noise';
 import {C, E, FPS, H, W, clamp, flicker, hash, mixRGB, rgba} from '../lib/util';
 import {Flame, Light, PaperTexture, useCanvasDraw} from '../components/core';
-import {Veladora} from '../components/Veladora';
 import {Cirio, MarcoFoto, PanDeMuerto, VasoAgua} from '../components/Objetos';
 import {drawPetal} from '../components/Particles';
 
@@ -61,13 +60,18 @@ const ShotPan: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 const ShotVaso: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 	<AbsoluteFill>
 		<Wall fl={fl} />
-		<Veladora x={MP.x + 40} y={MP.y + 220} L={fl} id="vv" />
 		<Table y={1400} fl={fl} />
+		{/* cirio sobre la mesa: la mecha queda centrada justo bajo la llama */}
+		<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
+			<g transform={`translate(${MP.x} 1402)`}>
+				<Cirio lit={fl} h={1402 - MP.y - 4} w={58} />
+			</g>
+		</svg>
 		<Flame x={MP.x} y={MP.y} size={96} t={t} seed={5} fl={fl} />
 		<Light x={MP.x} y={MP.y - 50} r={160} color={C.flama} o={0.5 * fl} />
 		<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-			<g transform="translate(400 1440) scale(1.15)">
-				<VasoAgua lit={0.95 * fl} id="va2" flameX={-120} />
+			<g transform="translate(330 1440) scale(1.15)">
+				<VasoAgua lit={0.95 * fl} id="va2" flameX={-150} />
 			</g>
 		</svg>
 	</AbsoluteFill>

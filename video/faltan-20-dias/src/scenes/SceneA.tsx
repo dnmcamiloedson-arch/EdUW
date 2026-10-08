@@ -35,6 +35,9 @@ export const SceneA: React.FC = () => {
 
 	// alcance de la luz: crece cuando la llama se estabiliza
 	const sigma = ramp(f, [IGNITE, 110], [150, 760], E.out);
+	// los pétalos se revelan poco a poco: la luz los alcanza y su opacidad sube con curva suave
+	const petalIn = ramp(f, [34, 100], [0, 1], E.inOut);
+	const nearIn = ramp(f, [52, 118], [0, 1], E.inOut);
 	const flameScreenY = FLAME_Y; // coordenadas de mundo
 
 	const ppFrame = f - 135;
@@ -74,7 +77,7 @@ export const SceneA: React.FC = () => {
 					</AbsoluteFill>
 				) : null}
 				{/* pétalos lejanos */}
-				{f > 48 ? <PetalRain t={t - 1.3} layer={PETAL_LAYERS[0]} light={{x: CX, y: flameScreenY - camY * 0.45, sigma, L}} camX={camX} camY={-camY} /> : null}
+				{f > 30 ? <PetalRain t={t - 1.3} layer={PETAL_LAYERS[0]} light={{x: CX, y: flameScreenY - camY * 0.45, sigma, L, ambient: 0.015}} camX={camX} camY={-camY} fade={petalIn} /> : null}
 				{/* mesa + charco de luz */}
 				<div
 					style={{
@@ -91,7 +94,7 @@ export const SceneA: React.FC = () => {
 				<Light x={CX} y={BASE_Y - 10} r={sigma * 0.55} sy={0.2} color="#FFE9B0" o={0.35 * L} />
 				<PaperTexture o={0.35} />
 				{/* pétalos medios */}
-				{f > 48 ? <PetalRain t={t - 1.3} layer={PETAL_LAYERS[1]} light={{x: CX, y: flameScreenY, sigma, L}} camX={camX} camY={-camY} /> : null}
+				{f > 30 ? <PetalRain t={t - 1.3} layer={PETAL_LAYERS[1]} light={{x: CX, y: flameScreenY, sigma, L, ambient: 0.015}} camX={camX} camY={-camY} fade={petalIn} /> : null}
 				<Veladora x={CX} y={BASE_Y} h={VH} L={L} id="va" />
 				<Flame x={CX} y={FLAME_Y} size={98} t={t} seed={1} grow={g} fl={fl * dip} />
 				<Light x={CX} y={FLAME_Y - 50} r={130} color={C.flama} o={0.55 * L} />
@@ -100,7 +103,7 @@ export const SceneA: React.FC = () => {
 				{ppFrame > -10 ? <PapelString cfg={FRONT} frame={ppFrame} t={t} light={ppLight} lightPos={[CX, FLAME_Y]} /> : null}
 			</Cam>
 			{/* pétalos cercanos, fuera de foco, con más parallax */}
-			{f > 55 ? <PetalRain t={t - 1.8} layer={PETAL_LAYERS[2]} light={{x: CX, y: flameScreenY - camY, sigma: sigma * 1.3, L}} camX={camX * 1.8} camY={-camY * 1.8} /> : null}
+			{f > 48 ? <PetalRain t={t - 1.8} layer={PETAL_LAYERS[2]} light={{x: CX, y: flameScreenY - camY, sigma: sigma * 1.3, L, ambient: 0.015}} camX={camX * 1.8} camY={-camY * 1.8} fade={nearIn} /> : null}
 			{/* exposición: casi negro total hasta que prende la llama */}
 			<AbsoluteFill style={{background: '#000', opacity: ramp(f, [0, IGNITE + 4], [0.86, 0], E.out)}} />
 			{/* destello de ignición */}

@@ -1,6 +1,6 @@
 # Teaser "Faltan 20 días" · Universidad Westhill
 
-Video vertical de 20 s (1080×1920, 30 fps, H.264 + AAC) para Reels, TikTok y Stories.
+Video vertical de 24.5 s: 20 s de teaser más 4.5 s de outro con el logo (1080×1920, 30 fps, H.264 + AAC) para Reels, TikTok y Stories.
 Cuenta regresiva al 28 de octubre. Nunca dice "ofrenda", "evento" ni "concurso": es un guiño.
 
 **Entregable:** `out/westhill-faltan-20-dias.mp4`
@@ -23,6 +23,7 @@ Las partículas (pétalos, chispas, humo de copal y brasas) se dibujan en canvas
 | 450–520 | 15–17.3 s | Pull-back: altar de tres niveles | Silueta a contraluz; 11 velas se encienden de abajo arriba (una por nota de marimba); los elementos se acomodan con springs |
 | 520–525 | 17.3–17.5 s | Respiro | Silencio antes de revelar |
 | 525–600 | 17.5–20 s | FALTAN · **20** · DÍAS · 28 · 10 | "20" con spring suave (ζ≈0.88) y brillo de brasa que pulsa con la llama; fundido a negro en f594 |
+| 600–735 | 20–24.5 s | Outro: logo Westhill | El logo se enciende con un frente de fuego irregular (lenguas de fuego y chispas). Se sostiene rodeado de corona de cempasúchil, calaveritas, panes y veladoras. Luego se esfuma en brasas y humo; las velas se apagan con él |
 
 Todo el texto queda entre y=372 y y=1000, dentro de la zona segura (fuera de los 250 px superiores y los 340 px inferiores).
 
@@ -30,9 +31,10 @@ Todo el texto queda entre y=372 y y=1000, dentro de la zona segura (fuera de los
 
 Todo el audio es sintético: drone en Re, viento y latido que pasa de 60 a ~72 bpm. Lleva cerillo e ignición en f6–f8, roce de papel, una campanita cuando se encienden los ojos y un soplo de copal.
 En el montaje suenan tambor y madera en cada corte. En el altar, una marimba pentatónica en Re mayor da una nota por vela, con un swell de cuerdas. Luego vienen 0.17 s de silencio y un golpe grave con cola de reverb al aparecer el "20".
+Outro: encendido, lecho de fuego, una firma de marimba de 4 notas cuando el logo termina de encenderse y un soplo con brillo al esfumarse.
 Master: **-14 LUFS integrado, true peak ≤ -1 dBTP** (limitador con sobremuestreo 4×).
 
-Para usar audio propio, reemplaza `public/audio/teaser.wav` (20 s, 48 kHz) y omite el paso de `make_audio.py` en `scripts/render.sh`.
+Para usar audio propio, reemplaza `public/audio/teaser.wav` (24.5 s, 48 kHz) y omite el paso de `make_audio.py` en `scripts/render.sh`.
 
 ## Render
 
@@ -65,4 +67,5 @@ pip install numpy scipy pyloudnorm
 - **Referencia de velocidad:** en el contenedor de 4 núcleos sin GPU el render completo tarda unos 10–15 min. Con 8–16 núcleos debería bajar en proporción.
 
 Las fuentes (Rye, Alike y Domine, de Google Fonts y con licencia OFL) se sirven desde `public/fonts` y no se cargan de ningún CDN durante el render.
+El logo está en `public/brand/logo-westhill-blanco.png` (versión blanca, fondo transparente).
 Todas las ilustraciones son originales y están hechas con código (SVG y canvas).

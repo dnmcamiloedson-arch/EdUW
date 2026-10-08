@@ -16,7 +16,7 @@ from scipy.io import wavfile
 from scipy.signal import butter, fftconvolve, resample_poly, sosfilt
 
 SR = 48000
-DUR = 20.0
+DUR = 24.5  # 20 s de teaser + 4.5 s de outro con el logo
 N = int(SR * DUR)
 rng = np.random.default_rng(1028)
 t = np.arange(N) / SR
@@ -34,7 +34,11 @@ MONTAGE = [fr(375), fr(393), fr(411), fr(429)]
 CANDLES = [fr(450 + 4 + 5 * i) for i in range(1, 12)]
 BREATH = (fr(520), fr(525))
 TITLE = fr(525)
-FADE = (fr(594), fr(600))
+FADE = (fr(729), fr(735))
+TITLE_OUT = (fr(594), fr(600))  # el título se apaga a negro antes del outro
+OUT = fr(600)  # inicio del outro
+OUT_BURN = (OUT + fr(8), OUT + fr(48))
+OUT_DISS = (OUT + fr(92), OUT + fr(126))
 HEART = [1.0, 2.0, 3.0, 3.95, 4.85, 5.75, 6.65, CUT_B, 8.35, 9.2, CUT_C, 10.84, 11.67]
 
 
@@ -132,6 +136,9 @@ duck = np.ones(N)
 b0, b1 = int(BREATH[0] * SR), int(BREATH[1] * SR)
 duck[b0:b1] = np.linspace(1, 0.08, b1 - b0) ** 2
 duck[b1:] = 0.08 + 0.5 * (1 - np.exp(-(t[b1:] - BREATH[1]) / 0.8))
+o0, o1 = int(TITLE_OUT[0] * SR), int((OUT + 0.4) * SR)
+duck[o0:o1] *= np.linspace(1, 0.35, o1 - o0)
+duck[o1:] *= 0.35 + 0.25 * np.clip((t[o1:] - OUT - 0.4) / 1.5, 0, 1)
 dry[0] += drone * duck + wind[0] * duck
 dry[1] += drone * duck + wind[1] * duck
 
@@ -292,9 +299,51 @@ place(dry, boom, TITLE, 0.95)
 place(send, boom, TITLE, 0.35)
 place(send, bell(587.33, 3.0), TITLE + 0.02, 0.1)  # brillo de brasa
 
-fin = strings([midi(50), midi(57), midi(64), midi(66), midi(74)], TITLE, DUR, lambda u: np.minimum(1, (u * 2.5 / 0.3)) * (1 - 0.35 * u), 600, 1500, release=0.2, seed=9)
-dry[:, int(TITLE * SR) :] += fin[:, : N - int(TITLE * SR)] * 0.11
-send[:, int(TITLE * SR) :] += fin[:, : N - int(TITLE * SR)] * 0.08
+fin = strings([midi(50), midi(57), midi(64), midi(66), midi(74)], TITLE, OUT + 0.25, lambda u: np.minimum(1, (u * 2.5 / 0.3)) * (1 - 0.35 * u), 600, 1500, release=0.45, seed=9)
+_t0 = int(TITLE * SR)
+dry[:, _t0 : _t0 + fin.shape[1]] += fin * 0.11
+send[:, _t0 : _t0 + fin.shape[1]] += fin * 0.08
+
+# ---------------- outro: el logo se enciende, arde y se esfuma ----------------
+# chispa + encendido
+n = int(0.16 * SR)
+place(dry, bp(rng.normal(0, 1, n), 2000, 7000) * env_adsr(n, 0.008, 0.04), OUT + fr(5), 0.35)
+n = int(1.4 * SR)
+i = np.arange(n) / SR
+ign = lp(rng.normal(0, 1, n), 700) * np.minimum(1, i / 0.12) * np.exp(-i / 0.5)
+place(dry, ign, OUT_BURN[0] - 0.05, 0.9)
+place(send, ign, OUT_BURN[0] - 0.05, 0.2)
+place(dry, thump(110, 55, 0.8, 0.2), OUT_BURN[0], 0.7)
+# lecho de fuego: rumor grave + chasquidos, sigue la intensidad del logo
+n = int((OUT_DISS[1] - OUT_BURN[0] + 0.6) * SR)
+i = np.arange(n) / SR
+body = lp(pink(n, 91), 500) * 0.8 + bp(pink(n, 92), 900, 3000) * 0.25
+body *= 0.6 + 0.4 * np.tanh(smooth_noise(n, 3.0, 93))
+dur_burn = OUT_BURN[1] - OUT_BURN[0]
+g_env = np.clip(i / dur_burn, 0, 1) ** 0.8 * (1 - np.clip((i - (OUT_DISS[0] - OUT_BURN[0])) / (OUT_DISS[1] - OUT_DISS[0]), 0, 1)) ** 1.5
+pops = (rng.random(n) < 0.0016) * rng.normal(0, 1, n) * 4
+crack = hp(pops, 1800) + bp(pops, 300, 1200) * 0.5
+fire = (body + crack) * g_env
+place(dry, fire, OUT_BURN[0], 0.42, -0.1)
+place(dry, np.roll(fire, 9000), OUT_BURN[0], 0.3, 0.25)
+# acorde cálido mientras el logo está encendido
+pad = strings([midi(50), midi(57), midi(62), midi(66)], OUT_BURN[0], OUT_DISS[1], lambda u: np.minimum(1, u * 4) * (1 - np.clip((u - 0.62) / 0.38, 0, 1)) ** 1.5, 500, 1100, release=0.3, seed=21)
+_o0 = int(OUT_BURN[0] * SR)
+dry[:, _o0 : _o0 + pad.shape[1]] += pad * 0.12
+send[:, _o0 : _o0 + pad.shape[1]] += pad * 0.1
+# firma de marimba cuando el logo termina de encenderse
+for k, (m, dt) in enumerate([(74, 0.0), (78, 0.16), (81, 0.32), (86, 0.56)]):
+    place(dry, marimba(midi(m), 1.8), OUT_BURN[1] / 1 + dt - 0.05, 0.2, (-0.3, -0.1, 0.1, 0.3)[k])
+    place(send, marimba(midi(m), 1.8), OUT_BURN[1] + dt - 0.05, 0.12)
+# se esfuma: soplo que sube + brillo
+n = int(1.8 * SR)
+i = np.arange(n) / SR
+mixk = np.clip(i / 1.8, 0, 1)
+air = (bp(rng.normal(0, 1, n), 500, 1400) * (1 - mixk) + bp(rng.normal(0, 1, n), 1400, 5000) * mixk) * np.sin(np.pi * mixk) ** 1.3
+place(dry, air, OUT_DISS[0] - 0.1, 0.22, 0.15)
+place(send, air, OUT_DISS[0] - 0.1, 0.1)
+place(send, bell(1174.66, 2.4), OUT_DISS[0] + 0.25, 0.08)
+place(send, bell(1760.0, 2.0), OUT_DISS[0] + 0.45, 0.05)
 
 # ---------------- reverb ----------------
 ir = reverb_ir()
@@ -345,7 +394,7 @@ out = sys.argv[1] if len(sys.argv) > 1 else 'public/audio/teaser.wav'
 wavfile.write(out, SR, (np.clip(mix, -1, 1).T * 32767).astype(np.int16))
 m2 = pyln.Meter(SR, block_size=0.4)
 prof = []
-for k in range(20):
+for k in range(int(DUR)):
     seg = mix[:, k * SR : (k + 1) * SR].T
     prof.append(round(m2.integrated_loudness(seg), 1))
 print('perfil LUFS/s', prof)

@@ -55,7 +55,7 @@ export const CutFilter: React.FC = () => (
 	</svg>
 );
 
-export const Calavera: React.FC<{L: number; eye: number; rim: number; t: number}> = ({L, eye, rim, t}) => {
+export const Calavera: React.FC<{L: number; eye: number; rim: number; t: number; size?: number}> = ({L, eye, rim, t, size}) => {
 	const lit = Math.min(1, L);
 	const ivory = rgba(mixRGB(C.ink, C.marfil, lit));
 	const ivoryDark = rgba(mixRGB(C.ink, C.arena, lit * 0.75));
@@ -65,7 +65,7 @@ export const Calavera: React.FC<{L: number; eye: number; rim: number; t: number}
 	const terra = rgba(mixRGB(C.ink, C.terracota, lit));
 	const breathe = 0.85 + 0.15 * Math.sin(t * 2.1);
 	return (
-		<svg viewBox="0 0 1000 1000" width="100%" height="100%" style={{overflow: 'visible'}}>
+		<svg viewBox="0 0 1000 1000" width={size ?? '100%'} height={size ?? '100%'} style={{overflow: 'visible'}}>
 			<defs>
 				<clipPath id="skc">
 					<path d={SKULL} />
