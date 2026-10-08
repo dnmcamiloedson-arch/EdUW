@@ -1,7 +1,7 @@
 import sys, glob, os
 from PIL import Image, ImageDraw
 d, out = sys.argv[1], sys.argv[2]
-files = sys.argv[3:] or sorted(glob.glob(os.path.join(d, 'f*.png')))
+files = sys.argv[3:] or sorted(glob.glob(os.path.join(d, '*f[0-9]*.png')))
 files = [f if os.path.isabs(f) else os.path.join(d, f) for f in files]
 ims = [Image.open(f).convert('RGB') for f in files]
 w, h = 270, 480

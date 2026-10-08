@@ -47,6 +47,29 @@ npx remotion studio                 # previsualizar y ajustar
 
 Props de la composición `FaltanDias`: `dias` (número), `fecha` (texto, por defecto `28 · 10`) y `mostrarFecha` (oculta la línea de fecha si es `false`).
 
+## Cuenta regresiva (días 19 → 1)
+
+Cada día es un video distinto, armado a partir de una receta en `src/countdown/recipes.json`:
+
+- **Tomas:** se combinan 2 a 9 tomas por día con otros encuadres, ángulos, movimientos de cámara, espejos y etalonaje (ámbar, rosa, oro, verde, noche). Además de las escenas del teaser hay tomas nuevas: macro de la llama, sahumerio con copal y papel picado visto desde abajo.
+- **Revelación del número**, con cinco estilos:
+  - **pétalos:** los pétalos caen o giran en remolino y forman el número.
+  - **velas:** velas acomodadas en la forma del número se encienden en cascada; cada día tiene vista cenital o frontal.
+  - **papel:** un papel picado gigante con "FALTAN · N · DÍAS" calado; se enciende la luz detrás.
+  - **brasas:** una nube de brasas se junta en el número.
+  - **altar:** el cierre del teaser original; se usa en el último día.
+- **Outro:** siempre el logo Westhill encendiéndose en fuego.
+- **Formato:** Reels (feed) los días 10, 7, 3 y 1, de unos 24 s; Historias el resto, de unos 15.5 s.
+- **Audio:** `scripts/make_countdown_audio.py` lo genera desde la misma receta para cada día, a -14 LUFS.
+
+```bash
+./scripts/render_cuenta.sh          # los 19 días → out/cuenta-regresiva/
+./scripts/render_cuenta.sh 7 3      # solo algunos días
+COMP=CuentaRegresiva PROPS='{"dias":7}' node scripts/stills.mjs /tmp/stills 0.5 100 400   # cuadros de prueba
+```
+
+Los MP4 de la serie no se guardan en git porque pesan demasiado.
+
 ## Renderizar en tu computadora
 
 Requisitos: [Node.js 18+](https://nodejs.org), Python 3 y [ffmpeg](https://ffmpeg.org/download.html).

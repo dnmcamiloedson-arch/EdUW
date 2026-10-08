@@ -1,0 +1,859 @@
+{
+	"_doc": "Una receta por día. dur en frames (30 fps). cam: s/x/y/r = [inicio, fin], flip = espejo. La revelación siempre va al final y después el outro del logo (135 frames). formato: reel (feed) o historia.",
+	"19": {
+		"formato": "historia",
+		"grade": "ambar",
+		"shots": [
+			{
+				"tipo": "llama",
+				"dur": 100,
+				"cam": {
+					"s": [
+						1.18,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "camino",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.05,
+						1.12
+					],
+					"r": [
+						-2,
+						2
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "petalos",
+			"dur": 150,
+			"variante": "cae"
+		}
+	},
+	"18": {
+		"formato": "historia",
+		"grade": "rosa",
+		"shots": [
+			{
+				"tipo": "calavera",
+				"dur": 95,
+				"cam": {
+					"s": [
+						1.12,
+						1.22
+					],
+					"flip": true,
+					"x": [
+						-30,
+						10
+					]
+				}
+			},
+			{
+				"tipo": "contrapicado",
+				"dur": 90
+			}
+		],
+		"revelacion": {
+			"estilo": "velas",
+			"dur": 150,
+			"variante": "cenital"
+		}
+	},
+	"17": {
+		"formato": "historia",
+		"grade": "oro",
+		"shots": [
+			{
+				"tipo": "copal",
+				"dur": 105
+			},
+			{
+				"tipo": "marco",
+				"dur": 80,
+				"cam": {
+					"s": [
+						1.0,
+						1.16
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "papel",
+			"dur": 150,
+			"variante": "verde"
+		}
+	},
+	"16": {
+		"formato": "historia",
+		"grade": "verde",
+		"shots": [
+			{
+				"tipo": "petalos",
+				"dur": 95,
+				"off": 70,
+				"cam": {
+					"s": [
+						1.15,
+						1.1
+					],
+					"x": [
+						40,
+						-40
+					]
+				}
+			},
+			{
+				"tipo": "cruz",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.25,
+						1.1
+					],
+					"r": [
+						0,
+						14
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "brasas",
+			"dur": 150
+		}
+	},
+	"15": {
+		"formato": "historia",
+		"grade": "ambar",
+		"shots": [
+			{
+				"tipo": "pan",
+				"dur": 55,
+				"cam": {
+					"s": [
+						1.3,
+						1.22
+					],
+					"y": [
+						-60,
+						-40
+					]
+				}
+			},
+			{
+				"tipo": "vaso",
+				"dur": 55,
+				"cam": {
+					"s": [
+						1.2,
+						1.28
+					],
+					"flip": true
+				}
+			},
+			{
+				"tipo": "calavera",
+				"dur": 75,
+				"off": 40,
+				"cam": {
+					"s": [
+						1.6,
+						1.7
+					],
+					"x": [
+						180,
+						200
+					],
+					"y": [
+						160,
+						170
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "petalos",
+			"dur": 150,
+			"variante": "remolino"
+		}
+	},
+	"14": {
+		"formato": "historia",
+		"grade": "rosa",
+		"shots": [
+			{
+				"tipo": "papel",
+				"dur": 100,
+				"off": 140,
+				"cam": {
+					"s": [
+						1.22,
+						1.14
+					],
+					"r": [
+						-4,
+						2
+					]
+				}
+			},
+			{
+				"tipo": "llama",
+				"dur": 80,
+				"cam": {
+					"s": [
+						1.0,
+						1.1
+					],
+					"x": [
+						60,
+						0
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "velas",
+			"dur": 150,
+			"variante": "frontal"
+		}
+	},
+	"13": {
+		"formato": "historia",
+		"grade": "noche",
+		"shots": [
+			{
+				"tipo": "camino",
+				"dur": 95,
+				"cam": {
+					"flip": true,
+					"s": [
+						1.08,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "copal",
+				"dur": 85,
+				"cam": {
+					"flip": true
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "brasas",
+			"dur": 150
+		}
+	},
+	"12": {
+		"formato": "historia",
+		"grade": "oro",
+		"shots": [
+			{
+				"tipo": "marco",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.3,
+						1.05
+					]
+				}
+			},
+			{
+				"tipo": "calavera",
+				"dur": 90,
+				"off": 10,
+				"cam": {
+					"s": [
+						1.0,
+						1.1
+					],
+					"r": [
+						2,
+						-1
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "papel",
+			"dur": 150,
+			"variante": "naranja"
+		}
+	},
+	"11": {
+		"formato": "historia",
+		"grade": "ambar",
+		"shots": [
+			{
+				"tipo": "ignicion",
+				"dur": 110
+			},
+			{
+				"tipo": "pan",
+				"dur": 70,
+				"cam": {
+					"s": [
+						1.25,
+						1.1
+					],
+					"x": [
+						-60,
+						0
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "petalos",
+			"dur": 150,
+			"variante": "cae"
+		}
+	},
+	"10": {
+		"formato": "reel",
+		"grade": "ambar",
+		"shots": [
+			{
+				"tipo": "llama",
+				"dur": 70,
+				"cam": {
+					"s": [
+						1.2,
+						1.05
+					]
+				}
+			},
+			{
+				"tipo": "petalos",
+				"dur": 80,
+				"off": 60
+			},
+			{
+				"tipo": "contrapicado",
+				"dur": 70
+			},
+			{
+				"tipo": "calavera",
+				"dur": 70,
+				"off": 5,
+				"cam": {
+					"flip": true,
+					"s": [
+						1.05,
+						1.12
+					]
+				}
+			},
+			{
+				"tipo": "vaso",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "marco",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "cruz",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "pan",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "altar",
+				"dur": 70
+			}
+		],
+		"revelacion": {
+			"estilo": "brasas",
+			"dur": 150
+		}
+	},
+	"9": {
+		"formato": "historia",
+		"grade": "verde",
+		"shots": [
+			{
+				"tipo": "cruz",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.4,
+						1.15
+					],
+					"r": [
+						-10,
+						0
+					]
+				}
+			},
+			{
+				"tipo": "copal",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.1,
+						1.2
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "velas",
+			"dur": 150,
+			"variante": "cenital"
+		}
+	},
+	"8": {
+		"formato": "historia",
+		"grade": "noche",
+		"shots": [
+			{
+				"tipo": "calavera",
+				"dur": 100,
+				"cam": {
+					"s": [
+						1.35,
+						1.5
+					],
+					"x": [
+						120,
+						160
+					],
+					"y": [
+						120,
+						130
+					]
+				}
+			},
+			{
+				"tipo": "camino",
+				"dur": 80,
+				"cam": {
+					"s": [
+						1.1,
+						1.0
+					],
+					"r": [
+						4,
+						-2
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "brasas",
+			"dur": 150
+		}
+	},
+	"7": {
+		"formato": "reel",
+		"grade": "rosa",
+		"shots": [
+			{
+				"tipo": "copal",
+				"dur": 75
+			},
+			{
+				"tipo": "ignicion",
+				"dur": 90
+			},
+			{
+				"tipo": "papel",
+				"dur": 80,
+				"off": 150,
+				"cam": {
+					"s": [
+						1.12,
+						1.2
+					],
+					"r": [
+						3,
+						-2
+					]
+				}
+			},
+			{
+				"tipo": "calavera",
+				"dur": 75,
+				"cam": {
+					"flip": true
+				}
+			},
+			{
+				"tipo": "pan",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "cruz",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "marco",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "vaso",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "camino",
+				"dur": 60,
+				"cam": {
+					"flip": true
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "velas",
+			"dur": 150,
+			"variante": "frontal"
+		}
+	},
+	"6": {
+		"formato": "historia",
+		"grade": "oro",
+		"shots": [
+			{
+				"tipo": "vaso",
+				"dur": 80,
+				"cam": {
+					"s": [
+						1.0,
+						1.18
+					]
+				}
+			},
+			{
+				"tipo": "petalos",
+				"dur": 100,
+				"off": 80,
+				"cam": {
+					"flip": true,
+					"s": [
+						1.1,
+						1.0
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "papel",
+			"dur": 150,
+			"variante": "terracota"
+		}
+	},
+	"5": {
+		"formato": "historia",
+		"grade": "ambar",
+		"shots": [
+			{
+				"tipo": "llama",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.3,
+						1.1
+					],
+					"y": [
+						80,
+						0
+					]
+				}
+			},
+			{
+				"tipo": "marco",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.12,
+						1.0
+					],
+					"flip": true
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "petalos",
+			"dur": 150,
+			"variante": "remolino"
+		}
+	},
+	"4": {
+		"formato": "historia",
+		"grade": "rosa",
+		"shots": [
+			{
+				"tipo": "contrapicado",
+				"dur": 90,
+				"cam": {
+					"flip": true
+				}
+			},
+			{
+				"tipo": "cruz",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.1,
+						1.3
+					],
+					"r": [
+						8,
+						-4
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "brasas",
+			"dur": 150
+		}
+	},
+	"3": {
+		"formato": "reel",
+		"grade": "oro",
+		"shots": [
+			{
+				"tipo": "ignicion",
+				"dur": 85
+			},
+			{
+				"tipo": "calavera",
+				"dur": 75,
+				"cam": {
+					"s": [
+						1.0,
+						1.1
+					]
+				}
+			},
+			{
+				"tipo": "copal",
+				"dur": 70,
+				"cam": {
+					"flip": true
+				}
+			},
+			{
+				"tipo": "contrapicado",
+				"dur": 70
+			},
+			{
+				"tipo": "cruz",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "vaso",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "pan",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "marco",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "altar",
+				"dur": 75
+			}
+		],
+		"revelacion": {
+			"estilo": "papel",
+			"dur": 150,
+			"variante": "verde"
+		}
+	},
+	"2": {
+		"formato": "historia",
+		"grade": "noche",
+		"shots": [
+			{
+				"tipo": "marco",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.0,
+						1.25
+					]
+				}
+			},
+			{
+				"tipo": "llama",
+				"dur": 90,
+				"cam": {
+					"s": [
+						1.05,
+						1.2
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "velas",
+			"dur": 150,
+			"variante": "cenital"
+		}
+	},
+	"1": {
+		"formato": "reel",
+		"grade": "ambar",
+		"shots": [
+			{
+				"tipo": "llama",
+				"dur": 70,
+				"cam": {
+					"s": [
+						1.25,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "camino",
+				"dur": 70
+			},
+			{
+				"tipo": "papel",
+				"dur": 70,
+				"off": 150
+			},
+			{
+				"tipo": "calavera",
+				"dur": 70,
+				"off": 5
+			},
+			{
+				"tipo": "copal",
+				"dur": 60
+			},
+			{
+				"tipo": "pan",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "vaso",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "marco",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			},
+			{
+				"tipo": "cruz",
+				"dur": 18,
+				"cam": {
+					"s": [
+						1.06,
+						1.0
+					]
+				}
+			}
+		],
+		"revelacion": {
+			"estilo": "altar",
+			"dur": 150
+		}
+	}
+}

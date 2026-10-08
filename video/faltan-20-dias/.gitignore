@@ -1,3 +1,5 @@
 node_modules/
 out/_video.mp4
 *.log
+out/cuenta-regresiva/
+out/_bundle/

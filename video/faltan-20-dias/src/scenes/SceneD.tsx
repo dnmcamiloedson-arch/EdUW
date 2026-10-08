@@ -38,7 +38,7 @@ const Table: React.FC<{y: number; fl: number}> = ({y, fl}) => (
 	</>
 );
 
-const ShotPan: React.FC<{t: number; fl: number}> = ({t, fl}) => (
+export const ShotPan: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 	<AbsoluteFill>
 		<Wall fl={fl} />
 		<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
@@ -57,7 +57,7 @@ const ShotPan: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 	</AbsoluteFill>
 );
 
-const ShotVaso: React.FC<{t: number; fl: number}> = ({t, fl}) => (
+export const ShotVaso: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 	<AbsoluteFill>
 		<Wall fl={fl} />
 		<Table y={1400} fl={fl} />
@@ -77,7 +77,7 @@ const ShotVaso: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 	</AbsoluteFill>
 );
 
-const ShotMarco: React.FC<{t: number; fl: number}> = ({t, fl}) => (
+export const ShotMarco: React.FC<{t: number; fl: number}> = ({t, fl}) => (
 	<AbsoluteFill>
 		<Wall fl={fl} k={0.75} />
 		<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
@@ -175,7 +175,7 @@ const CruzCanvas: React.FC<{fl: number}> = ({fl}) => {
 	return <canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />;
 };
 
-const ShotCruz: React.FC<{fl: number}> = ({fl}) => (
+export const ShotCruz: React.FC<{fl: number}> = ({fl}) => (
 	<AbsoluteFill>
 		<CruzCanvas fl={fl} />
 		<Light x={MP.x} y={MP.y} r={130} color={C.flama} o={0.9 * fl} />
