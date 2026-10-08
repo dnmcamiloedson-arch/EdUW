@@ -45,5 +45,24 @@ npx remotion studio                 # previsualizar y ajustar
 
 Props de la composición `FaltanDias`: `dias` (número), `fecha` (texto, por defecto `28 · 10`) y `mostrarFecha` (oculta la línea de fecha si es `false`).
 
+## Renderizar en tu computadora
+
+Requisitos: [Node.js 18+](https://nodejs.org), Python 3 y [ffmpeg](https://ffmpeg.org/download.html).
+En Windows, ejecuta los comandos en **WSL** o **Git Bash**, porque `render.sh` es un script de bash.
+
+```bash
+git clone https://github.com/dnmcamiloedson-arch/EdUW.git
+cd EdUW && git checkout claude/intelligent-euler-vrltaa
+cd video/faltan-20-dias
+npm install
+pip install numpy scipy pyloudnorm
+./scripts/render.sh
+```
+
+- La primera vez, Remotion descarga su propio Chromium (~100 MB). Después todo funciona sin internet.
+- **Núcleos:** usa todos los de la CPU por defecto; con `CONCURRENCY=6` fijas otro número.
+- **Motor gráfico:** por defecto usa la GPU (`angle`). Si ves fallas gráficas o va lento, prueba `REMOTION_GL=swiftshader ./scripts/render.sh`.
+- **Referencia de velocidad:** en el contenedor de 4 núcleos sin GPU el render completo tarda unos 10–15 min. Con 8–16 núcleos debería bajar en proporción.
+
 Las fuentes (Rye, Alike y Domine, de Google Fonts y con licencia OFL) se sirven desde `public/fonts` y no se cargan de ningún CDN durante el render.
 Todas las ilustraciones son originales y están hechas con código (SVG y canvas).
