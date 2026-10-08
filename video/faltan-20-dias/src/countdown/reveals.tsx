@@ -298,7 +298,8 @@ const VelasReveal: React.FC<{dias: number; fecha: string; variante?: string}> = 
 		<AbsoluteFill style={{background: '#040201'}}>
 			<AbsoluteFill style={{background: 'linear-gradient(180deg,#050201,#0d0603 60%,#160b05)'}} />
 			<Bokeh t={t} L={0.4 * fl} n={14} seed={73} area={[0, 0, W, 900]} blur={5} />
-			<EmberNumber txt={txt} o={ramp(lf, [hit - 6, hit + 24], [0, 0.22], E.out)} blur={30} />
+			<EmberNumber txt={txt} o={ramp(lf, [hit - 6, hit + 24], [0, 0.3], E.out)} blur={30} />
+			<EmberNumber txt={txt} o={ramp(lf, [hit, hit + 30], [0, 0.32], E.out)} blur={7} />
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
 			<PaperTexture o={0.18} />
 			<Labels lf={lf} hit={hit} dias={dias} fecha={fecha} top={330} bottom={1200} />
