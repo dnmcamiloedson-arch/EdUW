@@ -6,7 +6,7 @@ STEP_GAP = 180   # ms between consecutive steps
 DUR = 650        # ms per entrance
 
 def timing(groups):
-    nid = [2]
+    nid = [4]  # ids 1-4 are used by the fixed root/sequence containers
     def n():
         nid[0] += 1
         return nid[0]
@@ -37,7 +37,14 @@ def timing(groups):
             f'<p:cond evt="onBegin" delay="0"><p:tn val="2"/></p:cond></p:stCondLst><p:childTnLst>'
             f'<p:par><p:cTn id="4" fill="hold"><p:stCondLst><p:cond delay="0"/></p:stCondLst><p:childTnLst>'
             + "".join(pars) + '</p:childTnLst></p:cTn></p:par></p:childTnLst></p:cTn></p:par>')
-    bld = "".join(f'<p:bldP spid="{spid}" grpId="0" animBg="1"/>' for st in sorted(groups) for spid, is_sp in groups[st] if is_sp)
+    bld = ""
+    for st in sorted(groups):
+        for spid, kind in groups[st]:
+            if kind == "sp":
+                bld += f'<p:bldP spid="{spid}" grpId="0" animBg="1"/>'
+            elif kind == "graphicFrame":
+                bld += f'<p:bldGraphic spid="{spid}" grpId="0"><p:bldAsOne/></p:bldGraphic>'
+
     return ('<p:timing><p:tnLst><p:par><p:cTn id="1" dur="indefinite" restart="never" nodeType="tmRoot"><p:childTnLst>'
             '<p:seq concurrent="1" nextAc="seek"><p:cTn id="2" dur="indefinite" nodeType="mainSeq"><p:childTnLst>'
             + body + '</p:childTnLst></p:cTn><p:prevCondLst><p:cond evt="onPrev" delay="0"><p:tgtEl><p:sldTgt/></p:tgtEl></p:cond></p:prevCondLst>'
@@ -62,7 +69,7 @@ def process(xml):
         spid, step = m.group(1), int(m.group(2))
         head = xml[:m.start()]
         kind = max(("sp", "pic", "graphicFrame", "cxnSp"), key=lambda k: head.rfind(f"<p:{k}>"))
-        groups.setdefault(step, []).append((spid, kind == "sp"))
+        groups.setdefault(step, []).append((spid, kind))
     xml = re.sub(r'name="@\d+~', 'name="', xml)
     trans = '<p:transition spd="slow"><p:fade/></p:transition>'
     extra = trans + (timing(groups) if groups else '')
