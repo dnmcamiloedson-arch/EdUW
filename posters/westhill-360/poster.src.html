@@ -14,157 +14,287 @@
   :root {
     --blue: #266294;
     --navy: #0E2A47;
+    --deep: #0A1F36;
     --gold: #F2C94C;
+    --gold-dk: #D9A92A;
     --ice: #EDF3FA;
     --slate: #5B6B7D;
-    --line: #D9E3EE;
-    --paper: #FFFFFF;
+    --line: #DCE6F1;
+    --mist: #A9C3DF;
+    --white: #FFFFFF;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--paper); }
-  body {
-    font-family: "Raleway", sans-serif; color: var(--navy);
-    /* Raleway defaults to old-style figures; lining + tabular keeps times aligned */
-    font-feature-settings: "lnum" 1, "tnum" 1;
-  }
-  .poster { position: relative; width: 1800px; height: 2700px; overflow: hidden; background: var(--paper); }
+  html, body { background: var(--white); }
+  body { font-family: "Raleway", sans-serif; color: var(--navy); font-feature-settings: "lnum" 1, "tnum" 1; }
+  .poster { position: relative; width: 1800px; height: 2700px; overflow: hidden; background: var(--white); }
   .abs { position: absolute; }
   .ic svg { width: 100%; height: 100%; fill: currentColor; display: block; }
 
-  /* ---------- HERO: photo cut by the institutional curve ---------- */
-  .photo {
-    left: 0; top: 0; width: 1800px; height: 1400px;
-    background: url(img/estudiantes.jpg) 100% 30% / 1100px auto no-repeat;
-    clip-path: path("M 960 0 C 720 330, 700 980, 1060 1400 L 1800 1400 L 1800 0 Z");
+  /* ================= HERO ================= */
+  .hero { left: 0; top: 0; width: 1800px; height: 1260px; background: var(--navy); overflow: hidden; }
+  .hero-photo {
+    position: absolute; left: 520px; top: 0; width: 1280px; height: 1260px;
+    background: url(img/estudiantes.jpg) 62% 28% / cover no-repeat;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
+            mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
   }
-  .photo::after { /* soft bottom shade so the curve reads cleanly against white */
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(180deg, rgba(14,42,71,0) 70%, rgba(14,42,71,.28) 100%);
+  .hero-shade { /* deepen the left and bottom so type always sits on solid navy */
+    position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgba(14,42,71,.96) 0%, rgba(14,42,71,.75) 38%, rgba(14,42,71,.15) 62%, rgba(14,42,71,0) 80%),
+      linear-gradient(180deg, rgba(14,42,71,0) 55%, rgba(10,31,54,.85) 100%);
   }
-  .curve { left: 0; top: 0; width: 1800px; height: 1400px; }
+  .orbit { left: 0; top: 0; width: 1800px; height: 1260px; }
 
-  .banderin { left: 110px; top: 0; width: 120px; }
-
-  .eyebrow { left: 110px; top: 420px; display: flex; align-items: center; gap: 18px;
-    font-size: 24px; font-weight: 800; letter-spacing: 7px; color: var(--blue); }
+  .banderin { left: 110px; top: 0; width: 124px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
+  .eyebrow { left: 110px; top: 262px; display: flex; align-items: center; gap: 18px;
+    font-size: 24px; font-weight: 800; letter-spacing: 7px; color: var(--gold); }
   .eyebrow::before { content: ""; width: 56px; height: 4px; background: var(--gold); border-radius: 2px; }
+  .t-west { left: 104px; top: 318px; font-size: 124px; font-weight: 900; letter-spacing: 2px; line-height: 1; color: var(--white); }
+  .t-360 { left: 92px; top: 420px; font-size: 360px; font-weight: 900; letter-spacing: -14px; line-height: 1; color: var(--gold);
+    text-shadow: 0 20px 50px rgba(0,0,0,.35); }
+  .deg { left: 742px; top: 486px; width: 92px; height: 92px; border-radius: 50%; border: 24px solid var(--gold);
+    box-shadow: 0 14px 30px rgba(0,0,0,.3); }
+  .tagline { left: 110px; top: 842px; font-size: 56px; font-weight: 900; line-height: 1.12; letter-spacing: -.5px; color: var(--white); }
+  .tagline span { color: var(--gold); }
 
-  .t-west { left: 104px; top: 476px; font-size: 112px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
-  .t-360 { left: 96px; top: 572px; font-size: 330px; font-weight: 900; letter-spacing: -14px; line-height: 1; color: var(--blue); }
-  .deg { left: 698px; top: 640px; width: 66px; height: 66px; border-radius: 50%; border: 17px solid var(--gold); }
+  .sat { border-radius: 50%; border: 8px solid var(--white); box-shadow: 0 22px 44px rgba(0,0,0,.45);
+    background-size: cover; background-repeat: no-repeat; }
+  .sat-cap { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; letter-spacing: 3px; color: var(--white);
+    text-shadow: 0 2px 8px rgba(0,0,0,.6); }
+  .sat-cap::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); }
 
-  .tagline { left: 110px; top: 950px; font-size: 46px; font-weight: 800; line-height: 1.18; letter-spacing: -.5px; }
-  .tagline span { color: var(--blue); }
-  .objective { left: 110px; top: 1090px; width: 600px; font-size: 27px; font-weight: 500; line-height: 1.5; color: var(--slate); }
-  .objective b { color: var(--navy); font-weight: 700; }
+  .hero-curve { left: 0; top: 1060px; width: 1800px; height: 240px; }
 
-  /* ---------- KEY FACTS ---------- */
-  .facts { left: 110px; top: 1440px; width: 1580px; display: grid; grid-template-columns: 1fr 1.25fr .9fr;
-    border-top: 4px solid var(--navy); }
-  .fact { padding: 26px 40px 0 0; }
-  .fact + .fact { padding-left: 40px; border-left: 2px solid var(--line); }
-  .lbl { font-size: 19px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; color: var(--slate); }
-  .val { margin-top: 12px; font-size: 54px; font-weight: 900; line-height: 1.02; letter-spacing: -1px; }
-  .val small { display: block; margin-top: 10px; font-size: 25px; font-weight: 600; letter-spacing: 0; color: var(--blue); }
+  /* ================= FACTS CARD ================= */
+  .facts {
+    left: 110px; top: 1150px; width: 1580px; height: 220px; background: var(--white); border-radius: 30px;
+    box-shadow: 0 34px 70px -20px rgba(14,42,71,.35), 0 0 0 1px rgba(14,42,71,.05);
+    display: grid; grid-template-columns: 1fr 1.45fr .95fr; align-items: center; padding: 0 30px;
+  }
+  .fact { display: flex; align-items: center; gap: 26px; padding: 0 34px; height: 130px; }
+  .fact + .fact { border-left: 2px solid var(--line); }
+  .ring { flex: none; width: 88px; height: 88px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--ice); color: var(--blue); box-shadow: inset 0 0 0 3px var(--gold); }
+  .ring .ic { width: 38px; height: 38px; }
+  .lbl { font-size: 18px; font-weight: 800; letter-spacing: 3.5px; text-transform: uppercase; color: var(--slate); white-space: nowrap; }
+  .val { margin-top: 8px; font-size: 50px; font-weight: 900; line-height: 1; letter-spacing: -1px; }
+  .val small { font-size: 26px; font-weight: 700; color: var(--blue); letter-spacing: 0; margin-left: 6px; }
+  .val .sub { display: block; margin: 10px 0 0; font-size: 23px; font-weight: 600; color: var(--blue); letter-spacing: 0; white-space: nowrap; }
 
-  /* ---------- PROGRAM ---------- */
-  .prog-h { left: 110px; top: 1724px; width: 420px; }
-  .prog-h h2 { font-size: 76px; font-weight: 900; line-height: .98; letter-spacing: -2px; }
+  /* ================= OBJETIVO ================= */
+  .obj { left: 110px; top: 1440px; width: 1580px; display: grid; grid-template-columns: 150px 1fr; column-gap: 20px; }
+  .quote { font-size: 260px; font-weight: 900; line-height: .8; color: var(--gold); height: 150px; margin-top: -6px; }
+  .obj-lbl { font-size: 22px; font-weight: 800; letter-spacing: 6px; color: var(--blue); }
+  .obj-txt { margin-top: 12px; font-size: 40px; line-height: 1.36; font-weight: 600; color: var(--navy); letter-spacing: -.2px; }
+  .obj-txt b { font-weight: 900; color: var(--blue); }
+
+  /* ================= PROGRAMA ================= */
+  .prog-h { left: 110px; top: 1690px; width: 900px; }
+  .prog-h .k { font-size: 22px; font-weight: 800; letter-spacing: 6px; color: var(--gold-dk); }
+  .prog-h h2 { margin-top: 8px; font-size: 68px; font-weight: 900; letter-spacing: -1.5px; line-height: 1; }
   .prog-h h2 span { color: var(--blue); }
-  .prog-h p { margin-top: 26px; font-size: 23px; font-weight: 600; line-height: 1.45; color: var(--slate); }
-  .stats { margin-top: 70px; }
-  .stat { padding: 22px 0; border-top: 2px solid var(--line); display: flex; align-items: center; gap: 20px; }
-  .stat b { font-size: 92px; font-weight: 900; line-height: 1; letter-spacing: -3px; color: var(--blue); }
-  .stat span { font-size: 24px; font-weight: 700; line-height: 1.25; }
-  .prog-h .bar { width: 56px; height: 4px; background: var(--gold); border-radius: 2px; margin-top: 30px; }
 
-  .agenda { left: 590px; top: 1716px; width: 1100px; }
-  .item { display: grid; grid-template-columns: 290px 1fr; align-items: baseline; padding: 17px 0 16px; border-bottom: 2px solid var(--line); }
-  .item:first-child { border-top: 2px solid var(--line); }
-  .time { font-size: 26px; font-weight: 700; color: var(--blue); white-space: nowrap; }
-  .what { font-size: 31px; font-weight: 800; line-height: 1.15; }
-  .what em { font-style: normal; font-size: 22px; font-weight: 600; color: var(--slate); margin-left: 14px; }
-  .item.key { border-bottom: 0; position: relative; padding-bottom: 14px; }
-  .item.key::before { content: ""; position: absolute; left: -26px; top: 18px; bottom: -232px; width: 6px; background: var(--gold); border-radius: 3px; }
+  .timeline { left: 110px; top: 1820px; width: 920px; }
+  .tl-line { position: absolute; left: 268px; top: 34px; bottom: 36px; width: 3px; background: var(--line); }
+  .step { position: relative; display: grid; grid-template-columns: 236px 66px 1fr; align-items: start; height: 87px; }
+  .step .time { text-align: right; padding: 16px 24px 0 0; font-size: 24px; font-weight: 700; color: var(--blue); white-space: nowrap; }
+  .step .node { width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; position: relative; z-index: 1;
+    background: var(--white); color: var(--blue); box-shadow: inset 0 0 0 3px var(--blue); margin-left: -2px; }
+  .step .node .ic { width: 26px; height: 26px; }
+  .step .what { padding: 8px 0 0 24px; }
+  .step .ttl { font-size: 31px; font-weight: 800; line-height: 1.12; }
+  .step .det { margin-top: 5px; font-size: 21px; font-weight: 600; color: var(--slate); }
+  .step.key .node { background: var(--gold); color: var(--navy); box-shadow: 0 0 0 7px rgba(242,201,76,.28); }
+  .step.key .ttl { color: var(--blue); }
+  .step.key .det { color: var(--gold-dk); font-weight: 800; }
+  .step.last .node { background: var(--navy); color: var(--white); box-shadow: none; }
 
-  .lic { display: grid; grid-template-columns: 1fr 1fr; column-gap: 34px; background: var(--ice); border-radius: 18px;
-    padding: 22px 30px 18px; margin: 0 0 4px 290px; border-bottom: 0; }
-  .lic div { padding: 9px 0 10px; border-bottom: 1px solid #D3DFEC; }
-  .lic div:nth-last-child(-n+2) { border-bottom: 0; }
-  .lic b { display: block; font-size: 21px; font-weight: 800; line-height: 1.2; }
-  .lic span { display: flex; align-items: center; gap: 7px; margin-top: 4px; font-size: 19px; font-weight: 600; color: var(--blue); }
-  .lic span .ic { width: 14px; height: 14px; flex: none; }
-  .lic span.tbd { color: var(--slate); font-style: italic; }
-  .after-lic { border-top: 2px solid var(--line); }
+  /* licenciaturas card with photo header */
+  .lic { left: 1060px; top: 1680px; width: 630px; height: 790px; border-radius: 34px; overflow: hidden; color: var(--white);
+    background: var(--navy); box-shadow: 0 34px 70px -20px rgba(14,42,71,.55); }
+  .lic-photo { position: absolute; inset: 0 0 auto 0; height: 250px; background: url(img/letras.jpg) center 46% / cover no-repeat; }
+  .lic-photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(14,42,71,.1) 0%, rgba(14,42,71,.65) 60%, var(--navy) 100%); }
+  .lic-head { position: absolute; left: 42px; top: 128px; right: 42px; }
+  .lic-time { display: inline-block; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 20px; letter-spacing: 1px;
+    border-radius: 999px; padding: 8px 20px; }
+  .lic-head h3 { margin-top: 14px; font-size: 44px; font-weight: 900; line-height: 1; letter-spacing: -.5px; }
+  .lic-head h3 span { color: var(--gold); }
+  .lic ul { position: absolute; left: 42px; right: 42px; top: 278px; list-style: none; }
+  .lic li { display: flex; gap: 18px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .lic li:first-child { border-top: 0; }
+  .lic li .b { flex: none; width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center;
+    color: var(--gold); box-shadow: inset 0 0 0 2px rgba(242,201,76,.6); background: rgba(255,255,255,.06); }
+  .lic li .b .ic { width: 25px; height: 25px; }
+  .lic .car { font-size: 21px; font-weight: 800; line-height: 1.18; }
+  .lic .loc { display: flex; align-items: center; gap: 7px; margin-top: 4px; font-size: 19px; font-weight: 600; color: var(--gold); }
+  .lic .loc .ic { width: 14px; height: 14px; flex: none; }
+  .lic .loc.tbd { color: var(--mist); font-style: italic; }
 
-  /* ---------- FOOTER: institutional waves ---------- */
-  .waves { left: 0; top: 2470px; width: 1800px; height: 230px; }
-  .foot-tag { left: 110px; top: 2606px; font-size: 42px; font-weight: 500; color: #fff; letter-spacing: .5px; }
+  .connector { left: 1000px; top: 1924px; width: 64px; height: 30px; }
+
+  /* ================= FOOTER ================= */
+  .foot { left: 0; top: 2496px; width: 1800px; height: 204px; }
+  .foot-tag { left: 110px; top: 2610px; color: var(--white); font-size: 44px; font-weight: 500; letter-spacing: 1px; }
   .foot-tag b { font-weight: 900; }
-  .foot-handle { left: 112px; top: 2662px; font-size: 20px; font-weight: 700; letter-spacing: 3px; color: #CFE0F2; }
-  .foot-logo { right: 110px; top: 2588px; height: 92px; }
+  .foot-handle { left: 112px; top: 2666px; color: #CFE0F2; font-size: 20px; font-weight: 700; letter-spacing: 3px; }
+  .foot-logo { right: 110px; top: 2596px; height: 90px; }
 </style>
 </head>
 <body>
 <div class="poster">
 
-  <!-- HERO -->
-  <div class="abs photo"></div>
-  <svg class="abs curve" viewBox="0 0 1800 1400">
-    <path d="M 960 0 C 720 330, 700 980, 1060 1400" fill="none" stroke="#F2C94C" stroke-width="10"/>
-  </svg>
-  <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
+  <!-- ================= HERO ================= -->
+  <div class="abs hero">
+    <div class="hero-photo"></div>
+    <div class="hero-shade"></div>
+  </div>
 
+  <svg class="abs orbit" viewBox="0 0 1800 1260">
+    <!-- the 360° orbit: one confident gold ring around the students, with an arrow showing the turn -->
+    <circle cx="1270" cy="610" r="560" fill="none" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="2" stroke-dasharray="3 12"/>
+    <g id="orbit" fill="none" stroke="#F2C94C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></g>
+    <g id="marks"></g>
+  </svg>
+
+  <div class="abs sat" style="left:620px; top:858px; width:230px; height:230px; background-image:url(img/letras.jpg); background-position:center 40%;"></div>
+  <div class="abs sat" style="left:1574px; top:168px; width:160px; height:160px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
+
+  <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
   <div class="abs eyebrow">PROYECTO</div>
   <div class="abs t-west">WESTHILL</div>
-  <div class="abs t-360">360</div><div class="abs deg"></div>
+  <div class="abs t-360">360</div>
+  <div class="abs deg"></div>
   <div class="abs tagline">Vívela. Explórala.<br><span>Enamórate.</span></div>
-  <p class="abs objective">Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
 
-  <!-- KEY FACTS -->
+  <svg class="abs hero-curve" viewBox="0 0 1800 240" preserveAspectRatio="none">
+    <path d="M0 120 C 460 236, 1080 24, 1800 132 L1800 240 L0 240 Z" fill="#F2C94C"/>
+    <path d="M0 146 C 460 262, 1080 50, 1800 158 L1800 240 L0 240 Z" fill="#FFFFFF"/>
+  </svg>
+
+  <!-- ================= FACTS ================= -->
   <div class="abs facts">
-    <div class="fact"><div class="lbl">Días de las visitas</div><div class="val">14 y 16<small>de octubre</small></div></div>
-    <div class="fact"><div class="lbl">Escuela</div><div class="val">IPEFH<small>Planteles Toluca, Metepec y Calimaya</small></div></div>
-    <div class="fact"><div class="lbl">Hora de recepción</div><div class="val">9:00<small>a.m.</small></div></div>
+    <div class="fact">
+      <div class="ring"><i class="ic" data-ic="calendar-days"></i></div>
+      <div><div class="lbl">Días de las visitas</div><div class="val">14 y 16<span class="sub">de octubre</span></div></div>
+    </div>
+    <div class="fact">
+      <div class="ring"><i class="ic" data-ic="school"></i></div>
+      <div><div class="lbl">Escuela</div><div class="val">IPEFH<span class="sub">Planteles Toluca, Metepec y Calimaya</span></div></div>
+    </div>
+    <div class="fact">
+      <div class="ring"><i class="ic" data-ic="clock"></i></div>
+      <div><div class="lbl">Hora de recepción</div><div class="val">9:00<small>a.m.</small></div></div>
+    </div>
   </div>
 
-  <!-- PROGRAM -->
+  <!-- ================= OBJETIVO ================= -->
+  <div class="abs obj">
+    <div class="quote">“</div>
+    <div>
+      <div class="obj-lbl">OBJETIVO</div>
+      <p class="obj-txt">Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
+    </div>
+  </div>
+
+  <!-- ================= PROGRAMA ================= -->
   <div class="abs prog-h">
-    <h2>Programa<br><span>del evento</span></h2>
-    <div class="bar"></div>
-    <p>De la bienvenida al cierre, una mañana completa dentro de Westhill.</p>
-    <div class="stats">
-      <div class="stat"><b>3</b><span>horas de<br>experiencia</span></div>
-      <div class="stat"><b>9</b><span>licenciaturas<br>participantes</span></div>
+    <div class="k">9:00 A.M. – 12:00 P.M.</div>
+    <h2>Programa <span>del evento</span></h2>
+  </div>
+
+  <div class="abs timeline">
+    <div class="tl-line"></div>
+    <div class="step">
+      <div class="time">9:00 – 9:30 a.m.</div><div class="node"><i class="ic" data-ic="door-open"></i></div>
+      <div class="what"><div class="ttl">Bienvenida</div><div class="det">En el área de admisiones</div></div>
+    </div>
+    <div class="step key">
+      <div class="time">9:30 – 10:15 a.m.</div><div class="node"><i class="ic" data-ic="shapes"></i></div>
+      <div class="what"><div class="ttl">Actividad por licenciatura</div><div class="det">Consulta tu lugar →</div></div>
+    </div>
+    <div class="step">
+      <div class="time">10:20 – 10:40 a.m.</div><div class="node"><i class="ic" data-ic="mug-hot"></i></div>
+      <div class="what"><div class="ttl">Refrigerio</div><div class="det">En el foyer del auditorio · Convivencia libre</div></div>
+    </div>
+    <div class="step">
+      <div class="time">10:45 – 11:00 a.m.</div><div class="node"><i class="ic" data-ic="building-columns"></i></div>
+      <div class="what"><div class="ttl">Presentación de la universidad</div></div>
+    </div>
+    <div class="step">
+      <div class="time">11:00 – 11:10 a.m.</div><div class="node"><i class="ic" data-ic="trophy"></i></div>
+      <div class="what"><div class="ttl">Premiación de la actividad</div><div class="det">Auditorio</div></div>
+    </div>
+    <div class="step">
+      <div class="time">11:10 – 11:40 a.m.</div><div class="node"><i class="ic" data-ic="route"></i></div>
+      <div class="what"><div class="ttl">Recorrido</div><div class="det">A cargo de admisiones</div></div>
+    </div>
+    <div class="step last">
+      <div class="time">11:40 – 12:00 p.m.</div><div class="node"><i class="ic" data-ic="camera"></i></div>
+      <div class="what"><div class="ttl">Cierre y despedida</div><div class="det">Fotos y videos · Contenido para redes sociales</div></div>
     </div>
   </div>
 
-  <div class="abs agenda">
-    <div class="item"><div class="time">9:00 – 9:30 a.m.</div><div class="what">Bienvenida <em>Área de admisiones</em></div></div>
-    <div class="item key"><div class="time">9:30 – 10:15 a.m.</div><div class="what">Actividad por licenciatura</div></div>
-    <div class="lic">
-      <div><b>Administración y Dirección Empresarial y Mercadotecnia</b><span><i class="ic" data-ic="location-dot"></i>Salón grande</span></div>
-      <div><b>Arquitectura y Arquitectura de Interiores</b><span><i class="ic" data-ic="location-dot"></i>Salón 201</span></div>
-      <div><b>Cirujano Dentista</b><span><i class="ic" data-ic="location-dot"></i>Laboratorios</span></div>
-      <div><b>Derecho</b><span><i class="ic" data-ic="location-dot"></i>Sala de Juicios Orales</span></div>
-      <div><b>Psicología y Pedagogía</b><span><i class="ic" data-ic="location-dot"></i>Salón 8, junto a dirección</span></div>
-      <div><b>Relaciones Internacionales</b><span class="tbd"><i class="ic" data-ic="location-dot"></i>Salón pendiente de confirmar</span></div>
+  <svg class="abs connector" viewBox="0 0 64 30">
+    <path d="M2 15 H 54" stroke="#F2C94C" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>
+    <circle cx="56" cy="15" r="6" fill="#F2C94C"/>
+  </svg>
+
+  <div class="abs lic">
+    <div class="lic-photo"></div>
+    <div class="lic-head">
+      <span class="lic-time">9:30 – 10:15 a.m.</span>
+      <h3>Actividad por <span>licenciatura</span></h3>
     </div>
-    <div class="item after-lic"><div class="time">10:20 – 10:40 a.m.</div><div class="what">Refrigerio <em>Foyer del auditorio · Convivencia libre</em></div></div>
-    <div class="item"><div class="time">10:45 – 11:00 a.m.</div><div class="what">Presentación de la universidad</div></div>
-    <div class="item"><div class="time">11:00 – 11:10 a.m.</div><div class="what">Premiación de la actividad <em>Auditorio</em></div></div>
-    <div class="item"><div class="time">11:10 – 11:40 a.m.</div><div class="what">Recorrido <em>A cargo de admisiones</em></div></div>
-    <div class="item"><div class="time">11:40 – 12:00 p.m.</div><div class="what">Cierre y despedida <em>Fotos y videos · Contenido para redes sociales</em></div></div>
+    <ul>
+      <li><div class="b"><i class="ic" data-ic="chart-line"></i></div>
+        <div><div class="car">Administración y Dirección Empresarial y Mercadotecnia</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón grande</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="compass-drafting"></i></div>
+        <div><div class="car">Arquitectura y Arquitectura de Interiores</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 201</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="tooth"></i></div>
+        <div><div class="car">Cirujano Dentista</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Laboratorios</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="scale-balanced"></i></div>
+        <div><div class="car">Derecho</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Sala de Juicios Orales</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="brain"></i></div>
+        <div><div class="car">Psicología y Pedagogía</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 8, junto a dirección</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="earth-americas"></i></div>
+        <div><div class="car">Relaciones Internacionales</div><div class="loc tbd"><i class="ic" data-ic="location-dot"></i>Salón pendiente de confirmar</div></div></li>
+    </ul>
   </div>
 
-  <!-- FOOTER -->
-  <svg class="abs waves" viewBox="0 0 1800 230" preserveAspectRatio="none">
-    <path d="M0 70 C 420 0, 1100 150, 1800 40 L1800 230 L0 230 Z" fill="#F2C94C"/>
-    <path d="M0 96 C 420 26, 1100 176, 1800 66 L1800 230 L0 230 Z" fill="#266294"/>
+  <!-- ================= FOOTER ================= -->
+  <svg class="abs foot" viewBox="0 0 1800 204" preserveAspectRatio="none">
+    <path d="M0 50 C 500 0, 1200 120, 1800 30 L1800 204 L0 204 Z" fill="#F2C94C"/>
+    <path d="M0 74 C 500 24, 1200 144, 1800 54 L1800 204 L0 204 Z" fill="#266294"/>
   </svg>
   <div class="abs foot-tag">#SOMOS<b>WESTHILL</b></div>
   <div class="abs foot-handle">@univwesthill</div>
   <img class="abs foot-logo" src="img/logo_westhill_blanco.png" alt="Universidad Westhill">
 </div>
+
+<script>
+  // Gold orbit (angles clockwise from 12 o'clock) with an arrowhead and four cardinal markers.
+  (function () {
+    const NS = "http://www.w3.org/2000/svg", cx = 1270, cy = 610, r = 500;
+    const mk = (tag, a, parent) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); parent.appendChild(e); return e; };
+    const pt = a => { const t = a * Math.PI / 180; return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; };
+    const g = document.getElementById("orbit"), a0 = 250, a1 = 250 + 318;   // open gap near the "360" type
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    mk("path", { d: `M ${x0} ${y0} A ${r} ${r} 0 1 1 ${x1} ${y1}` }, g);
+    const t = a1 * Math.PI / 180, dx = Math.cos(t), dy = Math.sin(t);
+    const back = s => [x1 - 34 * (dx * Math.cos(s) - dy * Math.sin(s)), y1 - 34 * (dx * Math.sin(s) + dy * Math.cos(s))];
+    const [ax, ay] = back(.55), [bx, by] = back(-.55);
+    mk("path", { d: `M ${ax} ${ay} L ${x1} ${y1} L ${bx} ${by}` }, g);
+    const m = document.getElementById("marks");
+    [[0, "0°"], [90, "90°"], [180, "180°"]].forEach(([a, label]) => {
+      const [x, y] = pt(a);
+      mk("circle", { cx: x, cy: y, r: 9, fill: "#F2C94C" }, m);
+      const tx = mk("text", { x: x + (a === 90 ? -22 : 20), y: y + (a === 0 ? -16 : a === 180 ? 34 : 8), "text-anchor": a === 90 ? "end" : "start",
+        "font-family": "Raleway", "font-weight": 800, "font-size": 22, "letter-spacing": 2, fill: "#F2C94C",
+        stroke: "#0E2A47", "stroke-width": 6, "stroke-opacity": .75, "paint-order": "stroke" }, m);
+      tx.textContent = label;
+    });
+  })();
+</script>
 </body>
 </html>
