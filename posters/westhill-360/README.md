@@ -10,7 +10,7 @@ Visitas de IPEFH (Planteles Toluca, Metepec y Calimaya) · 14 y 16 de octubre.
 | `poster.src.html` | Fuente editable del diseño |
 | `poster.html` | Versión generada con los íconos incrustados |
 
-Concepto (v4 + mascota): encabezado con la fachada del campus fundida en azul marino; la mascota de Westhill
+Concepto (v4 + mascota): logo de Westhill arriba a la izquierda; encabezado con la fachada del campus fundida en azul marino; la mascota de Westhill
 (caracal con chamarra varsity) celebra dentro de una órbita dorada de 360° y se para sobre la tarjeta de datos clave,
 con el globo "¡Te esperamos!". Objetivo como cita; programa en línea de tiempo y tarjeta de licenciaturas.
 
