@@ -34,14 +34,14 @@
   .hero { left: 0; top: 0; width: 1800px; height: 1260px; background: var(--navy); overflow: hidden; }
   .hero-photo {
     position: absolute; left: 520px; top: 0; width: 1280px; height: 1260px;
-    background: url(img/estudiantes.jpg) 62% 28% / cover no-repeat;
+    background: url(img/edificio.jpg) 70% 30% / cover no-repeat;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
             mask-image: linear-gradient(90deg, transparent 0%, #000 42%);
   }
   .hero-shade { /* deepen the left and bottom so type always sits on solid navy */
     position: absolute; inset: 0;
     background:
-      linear-gradient(90deg, rgba(14,42,71,.96) 0%, rgba(14,42,71,.75) 38%, rgba(14,42,71,.15) 62%, rgba(14,42,71,0) 80%),
+      linear-gradient(90deg, rgba(14,42,71,.97) 0%, rgba(14,42,71,.8) 38%, rgba(14,42,71,.35) 62%, rgba(14,42,71,.2) 100%),
       linear-gradient(180deg, rgba(14,42,71,0) 55%, rgba(10,31,54,.85) 100%);
   }
   .orbit { left: 0; top: 0; width: 1800px; height: 1260px; }
@@ -63,6 +63,13 @@
   .sat-cap { display: flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 800; letter-spacing: 3px; color: var(--white);
     text-shadow: 0 2px 8px rgba(0,0,0,.6); }
   .sat-cap::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--gold); }
+
+  .mascot { left: 1080px; top: 74px; height: 1090px; filter: drop-shadow(0 30px 34px rgba(4,16,30,.55)); }
+  .bubble { left: 812px; top: 118px; background: var(--white); color: var(--navy); border-radius: 30px; padding: 20px 30px 22px;
+    font-size: 36px; font-weight: 900; letter-spacing: -.3px; box-shadow: 0 20px 40px rgba(0,0,0,.35); }
+  .bubble span { color: var(--blue); }
+  .bubble::after { content: ""; position: absolute; right: -16px; bottom: 26px; width: 36px; height: 36px; background: var(--white);
+    clip-path: polygon(0 0, 100% 55%, 0 100%); }
 
   .hero-curve { left: 0; top: 1060px; width: 1800px; height: 240px; }
 
@@ -139,6 +146,38 @@
   .foot-tag b { font-weight: 900; }
   .foot-handle { left: 112px; top: 2666px; color: #CFE0F2; font-size: 20px; font-weight: 700; letter-spacing: 3px; }
   .foot-logo { right: 110px; top: 2596px; height: 90px; }
+
+  /* ================= MOTION =================
+     One-time entrance choreography for screens. Print/PDF is rendered with
+     prefers-reduced-motion: reduce, so the poster is fully static there. */
+  @media (prefers-reduced-motion: no-preference) {
+    :root {
+      --ease-out: cubic-bezier(.16, 1, .3, 1);
+      --spring: linear(0, .009, .035 2.1%, .141, .281 6.7%, .723 12.9%, .938 16.7%, 1.017, 1.077, 1.121, 1.149 24.3%,
+        1.159, 1.163, 1.161, 1.154 29.9%, 1.129 32.8%, 1.051 39.6%, 1.017 43.1%, .991, .977 51%, .974 53.8%, .975 57.1%,
+        .997 69.8%, 1.003 76.9%, 1);
+    }
+    .m-rise { animation: m-rise .8s var(--ease-out) var(--d, 0s) both; }
+    .m-pop  { animation: m-pop .8s var(--spring) var(--d, 0s) both; }
+    .m-drop { animation: m-drop .9s var(--spring) var(--d, 0s) both; }
+    @keyframes m-rise { from { opacity: 0; transform: translateY(32px); } }
+    @keyframes m-pop  { from { opacity: 0; transform: scale(.55); } }
+    @keyframes m-drop { from { transform: translateY(-110%); } }
+
+    .hero-photo { animation: m-kenburns 2.6s var(--ease-out) both; }
+    @keyframes m-kenburns { from { opacity: 0; transform: scale(1.14); } }
+
+    .mascot { animation: m-mascot 1.15s var(--spring) .55s both, m-bob 2.8s ease-in-out 2s infinite alternate; }
+    @keyframes m-mascot { from { opacity: 0; transform: translateY(160px) scale(.9); } }
+    @keyframes m-bob { to { transform: translateY(-12px); } }
+
+    .bubble { transform-origin: 100% 70%; animation: m-pop .7s var(--spring) 1.45s both; }
+
+    .orbit-ring { stroke-dasharray: var(--len); stroke-dashoffset: var(--len); animation: m-draw 1.7s cubic-bezier(.65, 0, .35, 1) .35s forwards; }
+    @keyframes m-draw { to { stroke-dashoffset: 0; } }
+    .orbit-head, #marks { animation: m-fade .5s ease-out 1.9s both; }
+    @keyframes m-fade { from { opacity: 0; } }
+  }
 </style>
 </head>
 <body>
@@ -152,13 +191,13 @@
 
   <svg class="abs orbit" viewBox="0 0 1800 1260">
     <!-- the 360° orbit: one confident gold ring around the students, with an arrow showing the turn -->
-    <circle cx="1270" cy="610" r="560" fill="none" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="2" stroke-dasharray="3 12"/>
+    <circle cx="1340" cy="620" r="520" fill="none" stroke="#FFFFFF" stroke-opacity=".14" stroke-width="2" stroke-dasharray="3 12"/>
     <g id="orbit" fill="none" stroke="#F2C94C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></g>
     <g id="marks"></g>
   </svg>
 
-  <div class="abs sat" style="left:620px; top:858px; width:230px; height:230px; background-image:url(img/letras.jpg); background-position:center 40%;"></div>
-  <div class="abs sat" style="left:1574px; top:168px; width:160px; height:160px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
+  <div class="abs sat" style="left:640px; top:850px; width:230px; height:230px; background-image:url(img/estudiantes.jpg); background-position:center 30%;"></div>
+  <div class="abs sat" style="left:1618px; top:690px; width:150px; height:150px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
 
   <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
   <div class="abs eyebrow">PROYECTO</div>
@@ -187,6 +226,10 @@
       <div><div class="lbl">Hora de recepción</div><div class="val">9:00<small>a.m.</small></div></div>
     </div>
   </div>
+
+  <!-- mascot stands on the facts card -->
+  <img class="abs mascot" src="img/mascota.png" alt="Mascota Westhill">
+  <div class="abs bubble">¡Te <span>esperamos!</span></div>
 
   <!-- ================= OBJETIVO ================= -->
   <div class="abs obj">
@@ -275,18 +318,19 @@
 <script>
   // Gold orbit (angles clockwise from 12 o'clock) with an arrowhead and four cardinal markers.
   (function () {
-    const NS = "http://www.w3.org/2000/svg", cx = 1270, cy = 610, r = 500;
+    const NS = "http://www.w3.org/2000/svg", cx = 1340, cy = 620, r = 440;
     const mk = (tag, a, parent) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); parent.appendChild(e); return e; };
     const pt = a => { const t = a * Math.PI / 180; return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; };
     const g = document.getElementById("orbit"), a0 = 250, a1 = 250 + 318;   // open gap near the "360" type
     const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
-    mk("path", { d: `M ${x0} ${y0} A ${r} ${r} 0 1 1 ${x1} ${y1}` }, g);
+    const ring = mk("path", { d: `M ${x0} ${y0} A ${r} ${r} 0 1 1 ${x1} ${y1}`, class: "orbit-ring" }, g);
+    ring.style.setProperty("--len", ring.getTotalLength());
     const t = a1 * Math.PI / 180, dx = Math.cos(t), dy = Math.sin(t);
     const back = s => [x1 - 34 * (dx * Math.cos(s) - dy * Math.sin(s)), y1 - 34 * (dx * Math.sin(s) + dy * Math.cos(s))];
     const [ax, ay] = back(.55), [bx, by] = back(-.55);
-    mk("path", { d: `M ${ax} ${ay} L ${x1} ${y1} L ${bx} ${by}` }, g);
+    mk("path", { d: `M ${ax} ${ay} L ${x1} ${y1} L ${bx} ${by}`, class: "orbit-head" }, g);
     const m = document.getElementById("marks");
-    [[0, "0°"], [90, "90°"], [180, "180°"]].forEach(([a, label]) => {
+    [[0, "0°"], [180, "180°"]].forEach(([a, label]) => {
       const [x, y] = pt(a);
       mk("circle", { cx: x, cy: y, r: 9, fill: "#F2C94C" }, m);
       const tx = mk("text", { x: x + (a === 90 ? -22 : 20), y: y + (a === 0 ? -16 : a === 180 ? 34 : 8), "text-anchor": a === 90 ? "end" : "start",
@@ -294,6 +338,21 @@
         stroke: "#0E2A47", "stroke-width": 6, "stroke-opacity": .75, "paint-order": "stroke" }, m);
       tx.textContent = label;
     });
+  })();
+
+  // Entrance sequence: [selector, motion class, start (s), stagger between matches (s)]
+  (function () {
+    const SEQ = [
+      [".banderin", "m-drop", .1, 0], [".eyebrow", "m-rise", .25, 0], [".t-west", "m-rise", .35, 0],
+      [".t-360", "m-rise", .48, 0], [".deg", "m-pop", .85, 0], [".tagline", "m-rise", .7, 0],
+      [".sat", "m-pop", 1.25, .18], [".facts", "m-rise", 1.0, 0], [".obj", "m-rise", 1.35, 0],
+      [".prog-h", "m-rise", 1.55, 0], [".tl-line", "m-rise", 1.65, 0], [".timeline .step", "m-rise", 1.7, .09], [".connector", "m-rise", 2.3, 0],
+      [".lic", "m-rise", 1.75, 0], [".lic li", "m-rise", 2.05, .08],
+      [".foot-tag", "m-rise", 2.6, 0], [".foot-handle", "m-rise", 2.7, 0], [".foot-logo", "m-rise", 2.7, 0],
+    ];
+    SEQ.forEach(([sel, cls, t0, step]) => document.querySelectorAll(sel).forEach((el, i) => {
+      el.classList.add(cls); el.style.setProperty("--d", (t0 + i * step).toFixed(2) + "s");
+    }));
   })();
 </script>
 </body>

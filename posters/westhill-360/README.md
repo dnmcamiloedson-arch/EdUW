@@ -6,13 +6,17 @@ Visitas de IPEFH (Planteles Toluca, Metepec y Calimaya) · 14 y 16 de octubre.
 |---|---|
 | `Westhill360_poster.pdf` | Impresión (vectorial, proporción 2:3 → 60 × 90 cm o 24 × 36 in) |
 | `Westhill360_poster.png` / `.jpg` | Pantallas, redes y envío digital (3600 × 5400 px) |
+| `Westhill360_animado.mp4` | Versión animada (6.5 s, 1080 × 1620) para pantallas y redes |
 | `poster.src.html` | Fuente editable del diseño |
 | `poster.html` | Versión generada con los íconos incrustados |
 
-Concepto (v4): combina la riqueza visual del v1/v2 con el refinamiento editorial del v3. Encabezado fotográfico
-(estudiantes del campus fundidos en azul marino) con una órbita dorada de 360° y marcas de grados; tarjeta de datos
-clave; objetivo como cita; programa en línea de tiempo con íconos y tarjeta de licenciaturas con encabezado
-fotográfico; olas institucionales al pie. Versiones anteriores en el historial de git.
+Concepto (v4 + mascota): encabezado con la fachada del campus fundida en azul marino; la mascota de Westhill
+(caracal con chamarra varsity) celebra dentro de una órbita dorada de 360° y se para sobre la tarjeta de datos clave,
+con el globo "¡Te esperamos!". Objetivo como cita; programa en línea de tiempo y tarjeta de licenciaturas.
+
+Animación: entrada única (Ken Burns del fondo, texto escalonado, órbita que se dibuja, mascota con resorte y
+balanceo suave). Solo corre con `prefers-reduced-motion: no-preference`; el PNG/PDF se exporta en modo reducido,
+por lo que la versión impresa es estática.
 
 Paleta institucional: azul `#266294`, marino `#0E2A47`, dorado `#F2C94C`, hielo `#EDF3FA`. Tipografía Raleway.
 
@@ -25,4 +29,7 @@ npm i @fortawesome/fontawesome-free@6.5.2
 python3 tools/build.py poster.src.html poster.html node_modules/@fortawesome/fontawesome-free/svgs/solid
 # 3. Exportar PNG (escala 2) y PDF (requiere Playwright)
 node tools/render.js "$PWD/poster.html" "$PWD/Westhill360_poster.png" "$PWD/Westhill360_poster.pdf" 2
+# 4. Video de la animación (webm) y conversión a mp4
+node tools/record.js "$PWD/poster.html" /tmp/vid 7
+ffmpeg -i /tmp/vid/*.webm -ss 0.25 -t 6.5 -c:v libx264 -pix_fmt yuv420p -crf 20 -movflags +faststart -an Westhill360_animado.mp4
 ```
