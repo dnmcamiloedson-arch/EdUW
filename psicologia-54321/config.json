@@ -1,0 +1,255 @@
+{
+  "meta": {
+    "series": "Westhill Psicología · Herramientas de calma",
+    "title": "Grounding 5-4-3-2-1",
+    "client": "Psicología, Universidad Westhill",
+    "outputBase": "psicologia_54321"
+  },
+  "format": {
+    "fps": 30,
+    "width": 1080,
+    "height": 1920
+  },
+  "activeVariant": "28",
+  "variants": {
+    "28": {
+      "description": "Versión Reels/TikTok: guion con los tiempos del brief.",
+      "durations": {
+        "intro": 3,
+        "steps": [
+          5,
+          4,
+          4,
+          4,
+          4
+        ],
+        "outro": 4
+      },
+      "voiceOffset": 0.3,
+      "outroSentenceGap": 0.25,
+      "disclaimerLastSeconds": 2.6,
+      "voiceOffsets": {
+        "intro": 0.08,
+        "ver": 0.8,
+        "outro": -0.45
+      }
+    },
+    "40": {
+      "description": "Versión 'hazlo conmigo': más silencio después de cada instrucción para hacer la acción en tiempo real.",
+      "durations": {
+        "intro": 3.5,
+        "steps": [
+          7,
+          6.5,
+          6,
+          5.5,
+          5
+        ],
+        "outro": 6.5
+      },
+      "voiceOffset": 0.4,
+      "outroSentenceGap": 0.9,
+      "disclaimerLastSeconds": 3,
+      "voiceOffsets": {
+        "intro": 0.3,
+        "ver": 0.5,
+        "outro": 0.2
+      }
+    }
+  },
+  "layouts": {
+    "9x16": {
+      "width": 1080,
+      "height": 1920,
+      "safe": {
+        "top": 250,
+        "bottom": 340,
+        "side": 120
+      },
+      "circle": {
+        "cx": 540,
+        "cy": 800,
+        "r": 300
+      },
+      "header": {
+        "y": 252
+      },
+      "captions": {
+        "y": 1276,
+        "maxWidth": 800,
+        "size": 60
+      },
+      "disclaimer": {
+        "y": 1456,
+        "size": 34
+      },
+      "orbit": 428
+    },
+    "1x1": {
+      "width": 1080,
+      "height": 1080,
+      "safe": {
+        "top": 60,
+        "bottom": 60,
+        "side": 80
+      },
+      "circle": {
+        "cx": 540,
+        "cy": 492,
+        "r": 220
+      },
+      "header": {
+        "y": 30
+      },
+      "captions": {
+        "y": 846,
+        "maxWidth": 920,
+        "size": 48
+      },
+      "disclaimer": {
+        "y": 990,
+        "size": 28
+      },
+      "orbit": 428
+    }
+  },
+  "palette": {
+    "deep": "#0F2A4A",
+    "deeper": "#0A1E3A",
+    "mid": "#3F7CAC",
+    "sky": "#A8D0E6",
+    "sage": "#8FB9A8",
+    "cream": "#F6F1E7",
+    "coral": "#F2A488",
+    "white": "#FFFDF8",
+    "citrus": "#F7D58B",
+    "coffee": "#C8A27C"
+  },
+  "fonts": {
+    "family": "Nunito",
+    "files": {
+      "400": "fonts/Nunito-400.woff2",
+      "500": "fonts/Nunito-500.woff2",
+      "600": "fonts/Nunito-600.woff2",
+      "700": "fonts/Nunito-700.woff2"
+    },
+    "numberWeight": 500,
+    "captionWeight": 700
+  },
+  "brand": {
+    "signature": "Psicología · Universidad Westhill",
+    "logo": null
+  },
+  "motion": {
+    "breathPeriod": 4,
+    "breathMin": 0.92,
+    "breathMax": 1.0,
+    "transitionFrames": 15
+  },
+  "voice": {
+    "source": "tts",
+    "engine": "piper",
+    "model": "es_MX-claude-high",
+    "modelUrl": "https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/vits-piper-es_MX-claude-high.tar.bz2",
+    "lengthScale": 1.12,
+    "noiseScale": 0.55,
+    "noiseW": 0.7,
+    "dir": "audio/voice",
+    "note": "Para grabar voz humana: reemplaza los WAV de assets/audio/voice/ (mismos nombres), pon voice.source = \"file\" y ajusta los tiempos de palabras en assets/audio/voice/timings.json (o vuelve a correr la alineación). El código no cambia."
+  },
+  "audio": {
+    "targetLufs": -16,
+    "truePeak": -1.0,
+    "musicLevelDb": -27,
+    "duckDb": -12,
+    "chimeLevelDb": -21,
+    "padRoot": 110.0
+  },
+  "steps": [
+    {
+      "id": "intro",
+      "kind": "intro",
+      "voice": "Si sientes que todo va muy rápido, haz esto conmigo.",
+      "accent": "sky",
+      "lengthScale": 1.0
+    },
+    {
+      "id": "ver",
+      "kind": "step",
+      "number": 5,
+      "label": "ves",
+      "voice": "Cinco cosas que ves.",
+      "accent": "sky",
+      "items": [
+        "leaf",
+        "window",
+        "mug",
+        "plant",
+        "cloud"
+      ]
+    },
+    {
+      "id": "tocar",
+      "kind": "step",
+      "number": 4,
+      "label": "tocas",
+      "voice": "Cuatro que puedes tocar.",
+      "accent": "sage",
+      "items": [
+        "fabric",
+        "rough",
+        "water",
+        "wool"
+      ]
+    },
+    {
+      "id": "oir",
+      "kind": "step",
+      "number": 3,
+      "label": "escuchas",
+      "voice": "Tres que escuchas.",
+      "accent": "sky",
+      "items": [
+        "rain",
+        "bird",
+        "murmur"
+      ]
+    },
+    {
+      "id": "oler",
+      "kind": "step",
+      "number": 2,
+      "label": "hueles",
+      "voice": "Dos que hueles.",
+      "accent": "coral",
+      "items": [
+        "flower",
+        "coffee"
+      ]
+    },
+    {
+      "id": "saborear",
+      "kind": "step",
+      "number": 1,
+      "label": "saboreas",
+      "voice": "Una que saboreas.",
+      "accent": "citrus",
+      "items": [
+        "citrus"
+      ]
+    },
+    {
+      "id": "outro",
+      "kind": "outro",
+      "voice": [
+        "Así regresas al presente.",
+        "Guárdalo para cuando lo necesites."
+      ],
+      "accent": "sky",
+      "onScreen": "Guárdalo para cuando lo necesites",
+      "heart": true,
+      "lengthScale": 1.0
+    }
+  ],
+  "disclaimer": "Técnica de apoyo. No sustituye atención profesional."
+}

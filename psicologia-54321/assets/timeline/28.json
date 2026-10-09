@@ -1,0 +1,696 @@
+{
+ "variant": "28",
+ "fps": 30,
+ "duration": 28,
+ "durationInFrames": 840,
+ "sections": [
+  {
+   "id": "intro",
+   "kind": "intro",
+   "accent": "sky",
+   "start": 0.0,
+   "end": 3.0
+  },
+  {
+   "id": "ver",
+   "kind": "step",
+   "accent": "sky",
+   "number": 5,
+   "label": "ves",
+   "items": [
+    "leaf",
+    "window",
+    "mug",
+    "plant",
+    "cloud"
+   ],
+   "start": 3.0,
+   "end": 8.0
+  },
+  {
+   "id": "tocar",
+   "kind": "step",
+   "accent": "sage",
+   "number": 4,
+   "label": "tocas",
+   "items": [
+    "fabric",
+    "rough",
+    "water",
+    "wool"
+   ],
+   "start": 8.0,
+   "end": 12.0
+  },
+  {
+   "id": "oir",
+   "kind": "step",
+   "accent": "sky",
+   "number": 3,
+   "label": "escuchas",
+   "items": [
+    "rain",
+    "bird",
+    "murmur"
+   ],
+   "start": 12.0,
+   "end": 16.0
+  },
+  {
+   "id": "oler",
+   "kind": "step",
+   "accent": "coral",
+   "number": 2,
+   "label": "hueles",
+   "items": [
+    "flower",
+    "coffee"
+   ],
+   "start": 16.0,
+   "end": 20.0
+  },
+  {
+   "id": "saborear",
+   "kind": "step",
+   "accent": "citrus",
+   "number": 1,
+   "label": "saboreas",
+   "items": [
+    "citrus"
+   ],
+   "start": 20.0,
+   "end": 24.0
+  },
+  {
+   "id": "outro",
+   "kind": "outro",
+   "accent": "sky",
+   "onScreen": "Guárdalo para cuando lo necesites",
+   "heart": true,
+   "start": 24.0,
+   "end": 28.0
+  }
+ ],
+ "voice": [
+  {
+   "step": "intro",
+   "file": "audio/voice/intro.wav",
+   "start": 0.08,
+   "duration": 3.599,
+   "text": "Si sientes que todo va muy rápido, haz esto conmigo."
+  },
+  {
+   "step": "ver",
+   "file": "audio/voice/ver.wav",
+   "start": 3.8,
+   "duration": 1.556,
+   "text": "Cinco cosas que ves."
+  },
+  {
+   "step": "tocar",
+   "file": "audio/voice/tocar.wav",
+   "start": 8.3,
+   "duration": 1.637,
+   "text": "Cuatro que puedes tocar."
+  },
+  {
+   "step": "oir",
+   "file": "audio/voice/oir.wav",
+   "start": 12.3,
+   "duration": 1.231,
+   "text": "Tres que escuchas."
+  },
+  {
+   "step": "oler",
+   "file": "audio/voice/oler.wav",
+   "start": 16.3,
+   "duration": 1.103,
+   "text": "Dos que hueles."
+  },
+  {
+   "step": "saborear",
+   "file": "audio/voice/saborear.wav",
+   "start": 20.3,
+   "duration": 1.37,
+   "text": "Una que saboreas."
+  },
+  {
+   "step": "outro",
+   "file": "audio/voice/outro_1.wav",
+   "start": 23.55,
+   "duration": 1.834,
+   "text": "Así regresas al presente."
+  },
+  {
+   "step": "outro",
+   "file": "audio/voice/outro_2.wav",
+   "start": 25.634,
+   "duration": 2.043,
+   "text": "Guárdalo para cuando lo necesites."
+  }
+ ],
+ "words": [
+  {
+   "text": "Si",
+   "start": 0.208,
+   "end": 0.312,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "sientes",
+   "start": 0.382,
+   "end": 0.765,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "que",
+   "start": 0.8,
+   "end": 0.893,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "todo",
+   "start": 0.974,
+   "end": 1.206,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "va",
+   "start": 1.276,
+   "end": 1.392,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "muy",
+   "start": 1.485,
+   "end": 1.671,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "rápido,",
+   "start": 1.74,
+   "end": 2.193,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "haz",
+   "start": 2.541,
+   "end": 2.715,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "esto",
+   "start": 2.75,
+   "end": 2.982,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "conmigo.",
+   "start": 3.029,
+   "end": 3.54,
+   "step": "intro",
+   "take": 0
+  },
+  {
+   "text": "Cinco",
+   "start": 3.916,
+   "end": 4.299,
+   "step": "ver",
+   "take": 1
+  },
+  {
+   "text": "cosas",
+   "start": 4.357,
+   "end": 4.752,
+   "step": "ver",
+   "take": 1
+  },
+  {
+   "text": "que",
+   "start": 4.81,
+   "end": 4.891,
+   "step": "ver",
+   "take": 1
+  },
+  {
+   "text": "ves.",
+   "start": 4.949,
+   "end": 5.216,
+   "step": "ver",
+   "take": 1
+  },
+  {
+   "text": "Cuatro",
+   "start": 8.393,
+   "end": 8.73,
+   "step": "tocar",
+   "take": 2
+  },
+  {
+   "text": "que",
+   "start": 8.776,
+   "end": 8.904,
+   "step": "tocar",
+   "take": 2
+  },
+  {
+   "text": "puedes",
+   "start": 8.985,
+   "end": 9.333,
+   "step": "tocar",
+   "take": 2
+  },
+  {
+   "text": "tocar.",
+   "start": 9.38,
+   "end": 9.809,
+   "step": "tocar",
+   "take": 2
+  },
+  {
+   "text": "Tres",
+   "start": 12.381,
+   "end": 12.648,
+   "step": "oir",
+   "take": 3
+  },
+  {
+   "text": "que",
+   "start": 12.695,
+   "end": 12.776,
+   "step": "oir",
+   "take": 3
+  },
+  {
+   "text": "escuchas.",
+   "start": 12.811,
+   "end": 13.415,
+   "step": "oir",
+   "take": 3
+  },
+  {
+   "text": "Dos",
+   "start": 16.451,
+   "end": 16.637,
+   "step": "oler",
+   "take": 4
+  },
+  {
+   "text": "que",
+   "start": 16.672,
+   "end": 16.764,
+   "step": "oler",
+   "take": 4
+  },
+  {
+   "text": "hueles.",
+   "start": 16.822,
+   "end": 17.252,
+   "step": "oler",
+   "take": 4
+  },
+  {
+   "text": "Una",
+   "start": 20.381,
+   "end": 20.637,
+   "step": "saborear",
+   "take": 5
+  },
+  {
+   "text": "que",
+   "start": 20.706,
+   "end": 20.776,
+   "step": "saborear",
+   "take": 5
+  },
+  {
+   "text": "saboreas.",
+   "start": 20.834,
+   "end": 21.519,
+   "step": "saborear",
+   "take": 5
+  },
+  {
+   "text": "Así",
+   "start": 23.678,
+   "end": 23.968,
+   "step": "outro",
+   "take": 6
+  },
+  {
+   "text": "regresas",
+   "start": 24.026,
+   "end": 24.49,
+   "step": "outro",
+   "take": 6
+  },
+  {
+   "text": "al",
+   "start": 24.537,
+   "end": 24.63,
+   "step": "outro",
+   "take": 6
+  },
+  {
+   "text": "presente.",
+   "start": 24.665,
+   "end": 25.21,
+   "step": "outro",
+   "take": 6
+  },
+  {
+   "text": "Guárdalo",
+   "start": 25.727,
+   "end": 26.214,
+   "step": "outro",
+   "take": 7
+  },
+  {
+   "text": "para",
+   "start": 26.261,
+   "end": 26.423,
+   "step": "outro",
+   "take": 7
+  },
+  {
+   "text": "cuando",
+   "start": 26.482,
+   "end": 26.702,
+   "step": "outro",
+   "take": 7
+  },
+  {
+   "text": "lo",
+   "start": 26.737,
+   "end": 26.795,
+   "step": "outro",
+   "take": 7
+  },
+  {
+   "text": "necesites.",
+   "start": 26.841,
+   "end": 27.538,
+   "step": "outro",
+   "take": 7
+  }
+ ],
+ "captions": [
+  {
+   "start": 0.208,
+   "end": 2.193,
+   "words": [
+    {
+     "text": "Si",
+     "start": 0.208,
+     "end": 0.312
+    },
+    {
+     "text": "sientes",
+     "start": 0.382,
+     "end": 0.765
+    },
+    {
+     "text": "que",
+     "start": 0.8,
+     "end": 0.893
+    },
+    {
+     "text": "todo",
+     "start": 0.974,
+     "end": 1.206
+    },
+    {
+     "text": "va",
+     "start": 1.276,
+     "end": 1.392
+    },
+    {
+     "text": "muy",
+     "start": 1.485,
+     "end": 1.671
+    },
+    {
+     "text": "rápido,",
+     "start": 1.74,
+     "end": 2.193
+    }
+   ],
+   "showFrom": 0.128,
+   "showTo": 2.291
+  },
+  {
+   "start": 2.541,
+   "end": 3.54,
+   "words": [
+    {
+     "text": "haz",
+     "start": 2.541,
+     "end": 2.715
+    },
+    {
+     "text": "esto",
+     "start": 2.75,
+     "end": 2.982
+    },
+    {
+     "text": "conmigo.",
+     "start": 3.029,
+     "end": 3.54
+    }
+   ],
+   "showFrom": 2.461,
+   "showTo": 3.666
+  },
+  {
+   "start": 3.916,
+   "end": 5.216,
+   "words": [
+    {
+     "text": "Cinco",
+     "start": 3.916,
+     "end": 4.299
+    },
+    {
+     "text": "cosas",
+     "start": 4.357,
+     "end": 4.752
+    },
+    {
+     "text": "que",
+     "start": 4.81,
+     "end": 4.891
+    },
+    {
+     "text": "ves.",
+     "start": 4.949,
+     "end": 5.216
+    }
+   ],
+   "showFrom": 3.836,
+   "showTo": 6.616
+  },
+  {
+   "start": 8.393,
+   "end": 9.809,
+   "words": [
+    {
+     "text": "Cuatro",
+     "start": 8.393,
+     "end": 8.73
+    },
+    {
+     "text": "que",
+     "start": 8.776,
+     "end": 8.904
+    },
+    {
+     "text": "puedes",
+     "start": 8.985,
+     "end": 9.333
+    },
+    {
+     "text": "tocar.",
+     "start": 9.38,
+     "end": 9.809
+    }
+   ],
+   "showFrom": 8.313,
+   "showTo": 11.209
+  },
+  {
+   "start": 12.381,
+   "end": 13.415,
+   "words": [
+    {
+     "text": "Tres",
+     "start": 12.381,
+     "end": 12.648
+    },
+    {
+     "text": "que",
+     "start": 12.695,
+     "end": 12.776
+    },
+    {
+     "text": "escuchas.",
+     "start": 12.811,
+     "end": 13.415
+    }
+   ],
+   "showFrom": 12.301,
+   "showTo": 14.815
+  },
+  {
+   "start": 16.451,
+   "end": 17.252,
+   "words": [
+    {
+     "text": "Dos",
+     "start": 16.451,
+     "end": 16.637
+    },
+    {
+     "text": "que",
+     "start": 16.672,
+     "end": 16.764
+    },
+    {
+     "text": "hueles.",
+     "start": 16.822,
+     "end": 17.252
+    }
+   ],
+   "showFrom": 16.371,
+   "showTo": 18.652
+  },
+  {
+   "start": 20.381,
+   "end": 21.519,
+   "words": [
+    {
+     "text": "Una",
+     "start": 20.381,
+     "end": 20.637
+    },
+    {
+     "text": "que",
+     "start": 20.706,
+     "end": 20.776
+    },
+    {
+     "text": "saboreas.",
+     "start": 20.834,
+     "end": 21.519
+    }
+   ],
+   "showFrom": 20.301,
+   "showTo": 22.919
+  },
+  {
+   "start": 23.678,
+   "end": 25.21,
+   "words": [
+    {
+     "text": "Así",
+     "start": 23.678,
+     "end": 23.968
+    },
+    {
+     "text": "regresas",
+     "start": 24.026,
+     "end": 24.49
+    },
+    {
+     "text": "al",
+     "start": 24.537,
+     "end": 24.63
+    },
+    {
+     "text": "presente.",
+     "start": 24.665,
+     "end": 25.21
+    }
+   ],
+   "showFrom": 23.598,
+   "showTo": 25.477
+  },
+  {
+   "start": 25.727,
+   "end": 27.538,
+   "words": [
+    {
+     "text": "Guárdalo",
+     "start": 25.727,
+     "end": 26.214
+    },
+    {
+     "text": "para",
+     "start": 26.261,
+     "end": 26.423
+    },
+    {
+     "text": "cuando",
+     "start": 26.482,
+     "end": 26.702
+    },
+    {
+     "text": "lo",
+     "start": 26.737,
+     "end": 26.795
+    },
+    {
+     "text": "necesites.",
+     "start": 26.841,
+     "end": 27.538
+    }
+   ],
+   "showFrom": 25.647,
+   "showTo": 27.9
+  }
+ ],
+ "chimes": [
+  {
+   "t": 3.12,
+   "number": 5
+  },
+  {
+   "t": 8.12,
+   "number": 4
+  },
+  {
+   "t": 12.12,
+   "number": 3
+  },
+  {
+   "t": 16.12,
+   "number": 2
+  },
+  {
+   "t": 20.12,
+   "number": 1
+  }
+ ],
+ "disclaimer": {
+  "start": 25.4,
+  "end": 28,
+  "text": "Técnica de apoyo. No sustituye atención profesional."
+ },
+ "onScreen": {
+  "start": 24.9,
+  "text": "Guárdalo para cuando lo necesites"
+ },
+ "fadeOut": {
+  "start": 27.3,
+  "end": 28
+ },
+ "lastVoiceEnd": 27.677
+}

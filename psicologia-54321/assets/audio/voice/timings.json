@@ -1,0 +1,258 @@
+{
+ "intro": [
+  {
+   "file": "audio/voice/intro.wav",
+   "text": "Si sientes que todo va muy rápido, haz esto conmigo.",
+   "duration": 3.599,
+   "words": [
+    {
+     "text": "Si",
+     "start": 0.128,
+     "end": 0.232
+    },
+    {
+     "text": "sientes",
+     "start": 0.302,
+     "end": 0.685
+    },
+    {
+     "text": "que",
+     "start": 0.72,
+     "end": 0.813
+    },
+    {
+     "text": "todo",
+     "start": 0.894,
+     "end": 1.126
+    },
+    {
+     "text": "va",
+     "start": 1.196,
+     "end": 1.312
+    },
+    {
+     "text": "muy",
+     "start": 1.405,
+     "end": 1.591
+    },
+    {
+     "text": "rápido,",
+     "start": 1.66,
+     "end": 2.113
+    },
+    {
+     "text": "haz",
+     "start": 2.461,
+     "end": 2.635
+    },
+    {
+     "text": "esto",
+     "start": 2.67,
+     "end": 2.902
+    },
+    {
+     "text": "conmigo.",
+     "start": 2.949,
+     "end": 3.46
+    }
+   ]
+  }
+ ],
+ "ver": [
+  {
+   "file": "audio/voice/ver.wav",
+   "text": "Cinco cosas que ves.",
+   "duration": 1.556,
+   "words": [
+    {
+     "text": "Cinco",
+     "start": 0.116,
+     "end": 0.499
+    },
+    {
+     "text": "cosas",
+     "start": 0.557,
+     "end": 0.952
+    },
+    {
+     "text": "que",
+     "start": 1.01,
+     "end": 1.091
+    },
+    {
+     "text": "ves.",
+     "start": 1.149,
+     "end": 1.416
+    }
+   ]
+  }
+ ],
+ "tocar": [
+  {
+   "file": "audio/voice/tocar.wav",
+   "text": "Cuatro que puedes tocar.",
+   "duration": 1.637,
+   "words": [
+    {
+     "text": "Cuatro",
+     "start": 0.093,
+     "end": 0.43
+    },
+    {
+     "text": "que",
+     "start": 0.476,
+     "end": 0.604
+    },
+    {
+     "text": "puedes",
+     "start": 0.685,
+     "end": 1.033
+    },
+    {
+     "text": "tocar.",
+     "start": 1.08,
+     "end": 1.509
+    }
+   ]
+  }
+ ],
+ "oir": [
+  {
+   "file": "audio/voice/oir.wav",
+   "text": "Tres que escuchas.",
+   "duration": 1.231,
+   "words": [
+    {
+     "text": "Tres",
+     "start": 0.081,
+     "end": 0.348
+    },
+    {
+     "text": "que",
+     "start": 0.395,
+     "end": 0.476
+    },
+    {
+     "text": "escuchas.",
+     "start": 0.511,
+     "end": 1.115
+    }
+   ]
+  }
+ ],
+ "oler": [
+  {
+   "file": "audio/voice/oler.wav",
+   "text": "Dos que hueles.",
+   "duration": 1.103,
+   "words": [
+    {
+     "text": "Dos",
+     "start": 0.151,
+     "end": 0.337
+    },
+    {
+     "text": "que",
+     "start": 0.372,
+     "end": 0.464
+    },
+    {
+     "text": "hueles.",
+     "start": 0.522,
+     "end": 0.952
+    }
+   ]
+  }
+ ],
+ "saborear": [
+  {
+   "file": "audio/voice/saborear.wav",
+   "text": "Una que saboreas.",
+   "duration": 1.37,
+   "words": [
+    {
+     "text": "Una",
+     "start": 0.081,
+     "end": 0.337
+    },
+    {
+     "text": "que",
+     "start": 0.406,
+     "end": 0.476
+    },
+    {
+     "text": "saboreas.",
+     "start": 0.534,
+     "end": 1.219
+    }
+   ]
+  }
+ ],
+ "outro": [
+  {
+   "file": "audio/voice/outro_1.wav",
+   "text": "Así regresas al presente.",
+   "duration": 1.834,
+   "words": [
+    {
+     "text": "Así",
+     "start": 0.128,
+     "end": 0.418
+    },
+    {
+     "text": "regresas",
+     "start": 0.476,
+     "end": 0.94
+    },
+    {
+     "text": "al",
+     "start": 0.987,
+     "end": 1.08
+    },
+    {
+     "text": "presente.",
+     "start": 1.115,
+     "end": 1.66
+    }
+   ]
+  },
+  {
+   "file": "audio/voice/outro_2.wav",
+   "text": "Guárdalo para cuando lo necesites.",
+   "duration": 2.043,
+   "words": [
+    {
+     "text": "Guárdalo",
+     "start": 0.093,
+     "end": 0.58
+    },
+    {
+     "text": "para",
+     "start": 0.627,
+     "end": 0.789
+    },
+    {
+     "text": "cuando",
+     "start": 0.848,
+     "end": 1.068
+    },
+    {
+     "text": "lo",
+     "start": 1.103,
+     "end": 1.161
+    },
+    {
+     "text": "necesites.",
+     "start": 1.207,
+     "end": 1.904
+    }
+   ]
+  }
+ ],
+ "_meta": {
+  "engine": "piper",
+  "model": "es_MX-claude-high",
+  "lengthScale": 1.12,
+  "sampleRate": 22050
+ }
+}
