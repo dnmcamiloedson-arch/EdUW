@@ -12,6 +12,7 @@
      RefUI.morph(el, cambio)   anima la altura de `el` mientras cambia
      RefUI.initTilt(el)        inclinación 3D que sigue al puntero
      RefUI.reducido()          true si la persona pidió menos movimiento
+     RefUI.contar(el, n)       el número de `el` corre hasta n con un resorte
    ========================================================================== */
 (function () {
   "use strict";
@@ -406,11 +407,44 @@
     });
   }
 
+  /* --- Secciones que aparecen al llegar a ellas -------------------------- */
+  // Lo que está debajo del pliegue entraba con la página y nadie lo veía:
+  // ahora se materializa cuando entra en pantalla (una sola vez).
+  function initReveal() {
+    if (!("IntersectionObserver" in window)) return;
+    const grupos = [".rf-features .rf-feature", ".rf-codes-head", ".rf-codes-list"];
+    const io = new IntersectionObserver((entradas) => {
+      entradas.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("is-in");
+        io.unobserve(e.target);
+      });
+    }, { rootMargin: "0px 0px -8% 0px", threshold: 0.12 });
+    grupos.forEach((sel) => {
+      document.querySelectorAll(sel).forEach((el, i) => {
+        el.setAttribute("data-reveal", "");
+        el.style.setProperty("--d", i);
+        io.observe(el);
+      });
+    });
+  }
+
+  /* --- Números que corren hasta su valor ---------------------------------- */
+  function contar(el, n) {
+    n = Number(n) || 0;
+    const desde = Number(el.textContent) || 0;
+    if (el._c) el._c._stop();
+    if (desde === n || reducido()) { el.textContent = n; return; }
+    el._c = new Spring(desde, { damping: 1, response: 0.6, onUpdate: (v) => { el.textContent = Math.round(v); } });
+    el._c.to(n);
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
+    initReveal();
     initNav();
     document.querySelectorAll("[data-pills]").forEach(initPills);
     initSobre();
   });
 
-  window.RefUI = { Spring, morph, initTilt, rodillos, reducido };
+  window.RefUI = { Spring, morph, initTilt, rodillos, reducido, contar };
 })();

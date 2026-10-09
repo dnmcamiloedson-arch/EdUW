@@ -50,11 +50,23 @@
     }
     clave = valor;
     guardarClave(valor);
-    $("acceso").hidden = true;
-    $("admin").hidden = false;
-    $("salir").hidden = false;
-    pintarLista(r.referidores);
-    RefUI.initTilt($("r-pase"));
+    const mostrarPanel = () => {
+      $("acceso").hidden = true;
+      const admin = $("admin");
+      admin.hidden = false;
+      admin.classList.add("rf-materialize");     // el panel se materializa en el lugar de la clave
+      $("salir").hidden = false;
+      pintarLista(r.referidores);
+      RefUI.initTilt($("r-pase"));
+      RefUI.initTilt($("r-tarjeta"));
+    };
+    // La puerta se desvanece hacia arriba y luego aparece el panel (sin salto)
+    if (silencioso || RefUI.reducido()) mostrarPanel();
+    else {
+      const gate = $("acceso");
+      gate.classList.add("is-leaving");
+      gate.addEventListener("animationend", mostrarPanel, { once: true });
+    }
     return true;
   }
 
@@ -70,6 +82,9 @@
       input.value = "";
     } catch (err) {
       error(formClave, err.message);
+      formClave.classList.remove("is-wrong");
+      void formClave.offsetWidth;                // reinicia la sacudida si se vuelve a fallar
+      formClave.classList.add("is-wrong");
       input.select();
     } finally {
       cargando(boton, false);
@@ -154,8 +169,16 @@
     try { return !!(navigator.canShare && navigator.canShare({ files: [archivo] })); } catch (e) { return false; }
   }
 
-  $("r-descargar").addEventListener("click", () => {
+  const descargar = $("r-descargar");
+  let tDescarga;
+  descargar.addEventListener("click", () => {
     if (!actual || !actual.archivo) return;
+    // Confirmación en el mismo botón: verde un momento y vuelve
+    if (!descargar._html) descargar._html = descargar.innerHTML;
+    descargar.classList.add("is-done");
+    descargar.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Descargada';
+    clearTimeout(tDescarga);
+    tDescarga = setTimeout(() => { descargar.classList.remove("is-done"); descargar.innerHTML = descargar._html; }, 1600);
     const url = URL.createObjectURL(actual.archivo);
     const a = document.createElement("a");
     a.href = url;
@@ -205,27 +228,63 @@
   const lista = $("lista");
   const fechaCorta = new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "short", year: "numeric" });
 
+  const filas = new Map();   // código → <li>, para no rehacer la lista en cada tecla
+
   function pintarLista(refs) {
     todos = refs || [];
-    $("s-codigos").textContent = todos.length;
-    $("s-invitados").textContent = todos.reduce((s, r) => s + (r.invitados || 0), 0);
+    RefUI.contar($("s-codigos"), todos.length);
+    RefUI.contar($("s-invitados"), todos.reduce((s, r) => s + (r.invitados || 0), 0));
+    let nuevas = 0;
+    const vivos = new Set();
+    todos.forEach((r) => {
+      vivos.add(r.codigo);
+      const previa = filas.get(r.codigo);
+      if (previa) { actualizarFila(previa, r); return; }
+      const li = fila(r);
+      li.style.setProperty("--i", Math.min(nuevas++, 12));
+      li.classList.add("is-new");                 // solo lo nuevo entra animado
+      li.addEventListener("animationend", () => li.classList.remove("is-new"), { once: true });
+      filas.set(r.codigo, li);
+    });
+    filas.forEach((li, c) => { if (!vivos.has(c)) { li.remove(); filas.delete(c); } });
     filtrar();
   }
 
-  const sinAcentos = (s) => String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  const sinAcentos = (s) => String(s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
+  // Buscar pasa decenas de veces por minuto: sin animación, solo mostrar/ocultar
   function filtrar() {
     const q = sinAcentos($("buscar").value.trim());
     const visibles = q ? todos.filter((r) => sinAcentos(r.nombre + " " + r.correo + " " + r.codigo).includes(q)) : todos;
-    lista.replaceChildren(...visibles.map(fila));
+    const set = new Set(visibles.map((r) => r.codigo));
+    todos.forEach((r) => {
+      const li = filas.get(r.codigo);
+      li.hidden = !set.has(r.codigo);
+      lista.appendChild(li);                      // mantiene el orden sin recrear nodos
+    });
     $("vacio").hidden = visibles.length > 0;
     $("vacio").textContent = todos.length ? "Nada coincide con tu búsqueda." : "Aún no hay códigos.";
   }
 
-  function fila(r, i) {
+  function actualizarFila(li, r) {
+    li._ref = r;
+    const b = li.querySelector(".count b");
+    if (b.textContent !== String(r.invitados)) RefUI.contar(b, r.invitados);
+    li.classList.toggle("has-guests", r.invitados > 0);
+  }
+
+  function resaltar(codigo) {
+    const li = filas.get(codigo);
+    if (!li || RefUI.reducido()) return;
+    li.classList.remove("is-flash");
+    void li.offsetWidth;
+    li.classList.add("is-flash");
+  }
+
+  function fila(r) {
     const li = document.createElement("li");
     li.className = "rf-code-row";
-    li.style.setProperty("--i", Math.min(i, 12));
+    li._ref = r;
     const f = new Date(r.fecha);
     li.innerHTML = `
       <span class="rf-avatar" aria-hidden="true"></span>
@@ -243,7 +302,7 @@
     btn.setAttribute("aria-label", "Ver tarjeta de " + r.nombre);
     btn.addEventListener("click", async () => {
       cargando(btn, true, "…");
-      try { await mostrar(r, "lista"); }
+      try { await mostrar(li._ref, "lista"); }
       finally { cargando(btn, false); }
       $("admin").scrollIntoView({ behavior: RefUI.reducido() ? "auto" : "smooth", block: "start" });
     });
@@ -257,7 +316,7 @@
     btn.classList.add("is-spinning");
     try {
       const r = await Referidos.listarReferidores(clave);
-      if (r.ok) pintarLista(r.referidores);
+      if (r.ok) { pintarLista(r.referidores); if (actual) resaltar(actual.codigo); }
       else if (r.clave === false) { guardarClave(""); location.reload(); }
     } catch (e) { /* sin red: se queda la lista anterior */ }
     finally { btn.classList.remove("is-spinning"); }

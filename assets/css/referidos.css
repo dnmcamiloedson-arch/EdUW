@@ -63,7 +63,12 @@
 *, *::before, *::after { box-sizing: border-box; }
 [hidden] { display: none !important; }
 
-html { -webkit-text-size-adjust: 100%; background: var(--stage); }
+html { -webkit-text-size-adjust: 100%; background: var(--stage); scrollbar-gutter: stable; scroll-behavior: smooth; }
+/* Cambio de página suave entre invitación y Admisiones (navegadores que lo soportan) */
+@view-transition { navigation: auto; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 260ms; animation-timing-function: cubic-bezier(.23, 1, .32, 1); }
+::selection { background: rgba(242, 201, 76, .45); color: var(--navy-ink); }
+input, textarea { caret-color: var(--blue); accent-color: var(--blue); }
 body {
   margin: 0;
   font: 400 1.0625rem/1.47 var(--font);
@@ -330,7 +335,7 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
 .rf-footnote { font-size: 13px; color: var(--ink-2); padding: 0 16px; margin: 0 0 18px; }
 .rf-error-msg { display: none; font-size: 13px; color: var(--danger); margin-top: 2px; }
 .is-invalid .rf-row-label { color: var(--danger) !important; }
-.is-invalid .rf-error-msg { display: block; }
+.is-invalid .rf-error-msg { display: block; animation: rf-msg 220ms var(--ease-out) both; }
 .rf-row.is-invalid { animation: rf-nudge 360ms var(--ease-out); }
 
 /* Píldoras con selección que se desliza */
@@ -392,7 +397,7 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
   background: var(--navy); color: #fff;
   font-size: 17px; font-weight: 600; letter-spacing: -.016em;
   cursor: pointer; -webkit-tap-highlight-color: transparent;
-  transition: transform var(--press) var(--ease-out), opacity var(--ui) var(--ease-out), filter var(--ui) var(--ease-out);
+  transition: transform var(--press) var(--ease-out), opacity var(--ui) var(--ease-out), filter var(--ui) var(--ease-out), box-shadow var(--ui) var(--ease-out);
 }
 .rf-btn:active { transform: scale(.97); filter: brightness(1.15); }
 .rf-btn:focus-visible { outline: 3px solid rgba(39, 96, 146, .45); outline-offset: 3px; }
@@ -409,10 +414,13 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
 .rf-btn svg { width: 18px; height: 18px; }
 .rf-text-btn { background: none; border: 0; padding: 8px 4px; color: var(--tint); font-size: 15px; cursor: pointer; transition: opacity var(--press) var(--ease-out); }
 .rf-text-btn:active { opacity: .5; }
-.rf-form-error { margin-top: 12px; text-align: center; font-size: 14px; color: var(--danger); }
+.rf-form-error { margin-top: 12px; text-align: center; font-size: 14px; color: var(--danger); animation: rf-msg 220ms var(--ease-out) both; }
 
 @media (hover: hover) and (pointer: fine) {
-  .rf-btn:hover:not(:disabled) { filter: brightness(1.1); }
+  .rf-btn:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 10px 22px -14px rgba(19, 48, 77, .55); }
+  .rf-btn:active:not(:disabled) { transform: scale(.97); box-shadow: none; }
+  .rf-feature { transition: transform 260ms var(--ease-out), box-shadow 260ms var(--ease-out); }
+  .rf-feature:hover { transform: translateY(-3px); box-shadow: 0 0 0 .5px var(--glass-line) inset, 0 22px 40px -30px rgba(19, 48, 77, .45); }
   .rf-nav-link:hover { color: var(--on-stage); }
   .rf-pill:hover input:not(:checked) + span { background: #fff; }
 }
@@ -583,6 +591,9 @@ textarea.rf-input { resize: none; min-height: 3.2em; }
 @keyframes rf-fade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rf-draw { to { stroke-dashoffset: 0; } }
 @keyframes rf-spin { to { transform: rotate(360deg); } }
+@keyframes rf-msg { from { opacity: 0; transform: translateY(-3px); filter: blur(2px); } to { opacity: 1; transform: none; filter: none; } }
+@keyframes rf-out { to { opacity: 0; transform: translateY(-8px) scale(.97); filter: blur(6px); } }
+@keyframes rf-shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-8px); } 45% { transform: translateX(6px); } 70% { transform: translateX(-3px); } }
 @keyframes rf-nudge { 0%, 100% { transform: translateX(0); } 30% { transform: translateX(-5px); } 60% { transform: translateX(3px); } }
 
 /* ==========================================================================
@@ -632,7 +643,6 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
 .rf-code-row {
   display: grid; grid-template-columns: 36px minmax(0, 1fr) auto 84px auto; align-items: center; gap: 14px;
   padding: 12px 14px 12px 18px;
-  animation: rf-materialize 380ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 30ms);
 }
 .rf-code-row + .rf-code-row { box-shadow: 0 -.5px 0 var(--glass-line); }
 .rf-code-row .rf-avatar { width: 36px; height: 36px; font-size: 15px; }
@@ -663,6 +673,25 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
   .rf-code-row .rf-row-btn { grid-area: btn; }
 }
 
+/* --- Aparece al entrar en pantalla (lo activa referidos-ui.js) ------------- */
+.js [data-reveal] { opacity: 0; transform: translateY(18px) scale(.985); filter: blur(6px); }
+.js [data-reveal].is-in {
+  opacity: 1; transform: none; filter: none;
+  transition: opacity 620ms var(--ease-out), transform 720ms var(--ease-out), filter 620ms var(--ease-out);
+  transition-delay: calc(var(--d, 0) * 70ms);
+}
+
+/* --- Admisiones: entrar, error de clave, filas nuevas ---------------------- */
+.rf-gate.is-leaving { animation: rf-out 260ms var(--ease-out) forwards; pointer-events: none; }
+.rf-panel.is-wrong { animation: rf-shake 420ms var(--ease-out); }
+
+.rf-code-row.is-new { animation: rf-materialize 420ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 35ms); }
+.rf-code-row.is-flash { animation: rf-flash 1200ms var(--ease-out); }
+@keyframes rf-flash { 0% { background: rgba(242, 201, 76, .28); } 100% { background: transparent; } }
+.rf-card-preview { perspective: 900px; }
+.rf-card-preview img { transform-style: preserve-3d; will-change: transform; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-drag: none; }
+.rf-btn.is-done { background: var(--green); color: #fff; }
+
 /* --- Celular --------------------------------------------------------------- */
 @media (max-width: 860px) {
   .rf-forge { grid-template-columns: minmax(0, 1fr); padding-top: 28px; gap: 24px; }
@@ -691,7 +720,11 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
   .env-seal::before, .rf-row.is-invalid { animation: none; }
   .rf-done.rf-materialize .check path { animation: none; stroke-dashoffset: 0; }
   .rf-btn:active, .rf-copy:active, .rf-pill input:active + span, .env-seal:active, .rf-icon-btn:active, .rf-card-preview:active { transform: none; }
-  .rf-code-row { animation: none; }
+  .rf-code-row, .rf-code-row.is-new, .rf-code-row.is-flash, .rf-gate.is-leaving, .rf-panel.is-wrong { animation: none !important; }
+  .js [data-reveal] { opacity: 1; transform: none; filter: none; }
+  .rf-feature:hover, .rf-btn:hover:not(:disabled) { transform: none; }
+  html { scroll-behavior: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   .rf-switch::after, .rf-pills-active { transition-duration: 1ms; }
   .js .rf-title em { animation: none; background-size: 100% 100%; }
 }
