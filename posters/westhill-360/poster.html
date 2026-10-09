@@ -14,374 +14,157 @@
   :root {
     --blue: #266294;
     --navy: #0E2A47;
-    --deep: #163A5F;
-    --sky: #4A90C8;
-    --mist: #8FB3D9;
     --gold: #F2C94C;
-    --gold-dk: #E3AC25;
     --ice: #EDF3FA;
-    --muted: #5B6B7D;
-    --ink: #15243A;
-    --white: #FFFFFF;
+    --slate: #5B6B7D;
+    --line: #D9E3EE;
+    --paper: #FFFFFF;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { background: var(--white); }
-  body { font-family: "Raleway", sans-serif; color: var(--ink); }
-  .poster { position: relative; width: 1800px; height: 2700px; overflow: hidden; background: var(--white); }
+  html, body { background: var(--paper); }
+  body {
+    font-family: "Raleway", sans-serif; color: var(--navy);
+    /* Raleway defaults to old-style figures; lining + tabular keeps times aligned */
+    font-feature-settings: "lnum" 1, "tnum" 1;
+  }
+  .poster { position: relative; width: 1800px; height: 2700px; overflow: hidden; background: var(--paper); }
   .abs { position: absolute; }
   .ic svg { width: 100%; height: 100%; fill: currentColor; display: block; }
 
-  /* ================= HERO ================= */
-  .hero {
-    position: absolute; inset: 0 0 auto 0; height: 1200px;
-    background:
-      radial-gradient(760px 640px at 1150px 560px, rgba(74,144,200,.55), transparent 70%),
-      radial-gradient(600px 500px at 200px 1100px, rgba(38,98,148,.45), transparent 70%),
-      linear-gradient(165deg, #1C4772 0%, var(--navy) 58%, #081A2E 100%);
+  /* ---------- HERO: photo cut by the institutional curve ---------- */
+  .photo {
+    left: 0; top: 0; width: 1800px; height: 1400px;
+    background: url(img/estudiantes.jpg) 100% 30% / 1100px auto no-repeat;
+    clip-path: path("M 960 0 C 720 330, 700 980, 1060 1400 L 1800 1400 L 1800 0 Z");
   }
-  .hero-svg { position: absolute; left: 0; top: 0; }
-  .banderin { left: 110px; top: 0; width: 128px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); z-index: 3; }
-  .kicker {
-    right: 110px; top: 62px; display: inline-flex; align-items: center; gap: 14px;
-    border: 3px solid var(--gold); color: var(--gold); border-radius: 999px;
-    padding: 12px 30px 12px 22px; font-weight: 800; font-size: 24px; letter-spacing: 6px;
+  .photo::after { /* soft bottom shade so the curve reads cleanly against white */
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(14,42,71,0) 70%, rgba(14,42,71,.28) 100%);
   }
-  .kicker .ic { width: 26px; height: 26px; }
+  .curve { left: 0; top: 0; width: 1800px; height: 1400px; }
 
-  .t-west {
-    left: 104px; top: 150px; color: var(--white); font-weight: 900; font-size: 124px;
-    letter-spacing: 12px; line-height: 1; z-index: 2;
-  }
-  .t-36 {
-    left: 78px; top: 262px; font-weight: 900; font-size: 600px; line-height: 1; letter-spacing: -14px;
-    background: linear-gradient(180deg, #FFE9A6 0%, var(--gold) 42%, var(--gold-dk) 100%);
-    -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 24px 40px rgba(0,0,0,.45)); z-index: 2;
-  }
-  .lens {
-    left: 900px; top: 310px; width: 500px; height: 500px; border-radius: 50%;
-    background: url(img/letras.jpg) center 36% / cover no-repeat;
-    box-shadow: 0 0 0 12px rgba(242,201,76,.95), 0 0 0 26px rgba(255,255,255,.08), 0 40px 90px rgba(0,0,0,.5);
-    z-index: 2;
-  }
-  .deg {
-    left: 1398px; top: 246px; width: 104px; height: 104px; border-radius: 50%;
-    border: 28px solid var(--gold); filter: drop-shadow(0 14px 24px rgba(0,0,0,.4)); z-index: 3;
-  }
-  .sat {
-    border-radius: 50%; border: 8px solid var(--white); box-shadow: 0 22px 44px rgba(0,0,0,.45);
-    background-size: cover; background-repeat: no-repeat; z-index: 3;
-  }
-  .sat-badge {
-    width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; z-index: 4;
-    background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy);
-    box-shadow: 0 8px 18px rgba(0,0,0,.35);
-  }
-  .sat-badge .ic { width: 34px; height: 34px; }
+  .banderin { left: 110px; top: 0; width: 120px; }
 
-  .tagline { left: 110px; top: 924px; color: var(--white); font-size: 58px; font-weight: 900; letter-spacing: -.5px; z-index: 2; }
-  .tagline span { color: var(--gold); }
-  .objective { left: 112px; top: 1016px; width: 1240px; color: #C7D8EC; font-size: 29px; font-weight: 500; line-height: 1.45; z-index: 2; }
-  .objective b { color: var(--white); font-weight: 800; }
-  .objective em { font-style: normal; font-weight: 800; letter-spacing: 4px; color: var(--gold); font-size: 22px; margin-right: 12px; }
+  .eyebrow { left: 110px; top: 420px; display: flex; align-items: center; gap: 18px;
+    font-size: 24px; font-weight: 800; letter-spacing: 7px; color: var(--blue); }
+  .eyebrow::before { content: ""; width: 56px; height: 4px; background: var(--gold); border-radius: 2px; }
 
-  .hero-curve { left: 0; top: 1060px; width: 1800px; height: 220px; }
+  .t-west { left: 104px; top: 476px; font-size: 112px; font-weight: 900; letter-spacing: -1px; line-height: 1; }
+  .t-360 { left: 96px; top: 572px; font-size: 330px; font-weight: 900; letter-spacing: -14px; line-height: 1; color: var(--blue); }
+  .deg { left: 698px; top: 640px; width: 66px; height: 66px; border-radius: 50%; border: 17px solid var(--gold); }
 
-  /* ================= TICKET ================= */
-  .ticket { left: 110px; top: 1176px; width: 1580px; height: 250px; filter: drop-shadow(0 30px 40px rgba(14,42,71,.22)); }
-  .ticket > svg { position: absolute; inset: 0; }
-  .tk-main { position: absolute; left: 0; top: 0; width: 1212px; height: 250px; padding: 34px 50px 0 60px; }
-  .tk-head { display: flex; align-items: center; gap: 16px; font-size: 20px; font-weight: 800; letter-spacing: 5px; color: var(--blue); }
-  .tk-head .ic { width: 24px; height: 24px; color: var(--gold-dk); }
-  .tk-head .line { flex: 1; height: 2px; background: repeating-linear-gradient(90deg, #D6E3F1 0 10px, transparent 10px 18px); }
-  .tk-fields { display: grid; grid-template-columns: 1.1fr .75fr 1.15fr 1fr; margin-top: 26px; }
-  .tk-f { padding-right: 24px; }
-  .tk-f + .tk-f { border-left: 2px solid #E3ECF6; padding-left: 30px; }
-  .tk-lbl { font-size: 18px; font-weight: 800; letter-spacing: 2.5px; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
-  .tk-val { font-size: 46px; font-weight: 900; color: var(--navy); line-height: 1.05; margin-top: 10px; letter-spacing: -.5px; }
-  .tk-val.sm { font-size: 30px; line-height: 1.2; letter-spacing: 0; }
-  .tk-val .u { color: var(--blue); }
-  .tk-stub { position: absolute; left: 1212px; top: 0; width: 368px; height: 250px; padding: 32px 40px; color: var(--navy); }
-  .tk-stub .lbl { font-size: 18px; font-weight: 900; letter-spacing: 5px; }
-  .tk-stub .big { font-size: 74px; font-weight: 900; line-height: 1; margin-top: 4px; letter-spacing: -2px; }
-  .tk-stub .big sup { font-size: 40px; vertical-align: top; position: relative; top: 4px; }
-  .barcode { position: absolute; left: 40px; bottom: 30px; height: 62px; width: 250px; }
-  .tk-code { position: absolute; right: 40px; top: 40px; font-size: 16px; font-weight: 800; letter-spacing: 2px; writing-mode: vertical-rl; opacity: .75; }
+  .tagline { left: 110px; top: 950px; font-size: 46px; font-weight: 800; line-height: 1.18; letter-spacing: -.5px; }
+  .tagline span { color: var(--blue); }
+  .objective { left: 110px; top: 1090px; width: 600px; font-size: 27px; font-weight: 500; line-height: 1.5; color: var(--slate); }
+  .objective b { color: var(--navy); font-weight: 700; }
 
-  /* ================= PROGRAMA ================= */
-  .sec-h { left: 110px; top: 1468px; width: 1580px; display: flex; align-items: flex-end; gap: 30px; }
-  .sec-h .kick { font-size: 22px; font-weight: 800; letter-spacing: 6px; color: var(--gold-dk); }
-  .sec-h h2 { font-size: 72px; font-weight: 900; color: var(--navy); letter-spacing: -1px; line-height: 1; margin-top: 8px; }
-  .sec-h h2 span { color: var(--blue); }
-  .sec-h .rule { flex: 1; height: 4px; margin-bottom: 18px; background: linear-gradient(90deg, var(--gold), rgba(242,201,76,0)); border-radius: 4px; }
+  /* ---------- KEY FACTS ---------- */
+  .facts { left: 110px; top: 1440px; width: 1580px; display: grid; grid-template-columns: 1fr 1.25fr .9fr;
+    border-top: 4px solid var(--navy); }
+  .fact { padding: 26px 40px 0 0; }
+  .fact + .fact { padding-left: 40px; border-left: 2px solid var(--line); }
+  .lbl { font-size: 19px; font-weight: 800; letter-spacing: 4px; text-transform: uppercase; color: var(--slate); }
+  .val { margin-top: 12px; font-size: 54px; font-weight: 900; line-height: 1.02; letter-spacing: -1px; }
+  .val small { display: block; margin-top: 10px; font-size: 25px; font-weight: 600; letter-spacing: 0; color: var(--blue); }
 
-  .dial { left: 80px; top: 1590px; width: 640px; height: 640px; }
+  /* ---------- PROGRAM ---------- */
+  .prog-h { left: 110px; top: 1724px; width: 420px; }
+  .prog-h h2 { font-size: 76px; font-weight: 900; line-height: .98; letter-spacing: -2px; }
+  .prog-h h2 span { color: var(--blue); }
+  .prog-h p { margin-top: 26px; font-size: 23px; font-weight: 600; line-height: 1.45; color: var(--slate); }
+  .stats { margin-top: 70px; }
+  .stat { padding: 22px 0; border-top: 2px solid var(--line); display: flex; align-items: center; gap: 20px; }
+  .stat b { font-size: 92px; font-weight: 900; line-height: 1; letter-spacing: -3px; color: var(--blue); }
+  .stat span { font-size: 24px; font-weight: 700; line-height: 1.25; }
+  .prog-h .bar { width: 56px; height: 4px; background: var(--gold); border-radius: 2px; margin-top: 30px; }
 
-  .legend { left: 760px; top: 1612px; width: 930px; }
-  .row { display: grid; grid-template-columns: 64px 268px 1fr; align-items: center; height: 80px; border-bottom: 2px solid #EEF3F9; }
-  .row:last-child { border-bottom: 0; }
-  .row .dot {
-    width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; color: var(--white);
-    font-weight: 900; font-size: 24px;
-  }
-  .row .dot .ic { width: 24px; height: 24px; }
-  .row .time { font-size: 24px; font-weight: 800; color: var(--blue); padding-left: 22px; white-space: nowrap; letter-spacing: -.2px; }
-  .row .ttl { font-size: 30px; font-weight: 800; color: var(--navy); line-height: 1.1; }
-  .row .det { font-size: 21px; font-weight: 500; color: var(--muted); margin-top: 4px; }
-  .row.hot { background: linear-gradient(90deg, rgba(242,201,76,.22), rgba(242,201,76,0) 85%); border-radius: 16px; border-bottom-color: transparent; }
-  .row.hot .ttl { color: var(--blue); }
-  .row.hot .det { color: #B98410; font-weight: 800; }
+  .agenda { left: 590px; top: 1716px; width: 1100px; }
+  .item { display: grid; grid-template-columns: 290px 1fr; align-items: baseline; padding: 17px 0 16px; border-bottom: 2px solid var(--line); }
+  .item:first-child { border-top: 2px solid var(--line); }
+  .time { font-size: 26px; font-weight: 700; color: var(--blue); white-space: nowrap; }
+  .what { font-size: 31px; font-weight: 800; line-height: 1.15; }
+  .what em { font-style: normal; font-size: 22px; font-weight: 600; color: var(--slate); margin-left: 14px; }
+  .item.key { border-bottom: 0; position: relative; padding-bottom: 14px; }
+  .item.key::before { content: ""; position: absolute; left: -26px; top: 18px; bottom: -232px; width: 6px; background: var(--gold); border-radius: 3px; }
 
-  /* ================= LICENCIATURAS ================= */
-  .lic-wrap { left: 0; top: 2270px; width: 1800px; height: 430px;
-    background: linear-gradient(170deg, #1C4772 0%, var(--navy) 60%, #081A2E 100%); }
-  .lic-top { left: 0; top: 2200px; width: 1800px; height: 120px; }
-  .lic-h { left: 110px; top: 2290px; display: flex; align-items: center; gap: 26px; }
-  .lic-h .pill { background: var(--gold); color: var(--navy); font-weight: 900; font-size: 22px; letter-spacing: 1.5px; border-radius: 999px; padding: 10px 24px; }
-  .lic-h h3 { font-size: 50px; font-weight: 900; color: var(--white); letter-spacing: -.5px; }
-  .lic-h h3 span { color: var(--gold); }
-  .cards { left: 110px; top: 2378px; width: 1580px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 22px; }
-  .card {
-    position: relative; height: 100px; border-radius: 22px; padding: 0 22px 0 18px; display: flex; align-items: center; gap: 20px;
-    background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05));
-    box-shadow: inset 0 0 0 2px rgba(255,255,255,.10); overflow: hidden;
-  }
-  .card .b {
-    flex: none; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center;
-    background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy); box-shadow: 0 8px 18px rgba(0,0,0,.3);
-  }
-  .card .b .ic { width: 30px; height: 30px; }
-  .card .car { font-size: 22px; font-weight: 800; color: var(--white); line-height: 1.16; }
-  .card .loc { display: inline-flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 19px; font-weight: 700; color: var(--gold); }
-  .card .loc .ic { width: 15px; height: 15px; flex: none; }
-  .card .loc.tbd { color: var(--mist); font-style: italic; }
-  .card .wm { position: absolute; right: -18px; bottom: -22px; width: 110px; height: 110px; color: rgba(255,255,255,.05); }
+  .lic { display: grid; grid-template-columns: 1fr 1fr; column-gap: 34px; background: var(--ice); border-radius: 18px;
+    padding: 22px 30px 18px; margin: 0 0 4px 290px; border-bottom: 0; }
+  .lic div { padding: 9px 0 10px; border-bottom: 1px solid #D3DFEC; }
+  .lic div:nth-last-child(-n+2) { border-bottom: 0; }
+  .lic b { display: block; font-size: 21px; font-weight: 800; line-height: 1.2; }
+  .lic span { display: flex; align-items: center; gap: 7px; margin-top: 4px; font-size: 19px; font-weight: 600; color: var(--blue); }
+  .lic span .ic { width: 14px; height: 14px; flex: none; }
+  .lic span.tbd { color: var(--slate); font-style: italic; }
+  .after-lic { border-top: 2px solid var(--line); }
 
-  /* ================= FOOTER ================= */
-  .foot { left: 0; top: 2604px; width: 1800px; height: 120px; }
-  .foot-tag { left: 110px; top: 2636px; color: var(--white); font-size: 40px; font-weight: 500; letter-spacing: 1px; }
+  /* ---------- FOOTER: institutional waves ---------- */
+  .waves { left: 0; top: 2470px; width: 1800px; height: 230px; }
+  .foot-tag { left: 110px; top: 2606px; font-size: 42px; font-weight: 500; color: #fff; letter-spacing: .5px; }
   .foot-tag b { font-weight: 900; }
-  .foot-handle { left: 560px; top: 2650px; color: #CFE0F2; font-size: 22px; font-weight: 700; letter-spacing: 2px; }
-  .foot-logo { right: 110px; top: 2626px; height: 64px; }
+  .foot-handle { left: 112px; top: 2662px; font-size: 20px; font-weight: 700; letter-spacing: 3px; color: #CFE0F2; }
+  .foot-logo { right: 110px; top: 2588px; height: 92px; }
 </style>
 </head>
 <body>
 <div class="poster">
 
-  <!-- ================= HERO ================= -->
-  <div class="hero"></div>
-  <svg class="hero-svg" width="1800" height="1200" viewBox="0 0 1800 1200">
-    <defs>
-      <path id="ring" d="M 1150 560 m -292 0 a 292 292 0 1 1 584 0 a 292 292 0 1 1 -584 0"/>
-    </defs>
-    <g fill="none" stroke="#FFFFFF" stroke-opacity=".055" stroke-width="2">
-      <circle cx="1150" cy="560" r="480"/><circle cx="1150" cy="560" r="620"/>
-      <circle cx="1150" cy="560" r="760"/><circle cx="1150" cy="560" r="900"/><circle cx="1150" cy="560" r="1040"/>
-    </g>
-    <g id="ticks" stroke="#FFFFFF" stroke-linecap="round"></g>
-    <circle cx="1150" cy="560" r="392" fill="none" stroke="#F2C94C" stroke-opacity=".55" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round"/>
-    <text font-family="Raleway" font-weight="800" font-size="25" letter-spacing="6" fill="#F2C94C">
-      <textPath href="#ring" startOffset="0" textLength="1820" lengthAdjust="spacing">VÍVELA · EXPLÓRALA · ENAMÓRATE · WESTHILL 360° · VÍVELA · EXPLÓRALA · ENAMÓRATE · WESTHILL 360° ·</textPath>
-    </text>
+  <!-- HERO -->
+  <div class="abs photo"></div>
+  <svg class="abs curve" viewBox="0 0 1800 1400">
+    <path d="M 960 0 C 720 330, 700 980, 1060 1400" fill="none" stroke="#F2C94C" stroke-width="10"/>
   </svg>
-
   <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
-  <div class="abs kicker"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg></i>PROYECTO</div>
+
+  <div class="abs eyebrow">PROYECTO</div>
   <div class="abs t-west">WESTHILL</div>
-  <div class="abs t-36">36</div>
-  <div class="abs lens"></div>
-  <div class="abs deg"></div>
+  <div class="abs t-360">360</div><div class="abs deg"></div>
+  <div class="abs tagline">Vívela. Explórala.<br><span>Enamórate.</span></div>
+  <p class="abs objective">Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
 
-  <div class="abs sat" style="left:1436px; top:690px; width:250px; height:250px; background-image:url(img/estudiantes.jpg); background-position:center 32%;"></div>
-  <div class="abs sat-badge" style="left:1438px; top:690px;"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M219.3 .5c3.1-.6 6.3-.6 9.4 0l200 40C439.9 42.7 448 52.6 448 64s-8.1 21.3-19.3 23.5L352 102.9V160c0 70.7-57.3 128-128 128s-128-57.3-128-128V102.9L48 93.3v65.1l15.7 78.4c.9 4.7-.3 9.6-3.3 13.3s-7.6 5.9-12.4 5.9H16c-4.8 0-9.3-2.1-12.4-5.9s-4.3-8.6-3.3-13.3L16 158.4V86.6C6.5 83.3 0 74.3 0 64C0 52.6 8.1 42.7 19.3 40.5l200-40zM111.9 327.7c10.5-3.4 21.8 .4 29.4 8.5l71 75.5c6.3 6.7 17 6.7 23.3 0l71-75.5c7.6-8.1 18.9-11.9 29.4-8.5C401 348.6 448 409.4 448 481.3c0 17-13.8 30.7-30.7 30.7H30.7C13.8 512 0 498.2 0 481.3c0-71.9 47-132.7 111.9-153.6z"/></svg></i></div>
-  <div class="abs sat" style="left:1556px; top:420px; width:150px; height:150px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
+  <!-- KEY FACTS -->
+  <div class="abs facts">
+    <div class="fact"><div class="lbl">Días de las visitas</div><div class="val">14 y 16<small>de octubre</small></div></div>
+    <div class="fact"><div class="lbl">Escuela</div><div class="val">IPEFH<small>Planteles Toluca, Metepec y Calimaya</small></div></div>
+    <div class="fact"><div class="lbl">Hora de recepción</div><div class="val">9:00<small>a.m.</small></div></div>
+  </div>
 
-  <div class="abs tagline">Vívela. Explórala. <span>Enamórate.</span></div>
-  <p class="abs objective"><em>OBJETIVO</em>Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
-
-  <svg class="abs hero-curve" viewBox="0 0 1800 220" preserveAspectRatio="none">
-    <path d="M0 110 C 460 220, 1060 20, 1800 120 L1800 220 L0 220 Z" fill="#F2C94C"/>
-    <path d="M0 136 C 460 246, 1060 46, 1800 146 L1800 220 L0 220 Z" fill="#FFFFFF"/>
-  </svg>
-
-  <!-- ================= TICKET ================= -->
-  <div class="abs ticket">
-    <svg width="1580" height="250" viewBox="0 0 1580 250">
-      <defs>
-        <linearGradient id="g-stub" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#FBE08A"/><stop offset="1" stop-color="#E8B530"/>
-        </linearGradient>
-      </defs>
-      <!-- main body, half-notch top and bottom at the perforation (x=1212) -->
-      <path d="M28 0 H1186 A26 26 0 0 0 1212 26 V224 A26 26 0 0 0 1186 250 H28 A28 28 0 0 1 0 222 V28 A28 28 0 0 1 28 0 Z" fill="#FFFFFF"/>
-      <!-- stub -->
-      <path d="M1238 0 H1552 A28 28 0 0 1 1580 28 V222 A28 28 0 0 1 1552 250 H1238 A26 26 0 0 0 1212 224 V26 A26 26 0 0 0 1238 0 Z" fill="url(#g-stub)"/>
-      <line x1="1212" y1="44" x2="1212" y2="206" stroke="#0E2A47" stroke-opacity=".35" stroke-width="3" stroke-dasharray="4 10" stroke-linecap="round"/>
-      <!-- left blue edge -->
-      <path d="M28 0 H40 V250 H28 A28 28 0 0 1 0 222 V28 A28 28 0 0 1 28 0 Z" fill="#266294"/>
-    </svg>
-    <div class="tk-main">
-      <div class="tk-head"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M64 64C28.7 64 0 92.7 0 128v64c0 8.8 7.4 15.7 15.7 18.6C34.5 217.1 48 235 48 256s-13.5 38.9-32.3 45.4C7.4 304.3 0 311.2 0 320v64c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V320c0-8.8-7.4-15.7-15.7-18.6C541.5 294.9 528 277 528 256s13.5-38.9 32.3-45.4c8.3-2.9 15.7-9.8 15.7-18.6V128c0-35.3-28.7-64-64-64H64zm64 112l0 160c0 8.8 7.2 16 16 16H432c8.8 0 16-7.2 16-16V176c0-8.8-7.2-16-16-16H144c-8.8 0-16 7.2-16 16zM96 160c0-17.7 14.3-32 32-32H448c17.7 0 32 14.3 32 32V352c0 17.7-14.3 32-32 32H128c-17.7 0-32-14.3-32-32V160z"/></svg></i>PASE DE ACCESO · WESTHILL 360°<div class="line"></div></div>
-      <div class="tk-fields">
-        <div class="tk-f"><div class="tk-lbl">Días de las visitas</div><div class="tk-val">14 y 16 <span class="u">oct.</span></div></div>
-        <div class="tk-f"><div class="tk-lbl">Escuela</div><div class="tk-val">IPEFH</div></div>
-        <div class="tk-f"><div class="tk-lbl">Planteles</div><div class="tk-val sm">Toluca, Metepec<br>y Calimaya</div></div>
-        <div class="tk-f"><div class="tk-lbl">Recepción</div><div class="tk-val">9:00 <span class="u">a.m.</span></div></div>
-      </div>
-    </div>
-    <div class="tk-stub">
-      <div class="lbl">ACCESO</div>
-      <div class="big">360<sup>°</sup></div>
-      <svg class="barcode" id="barcode" viewBox="0 0 250 62" preserveAspectRatio="none"></svg>
-      <div class="tk-code">WH360 · IPEFH</div>
+  <!-- PROGRAM -->
+  <div class="abs prog-h">
+    <h2>Programa<br><span>del evento</span></h2>
+    <div class="bar"></div>
+    <p>De la bienvenida al cierre, una mañana completa dentro de Westhill.</p>
+    <div class="stats">
+      <div class="stat"><b>3</b><span>horas de<br>experiencia</span></div>
+      <div class="stat"><b>9</b><span>licenciaturas<br>participantes</span></div>
     </div>
   </div>
 
-  <!-- ================= PROGRAMA ================= -->
-  <div class="abs sec-h">
-    <div>
-      <div class="kick">PROGRAMA DEL EVENTO</div>
-      <h2>Tu mañana en <span>360°</span></h2>
+  <div class="abs agenda">
+    <div class="item"><div class="time">9:00 – 9:30 a.m.</div><div class="what">Bienvenida <em>Área de admisiones</em></div></div>
+    <div class="item key"><div class="time">9:30 – 10:15 a.m.</div><div class="what">Actividad por licenciatura</div></div>
+    <div class="lic">
+      <div><b>Administración y Dirección Empresarial y Mercadotecnia</b><span><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón grande</span></div>
+      <div><b>Arquitectura y Arquitectura de Interiores</b><span><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón 201</span></div>
+      <div><b>Cirujano Dentista</b><span><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Laboratorios</span></div>
+      <div><b>Derecho</b><span><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Sala de Juicios Orales</span></div>
+      <div><b>Psicología y Pedagogía</b><span><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón 8, junto a dirección</span></div>
+      <div><b>Relaciones Internacionales</b><span class="tbd"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón pendiente de confirmar</span></div>
     </div>
-    <div class="rule"></div>
+    <div class="item after-lic"><div class="time">10:20 – 10:40 a.m.</div><div class="what">Refrigerio <em>Foyer del auditorio · Convivencia libre</em></div></div>
+    <div class="item"><div class="time">10:45 – 11:00 a.m.</div><div class="what">Presentación de la universidad</div></div>
+    <div class="item"><div class="time">11:00 – 11:10 a.m.</div><div class="what">Premiación de la actividad <em>Auditorio</em></div></div>
+    <div class="item"><div class="time">11:10 – 11:40 a.m.</div><div class="what">Recorrido <em>A cargo de admisiones</em></div></div>
+    <div class="item"><div class="time">11:40 – 12:00 p.m.</div><div class="what">Cierre y despedida <em>Fotos y videos · Contenido para redes sociales</em></div></div>
   </div>
 
-  <svg class="abs dial" id="dial" width="640" height="640" viewBox="0 0 640 640"></svg>
-
-  <div class="abs legend" id="legend"></div>
-
-  <!-- ================= LICENCIATURAS ================= -->
-  <div class="abs lic-wrap"></div>
-  <svg class="abs lic-top" viewBox="0 0 1800 120" preserveAspectRatio="none">
-    <path d="M0 60 C 520 0, 1160 120, 1800 40 L1800 120 L0 120 Z" fill="#F2C94C"/>
-    <path d="M0 76 C 520 16, 1160 136, 1800 56 L1800 120 L0 120 Z" fill="#1A4470"/>
-  </svg>
-  <div class="abs lic-h">
-    <span class="pill">9:30 – 10:15 a.m.</span>
-    <h3>Actividad por <span>licenciatura</span></h3>
-  </div>
-  <div class="abs cards">
-    <div class="card"><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></svg></i></div>
-      <div><div class="car">Administración y Dirección Empresarial y Mercadotecnia</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón grande</div></div>
-      <i class="ic wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></svg></i></div>
-    <div class="card"><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M352 96c0 14.3-3.1 27.9-8.8 40.2L396 227.4c-23.7 25.3-54.2 44.1-88.5 53.6L256 192h0 0l-68 117.5c21.5 6.8 44.3 10.5 68.1 10.5c70.7 0 133.8-32.7 174.9-84c11.1-13.8 31.2-16 45-5s16 31.2 5 45C428.1 341.8 347 384 256 384c-35.4 0-69.4-6.4-100.7-18.1L98.7 463.7C94 471.8 87 478.4 78.6 482.6L23.2 510.3c-5 2.5-10.9 2.2-15.6-.7S0 501.5 0 496V440.6c0-8.4 2.2-16.7 6.5-24.1l60-103.7C53.7 301.6 41.8 289.3 31.2 276c-11.1-13.8-8.8-33.9 5-45s33.9-8.8 45 5c5.7 7.1 11.8 13.8 18.2 20.1l69.4-119.9c-5.6-12.2-8.8-25.8-8.8-40.2c0-53 43-96 96-96s96 43 96 96zm21 297.9c32.6-12.8 62.5-30.8 88.9-52.9l43.7 75.5c4.2 7.3 6.5 15.6 6.5 24.1V496c0 5.5-2.9 10.7-7.6 13.6s-10.6 3.2-15.6 .7l-55.4-27.7c-8.4-4.2-15.4-10.8-20.1-18.9L373 393.9zM256 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg></i></div>
-      <div><div class="car">Arquitectura y Arquitectura de Interiores</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón 201</div></div>
-      <i class="ic wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M352 96c0 14.3-3.1 27.9-8.8 40.2L396 227.4c-23.7 25.3-54.2 44.1-88.5 53.6L256 192h0 0l-68 117.5c21.5 6.8 44.3 10.5 68.1 10.5c70.7 0 133.8-32.7 174.9-84c11.1-13.8 31.2-16 45-5s16 31.2 5 45C428.1 341.8 347 384 256 384c-35.4 0-69.4-6.4-100.7-18.1L98.7 463.7C94 471.8 87 478.4 78.6 482.6L23.2 510.3c-5 2.5-10.9 2.2-15.6-.7S0 501.5 0 496V440.6c0-8.4 2.2-16.7 6.5-24.1l60-103.7C53.7 301.6 41.8 289.3 31.2 276c-11.1-13.8-8.8-33.9 5-45s33.9-8.8 45 5c5.7 7.1 11.8 13.8 18.2 20.1l69.4-119.9c-5.6-12.2-8.8-25.8-8.8-40.2c0-53 43-96 96-96s96 43 96 96zm21 297.9c32.6-12.8 62.5-30.8 88.9-52.9l43.7 75.5c4.2 7.3 6.5 15.6 6.5 24.1V496c0 5.5-2.9 10.7-7.6 13.6s-10.6 3.2-15.6 .7l-55.4-27.7c-8.4-4.2-15.4-10.8-20.1-18.9L373 393.9zM256 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg></i></div>
-    <div class="card"><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M186.1 52.1C169.3 39.1 148.7 32 127.5 32C74.7 32 32 74.7 32 127.5v6.2c0 15.8 3.7 31.3 10.7 45.5l23.5 47.1c4.5 8.9 7.6 18.4 9.4 28.2l36.7 205.8c2 11.2 11.6 19.4 22.9 19.8s21.4-7.4 24-18.4l28.9-121.3C192.2 323.7 207 312 224 312s31.8 11.7 35.8 28.3l28.9 121.3c2.6 11.1 12.7 18.8 24 18.4s20.9-8.6 22.9-19.8l36.7-205.8c1.8-9.8 4.9-19.3 9.4-28.2l23.5-47.1c7.1-14.1 10.7-29.7 10.7-45.5v-2.1c0-55-44.6-99.6-99.6-99.6c-24.1 0-47.4 8.8-65.6 24.6l-3.2 2.8 19.5 15.2c7 5.4 8.2 15.5 2.8 22.5s-15.5 8.2-22.5 2.8l-24.4-19-37-28.8z"/></svg></i></div>
-      <div><div class="car">Cirujano Dentista</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Laboratorios</div></div>
-      <i class="ic wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M186.1 52.1C169.3 39.1 148.7 32 127.5 32C74.7 32 32 74.7 32 127.5v6.2c0 15.8 3.7 31.3 10.7 45.5l23.5 47.1c4.5 8.9 7.6 18.4 9.4 28.2l36.7 205.8c2 11.2 11.6 19.4 22.9 19.8s21.4-7.4 24-18.4l28.9-121.3C192.2 323.7 207 312 224 312s31.8 11.7 35.8 28.3l28.9 121.3c2.6 11.1 12.7 18.8 24 18.4s20.9-8.6 22.9-19.8l36.7-205.8c1.8-9.8 4.9-19.3 9.4-28.2l23.5-47.1c7.1-14.1 10.7-29.7 10.7-45.5v-2.1c0-55-44.6-99.6-99.6-99.6c-24.1 0-47.4 8.8-65.6 24.6l-3.2 2.8 19.5 15.2c7 5.4 8.2 15.5 2.8 22.5s-15.5 8.2-22.5 2.8l-24.4-19-37-28.8z"/></svg></i></div>
-    <div class="card"><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M384 32H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H398.4c-5.2 25.8-22.9 47.1-46.4 57.3V448H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H320 128c-17.7 0-32-14.3-32-32s14.3-32 32-32H288V153.3c-23.5-10.3-41.2-31.6-46.4-57.3H128c-17.7 0-32-14.3-32-32s14.3-32 32-32H256c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288H584.4L512 195.8 439.6 320zM512 416c-62.9 0-115.2-34-126-78.9c-2.6-11 1-22.3 6.7-32.1l95.2-163.2c5-8.6 14.2-13.8 24.1-13.8s19.1 5.3 24.1 13.8l95.2 163.2c5.7 9.8 9.3 21.1 6.7 32.1C627.2 382 574.9 416 512 416zM126.8 195.8L54.4 320H199.3L126.8 195.8zM.9 337.1c-2.6-11 1-22.3 6.7-32.1l95.2-163.2c5-8.6 14.2-13.8 24.1-13.8s19.1 5.3 24.1 13.8l95.2 163.2c5.7 9.8 9.3 21.1 6.7 32.1C242 382 189.7 416 126.8 416S11.7 382 .9 337.1z"/></svg></i></div>
-      <div><div class="car">Derecho</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Sala de Juicios Orales</div></div>
-      <i class="ic wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M384 32H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H398.4c-5.2 25.8-22.9 47.1-46.4 57.3V448H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H320 128c-17.7 0-32-14.3-32-32s14.3-32 32-32H288V153.3c-23.5-10.3-41.2-31.6-46.4-57.3H128c-17.7 0-32-14.3-32-32s14.3-32 32-32H256c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288H584.4L512 195.8 439.6 320zM512 416c-62.9 0-115.2-34-126-78.9c-2.6-11 1-22.3 6.7-32.1l95.2-163.2c5-8.6 14.2-13.8 24.1-13.8s19.1 5.3 24.1 13.8l95.2 163.2c5.7 9.8 9.3 21.1 6.7 32.1C627.2 382 574.9 416 512 416zM126.8 195.8L54.4 320H199.3L126.8 195.8zM.9 337.1c-2.6-11 1-22.3 6.7-32.1l95.2-163.2c5-8.6 14.2-13.8 24.1-13.8s19.1 5.3 24.1 13.8l95.2 163.2c5.7 9.8 9.3 21.1 6.7 32.1C242 382 189.7 416 126.8 416S11.7 382 .9 337.1z"/></svg></i></div>
-    <div class="card"><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M184 0c30.9 0 56 25.1 56 56V456c0 30.9-25.1 56-56 56c-28.9 0-52.7-21.9-55.7-50.1c-5.2 1.4-10.7 2.1-16.3 2.1c-35.3 0-64-28.7-64-64c0-7.4 1.3-14.6 3.6-21.2C21.4 367.4 0 338.2 0 304c0-31.9 18.7-59.5 45.8-72.3C37.1 220.8 32 207 32 192c0-30.7 21.6-56.3 50.4-62.6C80.8 123.9 80 118 80 112c0-29.9 20.6-55.1 48.3-62.1C131.3 21.9 155.1 0 184 0zM328 0c28.9 0 52.6 21.9 55.7 49.9c27.8 7 48.3 32.1 48.3 62.1c0 6-.8 11.9-2.4 17.4c28.8 6.2 50.4 31.9 50.4 62.6c0 15-5.1 28.8-13.8 39.7C493.3 244.5 512 272.1 512 304c0 34.2-21.4 63.4-51.6 74.8c2.3 6.6 3.6 13.8 3.6 21.2c0 35.3-28.7 64-64 64c-5.6 0-11.1-.7-16.3-2.1c-3 28.2-26.8 50.1-55.7 50.1c-30.9 0-56-25.1-56-56V56c0-30.9 25.1-56 56-56z"/></svg></i></div>
-      <div><div class="car">Psicología y Pedagogía</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón 8, junto a dirección</div></div>
-      <i class="ic wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M184 0c30.9 0 56 25.1 56 56V456c0 30.9-25.1 56-56 56c-28.9 0-52.7-21.9-55.7-50.1c-5.2 1.4-10.7 2.1-16.3 2.1c-35.3 0-64-28.7-64-64c0-7.4 1.3-14.6 3.6-21.2C21.4 367.4 0 338.2 0 304c0-31.9 18.7-59.5 45.8-72.3C37.1 220.8 32 207 32 192c0-30.7 21.6-56.3 50.4-62.6C80.8 123.9 80 118 80 112c0-29.9 20.6-55.1 48.3-62.1C131.3 21.9 155.1 0 184 0zM328 0c28.9 0 52.6 21.9 55.7 49.9c27.8 7 48.3 32.1 48.3 62.1c0 6-.8 11.9-2.4 17.4c28.8 6.2 50.4 31.9 50.4 62.6c0 15-5.1 28.8-13.8 39.7C493.3 244.5 512 272.1 512 304c0 34.2-21.4 63.4-51.6 74.8c2.3 6.6 3.6 13.8 3.6 21.2c0 35.3-28.7 64-64 64c-5.6 0-11.1-.7-16.3-2.1c-3 28.2-26.8 50.1-55.7 50.1c-30.9 0-56-25.1-56-56V56c0-30.9 25.1-56 56-56z"/></svg></i></div>
-    <div class="card"><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M57.7 193l9.4 16.4c8.3 14.5 21.9 25.2 38 29.8L163 255.7c17.2 4.9 29 20.6 29 38.5v39.9c0 11 6.2 21 16 25.9s16 14.9 16 25.9v39c0 15.6 14.9 26.9 29.9 22.6c16.1-4.6 28.6-17.5 32.7-33.8l2.8-11.2c4.2-16.9 15.2-31.4 30.3-40l8.1-4.6c15-8.5 24.2-24.5 24.2-41.7v-8.3c0-12.7-5.1-24.9-14.1-33.9l-3.9-3.9c-9-9-21.2-14.1-33.9-14.1H257c-11.1 0-22.1-2.9-31.8-8.4l-34.5-19.7c-4.3-2.5-7.6-6.5-9.2-11.2c-3.2-9.6 1.1-20 10.2-24.5l5.9-3c6.6-3.3 14.3-3.9 21.3-1.5l23.2 7.7c8.2 2.7 17.2-.4 21.9-7.5c4.7-7 4.2-16.3-1.2-22.8l-13.6-16.3c-10-12-9.9-29.5 .3-41.3l15.7-18.3c8.8-10.3 10.2-25 3.5-36.7l-2.4-4.2c-3.5-.2-6.9-.3-10.4-.3C163.1 48 84.4 108.9 57.7 193zM464 256c0-36.8-9.6-71.4-26.4-101.5L412 164.8c-15.7 6.3-23.8 23.8-18.5 39.8l16.9 50.7c3.5 10.4 12 18.3 22.6 20.9l29.1 7.3c1.2-9 1.8-18.2 1.8-27.5zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg></i></div>
-      <div><div class="car">Relaciones Internacionales</div><div class="loc tbd"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón pendiente de confirmar</div></div>
-      <i class="ic wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M57.7 193l9.4 16.4c8.3 14.5 21.9 25.2 38 29.8L163 255.7c17.2 4.9 29 20.6 29 38.5v39.9c0 11 6.2 21 16 25.9s16 14.9 16 25.9v39c0 15.6 14.9 26.9 29.9 22.6c16.1-4.6 28.6-17.5 32.7-33.8l2.8-11.2c4.2-16.9 15.2-31.4 30.3-40l8.1-4.6c15-8.5 24.2-24.5 24.2-41.7v-8.3c0-12.7-5.1-24.9-14.1-33.9l-3.9-3.9c-9-9-21.2-14.1-33.9-14.1H257c-11.1 0-22.1-2.9-31.8-8.4l-34.5-19.7c-4.3-2.5-7.6-6.5-9.2-11.2c-3.2-9.6 1.1-20 10.2-24.5l5.9-3c6.6-3.3 14.3-3.9 21.3-1.5l23.2 7.7c8.2 2.7 17.2-.4 21.9-7.5c4.7-7 4.2-16.3-1.2-22.8l-13.6-16.3c-10-12-9.9-29.5 .3-41.3l15.7-18.3c8.8-10.3 10.2-25 3.5-36.7l-2.4-4.2c-3.5-.2-6.9-.3-10.4-.3C163.1 48 84.4 108.9 57.7 193zM464 256c0-36.8-9.6-71.4-26.4-101.5L412 164.8c-15.7 6.3-23.8 23.8-18.5 39.8l16.9 50.7c3.5 10.4 12 18.3 22.6 20.9l29.1 7.3c1.2-9 1.8-18.2 1.8-27.5zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg></i></div>
-  </div>
-
-  <!-- ================= FOOTER ================= -->
-  <svg class="abs foot" viewBox="0 0 1800 120" preserveAspectRatio="none">
-    <path d="M0 22 C 600 -8, 1200 52, 1800 10 L1800 120 L0 120 Z" fill="#F2C94C"/>
-    <path d="M0 32 C 600 2, 1200 62, 1800 20 L1800 120 L0 120 Z" fill="#266294"/>
+  <!-- FOOTER -->
+  <svg class="abs waves" viewBox="0 0 1800 230" preserveAspectRatio="none">
+    <path d="M0 70 C 420 0, 1100 150, 1800 40 L1800 230 L0 230 Z" fill="#F2C94C"/>
+    <path d="M0 96 C 420 26, 1100 176, 1800 66 L1800 230 L0 230 Z" fill="#266294"/>
   </svg>
   <div class="abs foot-tag">#SOMOS<b>WESTHILL</b></div>
   <div class="abs foot-handle">@univwesthill</div>
   <img class="abs foot-logo" src="img/logo_westhill_blanco.png" alt="Universidad Westhill">
 </div>
-
-<!-- icon templates for script-built parts (inlined at build time) -->
-<template id="icons">
-  <i class="ic" data-k="door-open"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M320 32c0-9.9-4.5-19.2-12.3-25.2S289.8-1.4 280.2 1l-179.9 45C79 51.3 64 70.5 64 92.5V448H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H96 288h32V480 32zM256 256c0 17.7-10.7 32-24 32s-24-14.3-24-32s10.7-32 24-32s24 14.3 24 32zm96-128h96V480c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H512V128c0-35.3-28.7-64-64-64H352v64z"/></svg></i>
-  <i class="ic" data-k="shapes"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M315.4 15.5C309.7 5.9 299.2 0 288 0s-21.7 5.9-27.4 15.5l-96 160c-5.9 9.9-6.1 22.2-.4 32.2s16.3 16.2 27.8 16.2H384c11.5 0 22.2-6.2 27.8-16.2s5.5-22.3-.4-32.2l-96-160zM288 312V456c0 22.1 17.9 40 40 40H472c22.1 0 40-17.9 40-40V312c0-22.1-17.9-40-40-40H328c-22.1 0-40 17.9-40 40zM128 512a128 128 0 1 0 0-256 128 128 0 1 0 0 256z"/></svg></i>
-  <i class="ic" data-k="mug-hot"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg></i>
-  <i class="ic" data-k="building-columns"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160v8c0 13.3 10.7 24 24 24H456c13.3 0 24-10.7 24-24v-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224H64V420.3c-.6 .3-1.2 .7-1.8 1.1l-48 32c-11.7 7.8-17 22.4-12.9 35.9S17.9 512 32 512H480c14.1 0 26.5-9.2 30.6-22.7s-1.1-28.1-12.9-35.9l-48-32c-.6-.4-1.2-.7-1.8-1.1V224H384V416H344V224H280V416H232V224H168V416H128V224zM256 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></i>
-  <i class="ic" data-k="trophy"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M400 0H176c-26.5 0-48.1 21.8-47.1 48.2c.2 5.3 .4 10.6 .7 15.8H24C10.7 64 0 74.7 0 88c0 92.6 33.5 157 78.5 200.7c44.3 43.1 98.3 64.8 138.1 75.8c23.4 6.5 39.4 26 39.4 45.6c0 20.9-17 37.9-37.9 37.9H192c-17.7 0-32 14.3-32 32s14.3 32 32 32H384c17.7 0 32-14.3 32-32s-14.3-32-32-32H357.9C337 448 320 431 320 410.1c0-19.6 15.9-39.2 39.4-45.6c39.9-11 93.9-32.7 138.2-75.8C542.5 245 576 180.6 576 88c0-13.3-10.7-24-24-24H446.4c.3-5.2 .5-10.4 .7-15.8C448.1 21.8 426.5 0 400 0zM48.9 112h84.4c9.1 90.1 29.2 150.3 51.9 190.6c-24.9-11-50.8-26.5-73.2-48.3c-32-31.1-58-76-63-142.3zM464.1 254.3c-22.4 21.8-48.3 37.3-73.2 48.3c22.7-40.3 42.8-100.5 51.9-190.6h84.4c-5.1 66.3-31.1 111.2-63 142.3z"/></svg></i>
-  <i class="ic" data-k="route"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 96c0 50.2-59.1 125.1-84.6 155c-3.8 4.4-9.4 6.1-14.5 5H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c53 0 96 43 96 96s-43 96-96 96H139.6c8.7-9.9 19.3-22.6 30-36.8c6.3-8.4 12.8-17.6 19-27.2H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-53 0-96-43-96-96s43-96 96-96h39.8c-21-31.5-39.8-67.7-39.8-96c0-53 43-96 96-96s96 43 96 96zM117.1 489.1c-3.8 4.3-7.2 8.1-10.1 11.3l-1.8 2-.2-.2c-6 4.6-14.6 4-20-1.8C59.8 473 0 402.5 0 352c0-53 43-96 96-96s96 43 96 96c0 30-21.1 67-43.5 97.9c-10.7 14.7-21.7 28-30.8 38.5l-.6 .7zM128 352a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM416 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg></i>
-  <i class="ic" data-k="camera"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M149.1 64.8L138.7 96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H373.3L362.9 64.8C356.4 45.2 338.1 32 317.4 32H194.6c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg></i>
-</template>
-
-<script>
-  const NS = "http://www.w3.org/2000/svg";
-  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
-  const icon = k => document.getElementById("icons").content.querySelector(`[data-k="${k}"] svg`);
-
-  // ---- hero: 360° dial ticks around the lens ----
-  (function () {
-    const g = document.getElementById("ticks"), cx = 1150, cy = 560;
-    for (let a = 0; a < 360; a += 3) {
-      const major = a % 30 === 0, r1 = 330, r2 = major ? 362 : 345, t = (a - 90) * Math.PI / 180;
-      el("line", { x1: cx + r1 * Math.cos(t), y1: cy + r1 * Math.sin(t), x2: cx + r2 * Math.cos(t), y2: cy + r2 * Math.sin(t),
-        "stroke-width": major ? 4 : 2, "stroke-opacity": major ? .8 : .3 }, g);
-    }
-  })();
-
-  // ---- ticket barcode (decorative) ----
-  (function () {
-    const svg = document.getElementById("barcode"); let x = 0, i = 0;
-    const w = [3, 1, 2, 1, 4, 1, 1, 3, 2, 2, 1, 4, 3, 1, 2, 1, 1, 2, 4, 1, 3, 1, 2, 3, 1, 1, 4, 2, 1, 3, 2, 1, 1, 4, 2, 1, 3, 1, 2, 2, 1, 3, 4, 1, 2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2];
-    while (x < 250) { const bw = w[i % w.length] * 2.2; if (i % 2 === 0) el("rect", { x, y: 0, width: bw, height: 62, fill: "#0E2A47" }, svg); x += bw; i++; }
-  })();
-
-  // ---- the morning as a 360° clock: 9:00 to 12:00 (180 min = 360°, 2° per minute) ----
-  const PROGRAM = [
-    { s: 0,   e: 30,  time: "9:00 – 9:30 a.m.",   ttl: "Bienvenida", det: "En el área de admisiones", c: "#4A90C8", ic: "door-open" },
-    { s: 30,  e: 75,  time: "9:30 – 10:15 a.m.",  ttl: "Actividad por licenciatura", det: "Consulta tu lugar abajo ↓", c: "#F2C94C", ic: "shapes", hot: true },
-    { s: 80,  e: 100, time: "10:20 – 10:40 a.m.", ttl: "Refrigerio", det: "En el foyer del auditorio · Convivencia libre", c: "#8FB3D9", ic: "mug-hot" },
-    { s: 105, e: 120, time: "10:45 – 11:00 a.m.", ttl: "Presentación de la universidad", det: "", c: "#266294", ic: "building-columns" },
-    { s: 120, e: 130, time: "11:00 – 11:10 a.m.", ttl: "Premiación de la actividad", det: "Auditorio", c: "#E3AC25", ic: "trophy" },
-    { s: 130, e: 160, time: "11:10 – 11:40 a.m.", ttl: "Recorrido", det: "A cargo de admisiones", c: "#163A5F", ic: "route" },
-    { s: 160, e: 180, time: "11:40 – 12:00 p.m.", ttl: "Cierre y despedida", det: "Fotos y videos · Contenido para redes sociales", c: "#0E2A47", ic: "camera" },
-  ];
-  (function () {
-    const svg = document.getElementById("dial"), cx = 320, cy = 320, R = 250, r0 = 164, GAP = 0.9;
-    const P = (deg, rad) => { const t = (deg - 90) * Math.PI / 180; return [cx + rad * Math.cos(t), cy + rad * Math.sin(t)]; };
-    el("circle", { cx, cy, r: R + 22, fill: "#EDF3FA" }, svg);
-    el("circle", { cx, cy, r: R + 22, fill: "none", stroke: "#D6E3F1", "stroke-width": 2 }, svg);
-    for (let m = 0; m <= 180; m += 5) {
-      const big = m % 60 === 0, mid = m % 15 === 0;
-      const [x1, y1] = P(m * 2, R + 6), [x2, y2] = P(m * 2, R + (big ? 20 : mid ? 15 : 11));
-      el("line", { x1, y1, x2, y2, stroke: "#266294", "stroke-opacity": big ? .9 : .35, "stroke-width": big ? 4 : 2, "stroke-linecap": "round" }, svg);
-    }
-    PROGRAM.forEach(p => {
-      const a0 = p.s * 2 + GAP, a1 = p.e * 2 - GAP, large = a1 - a0 > 180 ? 1 : 0;
-      const [ox0, oy0] = P(a0, R), [ox1, oy1] = P(a1, R), [ix1, iy1] = P(a1, r0), [ix0, iy0] = P(a0, r0);
-      el("path", { d: `M ${ox0} ${oy0} A ${R} ${R} 0 ${large} 1 ${ox1} ${oy1} L ${ix1} ${iy1} A ${r0} ${r0} 0 ${large} 0 ${ix0} ${iy0} Z`,
-        fill: p.c, stroke: "#FFFFFF", "stroke-width": 3, "stroke-linejoin": "round" }, svg);
-      const [mx, my] = P((a0 + a1) / 2, (R + r0) / 2), s = p.e - p.s >= 15 ? 38 : 30;
-      const ic = icon(p.ic).cloneNode(true);
-      ic.setAttribute("x", mx - s / 2); ic.setAttribute("y", my - s / 2); ic.setAttribute("width", s); ic.setAttribute("height", s);
-      ic.setAttribute("fill", p.hot ? "#0E2A47" : "#FFFFFF");
-      svg.appendChild(ic);
-    });
-    [[0, "9:00"], [120, "10:00"], [240, "11:00"]].forEach(([deg, txt]) => {
-      const [x, y] = P(deg, R + 2);
-      const t = el("text", { x, y: y + 9, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 900, "font-size": 24, fill: "#0E2A47",
-        stroke: "#EDF3FA", "stroke-width": 10, "paint-order": "stroke" }, svg);
-      t.textContent = txt;
-    });
-    el("circle", { cx, cy, r: r0 - 18, fill: "#FFFFFF" }, svg);
-    el("circle", { cx, cy, r: r0 - 18, fill: "none", stroke: "#F2C94C", "stroke-width": 3, "stroke-dasharray": "2 9", "stroke-linecap": "round" }, svg);
-    const c1 = el("text", { x: cx, y: cy - 30, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 800, "font-size": 19, "letter-spacing": 4, fill: "#5B6B7D" }, svg); c1.textContent = "DE 9:00 A";
-    const c2 = el("text", { x: cx, y: cy + 34, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 900, "font-size": 70, fill: "#0E2A47", "letter-spacing": -2 }, svg); c2.textContent = "12:00";
-    const c3 = el("text", { x: cx, y: cy + 70, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 800, "font-size": 22, "letter-spacing": 3, fill: "#266294" }, svg); c3.textContent = "P.M.";
-  })();
-
-  // ---- legend rows ----
-  (function () {
-    const L = document.getElementById("legend");
-    PROGRAM.forEach(p => {
-      const row = document.createElement("div"); row.className = "row" + (p.hot ? " hot" : "");
-      const dot = document.createElement("div"); dot.className = "dot"; dot.style.background = p.c; if (p.hot) dot.style.color = "#0E2A47";
-      const ic = document.createElement("i"); ic.className = "ic"; ic.appendChild(icon(p.ic).cloneNode(true)); dot.appendChild(ic);
-      const time = document.createElement("div"); time.className = "time"; time.textContent = p.time;
-      const what = document.createElement("div");
-      what.innerHTML = `<div class="ttl"></div>${p.det ? '<div class="det"></div>' : ""}`;
-      what.querySelector(".ttl").textContent = p.ttl; if (p.det) what.querySelector(".det").textContent = p.det;
-      row.append(dot, time, what); L.appendChild(row);
-    });
-  })();
-</script>
 </body>
 </html>
