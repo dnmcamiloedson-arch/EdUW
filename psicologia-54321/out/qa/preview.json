@@ -1,0 +1,109 @@
+{
+ "video": "out/preview.mp4",
+ "format": {
+  "duration": 28.0,
+  "size": "540x960",
+  "fps": "30/1",
+  "frames": 840,
+  "video": "h264",
+  "audio": "aac 48000 Hz 2ch"
+ },
+ "contactSheet": "out/preview_contact_sheet.png",
+ "captionSync": {
+  "toleranceFrames": 3,
+  "maxAbsErr": 0.6,
+  "groups": [
+   {
+    "text": "Si sientes que todo va muy rápido,",
+    "expectedFrame": 6.2,
+    "onsetFrame": 6,
+    "errFrames": -0.2
+   },
+   {
+    "text": "haz esto conmigo.",
+    "expectedFrame": 76.2,
+    "onsetFrame": 76,
+    "errFrames": -0.2
+   },
+   {
+    "text": "Cinco cosas que ves.",
+    "expectedFrame": 117.5,
+    "onsetFrame": 118,
+    "errFrames": 0.5
+   },
+   {
+    "text": "Cuatro que puedes tocar.",
+    "expectedFrame": 251.8,
+    "onsetFrame": 252,
+    "errFrames": 0.2
+   },
+   {
+    "text": "Tres que escuchas.",
+    "expectedFrame": 371.4,
+    "onsetFrame": 372,
+    "errFrames": 0.6
+   },
+   {
+    "text": "Dos que hueles.",
+    "expectedFrame": 493.5,
+    "onsetFrame": 494,
+    "errFrames": 0.5
+   },
+   {
+    "text": "Una que saboreas.",
+    "expectedFrame": 611.4,
+    "onsetFrame": 612,
+    "errFrames": 0.6
+   },
+   {
+    "text": "Así regresas al presente.",
+    "expectedFrame": 710.3,
+    "onsetFrame": 710,
+    "errFrames": -0.3
+   },
+   {
+    "text": "Guárdalo para cuando lo necesites.",
+    "expectedFrame": 771.8,
+    "onsetFrame": 772,
+    "errFrames": 0.2
+   }
+  ]
+ },
+ "voiceOnsetVsWordStart": {
+  "maxAbsErrFrames": 1.5,
+  "errsFrames": [
+   -1.4,
+   0.0,
+   -0.9,
+   0.3,
+   0.3,
+   -1.5,
+   0.0,
+   -0.6,
+   0.3
+  ]
+ },
+ "contrast": {
+  "captions_min": 6.81,
+  "number_ver": 8.12,
+  "number_tocar": 8.15,
+  "number_oir": 8.07,
+  "number_oler": 8.12,
+  "number_saborear": 10.76,
+  "disclaimer": 12.86
+ },
+ "flashes": {
+  "maxFlashesPerSecond": 0,
+  "maxFrameToFrameLumChange_tile": 0.0809,
+  "maxFrameToFrameLumChange_full": 0.0084
+ },
+ "audio": {
+  "integratedLUFS": -16.0,
+  "truePeak_dBTP": -1.7,
+  "LRA": 6.6,
+  "samplePeak_dBFS": -1.713867,
+  "maxMomentaryJump_dB_per_400ms": 12.6
+ },
+ "fails": [],
+ "pass": true
+}

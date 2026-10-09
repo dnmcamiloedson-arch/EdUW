@@ -1,0 +1,109 @@
+{
+ "video": "out/psicologia_54321_40s_9x16.mp4",
+ "format": {
+  "duration": 40.0,
+  "size": "1080x1920",
+  "fps": "30/1",
+  "frames": 1200,
+  "video": "h264",
+  "audio": "aac 48000 Hz 2ch"
+ },
+ "contactSheet": "out/contact_sheet_40s.png",
+ "captionSync": {
+  "toleranceFrames": 3,
+  "maxAbsErr": 0.6,
+  "groups": [
+   {
+    "text": "Si sientes que todo va muy rápido,",
+    "expectedFrame": 12.8,
+    "onsetFrame": 13,
+    "errFrames": 0.2
+   },
+   {
+    "text": "haz esto conmigo.",
+    "expectedFrame": 82.8,
+    "onsetFrame": 83,
+    "errFrames": 0.2
+   },
+   {
+    "text": "Cinco cosas que ves.",
+    "expectedFrame": 123.5,
+    "onsetFrame": 124,
+    "errFrames": 0.5
+   },
+   {
+    "text": "Cuatro que puedes tocar.",
+    "expectedFrame": 329.8,
+    "onsetFrame": 330,
+    "errFrames": 0.2
+   },
+   {
+    "text": "Tres que escuchas.",
+    "expectedFrame": 524.4,
+    "onsetFrame": 525,
+    "errFrames": 0.6
+   },
+   {
+    "text": "Dos que hueles.",
+    "expectedFrame": 706.5,
+    "onsetFrame": 707,
+    "errFrames": 0.5
+   },
+   {
+    "text": "Una que saboreas.",
+    "expectedFrame": 869.4,
+    "onsetFrame": 870,
+    "errFrames": 0.6
+   },
+   {
+    "text": "Así regresas al presente.",
+    "expectedFrame": 1014.8,
+    "onsetFrame": 1015,
+    "errFrames": 0.2
+   },
+   {
+    "text": "Guárdalo para cuando lo necesites.",
+    "expectedFrame": 1095.8,
+    "onsetFrame": 1096,
+    "errFrames": 0.2
+   }
+  ]
+ },
+ "voiceOnsetVsWordStart": {
+  "maxAbsErrFrames": 1.5,
+  "errsFrames": [
+   -1.2,
+   0.0,
+   -0.9,
+   0.3,
+   0.3,
+   -1.5,
+   0.0,
+   -0.6,
+   0.3
+  ]
+ },
+ "contrast": {
+  "captions_min": 6.5,
+  "number_ver": 8.1,
+  "number_tocar": 8.09,
+  "number_oir": 8.05,
+  "number_oler": 8.17,
+  "number_saborear": 10.6,
+  "disclaimer": 12.86
+ },
+ "flashes": {
+  "maxFlashesPerSecond": 0,
+  "maxFrameToFrameLumChange_tile": 0.0855,
+  "maxFrameToFrameLumChange_full": 0.0091
+ },
+ "audio": {
+  "integratedLUFS": -16.0,
+  "truePeak_dBTP": -1.2,
+  "LRA": 8.8,
+  "samplePeak_dBFS": -1.227386,
+  "maxMomentaryJump_dB_per_400ms": 19.3
+ },
+ "fails": [],
+ "pass": true
+}
