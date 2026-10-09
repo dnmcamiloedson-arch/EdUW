@@ -9,6 +9,10 @@ Visitas de IPEFH (Planteles Toluca, Metepec y Calimaya) · 14 y 16 de octubre.
 | `poster.src.html` | Fuente editable del diseño |
 | `poster.html` | Versión generada con los íconos incrustados |
 
+Concepto: el "0" de 360° es un lente con la foto del campus, rodeado de un dial y un anillo de texto
+("Vívela · Explórala · Enamórate"); los datos de la visita van en un pase de acceso tipo boleto y el
+programa se muestra como un reloj de 360° (9:00 a 12:00 p.m., cada actividad proporcional a su duración).
+
 Paleta institucional: azul `#266294`, marino `#0E2A47`, dorado `#F2C94C`, hielo `#EDF3FA`. Tipografía Raleway.
 
 ## Editar y volver a exportar

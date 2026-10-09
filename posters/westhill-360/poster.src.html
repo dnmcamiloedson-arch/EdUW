@@ -15,6 +15,8 @@
     --blue: #266294;
     --navy: #0E2A47;
     --deep: #163A5F;
+    --sky: #4A90C8;
+    --mist: #8FB3D9;
     --gold: #F2C94C;
     --gold-dk: #E3AC25;
     --ice: #EDF3FA;
@@ -25,356 +27,360 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--white); }
   body { font-family: "Raleway", sans-serif; color: var(--ink); }
-
-  .poster {
-    position: relative; width: 1800px; height: 2700px; overflow: hidden;
-    background: var(--white);
-  }
+  .poster { position: relative; width: 1800px; height: 2700px; overflow: hidden; background: var(--white); }
   .abs { position: absolute; }
   .ic svg { width: 100%; height: 100%; fill: currentColor; display: block; }
 
-  /* ---------- HERO ---------- */
+  /* ================= HERO ================= */
   .hero {
-    position: absolute; inset: 0 0 auto 0; height: 1240px;
+    position: absolute; inset: 0 0 auto 0; height: 1200px;
     background:
-      radial-gradient(900px 700px at 1210px 610px, rgba(74,144,200,.55), transparent 70%),
-      linear-gradient(160deg, #1C4772 0%, var(--navy) 62%, #0A1F36 100%);
+      radial-gradient(760px 640px at 1150px 560px, rgba(74,144,200,.55), transparent 70%),
+      radial-gradient(600px 500px at 200px 1100px, rgba(38,98,148,.45), transparent 70%),
+      linear-gradient(165deg, #1C4772 0%, var(--navy) 58%, #081A2E 100%);
   }
-  .hero-rings { position: absolute; inset: 0; }
-
-  .banderin { left: 110px; top: 0; width: 132px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
-
+  .hero-svg { position: absolute; left: 0; top: 0; }
+  .banderin { left: 110px; top: 0; width: 128px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); z-index: 3; }
   .kicker {
-    left: 110px; top: 262px; display: inline-flex; align-items: center; gap: 14px;
+    right: 110px; top: 62px; display: inline-flex; align-items: center; gap: 14px;
     border: 3px solid var(--gold); color: var(--gold); border-radius: 999px;
-    padding: 12px 30px 12px 22px; font-weight: 800; font-size: 26px; letter-spacing: 6px;
+    padding: 12px 30px 12px 22px; font-weight: 800; font-size: 24px; letter-spacing: 6px;
   }
-  .kicker .ic { width: 28px; height: 28px; }
+  .kicker .ic { width: 26px; height: 26px; }
 
   .t-west {
-    left: 104px; top: 340px; color: var(--white); font-weight: 900; font-size: 122px;
-    letter-spacing: 3px; line-height: 1;
+    left: 104px; top: 150px; color: var(--white); font-weight: 900; font-size: 124px;
+    letter-spacing: 12px; line-height: 1; z-index: 2;
   }
-  .t-360 {
-    left: 96px; top: 452px; font-weight: 900; font-size: 340px; line-height: 1; letter-spacing: -6px;
-    background: linear-gradient(180deg, #FFE7A0 0%, var(--gold) 45%, var(--gold-dk) 100%);
+  .t-36 {
+    left: 78px; top: 262px; font-weight: 900; font-size: 600px; line-height: 1; letter-spacing: -14px;
+    background: linear-gradient(180deg, #FFE9A6 0%, var(--gold) 42%, var(--gold-dk) 100%);
     -webkit-background-clip: text; background-clip: text; color: transparent;
-    filter: drop-shadow(0 14px 30px rgba(0,0,0,.35));
+    filter: drop-shadow(0 24px 40px rgba(0,0,0,.45)); z-index: 2;
   }
-  .t-deg { left: 690px; top: 506px; width: 78px; height: 78px; border-radius: 50%; border: 20px solid var(--gold); filter: drop-shadow(0 10px 20px rgba(0,0,0,.35)); }
-  .tagline {
-    left: 110px; top: 848px; color: var(--white); font-size: 50px; font-weight: 800; line-height: 1.15;
+  .lens {
+    left: 900px; top: 310px; width: 500px; height: 500px; border-radius: 50%;
+    background: url(img/letras.jpg) center 36% / cover no-repeat;
+    box-shadow: 0 0 0 12px rgba(242,201,76,.95), 0 0 0 26px rgba(255,255,255,.08), 0 40px 90px rgba(0,0,0,.5);
+    z-index: 2;
   }
-  .tagline span { color: var(--gold); }
-  .tag-sub {
-    left: 112px; top: 990px; width: 640px; color: #C9D9EC; font-size: 28px; font-weight: 500; line-height: 1.45;
-  }
-
-  /* photo circle + orbit */
-  .main-photo {
-    left: 830px; top: 230px; width: 760px; height: 760px; border-radius: 50%;
-    background: url(img/letras.jpg) center 38% / cover no-repeat;
-    box-shadow: 0 0 0 14px rgba(255,255,255,.10), 0 40px 80px rgba(0,0,0,.45);
+  .deg {
+    left: 1398px; top: 246px; width: 104px; height: 104px; border-radius: 50%;
+    border: 28px solid var(--gold); filter: drop-shadow(0 14px 24px rgba(0,0,0,.4)); z-index: 3;
   }
   .sat {
-    width: 176px; height: 176px; border-radius: 50%;
-    border: 7px solid var(--white); box-shadow: 0 18px 36px rgba(0,0,0,.4);
-    background-size: cover; background-repeat: no-repeat;
+    border-radius: 50%; border: 8px solid var(--white); box-shadow: 0 22px 44px rgba(0,0,0,.45);
+    background-size: cover; background-repeat: no-repeat; z-index: 3;
   }
   .sat-badge {
-    width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center;
+    width: 74px; height: 74px; border-radius: 50%; display: grid; place-items: center; z-index: 4;
     background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy);
     box-shadow: 0 8px 18px rgba(0,0,0,.35);
   }
   .sat-badge .ic { width: 34px; height: 34px; }
 
-  /* hero bottom curve */
-  .hero-curve { left: 0; top: 1040px; width: 1800px; height: 260px; }
+  .tagline { left: 110px; top: 924px; color: var(--white); font-size: 58px; font-weight: 900; letter-spacing: -.5px; z-index: 2; }
+  .tagline span { color: var(--gold); }
+  .objective { left: 112px; top: 1016px; width: 1240px; color: #C7D8EC; font-size: 29px; font-weight: 500; line-height: 1.45; z-index: 2; }
+  .objective b { color: var(--white); font-weight: 800; }
+  .objective em { font-style: normal; font-weight: 800; letter-spacing: 4px; color: var(--gold); font-size: 22px; margin-right: 12px; }
 
-  /* ---------- INFO CARD ---------- */
-  .info {
-    left: 110px; top: 1090px; width: 1580px; height: 214px; background: var(--white);
-    border-radius: 30px; box-shadow: 0 30px 60px rgba(14,42,71,.18), 0 2px 0 rgba(14,42,71,.04);
-    display: grid; grid-template-columns: 1.05fr 1.55fr 1fr; align-items: center; padding: 0 36px;
-  }
-  .info-item { display: flex; align-items: center; gap: 22px; padding: 0 26px; }
-  .info-item + .info-item { border-left: 2px dashed #D6E3F1; }
-  .badge {
-    flex: none; width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center;
-    background: linear-gradient(180deg, #4A93D2, #1F5585); color: var(--white);
-    box-shadow: 0 10px 22px rgba(38,98,148,.35);
-  }
-  .badge.gold { background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy); box-shadow: 0 10px 22px rgba(227,172,37,.4); }
-  .badge .ic { width: 42px; height: 42px; }
-  .info-lbl { font-size: 19px; font-weight: 800; letter-spacing: 2.4px; white-space: nowrap; color: var(--blue); text-transform: uppercase; }
-  .info-val { font-size: 40px; font-weight: 900; color: var(--navy); line-height: 1.08; margin-top: 6px; }
-  .info-val small { display: block; font-size: 23px; white-space: nowrap; font-weight: 600; color: var(--muted); margin-top: 6px; line-height: 1.3; }
+  .hero-curve { left: 0; top: 1060px; width: 1800px; height: 220px; }
 
-  /* ---------- OBJETIVO ---------- */
-  .obj { left: 110px; top: 1366px; width: 1580px; display: flex; gap: 40px; align-items: flex-start; }
-  .obj-mark {
-    flex: none; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--ice); color: var(--blue); position: relative;
-  }
-  .obj-mark .ic { width: 64px; height: 64px; }
-  .obj-mark::after {
-    content: ""; position: absolute; inset: -12px; border-radius: 50%;
-    border: 3px dashed var(--gold);
-  }
-  .obj-lbl { font-size: 24px; font-weight: 800; letter-spacing: 6px; color: var(--gold-dk); }
-  .obj-txt { margin-top: 10px; font-size: 40px; line-height: 1.38; font-weight: 600; color: var(--navy); }
-  .obj-txt b { font-weight: 900; color: var(--blue); }
+  /* ================= TICKET ================= */
+  .ticket { left: 110px; top: 1176px; width: 1580px; height: 250px; filter: drop-shadow(0 30px 40px rgba(14,42,71,.22)); }
+  .ticket > svg { position: absolute; inset: 0; }
+  .tk-main { position: absolute; left: 0; top: 0; width: 1212px; height: 250px; padding: 34px 50px 0 60px; }
+  .tk-head { display: flex; align-items: center; gap: 16px; font-size: 20px; font-weight: 800; letter-spacing: 5px; color: var(--blue); }
+  .tk-head .ic { width: 24px; height: 24px; color: var(--gold-dk); }
+  .tk-head .line { flex: 1; height: 2px; background: repeating-linear-gradient(90deg, #D6E3F1 0 10px, transparent 10px 18px); }
+  .tk-fields { display: grid; grid-template-columns: 1.1fr .75fr 1.15fr 1fr; margin-top: 26px; }
+  .tk-f { padding-right: 24px; }
+  .tk-f + .tk-f { border-left: 2px solid #E3ECF6; padding-left: 30px; }
+  .tk-lbl { font-size: 18px; font-weight: 800; letter-spacing: 2.5px; color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+  .tk-val { font-size: 46px; font-weight: 900; color: var(--navy); line-height: 1.05; margin-top: 10px; letter-spacing: -.5px; }
+  .tk-val.sm { font-size: 30px; line-height: 1.2; letter-spacing: 0; }
+  .tk-val .u { color: var(--blue); }
+  .tk-stub { position: absolute; left: 1212px; top: 0; width: 368px; height: 250px; padding: 32px 40px; color: var(--navy); }
+  .tk-stub .lbl { font-size: 18px; font-weight: 900; letter-spacing: 5px; }
+  .tk-stub .big { font-size: 74px; font-weight: 900; line-height: 1; margin-top: 4px; letter-spacing: -2px; }
+  .tk-stub .big sup { font-size: 40px; vertical-align: top; position: relative; top: 4px; }
+  .barcode { position: absolute; left: 40px; bottom: 30px; height: 62px; width: 250px; }
+  .tk-code { position: absolute; right: 40px; top: 40px; font-size: 16px; font-weight: 800; letter-spacing: 2px; writing-mode: vertical-rl; opacity: .75; }
 
-  /* ---------- PROGRAMA ---------- */
-  .prog-h { left: 110px; top: 1590px; display: flex; align-items: center; gap: 28px; width: 1580px; }
-  .prog-h h2 { font-size: 62px; font-weight: 900; color: var(--navy); letter-spacing: -.5px; white-space: nowrap; }
-  .prog-h .rule { flex: 1; height: 4px; background: linear-gradient(90deg, var(--gold), rgba(242,201,76,0)); border-radius: 4px; }
+  /* ================= PROGRAMA ================= */
+  .sec-h { left: 110px; top: 1468px; width: 1580px; display: flex; align-items: flex-end; gap: 30px; }
+  .sec-h .kick { font-size: 22px; font-weight: 800; letter-spacing: 6px; color: var(--gold-dk); }
+  .sec-h h2 { font-size: 72px; font-weight: 900; color: var(--navy); letter-spacing: -1px; line-height: 1; margin-top: 8px; }
+  .sec-h h2 span { color: var(--blue); }
+  .sec-h .rule { flex: 1; height: 4px; margin-bottom: 18px; background: linear-gradient(90deg, var(--gold), rgba(242,201,76,0)); border-radius: 4px; }
 
-  .timeline { left: 110px; top: 1712px; width: 930px; }
-  .tl-line {
-    position: absolute; left: 272px; top: 30px; bottom: 34px; width: 4px;
-    background: repeating-linear-gradient(180deg, var(--blue) 0 14px, transparent 14px 26px);
-    opacity: .5;
-  }
-  .step { position: relative; display: grid; grid-template-columns: 236px 76px 1fr; column-gap: 0; align-items: start; height: 98px; }
-  .step .time { text-align: right; padding-right: 22px; padding-top: 12px; font-size: 27px; font-weight: 800; color: var(--blue); white-space: nowrap; letter-spacing: -.2px; }
-  .step .node {
-    width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin-left: 2px;
-    background: var(--white); color: var(--blue); border: 4px solid var(--blue); position: relative; z-index: 1;
-  }
-  .step .node .ic { width: 28px; height: 28px; }
-  .step .what { padding-left: 22px; padding-top: 6px; }
-  .step .ttl { font-size: 33px; font-weight: 800; color: var(--navy); line-height: 1.1; }
-  .step .det { font-size: 23px; font-weight: 500; color: var(--muted); margin-top: 6px; line-height: 1.25; }
-  .step.hot .node { background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); border-color: var(--white); color: var(--navy); box-shadow: 0 0 0 5px var(--gold), 0 10px 20px rgba(227,172,37,.4); }
-  .step.hot .ttl { color: var(--blue); }
-  .step.hot .det { color: var(--gold-dk); font-weight: 800; }
-  .step.last .node { background: var(--blue); color: var(--white); }
+  .dial { left: 80px; top: 1590px; width: 640px; height: 640px; }
 
-  /* right highlight card */
-  .lic {
-    left: 1080px; top: 1690px; width: 610px; height: 772px; border-radius: 36px; padding: 40px 42px 36px;
-    background: linear-gradient(165deg, #1C4772 0%, #0B2240 100%);
-    box-shadow: 0 30px 60px rgba(14,42,71,.35), inset 0 0 0 2px rgba(255,255,255,.08);
-    overflow: hidden; color: var(--white);
+  .legend { left: 760px; top: 1612px; width: 930px; }
+  .row { display: grid; grid-template-columns: 64px 268px 1fr; align-items: center; height: 80px; border-bottom: 2px solid #EEF3F9; }
+  .row:last-child { border-bottom: 0; }
+  .row .dot {
+    width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; color: var(--white);
+    font-weight: 900; font-size: 24px;
   }
-  .lic-wm { position: absolute; right: -70px; bottom: -70px; width: 360px; height: 360px; color: rgba(255,255,255,.05); }
-  .lic-time {
-    display: inline-block; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 22px;
-    letter-spacing: 1.5px; border-radius: 999px; padding: 9px 22px;
-  }
-  .lic h3 { font-size: 44px; font-weight: 900; line-height: 1.05; margin-top: 18px; }
-  .lic h3 span { color: var(--gold); }
-  .lic ul { list-style: none; margin-top: 22px; }
-  .lic li { display: flex; gap: 20px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.12); }
-  .lic li .b {
-    flex: none; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center;
-    background: rgba(255,255,255,.10); color: var(--gold); border: 2px solid rgba(242,201,76,.55);
-  }
-  .lic li .b .ic { width: 28px; height: 28px; }
-  .lic .car { font-size: 22px; font-weight: 800; line-height: 1.18; }
-  .lic .loc { font-size: 20px; font-weight: 600; color: var(--gold); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
-  .lic .loc .ic { width: 16px; height: 16px; flex: none; }
-  .lic .loc.tbd { color: #9FB9D6; font-style: italic; }
+  .row .dot .ic { width: 24px; height: 24px; }
+  .row .time { font-size: 24px; font-weight: 800; color: var(--blue); padding-left: 22px; white-space: nowrap; letter-spacing: -.2px; }
+  .row .ttl { font-size: 30px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+  .row .det { font-size: 21px; font-weight: 500; color: var(--muted); margin-top: 4px; }
+  .row.hot { background: linear-gradient(90deg, rgba(242,201,76,.22), rgba(242,201,76,0) 85%); border-radius: 16px; border-bottom-color: transparent; }
+  .row.hot .ttl { color: var(--blue); }
+  .row.hot .det { color: #B98410; font-weight: 800; }
 
-  .connector { left: 1000px; top: 1792px; width: 90px; height: 40px; }
+  /* ================= LICENCIATURAS ================= */
+  .lic-wrap { left: 0; top: 2270px; width: 1800px; height: 430px;
+    background: linear-gradient(170deg, #1C4772 0%, var(--navy) 60%, #081A2E 100%); }
+  .lic-top { left: 0; top: 2200px; width: 1800px; height: 120px; }
+  .lic-h { left: 110px; top: 2290px; display: flex; align-items: center; gap: 26px; }
+  .lic-h .pill { background: var(--gold); color: var(--navy); font-weight: 900; font-size: 22px; letter-spacing: 1.5px; border-radius: 999px; padding: 10px 24px; }
+  .lic-h h3 { font-size: 50px; font-weight: 900; color: var(--white); letter-spacing: -.5px; }
+  .lic-h h3 span { color: var(--gold); }
+  .cards { left: 110px; top: 2378px; width: 1580px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px 22px; }
+  .card {
+    position: relative; height: 100px; border-radius: 22px; padding: 0 22px 0 18px; display: flex; align-items: center; gap: 20px;
+    background: linear-gradient(180deg, rgba(255,255,255,.11), rgba(255,255,255,.05));
+    box-shadow: inset 0 0 0 2px rgba(255,255,255,.10); overflow: hidden;
+  }
+  .card .b {
+    flex: none; width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy); box-shadow: 0 8px 18px rgba(0,0,0,.3);
+  }
+  .card .b .ic { width: 30px; height: 30px; }
+  .card .car { font-size: 22px; font-weight: 800; color: var(--white); line-height: 1.16; }
+  .card .loc { display: inline-flex; align-items: center; gap: 8px; margin-top: 7px; font-size: 19px; font-weight: 700; color: var(--gold); }
+  .card .loc .ic { width: 15px; height: 15px; flex: none; }
+  .card .loc.tbd { color: var(--mist); font-style: italic; }
+  .card .wm { position: absolute; right: -18px; bottom: -22px; width: 110px; height: 110px; color: rgba(255,255,255,.05); }
 
-  /* ---------- FOOTER ---------- */
-  .foot { left: 0; top: 2470px; width: 1800px; height: 230px; }
-  .foot-tag { left: 110px; top: 2588px; color: var(--white); font-size: 46px; font-weight: 500; letter-spacing: 1px; }
+  /* ================= FOOTER ================= */
+  .foot { left: 0; top: 2604px; width: 1800px; height: 120px; }
+  .foot-tag { left: 110px; top: 2636px; color: var(--white); font-size: 40px; font-weight: 500; letter-spacing: 1px; }
   .foot-tag b { font-weight: 900; }
-  .foot-handle { left: 112px; top: 2648px; color: #BFD3EA; font-size: 22px; font-weight: 600; letter-spacing: 2px; }
-  .foot-logo { right: 110px; top: 2560px; height: 110px; }
+  .foot-handle { left: 560px; top: 2650px; color: #CFE0F2; font-size: 22px; font-weight: 700; letter-spacing: 2px; }
+  .foot-logo { right: 110px; top: 2626px; height: 64px; }
 </style>
 </head>
 <body>
 <div class="poster">
 
-  <!-- ===== HERO ===== -->
-  <div class="hero">
-    <svg class="hero-rings" viewBox="0 0 1800 1240" width="1800" height="1240">
+  <!-- ================= HERO ================= -->
+  <div class="hero"></div>
+  <svg class="hero-svg" width="1800" height="1200" viewBox="0 0 1800 1200">
+    <defs>
+      <path id="ring" d="M 1150 560 m -292 0 a 292 292 0 1 1 584 0 a 292 292 0 1 1 -584 0"/>
+    </defs>
+    <g fill="none" stroke="#FFFFFF" stroke-opacity=".055" stroke-width="2">
+      <circle cx="1150" cy="560" r="480"/><circle cx="1150" cy="560" r="620"/>
+      <circle cx="1150" cy="560" r="760"/><circle cx="1150" cy="560" r="900"/><circle cx="1150" cy="560" r="1040"/>
+    </g>
+    <g id="ticks" stroke="#FFFFFF" stroke-linecap="round"></g>
+    <circle cx="1150" cy="560" r="392" fill="none" stroke="#F2C94C" stroke-opacity=".55" stroke-width="3" stroke-dasharray="2 14" stroke-linecap="round"/>
+    <text font-family="Raleway" font-weight="800" font-size="25" letter-spacing="6" fill="#F2C94C">
+      <textPath href="#ring" startOffset="0" textLength="1820" lengthAdjust="spacing">VÍVELA · EXPLÓRALA · ENAMÓRATE · WESTHILL 360° · VÍVELA · EXPLÓRALA · ENAMÓRATE · WESTHILL 360° ·</textPath>
+    </text>
+  </svg>
+
+  <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
+  <div class="abs kicker"><i class="ic" data-ic="star"></i>PROYECTO</div>
+  <div class="abs t-west">WESTHILL</div>
+  <div class="abs t-36">36</div>
+  <div class="abs lens"></div>
+  <div class="abs deg"></div>
+
+  <div class="abs sat" style="left:1436px; top:690px; width:250px; height:250px; background-image:url(img/estudiantes.jpg); background-position:center 32%;"></div>
+  <div class="abs sat-badge" style="left:1438px; top:690px;"><i class="ic" data-ic="user-graduate"></i></div>
+  <div class="abs sat" style="left:1556px; top:420px; width:150px; height:150px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
+
+  <div class="abs tagline">Vívela. Explórala. <span>Enamórate.</span></div>
+  <p class="abs objective"><em>OBJETIVO</em>Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
+
+  <svg class="abs hero-curve" viewBox="0 0 1800 220" preserveAspectRatio="none">
+    <path d="M0 110 C 460 220, 1060 20, 1800 120 L1800 220 L0 220 Z" fill="#F2C94C"/>
+    <path d="M0 136 C 460 246, 1060 46, 1800 146 L1800 220 L0 220 Z" fill="#FFFFFF"/>
+  </svg>
+
+  <!-- ================= TICKET ================= -->
+  <div class="abs ticket">
+    <svg width="1580" height="250" viewBox="0 0 1580 250">
       <defs>
-        <linearGradient id="g-orbit" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#F2C94C"/><stop offset="1" stop-color="#F2C94C" stop-opacity=".35"/>
+        <linearGradient id="g-stub" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#FBE08A"/><stop offset="1" stop-color="#E8B530"/>
         </linearGradient>
       </defs>
-      <!-- faint concentric rings -->
-      <g fill="none" stroke="#FFFFFF" stroke-opacity=".06" stroke-width="2">
-        <circle cx="1210" cy="610" r="620"/>
-        <circle cx="1210" cy="610" r="760"/>
-        <circle cx="1210" cy="610" r="900"/>
-        <circle cx="1210" cy="610" r="1040"/>
-      </g>
-      <!-- 360 dial ticks -->
-      <g id="ticks" stroke="#FFFFFF" stroke-linecap="round"></g>
-      <!-- orbit -->
-      <circle cx="1210" cy="610" r="500" fill="none" stroke="url(#g-orbit)" stroke-width="4" stroke-dasharray="2 16" stroke-linecap="round"/>
-      <!-- 360 arrow arc -->
-      <g id="arc" fill="none" stroke="#F2C94C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></g>
+      <!-- main body, half-notch top and bottom at the perforation (x=1212) -->
+      <path d="M28 0 H1186 A26 26 0 0 0 1212 26 V224 A26 26 0 0 0 1186 250 H28 A28 28 0 0 1 0 222 V28 A28 28 0 0 1 28 0 Z" fill="#FFFFFF"/>
+      <!-- stub -->
+      <path d="M1238 0 H1552 A28 28 0 0 1 1580 28 V222 A28 28 0 0 1 1552 250 H1238 A26 26 0 0 0 1212 224 V26 A26 26 0 0 0 1238 0 Z" fill="url(#g-stub)"/>
+      <line x1="1212" y1="44" x2="1212" y2="206" stroke="#0E2A47" stroke-opacity=".35" stroke-width="3" stroke-dasharray="4 10" stroke-linecap="round"/>
+      <!-- left blue edge -->
+      <path d="M28 0 H40 V250 H28 A28 28 0 0 1 0 222 V28 A28 28 0 0 1 28 0 Z" fill="#266294"/>
     </svg>
-
-    <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
-
-    <div class="abs kicker"><i class="ic" data-ic="star"></i>PROYECTO</div>
-    <div class="abs t-west">WESTHILL</div>
-    <div class="abs t-360">360</div><div class="abs t-deg"></div>
-    <div class="abs tagline">Vívela. Explórala.<br><span>Enamórate.</span></div>
-
-    <div class="abs main-photo"></div>
-
-    <!-- satellites on the orbit (r=500 around 1210,610) -->
-    <div class="abs sat" style="left:1372px; top:89px; background-image:url(img/estudiantes.jpg); background-position:center 30%;"></div>
-    <div class="abs sat-badge" style="left:1502px; top:70px;"><i class="ic" data-ic="user-graduate"></i></div>
-
-    <div class="abs sat" style="left:1597px; top:677px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
-    <div class="abs sat-badge" style="left:1590px; top:820px;"><i class="ic" data-ic="building-columns"></i></div>
-
-    <div class="abs sat" style="left:814px; top:916px; background-image:url(img/edificio.jpg); background-position:30% 60%;"></div>
-    <div class="abs sat-badge" style="left:796px; top:900px;"><i class="ic" data-ic="tree"></i></div>
-  </div>
-
-  <!-- hero bottom curve: gold stripe + white -->
-  <svg class="abs hero-curve" viewBox="0 0 1800 260" preserveAspectRatio="none">
-    <path d="M0 120 C 420 250, 980 40, 1800 150 L1800 260 L0 260 Z" fill="#F2C94C"/>
-    <path d="M0 150 C 420 280, 980 70, 1800 180 L1800 260 L0 260 Z" fill="#FFFFFF"/>
-  </svg>
-
-  <!-- ===== INFO CARD ===== -->
-  <div class="abs info">
-    <div class="info-item">
-      <div class="badge gold"><i class="ic" data-ic="calendar-days"></i></div>
-      <div>
-        <div class="info-lbl">Días de las visitas</div>
-        <div class="info-val">14 y 16<br>de octubre</div>
+    <div class="tk-main">
+      <div class="tk-head"><i class="ic" data-ic="ticket"></i>PASE DE ACCESO · WESTHILL 360°<div class="line"></div></div>
+      <div class="tk-fields">
+        <div class="tk-f"><div class="tk-lbl">Días de las visitas</div><div class="tk-val">14 y 16 <span class="u">oct.</span></div></div>
+        <div class="tk-f"><div class="tk-lbl">Escuela</div><div class="tk-val">IPEFH</div></div>
+        <div class="tk-f"><div class="tk-lbl">Planteles</div><div class="tk-val sm">Toluca, Metepec<br>y Calimaya</div></div>
+        <div class="tk-f"><div class="tk-lbl">Recepción</div><div class="tk-val">9:00 <span class="u">a.m.</span></div></div>
       </div>
     </div>
-    <div class="info-item">
-      <div class="badge"><i class="ic" data-ic="school"></i></div>
-      <div>
-        <div class="info-lbl">Escuela</div>
-        <div class="info-val">IPEFH<small>Planteles Toluca, Metepec y Calimaya</small></div>
-      </div>
-    </div>
-    <div class="info-item">
-      <div class="badge"><i class="ic" data-ic="clock"></i></div>
-      <div>
-        <div class="info-lbl">Hora de recepción</div>
-        <div class="info-val">9:00 a.m.</div>
-      </div>
+    <div class="tk-stub">
+      <div class="lbl">ACCESO</div>
+      <div class="big">360<sup>°</sup></div>
+      <svg class="barcode" id="barcode" viewBox="0 0 250 62" preserveAspectRatio="none"></svg>
+      <div class="tk-code">WH360 · IPEFH</div>
     </div>
   </div>
 
-  <!-- ===== OBJETIVO ===== -->
-  <div class="abs obj">
-    <div class="obj-mark"><i class="ic" data-ic="heart"></i></div>
+  <!-- ================= PROGRAMA ================= -->
+  <div class="abs sec-h">
     <div>
-      <div class="obj-lbl">OBJETIVO</div>
-      <p class="obj-txt">Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
+      <div class="kick">PROGRAMA DEL EVENTO</div>
+      <h2>Tu mañana en <span>360°</span></h2>
     </div>
+    <div class="rule"></div>
   </div>
 
-  <!-- ===== PROGRAMA ===== -->
-  <div class="abs prog-h"><h2>Programa del evento</h2><div class="rule"></div></div>
+  <svg class="abs dial" id="dial" width="640" height="640" viewBox="0 0 640 640"></svg>
 
-  <div class="abs timeline">
-    <div class="tl-line"></div>
+  <div class="abs legend" id="legend"></div>
 
-    <div class="step">
-      <div class="time">9:00 – 9:30 a.m.</div>
-      <div class="node"><i class="ic" data-ic="door-open"></i></div>
-      <div class="what"><div class="ttl">Bienvenida</div><div class="det">En el área de admisiones</div></div>
-    </div>
-    <div class="step hot">
-      <div class="time">9:30 – 10:15 a.m.</div>
-      <div class="node"><i class="ic" data-ic="shapes"></i></div>
-      <div class="what"><div class="ttl">Actividad por licenciatura</div><div class="det">Consulta tu lugar →</div></div>
-    </div>
-    <div class="step">
-      <div class="time">10:20 – 10:40 a.m.</div>
-      <div class="node"><i class="ic" data-ic="mug-hot"></i></div>
-      <div class="what"><div class="ttl">Refrigerio</div><div class="det">En el foyer del auditorio · Convivencia libre</div></div>
-    </div>
-    <div class="step">
-      <div class="time">10:45 – 11:00 a.m.</div>
-      <div class="node"><i class="ic" data-ic="building-columns"></i></div>
-      <div class="what"><div class="ttl">Presentación de la universidad</div></div>
-    </div>
-    <div class="step">
-      <div class="time">11:00 – 11:10 a.m.</div>
-      <div class="node"><i class="ic" data-ic="trophy"></i></div>
-      <div class="what"><div class="ttl">Premiación de la actividad</div><div class="det">Auditorio</div></div>
-    </div>
-    <div class="step">
-      <div class="time">11:10 – 11:40 a.m.</div>
-      <div class="node"><i class="ic" data-ic="route"></i></div>
-      <div class="what"><div class="ttl">Recorrido</div><div class="det">A cargo de admisiones</div></div>
-    </div>
-    <div class="step last">
-      <div class="time">11:40 – 12:00 p.m.</div>
-      <div class="node"><i class="ic" data-ic="camera"></i></div>
-      <div class="what"><div class="ttl">Cierre y despedida</div><div class="det">Fotos y videos · Contenido para redes sociales</div></div>
-    </div>
-  </div>
-
-  <svg class="abs connector" viewBox="0 0 90 40">
-    <path d="M2 20 H 80" stroke="#F2C94C" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>
-    <circle cx="82" cy="20" r="7" fill="#F2C94C"/>
+  <!-- ================= LICENCIATURAS ================= -->
+  <div class="abs lic-wrap"></div>
+  <svg class="abs lic-top" viewBox="0 0 1800 120" preserveAspectRatio="none">
+    <path d="M0 60 C 520 0, 1160 120, 1800 40 L1800 120 L0 120 Z" fill="#F2C94C"/>
+    <path d="M0 76 C 520 16, 1160 136, 1800 56 L1800 120 L0 120 Z" fill="#1A4470"/>
   </svg>
-
-  <div class="abs lic">
-    <i class="ic lic-wm" data-ic="graduation-cap"></i>
-    <span class="lic-time">9:30 – 10:15 a.m.</span>
-    <h3>Actividad por<br><span>licenciatura</span></h3>
-    <ul>
-      <li><div class="b"><i class="ic" data-ic="chart-line"></i></div>
-        <div><div class="car">Administración y Dirección Empresarial y Mercadotecnia</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón grande</div></div></li>
-      <li><div class="b"><i class="ic" data-ic="compass-drafting"></i></div>
-        <div><div class="car">Arquitectura y Arquitectura de Interiores</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 201</div></div></li>
-      <li><div class="b"><i class="ic" data-ic="tooth"></i></div>
-        <div><div class="car">Cirujano Dentista</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Laboratorios</div></div></li>
-      <li><div class="b"><i class="ic" data-ic="scale-balanced"></i></div>
-        <div><div class="car">Derecho</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Sala de Juicios Orales</div></div></li>
-      <li><div class="b"><i class="ic" data-ic="brain"></i></div>
-        <div><div class="car">Psicología y Pedagogía</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 8, junto a dirección</div></div></li>
-      <li><div class="b"><i class="ic" data-ic="earth-americas"></i></div>
-        <div><div class="car">Relaciones Internacionales</div><div class="loc tbd"><i class="ic" data-ic="location-dot"></i>Salón pendiente de confirmar</div></div></li>
-    </ul>
+  <div class="abs lic-h">
+    <span class="pill">9:30 – 10:15 a.m.</span>
+    <h3>Actividad por <span>licenciatura</span></h3>
+  </div>
+  <div class="abs cards">
+    <div class="card"><div class="b"><i class="ic" data-ic="chart-line"></i></div>
+      <div><div class="car">Administración y Dirección Empresarial y Mercadotecnia</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón grande</div></div>
+      <i class="ic wm" data-ic="chart-line"></i></div>
+    <div class="card"><div class="b"><i class="ic" data-ic="compass-drafting"></i></div>
+      <div><div class="car">Arquitectura y Arquitectura de Interiores</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 201</div></div>
+      <i class="ic wm" data-ic="compass-drafting"></i></div>
+    <div class="card"><div class="b"><i class="ic" data-ic="tooth"></i></div>
+      <div><div class="car">Cirujano Dentista</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Laboratorios</div></div>
+      <i class="ic wm" data-ic="tooth"></i></div>
+    <div class="card"><div class="b"><i class="ic" data-ic="scale-balanced"></i></div>
+      <div><div class="car">Derecho</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Sala de Juicios Orales</div></div>
+      <i class="ic wm" data-ic="scale-balanced"></i></div>
+    <div class="card"><div class="b"><i class="ic" data-ic="brain"></i></div>
+      <div><div class="car">Psicología y Pedagogía</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 8, junto a dirección</div></div>
+      <i class="ic wm" data-ic="brain"></i></div>
+    <div class="card"><div class="b"><i class="ic" data-ic="earth-americas"></i></div>
+      <div><div class="car">Relaciones Internacionales</div><div class="loc tbd"><i class="ic" data-ic="location-dot"></i>Salón pendiente de confirmar</div></div>
+      <i class="ic wm" data-ic="earth-americas"></i></div>
   </div>
 
-  <!-- ===== FOOTER (olas institucionales) ===== -->
-  <svg class="abs foot" viewBox="0 0 1800 230" preserveAspectRatio="none">
-    <path d="M0 40 C 500 -10, 1200 120, 1800 30 L1800 230 L0 230 Z" fill="#F2C94C"/>
-    <path d="M0 64 C 500 14, 1200 144, 1800 54 L1800 230 L0 230 Z" fill="#266294"/>
+  <!-- ================= FOOTER ================= -->
+  <svg class="abs foot" viewBox="0 0 1800 120" preserveAspectRatio="none">
+    <path d="M0 22 C 600 -8, 1200 52, 1800 10 L1800 120 L0 120 Z" fill="#F2C94C"/>
+    <path d="M0 32 C 600 2, 1200 62, 1800 20 L1800 120 L0 120 Z" fill="#266294"/>
   </svg>
   <div class="abs foot-tag">#SOMOS<b>WESTHILL</b></div>
   <div class="abs foot-handle">@univwesthill</div>
   <img class="abs foot-logo" src="img/logo_westhill_blanco.png" alt="Universidad Westhill">
 </div>
 
+<!-- icon templates for script-built parts (inlined at build time) -->
+<template id="icons">
+  <i class="ic" data-k="door-open" data-ic="door-open"></i>
+  <i class="ic" data-k="shapes" data-ic="shapes"></i>
+  <i class="ic" data-k="mug-hot" data-ic="mug-hot"></i>
+  <i class="ic" data-k="building-columns" data-ic="building-columns"></i>
+  <i class="ic" data-k="trophy" data-ic="trophy"></i>
+  <i class="ic" data-k="route" data-ic="route"></i>
+  <i class="ic" data-k="camera" data-ic="camera"></i>
+</template>
+
 <script>
-  // 360° dial: a tick every 5°, longer every 30°, around the main photo
+  const NS = "http://www.w3.org/2000/svg";
+  const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+  const icon = k => document.getElementById("icons").content.querySelector(`[data-k="${k}"] svg`);
+
+  // ---- hero: 360° dial ticks around the lens ----
   (function () {
-    const g = document.getElementById("ticks"), cx = 1210, cy = 610;
-    for (let a = 0; a < 360; a += 5) {
-      const major = a % 30 === 0, r1 = 404, r2 = major ? 432 : 418;
-      const t = (a - 90) * Math.PI / 180;
-      const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
-      l.setAttribute("x1", cx + r1 * Math.cos(t)); l.setAttribute("y1", cy + r1 * Math.sin(t));
-      l.setAttribute("x2", cx + r2 * Math.cos(t)); l.setAttribute("y2", cy + r2 * Math.sin(t));
-      l.setAttribute("stroke-width", major ? 4 : 2);
-      l.setAttribute("stroke-opacity", major ? .75 : .35);
-      g.appendChild(l);
+    const g = document.getElementById("ticks"), cx = 1150, cy = 560;
+    for (let a = 0; a < 360; a += 3) {
+      const major = a % 30 === 0, r1 = 330, r2 = major ? 362 : 345, t = (a - 90) * Math.PI / 180;
+      el("line", { x1: cx + r1 * Math.cos(t), y1: cy + r1 * Math.sin(t), x2: cx + r2 * Math.cos(t), y2: cy + r2 * Math.sin(t),
+        "stroke-width": major ? 4 : 2, "stroke-opacity": major ? .8 : .3 }, g);
     }
   })();
-  // 360° arrow: arc around the dial ending in an arrowhead (angles clockwise from top)
+
+  // ---- ticket barcode (decorative) ----
   (function () {
-    const g = document.getElementById("arc"), cx = 1210, cy = 610, r = 560, a0 = -24, a1 = 138;
-    const pt = a => { const t = a * Math.PI / 180; return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; };
-    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
-    const t = a1 * Math.PI / 180, dx = Math.cos(t), dy = Math.sin(t);
-    const back = (s) => { const c = Math.cos(s), n = Math.sin(s); return [x1 - 34 * (dx * c - dy * n), y1 - 34 * (dx * n + dy * c)]; };
-    const [ax, ay] = back(0.55), [bx, by] = back(-0.55);
-    g.innerHTML = `<path d="M ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1}"/><path d="M ${ax} ${ay} L ${x1} ${y1} L ${bx} ${by}"/>`;
+    const svg = document.getElementById("barcode"); let x = 0, i = 0;
+    const w = [3, 1, 2, 1, 4, 1, 1, 3, 2, 2, 1, 4, 3, 1, 2, 1, 1, 2, 4, 1, 3, 1, 2, 3, 1, 1, 4, 2, 1, 3, 2, 1, 1, 4, 2, 1, 3, 1, 2, 2, 1, 3, 4, 1, 2, 1, 3, 1, 1, 2, 4, 1, 2, 3, 1, 2];
+    while (x < 250) { const bw = w[i % w.length] * 2.2; if (i % 2 === 0) el("rect", { x, y: 0, width: bw, height: 62, fill: "#0E2A47" }, svg); x += bw; i++; }
+  })();
+
+  // ---- the morning as a 360° clock: 9:00 to 12:00 (180 min = 360°, 2° per minute) ----
+  const PROGRAM = [
+    { s: 0,   e: 30,  time: "9:00 – 9:30 a.m.",   ttl: "Bienvenida", det: "En el área de admisiones", c: "#4A90C8", ic: "door-open" },
+    { s: 30,  e: 75,  time: "9:30 – 10:15 a.m.",  ttl: "Actividad por licenciatura", det: "Consulta tu lugar abajo ↓", c: "#F2C94C", ic: "shapes", hot: true },
+    { s: 80,  e: 100, time: "10:20 – 10:40 a.m.", ttl: "Refrigerio", det: "En el foyer del auditorio · Convivencia libre", c: "#8FB3D9", ic: "mug-hot" },
+    { s: 105, e: 120, time: "10:45 – 11:00 a.m.", ttl: "Presentación de la universidad", det: "", c: "#266294", ic: "building-columns" },
+    { s: 120, e: 130, time: "11:00 – 11:10 a.m.", ttl: "Premiación de la actividad", det: "Auditorio", c: "#E3AC25", ic: "trophy" },
+    { s: 130, e: 160, time: "11:10 – 11:40 a.m.", ttl: "Recorrido", det: "A cargo de admisiones", c: "#163A5F", ic: "route" },
+    { s: 160, e: 180, time: "11:40 – 12:00 p.m.", ttl: "Cierre y despedida", det: "Fotos y videos · Contenido para redes sociales", c: "#0E2A47", ic: "camera" },
+  ];
+  (function () {
+    const svg = document.getElementById("dial"), cx = 320, cy = 320, R = 250, r0 = 164, GAP = 0.9;
+    const P = (deg, rad) => { const t = (deg - 90) * Math.PI / 180; return [cx + rad * Math.cos(t), cy + rad * Math.sin(t)]; };
+    el("circle", { cx, cy, r: R + 22, fill: "#EDF3FA" }, svg);
+    el("circle", { cx, cy, r: R + 22, fill: "none", stroke: "#D6E3F1", "stroke-width": 2 }, svg);
+    for (let m = 0; m <= 180; m += 5) {
+      const big = m % 60 === 0, mid = m % 15 === 0;
+      const [x1, y1] = P(m * 2, R + 6), [x2, y2] = P(m * 2, R + (big ? 20 : mid ? 15 : 11));
+      el("line", { x1, y1, x2, y2, stroke: "#266294", "stroke-opacity": big ? .9 : .35, "stroke-width": big ? 4 : 2, "stroke-linecap": "round" }, svg);
+    }
+    PROGRAM.forEach(p => {
+      const a0 = p.s * 2 + GAP, a1 = p.e * 2 - GAP, large = a1 - a0 > 180 ? 1 : 0;
+      const [ox0, oy0] = P(a0, R), [ox1, oy1] = P(a1, R), [ix1, iy1] = P(a1, r0), [ix0, iy0] = P(a0, r0);
+      el("path", { d: `M ${ox0} ${oy0} A ${R} ${R} 0 ${large} 1 ${ox1} ${oy1} L ${ix1} ${iy1} A ${r0} ${r0} 0 ${large} 0 ${ix0} ${iy0} Z`,
+        fill: p.c, stroke: "#FFFFFF", "stroke-width": 3, "stroke-linejoin": "round" }, svg);
+      const [mx, my] = P((a0 + a1) / 2, (R + r0) / 2), s = p.e - p.s >= 15 ? 38 : 30;
+      const ic = icon(p.ic).cloneNode(true);
+      ic.setAttribute("x", mx - s / 2); ic.setAttribute("y", my - s / 2); ic.setAttribute("width", s); ic.setAttribute("height", s);
+      ic.setAttribute("fill", p.hot ? "#0E2A47" : "#FFFFFF");
+      svg.appendChild(ic);
+    });
+    [[0, "9:00"], [120, "10:00"], [240, "11:00"]].forEach(([deg, txt]) => {
+      const [x, y] = P(deg, R + 2);
+      const t = el("text", { x, y: y + 9, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 900, "font-size": 24, fill: "#0E2A47",
+        stroke: "#EDF3FA", "stroke-width": 10, "paint-order": "stroke" }, svg);
+      t.textContent = txt;
+    });
+    el("circle", { cx, cy, r: r0 - 18, fill: "#FFFFFF" }, svg);
+    el("circle", { cx, cy, r: r0 - 18, fill: "none", stroke: "#F2C94C", "stroke-width": 3, "stroke-dasharray": "2 9", "stroke-linecap": "round" }, svg);
+    const c1 = el("text", { x: cx, y: cy - 30, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 800, "font-size": 19, "letter-spacing": 4, fill: "#5B6B7D" }, svg); c1.textContent = "DE 9:00 A";
+    const c2 = el("text", { x: cx, y: cy + 34, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 900, "font-size": 70, fill: "#0E2A47", "letter-spacing": -2 }, svg); c2.textContent = "12:00";
+    const c3 = el("text", { x: cx, y: cy + 70, "text-anchor": "middle", "font-family": "Raleway", "font-weight": 800, "font-size": 22, "letter-spacing": 3, fill: "#266294" }, svg); c3.textContent = "P.M.";
+  })();
+
+  // ---- legend rows ----
+  (function () {
+    const L = document.getElementById("legend");
+    PROGRAM.forEach(p => {
+      const row = document.createElement("div"); row.className = "row" + (p.hot ? " hot" : "");
+      const dot = document.createElement("div"); dot.className = "dot"; dot.style.background = p.c; if (p.hot) dot.style.color = "#0E2A47";
+      const ic = document.createElement("i"); ic.className = "ic"; ic.appendChild(icon(p.ic).cloneNode(true)); dot.appendChild(ic);
+      const time = document.createElement("div"); time.className = "time"; time.textContent = p.time;
+      const what = document.createElement("div");
+      what.innerHTML = `<div class="ttl"></div>${p.det ? '<div class="det"></div>' : ""}`;
+      what.querySelector(".ttl").textContent = p.ttl; if (p.det) what.querySelector(".det").textContent = p.det;
+      row.append(dot, time, what); L.appendChild(row);
+    });
   })();
 </script>
 </body>
