@@ -87,23 +87,33 @@ function crearTablero() {
     .addRange(t.getRange("B53:C103")).setNumHeaders(1)
     .setPosition(base, 2, 0, 0)
     .setOption("title", "Invitados por referidor")
-    .setOption("series", { 0: { color: UW.azul } }).setOption("legend", { position: "none" })
+    .setOption("series", { 0: { color: UW.azul, dataLabel: "value" } }).setOption("legend", { position: "none" })
+    .setOption("hAxis", { format: "0", minValue: 0, viewWindow: { min: 0 } })
     .setOption("width", 520).setOption("height", 320).build());
 
   t.insertChart(t.newChart().setChartType(Charts.ChartType.PIE)
     .addRange(t.getRange("E53:F63")).setNumHeaders(1)
     .setPosition(base, 8, 0, 0)
-    .setOption("title", "Registros por nivel").setOption("pieHole", 0.5)
+    .setOption("title", "Registros por nivel").setOption("pieHole", 0.45)
+    // Leyenda a la derecha y cuántos + % en cada rebanada: se entiende aunque haya un solo nivel
+    .setOption("legend", { position: "right", alignment: "center", textStyle: { fontSize: 12 } })
+    .setOption("pieSliceText", "value-and-percentage")
+    .setOption("pieSliceTextStyle", { color: "#ffffff", fontSize: 12, bold: true })
+    .setOption("colors", [UW.azul, UW.dorado, UW.verde, UW.azulOscuro, "#a8811a", "#9cc3e6"])
     .setOption("slices", { 0: { color: UW.azul }, 1: { color: UW.dorado }, 2: { color: UW.verde },
       3: { color: UW.azulOscuro }, 4: { color: "#a8811a" }, 5: { color: "#9cc3e6" } })
     .setOption("width", 460).setOption("height", 320).build());
 
-  t.insertChart(t.newChart().setChartType(Charts.ChartType.AREA)
+  // Columnas (no línea): con uno o pocos días se ve una barra, no un punto perdido
+  t.insertChart(t.newChart().setChartType(Charts.ChartType.COLUMN)
     .addRange(t.getRange("M53:N500")).setNumHeaders(1)
     .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.SHOW_BOTH)
     .setPosition(base + 20, 2, 0, 0)
     .setOption("title", "Registros por día")
-    .setOption("series", { 0: { color: UW.verde } }).setOption("legend", { position: "none" })
+    .setOption("treatLabelsAsText", true)
+    .setOption("bar", { groupWidth: "60%" })
+    .setOption("vAxis", { format: "0", minValue: 0, viewWindow: { min: 0 } })
+    .setOption("series", { 0: { color: UW.verde, dataLabel: "value" } }).setOption("legend", { position: "none" })
     .setOption("width", 1000).setOption("height", 300).build());
 
   // La serie por día solo alimenta la gráfica: se oculta
