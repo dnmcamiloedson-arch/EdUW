@@ -150,11 +150,20 @@
     $("r-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(texto);
 
     // La tarjeta se dibuja antes de mostrarla para que el cambio de altura sea uno solo
-    const cv = await RefTarjeta.dibujar(ref);
+    // Si la tarjeta falla, el código y el link se muestran igual (ya están guardados)
     const img = $("r-tarjeta");
-    img.src = cv.toDataURL("image/png");
-    actual.archivo = await RefTarjeta.archivo(cv, cod);
-    $("r-compartir").hidden = !puedeCompartir(actual.archivo);
+    let hayTarjeta = false;
+    try {
+      const cv = await RefTarjeta.dibujar(ref);
+      img.src = cv.toDataURL("image/png");
+      actual.archivo = await RefTarjeta.archivo(cv, cod);
+      hayTarjeta = true;
+    } catch (err) {
+      console.error("[Tarjeta]", err);
+    }
+    img.closest("figure").hidden = !hayTarjeta;
+    descargar.hidden = !hayTarjeta;
+    $("r-compartir").hidden = !hayTarjeta || !puedeCompartir(actual.archivo);
 
     RefUI.morph(tarjeta, () => {
       form.hidden = true;

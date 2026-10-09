@@ -29,7 +29,9 @@
         const img = new Image();
         img.onload = () => ok(img);
         img.onerror = mal;
-        img.src = BASE + nombre;
+        const incrustada = window.RefTarjetaImgs && window.RefTarjetaImgs[nombre];
+        if (!incrustada) img.crossOrigin = "anonymous";   // si no está incrustada, pedirla con CORS
+        img.src = incrustada || BASE + nombre;
       });
     }
     return cache[nombre];
