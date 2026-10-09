@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Westhill 360</title>
+<style>
+  @font-face { font-family: "Raleway"; font-weight: 400; src: url(fonts/Raleway-400.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 500; src: url(fonts/Raleway-500.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 600; src: url(fonts/Raleway-600.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 700; src: url(fonts/Raleway-700.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 800; src: url(fonts/Raleway-800.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 900; src: url(fonts/Raleway-900.ttf); }
+
+  :root {
+    --blue: #266294;
+    --navy: #0E2A47;
+    --deep: #163A5F;
+    --gold: #F2C94C;
+    --gold-dk: #E3AC25;
+    --ice: #EDF3FA;
+    --muted: #5B6B7D;
+    --ink: #15243A;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--white); }
+  body { font-family: "Raleway", sans-serif; color: var(--ink); }
+
+  .poster {
+    position: relative; width: 1800px; height: 2700px; overflow: hidden;
+    background: var(--white);
+  }
+  .abs { position: absolute; }
+  .ic svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: absolute; inset: 0 0 auto 0; height: 1240px;
+    background:
+      radial-gradient(900px 700px at 1210px 610px, rgba(74,144,200,.55), transparent 70%),
+      linear-gradient(160deg, #1C4772 0%, var(--navy) 62%, #0A1F36 100%);
+  }
+  .hero-rings { position: absolute; inset: 0; }
+
+  .banderin { left: 110px; top: 0; width: 132px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
+
+  .kicker {
+    left: 110px; top: 262px; display: inline-flex; align-items: center; gap: 14px;
+    border: 3px solid var(--gold); color: var(--gold); border-radius: 999px;
+    padding: 12px 30px 12px 22px; font-weight: 800; font-size: 26px; letter-spacing: 6px;
+  }
+  .kicker .ic { width: 28px; height: 28px; }
+
+  .t-west {
+    left: 104px; top: 340px; color: var(--white); font-weight: 900; font-size: 122px;
+    letter-spacing: 3px; line-height: 1;
+  }
+  .t-360 {
+    left: 96px; top: 452px; font-weight: 900; font-size: 340px; line-height: 1; letter-spacing: -6px;
+    background: linear-gradient(180deg, #FFE7A0 0%, var(--gold) 45%, var(--gold-dk) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 14px 30px rgba(0,0,0,.35));
+  }
+  .t-deg { left: 690px; top: 506px; width: 78px; height: 78px; border-radius: 50%; border: 20px solid var(--gold); filter: drop-shadow(0 10px 20px rgba(0,0,0,.35)); }
+  .tagline {
+    left: 110px; top: 848px; color: var(--white); font-size: 50px; font-weight: 800; line-height: 1.15;
+  }
+  .tagline span { color: var(--gold); }
+  .tag-sub {
+    left: 112px; top: 990px; width: 640px; color: #C9D9EC; font-size: 28px; font-weight: 500; line-height: 1.45;
+  }
+
+  /* photo circle + orbit */
+  .main-photo {
+    left: 830px; top: 230px; width: 760px; height: 760px; border-radius: 50%;
+    background: url(img/letras.jpg) center 38% / cover no-repeat;
+    box-shadow: 0 0 0 14px rgba(255,255,255,.10), 0 40px 80px rgba(0,0,0,.45);
+  }
+  .sat {
+    width: 176px; height: 176px; border-radius: 50%;
+    border: 7px solid var(--white); box-shadow: 0 18px 36px rgba(0,0,0,.4);
+    background-size: cover; background-repeat: no-repeat;
+  }
+  .sat-badge {
+    width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy);
+    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+  }
+  .sat-badge .ic { width: 34px; height: 34px; }
+
+  /* hero bottom curve */
+  .hero-curve { left: 0; top: 1040px; width: 1800px; height: 260px; }
+
+  /* ---------- INFO CARD ---------- */
+  .info {
+    left: 110px; top: 1090px; width: 1580px; height: 214px; background: var(--white);
+    border-radius: 30px; box-shadow: 0 30px 60px rgba(14,42,71,.18), 0 2px 0 rgba(14,42,71,.04);
+    display: grid; grid-template-columns: 1.05fr 1.55fr 1fr; align-items: center; padding: 0 36px;
+  }
+  .info-item { display: flex; align-items: center; gap: 22px; padding: 0 26px; }
+  .info-item + .info-item { border-left: 2px dashed #D6E3F1; }
+  .badge {
+    flex: none; width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(180deg, #4A93D2, #1F5585); color: var(--white);
+    box-shadow: 0 10px 22px rgba(38,98,148,.35);
+  }
+  .badge.gold { background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy); box-shadow: 0 10px 22px rgba(227,172,37,.4); }
+  .badge .ic { width: 42px; height: 42px; }
+  .info-lbl { font-size: 19px; font-weight: 800; letter-spacing: 2.4px; white-space: nowrap; color: var(--blue); text-transform: uppercase; }
+  .info-val { font-size: 40px; font-weight: 900; color: var(--navy); line-height: 1.08; margin-top: 6px; }
+  .info-val small { display: block; font-size: 23px; white-space: nowrap; font-weight: 600; color: var(--muted); margin-top: 6px; line-height: 1.3; }
+
+  /* ---------- OBJETIVO ---------- */
+  .obj { left: 110px; top: 1366px; width: 1580px; display: flex; gap: 40px; align-items: flex-start; }
+  .obj-mark {
+    flex: none; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--ice); color: var(--blue); position: relative;
+  }
+  .obj-mark .ic { width: 64px; height: 64px; }
+  .obj-mark::after {
+    content: ""; position: absolute; inset: -12px; border-radius: 50%;
+    border: 3px dashed var(--gold);
+  }
+  .obj-lbl { font-size: 24px; font-weight: 800; letter-spacing: 6px; color: var(--gold-dk); }
+  .obj-txt { margin-top: 10px; font-size: 40px; line-height: 1.38; font-weight: 600; color: var(--navy); }
+  .obj-txt b { font-weight: 900; color: var(--blue); }
+
+  /* ---------- PROGRAMA ---------- */
+  .prog-h { left: 110px; top: 1590px; display: flex; align-items: center; gap: 28px; width: 1580px; }
+  .prog-h h2 { font-size: 62px; font-weight: 900; color: var(--navy); letter-spacing: -.5px; white-space: nowrap; }
+  .prog-h .rule { flex: 1; height: 4px; background: linear-gradient(90deg, var(--gold), rgba(242,201,76,0)); border-radius: 4px; }
+
+  .timeline { left: 110px; top: 1712px; width: 930px; }
+  .tl-line {
+    position: absolute; left: 272px; top: 30px; bottom: 34px; width: 4px;
+    background: repeating-linear-gradient(180deg, var(--blue) 0 14px, transparent 14px 26px);
+    opacity: .5;
+  }
+  .step { position: relative; display: grid; grid-template-columns: 236px 76px 1fr; column-gap: 0; align-items: start; height: 98px; }
+  .step .time { text-align: right; padding-right: 22px; padding-top: 12px; font-size: 27px; font-weight: 800; color: var(--blue); white-space: nowrap; letter-spacing: -.2px; }
+  .step .node {
+    width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin-left: 2px;
+    background: var(--white); color: var(--blue); border: 4px solid var(--blue); position: relative; z-index: 1;
+  }
+  .step .node .ic { width: 28px; height: 28px; }
+  .step .what { padding-left: 22px; padding-top: 6px; }
+  .step .ttl { font-size: 33px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+  .step .det { font-size: 23px; font-weight: 500; color: var(--muted); margin-top: 6px; line-height: 1.25; }
+  .step.hot .node { background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); border-color: var(--white); color: var(--navy); box-shadow: 0 0 0 5px var(--gold), 0 10px 20px rgba(227,172,37,.4); }
+  .step.hot .ttl { color: var(--blue); }
+  .step.hot .det { color: var(--gold-dk); font-weight: 800; }
+  .step.last .node { background: var(--blue); color: var(--white); }
+
+  /* right highlight card */
+  .lic {
+    left: 1080px; top: 1690px; width: 610px; height: 772px; border-radius: 36px; padding: 40px 42px 36px;
+    background: linear-gradient(165deg, #1C4772 0%, #0B2240 100%);
+    box-shadow: 0 30px 60px rgba(14,42,71,.35), inset 0 0 0 2px rgba(255,255,255,.08);
+    overflow: hidden; color: var(--white);
+  }
+  .lic-wm { position: absolute; right: -70px; bottom: -70px; width: 360px; height: 360px; color: rgba(255,255,255,.05); }
+  .lic-time {
+    display: inline-block; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 22px;
+    letter-spacing: 1.5px; border-radius: 999px; padding: 9px 22px;
+  }
+  .lic h3 { font-size: 44px; font-weight: 900; line-height: 1.05; margin-top: 18px; }
+  .lic h3 span { color: var(--gold); }
+  .lic ul { list-style: none; margin-top: 22px; }
+  .lic li { display: flex; gap: 20px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .lic li .b {
+    flex: none; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(255,255,255,.10); color: var(--gold); border: 2px solid rgba(242,201,76,.55);
+  }
+  .lic li .b .ic { width: 28px; height: 28px; }
+  .lic .car { font-size: 22px; font-weight: 800; line-height: 1.18; }
+  .lic .loc { font-size: 20px; font-weight: 600; color: var(--gold); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+  .lic .loc .ic { width: 16px; height: 16px; flex: none; }
+  .lic .loc.tbd { color: #9FB9D6; font-style: italic; }
+
+  .connector { left: 1000px; top: 1792px; width: 90px; height: 40px; }
+
+  /* ---------- FOOTER ---------- */
+  .foot { left: 0; top: 2470px; width: 1800px; height: 230px; }
+  .foot-tag { left: 110px; top: 2588px; color: var(--white); font-size: 46px; font-weight: 500; letter-spacing: 1px; }
+  .foot-tag b { font-weight: 900; }
+  .foot-handle { left: 112px; top: 2648px; color: #BFD3EA; font-size: 22px; font-weight: 600; letter-spacing: 2px; }
+  .foot-logo { right: 110px; top: 2560px; height: 110px; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ===== HERO ===== -->
+  <div class="hero">
+    <svg class="hero-rings" viewBox="0 0 1800 1240" width="1800" height="1240">
+      <defs>
+        <linearGradient id="g-orbit" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#F2C94C"/><stop offset="1" stop-color="#F2C94C" stop-opacity=".35"/>
+        </linearGradient>
+      </defs>
+      <!-- faint concentric rings -->
+      <g fill="none" stroke="#FFFFFF" stroke-opacity=".06" stroke-width="2">
+        <circle cx="1210" cy="610" r="620"/>
+        <circle cx="1210" cy="610" r="760"/>
+        <circle cx="1210" cy="610" r="900"/>
+        <circle cx="1210" cy="610" r="1040"/>
+      </g>
+      <!-- 360 dial ticks -->
+      <g id="ticks" stroke="#FFFFFF" stroke-linecap="round"></g>
+      <!-- orbit -->
+      <circle cx="1210" cy="610" r="500" fill="none" stroke="url(#g-orbit)" stroke-width="4" stroke-dasharray="2 16" stroke-linecap="round"/>
+      <!-- 360 arrow arc -->
+      <g id="arc" fill="none" stroke="#F2C94C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></g>
+    </svg>
+
+    <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
+
+    <div class="abs kicker"><i class="ic" data-ic="star"></i>PROYECTO</div>
+    <div class="abs t-west">WESTHILL</div>
+    <div class="abs t-360">360</div><div class="abs t-deg"></div>
+    <div class="abs tagline">Vívela. Explórala.<br><span>Enamórate.</span></div>
+
+    <div class="abs main-photo"></div>
+
+    <!-- satellites on the orbit (r=500 around 1210,610) -->
+    <div class="abs sat" style="left:1372px; top:89px; background-image:url(img/estudiantes.jpg); background-position:center 30%;"></div>
+    <div class="abs sat-badge" style="left:1502px; top:70px;"><i class="ic" data-ic="user-graduate"></i></div>
+
+    <div class="abs sat" style="left:1597px; top:677px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
+    <div class="abs sat-badge" style="left:1590px; top:820px;"><i class="ic" data-ic="building-columns"></i></div>
+
+    <div class="abs sat" style="left:814px; top:916px; background-image:url(img/edificio.jpg); background-position:30% 60%;"></div>
+    <div class="abs sat-badge" style="left:796px; top:900px;"><i class="ic" data-ic="tree"></i></div>
+  </div>
+
+  <!-- hero bottom curve: gold stripe + white -->
+  <svg class="abs hero-curve" viewBox="0 0 1800 260" preserveAspectRatio="none">
+    <path d="M0 120 C 420 250, 980 40, 1800 150 L1800 260 L0 260 Z" fill="#F2C94C"/>
+    <path d="M0 150 C 420 280, 980 70, 1800 180 L1800 260 L0 260 Z" fill="#FFFFFF"/>
+  </svg>
+
+  <!-- ===== INFO CARD ===== -->
+  <div class="abs info">
+    <div class="info-item">
+      <div class="badge gold"><i class="ic" data-ic="calendar-days"></i></div>
+      <div>
+        <div class="info-lbl">Días de las visitas</div>
+        <div class="info-val">14 y 16<br>de octubre</div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="badge"><i class="ic" data-ic="school"></i></div>
+      <div>
+        <div class="info-lbl">Escuela</div>
+        <div class="info-val">IPEFH<small>Planteles Toluca, Metepec y Calimaya</small></div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="badge"><i class="ic" data-ic="clock"></i></div>
+      <div>
+        <div class="info-lbl">Hora de recepción</div>
+        <div class="info-val">9:00 a.m.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OBJETIVO ===== -->
+  <div class="abs obj">
+    <div class="obj-mark"><i class="ic" data-ic="heart"></i></div>
+    <div>
+      <div class="obj-lbl">OBJETIVO</div>
+      <p class="obj-txt">Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
+    </div>
+  </div>
+
+  <!-- ===== PROGRAMA ===== -->
+  <div class="abs prog-h"><h2>Programa del evento</h2><div class="rule"></div></div>
+
+  <div class="abs timeline">
+    <div class="tl-line"></div>
+
+    <div class="step">
+      <div class="time">9:00 – 9:30 a.m.</div>
+      <div class="node"><i class="ic" data-ic="door-open"></i></div>
+      <div class="what"><div class="ttl">Bienvenida</div><div class="det">En el área de admisiones</div></div>
+    </div>
+    <div class="step hot">
+      <div class="time">9:30 – 10:15 a.m.</div>
+      <div class="node"><i class="ic" data-ic="shapes"></i></div>
+      <div class="what"><div class="ttl">Actividad por licenciatura</div><div class="det">Consulta tu lugar →</div></div>
+    </div>
+    <div class="step">
+      <div class="time">10:20 – 10:40 a.m.</div>
+      <div class="node"><i class="ic" data-ic="mug-hot"></i></div>
+      <div class="what"><div class="ttl">Refrigerio</div><div class="det">En el foyer del auditorio · Convivencia libre</div></div>
+    </div>
+    <div class="step">
+      <div class="time">10:45 – 11:00 a.m.</div>
+      <div class="node"><i class="ic" data-ic="building-columns"></i></div>
+      <div class="what"><div class="ttl">Presentación de la universidad</div></div>
+    </div>
+    <div class="step">
+      <div class="time">11:00 – 11:10 a.m.</div>
+      <div class="node"><i class="ic" data-ic="trophy"></i></div>
+      <div class="what"><div class="ttl">Premiación de la actividad</div><div class="det">Auditorio</div></div>
+    </div>
+    <div class="step">
+      <div class="time">11:10 – 11:40 a.m.</div>
+      <div class="node"><i class="ic" data-ic="route"></i></div>
+      <div class="what"><div class="ttl">Recorrido</div><div class="det">A cargo de admisiones</div></div>
+    </div>
+    <div class="step last">
+      <div class="time">11:40 – 12:00 p.m.</div>
+      <div class="node"><i class="ic" data-ic="camera"></i></div>
+      <div class="what"><div class="ttl">Cierre y despedida</div><div class="det">Fotos y videos · Contenido para redes sociales</div></div>
+    </div>
+  </div>
+
+  <svg class="abs connector" viewBox="0 0 90 40">
+    <path d="M2 20 H 80" stroke="#F2C94C" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>
+    <circle cx="82" cy="20" r="7" fill="#F2C94C"/>
+  </svg>
+
+  <div class="abs lic">
+    <i class="ic lic-wm" data-ic="graduation-cap"></i>
+    <span class="lic-time">9:30 – 10:15 a.m.</span>
+    <h3>Actividad por<br><span>licenciatura</span></h3>
+    <ul>
+      <li><div class="b"><i class="ic" data-ic="chart-line"></i></div>
+        <div><div class="car">Administración y Dirección Empresarial y Mercadotecnia</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón grande</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="compass-drafting"></i></div>
+        <div><div class="car">Arquitectura y Arquitectura de Interiores</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 201</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="tooth"></i></div>
+        <div><div class="car">Cirujano Dentista</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Laboratorios</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="scale-balanced"></i></div>
+        <div><div class="car">Derecho</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Sala de Juicios Orales</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="brain"></i></div>
+        <div><div class="car">Psicología y Pedagogía</div><div class="loc"><i class="ic" data-ic="location-dot"></i>Salón 8, junto a dirección</div></div></li>
+      <li><div class="b"><i class="ic" data-ic="earth-americas"></i></div>
+        <div><div class="car">Relaciones Internacionales</div><div class="loc tbd"><i class="ic" data-ic="location-dot"></i>Salón pendiente de confirmar</div></div></li>
+    </ul>
+  </div>
+
+  <!-- ===== FOOTER (olas institucionales) ===== -->
+  <svg class="abs foot" viewBox="0 0 1800 230" preserveAspectRatio="none">
+    <path d="M0 40 C 500 -10, 1200 120, 1800 30 L1800 230 L0 230 Z" fill="#F2C94C"/>
+    <path d="M0 64 C 500 14, 1200 144, 1800 54 L1800 230 L0 230 Z" fill="#266294"/>
+  </svg>
+  <div class="abs foot-tag">#SOMOS<b>WESTHILL</b></div>
+  <div class="abs foot-handle">@univwesthill</div>
+  <img class="abs foot-logo" src="img/logo_westhill_blanco.png" alt="Universidad Westhill">
+</div>
+
+<script>
+  // 360° dial: a tick every 5°, longer every 30°, around the main photo
+  (function () {
+    const g = document.getElementById("ticks"), cx = 1210, cy = 610;
+    for (let a = 0; a < 360; a += 5) {
+      const major = a % 30 === 0, r1 = 404, r2 = major ? 432 : 418;
+      const t = (a - 90) * Math.PI / 180;
+      const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      l.setAttribute("x1", cx + r1 * Math.cos(t)); l.setAttribute("y1", cy + r1 * Math.sin(t));
+      l.setAttribute("x2", cx + r2 * Math.cos(t)); l.setAttribute("y2", cy + r2 * Math.sin(t));
+      l.setAttribute("stroke-width", major ? 4 : 2);
+      l.setAttribute("stroke-opacity", major ? .75 : .35);
+      g.appendChild(l);
+    }
+  })();
+  // 360° arrow: arc around the dial ending in an arrowhead (angles clockwise from top)
+  (function () {
+    const g = document.getElementById("arc"), cx = 1210, cy = 610, r = 560, a0 = -24, a1 = 138;
+    const pt = a => { const t = a * Math.PI / 180; return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; };
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    const t = a1 * Math.PI / 180, dx = Math.cos(t), dy = Math.sin(t);
+    const back = (s) => { const c = Math.cos(s), n = Math.sin(s); return [x1 - 34 * (dx * c - dy * n), y1 - 34 * (dx * n + dy * c)]; };
+    const [ax, ay] = back(0.55), [bx, by] = back(-0.55);
+    g.innerHTML = `<path d="M ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1}"/><path d="M ${ax} ${ay} L ${x1} ${y1} L ${bx} ${by}"/>`;
+  })();
+</script>
+</body>
+</html>

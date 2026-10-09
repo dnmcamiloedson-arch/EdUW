@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Westhill 360</title>
+<style>
+  @font-face { font-family: "Raleway"; font-weight: 400; src: url(fonts/Raleway-400.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 500; src: url(fonts/Raleway-500.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 600; src: url(fonts/Raleway-600.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 700; src: url(fonts/Raleway-700.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 800; src: url(fonts/Raleway-800.ttf); }
+  @font-face { font-family: "Raleway"; font-weight: 900; src: url(fonts/Raleway-900.ttf); }
+
+  :root {
+    --blue: #266294;
+    --navy: #0E2A47;
+    --deep: #163A5F;
+    --gold: #F2C94C;
+    --gold-dk: #E3AC25;
+    --ice: #EDF3FA;
+    --muted: #5B6B7D;
+    --ink: #15243A;
+    --white: #FFFFFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--white); }
+  body { font-family: "Raleway", sans-serif; color: var(--ink); }
+
+  .poster {
+    position: relative; width: 1800px; height: 2700px; overflow: hidden;
+    background: var(--white);
+  }
+  .abs { position: absolute; }
+  .ic svg { width: 100%; height: 100%; fill: currentColor; display: block; }
+
+  /* ---------- HERO ---------- */
+  .hero {
+    position: absolute; inset: 0 0 auto 0; height: 1240px;
+    background:
+      radial-gradient(900px 700px at 1210px 610px, rgba(74,144,200,.55), transparent 70%),
+      linear-gradient(160deg, #1C4772 0%, var(--navy) 62%, #0A1F36 100%);
+  }
+  .hero-rings { position: absolute; inset: 0; }
+
+  .banderin { left: 110px; top: 0; width: 132px; filter: drop-shadow(0 10px 18px rgba(0,0,0,.35)); }
+
+  .kicker {
+    left: 110px; top: 262px; display: inline-flex; align-items: center; gap: 14px;
+    border: 3px solid var(--gold); color: var(--gold); border-radius: 999px;
+    padding: 12px 30px 12px 22px; font-weight: 800; font-size: 26px; letter-spacing: 6px;
+  }
+  .kicker .ic { width: 28px; height: 28px; }
+
+  .t-west {
+    left: 104px; top: 340px; color: var(--white); font-weight: 900; font-size: 122px;
+    letter-spacing: 3px; line-height: 1;
+  }
+  .t-360 {
+    left: 96px; top: 452px; font-weight: 900; font-size: 340px; line-height: 1; letter-spacing: -6px;
+    background: linear-gradient(180deg, #FFE7A0 0%, var(--gold) 45%, var(--gold-dk) 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 14px 30px rgba(0,0,0,.35));
+  }
+  .t-deg { left: 690px; top: 506px; width: 78px; height: 78px; border-radius: 50%; border: 20px solid var(--gold); filter: drop-shadow(0 10px 20px rgba(0,0,0,.35)); }
+  .tagline {
+    left: 110px; top: 848px; color: var(--white); font-size: 50px; font-weight: 800; line-height: 1.15;
+  }
+  .tagline span { color: var(--gold); }
+  .tag-sub {
+    left: 112px; top: 990px; width: 640px; color: #C9D9EC; font-size: 28px; font-weight: 500; line-height: 1.45;
+  }
+
+  /* photo circle + orbit */
+  .main-photo {
+    left: 830px; top: 230px; width: 760px; height: 760px; border-radius: 50%;
+    background: url(img/letras.jpg) center 38% / cover no-repeat;
+    box-shadow: 0 0 0 14px rgba(255,255,255,.10), 0 40px 80px rgba(0,0,0,.45);
+  }
+  .sat {
+    width: 176px; height: 176px; border-radius: 50%;
+    border: 7px solid var(--white); box-shadow: 0 18px 36px rgba(0,0,0,.4);
+    background-size: cover; background-repeat: no-repeat;
+  }
+  .sat-badge {
+    width: 70px; height: 70px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy);
+    box-shadow: 0 8px 18px rgba(0,0,0,.35);
+  }
+  .sat-badge .ic { width: 34px; height: 34px; }
+
+  /* hero bottom curve */
+  .hero-curve { left: 0; top: 1040px; width: 1800px; height: 260px; }
+
+  /* ---------- INFO CARD ---------- */
+  .info {
+    left: 110px; top: 1090px; width: 1580px; height: 214px; background: var(--white);
+    border-radius: 30px; box-shadow: 0 30px 60px rgba(14,42,71,.18), 0 2px 0 rgba(14,42,71,.04);
+    display: grid; grid-template-columns: 1.05fr 1.55fr 1fr; align-items: center; padding: 0 36px;
+  }
+  .info-item { display: flex; align-items: center; gap: 22px; padding: 0 26px; }
+  .info-item + .info-item { border-left: 2px dashed #D6E3F1; }
+  .badge {
+    flex: none; width: 92px; height: 92px; border-radius: 50%; display: grid; place-items: center;
+    background: linear-gradient(180deg, #4A93D2, #1F5585); color: var(--white);
+    box-shadow: 0 10px 22px rgba(38,98,148,.35);
+  }
+  .badge.gold { background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); color: var(--navy); box-shadow: 0 10px 22px rgba(227,172,37,.4); }
+  .badge .ic { width: 42px; height: 42px; }
+  .info-lbl { font-size: 19px; font-weight: 800; letter-spacing: 2.4px; white-space: nowrap; color: var(--blue); text-transform: uppercase; }
+  .info-val { font-size: 40px; font-weight: 900; color: var(--navy); line-height: 1.08; margin-top: 6px; }
+  .info-val small { display: block; font-size: 23px; white-space: nowrap; font-weight: 600; color: var(--muted); margin-top: 6px; line-height: 1.3; }
+
+  /* ---------- OBJETIVO ---------- */
+  .obj { left: 110px; top: 1366px; width: 1580px; display: flex; gap: 40px; align-items: flex-start; }
+  .obj-mark {
+    flex: none; width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--ice); color: var(--blue); position: relative;
+  }
+  .obj-mark .ic { width: 64px; height: 64px; }
+  .obj-mark::after {
+    content: ""; position: absolute; inset: -12px; border-radius: 50%;
+    border: 3px dashed var(--gold);
+  }
+  .obj-lbl { font-size: 24px; font-weight: 800; letter-spacing: 6px; color: var(--gold-dk); }
+  .obj-txt { margin-top: 10px; font-size: 40px; line-height: 1.38; font-weight: 600; color: var(--navy); }
+  .obj-txt b { font-weight: 900; color: var(--blue); }
+
+  /* ---------- PROGRAMA ---------- */
+  .prog-h { left: 110px; top: 1590px; display: flex; align-items: center; gap: 28px; width: 1580px; }
+  .prog-h h2 { font-size: 62px; font-weight: 900; color: var(--navy); letter-spacing: -.5px; white-space: nowrap; }
+  .prog-h .rule { flex: 1; height: 4px; background: linear-gradient(90deg, var(--gold), rgba(242,201,76,0)); border-radius: 4px; }
+
+  .timeline { left: 110px; top: 1712px; width: 930px; }
+  .tl-line {
+    position: absolute; left: 272px; top: 30px; bottom: 34px; width: 4px;
+    background: repeating-linear-gradient(180deg, var(--blue) 0 14px, transparent 14px 26px);
+    opacity: .5;
+  }
+  .step { position: relative; display: grid; grid-template-columns: 236px 76px 1fr; column-gap: 0; align-items: start; height: 98px; }
+  .step .time { text-align: right; padding-right: 22px; padding-top: 12px; font-size: 27px; font-weight: 800; color: var(--blue); white-space: nowrap; letter-spacing: -.2px; }
+  .step .node {
+    width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin-left: 2px;
+    background: var(--white); color: var(--blue); border: 4px solid var(--blue); position: relative; z-index: 1;
+  }
+  .step .node .ic { width: 28px; height: 28px; }
+  .step .what { padding-left: 22px; padding-top: 6px; }
+  .step .ttl { font-size: 33px; font-weight: 800; color: var(--navy); line-height: 1.1; }
+  .step .det { font-size: 23px; font-weight: 500; color: var(--muted); margin-top: 6px; line-height: 1.25; }
+  .step.hot .node { background: linear-gradient(180deg, #FBE08A, var(--gold-dk)); border-color: var(--white); color: var(--navy); box-shadow: 0 0 0 5px var(--gold), 0 10px 20px rgba(227,172,37,.4); }
+  .step.hot .ttl { color: var(--blue); }
+  .step.hot .det { color: var(--gold-dk); font-weight: 800; }
+  .step.last .node { background: var(--blue); color: var(--white); }
+
+  /* right highlight card */
+  .lic {
+    left: 1080px; top: 1690px; width: 610px; height: 772px; border-radius: 36px; padding: 40px 42px 36px;
+    background: linear-gradient(165deg, #1C4772 0%, #0B2240 100%);
+    box-shadow: 0 30px 60px rgba(14,42,71,.35), inset 0 0 0 2px rgba(255,255,255,.08);
+    overflow: hidden; color: var(--white);
+  }
+  .lic-wm { position: absolute; right: -70px; bottom: -70px; width: 360px; height: 360px; color: rgba(255,255,255,.05); }
+  .lic-time {
+    display: inline-block; background: var(--gold); color: var(--navy); font-weight: 900; font-size: 22px;
+    letter-spacing: 1.5px; border-radius: 999px; padding: 9px 22px;
+  }
+  .lic h3 { font-size: 44px; font-weight: 900; line-height: 1.05; margin-top: 18px; }
+  .lic h3 span { color: var(--gold); }
+  .lic ul { list-style: none; margin-top: 22px; }
+  .lic li { display: flex; gap: 20px; align-items: center; padding: 12px 0; border-top: 1px solid rgba(255,255,255,.12); }
+  .lic li .b {
+    flex: none; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(255,255,255,.10); color: var(--gold); border: 2px solid rgba(242,201,76,.55);
+  }
+  .lic li .b .ic { width: 28px; height: 28px; }
+  .lic .car { font-size: 22px; font-weight: 800; line-height: 1.18; }
+  .lic .loc { font-size: 20px; font-weight: 600; color: var(--gold); margin-top: 4px; display: flex; align-items: center; gap: 8px; }
+  .lic .loc .ic { width: 16px; height: 16px; flex: none; }
+  .lic .loc.tbd { color: #9FB9D6; font-style: italic; }
+
+  .connector { left: 1000px; top: 1792px; width: 90px; height: 40px; }
+
+  /* ---------- FOOTER ---------- */
+  .foot { left: 0; top: 2470px; width: 1800px; height: 230px; }
+  .foot-tag { left: 110px; top: 2588px; color: var(--white); font-size: 46px; font-weight: 500; letter-spacing: 1px; }
+  .foot-tag b { font-weight: 900; }
+  .foot-handle { left: 112px; top: 2648px; color: #BFD3EA; font-size: 22px; font-weight: 600; letter-spacing: 2px; }
+  .foot-logo { right: 110px; top: 2560px; height: 110px; }
+</style>
+</head>
+<body>
+<div class="poster">
+
+  <!-- ===== HERO ===== -->
+  <div class="hero">
+    <svg class="hero-rings" viewBox="0 0 1800 1240" width="1800" height="1240">
+      <defs>
+        <linearGradient id="g-orbit" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#F2C94C"/><stop offset="1" stop-color="#F2C94C" stop-opacity=".35"/>
+        </linearGradient>
+      </defs>
+      <!-- faint concentric rings -->
+      <g fill="none" stroke="#FFFFFF" stroke-opacity=".06" stroke-width="2">
+        <circle cx="1210" cy="610" r="620"/>
+        <circle cx="1210" cy="610" r="760"/>
+        <circle cx="1210" cy="610" r="900"/>
+        <circle cx="1210" cy="610" r="1040"/>
+      </g>
+      <!-- 360 dial ticks -->
+      <g id="ticks" stroke="#FFFFFF" stroke-linecap="round"></g>
+      <!-- orbit -->
+      <circle cx="1210" cy="610" r="500" fill="none" stroke="url(#g-orbit)" stroke-width="4" stroke-dasharray="2 16" stroke-linecap="round"/>
+      <!-- 360 arrow arc -->
+      <g id="arc" fill="none" stroke="#F2C94C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"></g>
+    </svg>
+
+    <img class="abs banderin" src="img/banderin_uw.png" alt="UW Westhill">
+
+    <div class="abs kicker"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg></i>PROYECTO</div>
+    <div class="abs t-west">WESTHILL</div>
+    <div class="abs t-360">360</div><div class="abs t-deg"></div>
+    <div class="abs tagline">Vívela. Explórala.<br><span>Enamórate.</span></div>
+
+    <div class="abs main-photo"></div>
+
+    <!-- satellites on the orbit (r=500 around 1210,610) -->
+    <div class="abs sat" style="left:1372px; top:89px; background-image:url(img/estudiantes.jpg); background-position:center 30%;"></div>
+    <div class="abs sat-badge" style="left:1502px; top:70px;"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M219.3 .5c3.1-.6 6.3-.6 9.4 0l200 40C439.9 42.7 448 52.6 448 64s-8.1 21.3-19.3 23.5L352 102.9V160c0 70.7-57.3 128-128 128s-128-57.3-128-128V102.9L48 93.3v65.1l15.7 78.4c.9 4.7-.3 9.6-3.3 13.3s-7.6 5.9-12.4 5.9H16c-4.8 0-9.3-2.1-12.4-5.9s-4.3-8.6-3.3-13.3L16 158.4V86.6C6.5 83.3 0 74.3 0 64C0 52.6 8.1 42.7 19.3 40.5l200-40zM111.9 327.7c10.5-3.4 21.8 .4 29.4 8.5l71 75.5c6.3 6.7 17 6.7 23.3 0l71-75.5c7.6-8.1 18.9-11.9 29.4-8.5C401 348.6 448 409.4 448 481.3c0 17-13.8 30.7-30.7 30.7H30.7C13.8 512 0 498.2 0 481.3c0-71.9 47-132.7 111.9-153.6z"/></svg></i></div>
+
+    <div class="abs sat" style="left:1597px; top:677px; background-image:url(img/rotonda.jpg); background-position:center 40%;"></div>
+    <div class="abs sat-badge" style="left:1590px; top:820px;"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160v8c0 13.3 10.7 24 24 24H456c13.3 0 24-10.7 24-24v-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224H64V420.3c-.6 .3-1.2 .7-1.8 1.1l-48 32c-11.7 7.8-17 22.4-12.9 35.9S17.9 512 32 512H480c14.1 0 26.5-9.2 30.6-22.7s-1.1-28.1-12.9-35.9l-48-32c-.6-.4-1.2-.7-1.8-1.1V224H384V416H344V224H280V416H232V224H168V416H128V224zM256 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></i></div>
+
+    <div class="abs sat" style="left:814px; top:916px; background-image:url(img/edificio.jpg); background-position:30% 60%;"></div>
+    <div class="abs sat-badge" style="left:796px; top:900px;"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M210.6 5.9L62 169.4c-3.9 4.2-6 9.8-6 15.5C56 197.7 66.3 208 79.1 208H104L30.6 281.4c-4.2 4.2-6.6 10-6.6 16C24 309.9 34.1 320 46.6 320H80L5.4 409.5C1.9 413.7 0 419 0 424.5c0 13 10.5 23.5 23.5 23.5H192v32c0 17.7 14.3 32 32 32s32-14.3 32-32V448H424.5c13 0 23.5-10.5 23.5-23.5c0-5.5-1.9-10.8-5.4-15L368 320h33.4c12.5 0 22.6-10.1 22.6-22.6c0-6-2.4-11.8-6.6-16L344 208h24.9c12.7 0 23.1-10.3 23.1-23.1c0-5.7-2.1-11.3-6-15.5L237.4 5.9C234 2.1 229.1 0 224 0s-10 2.1-13.4 5.9z"/></svg></i></div>
+  </div>
+
+  <!-- hero bottom curve: gold stripe + white -->
+  <svg class="abs hero-curve" viewBox="0 0 1800 260" preserveAspectRatio="none">
+    <path d="M0 120 C 420 250, 980 40, 1800 150 L1800 260 L0 260 Z" fill="#F2C94C"/>
+    <path d="M0 150 C 420 280, 980 70, 1800 180 L1800 260 L0 260 Z" fill="#FFFFFF"/>
+  </svg>
+
+  <!-- ===== INFO CARD ===== -->
+  <div class="abs info">
+    <div class="info-item">
+      <div class="badge gold"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M128 0c17.7 0 32 14.3 32 32V64H288V32c0-17.7 14.3-32 32-32s32 14.3 32 32V64h48c26.5 0 48 21.5 48 48v48H0V112C0 85.5 21.5 64 48 64H96V32c0-17.7 14.3-32 32-32zM0 192H448V464c0 26.5-21.5 48-48 48H48c-26.5 0-48-21.5-48-48V192zm64 80v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V272c0-8.8-7.2-16-16-16H80c-8.8 0-16 7.2-16 16zm128 0v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V272c0-8.8-7.2-16-16-16H208c-8.8 0-16 7.2-16 16zm144-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V272c0-8.8-7.2-16-16-16H336zM64 400v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V400c0-8.8-7.2-16-16-16H80c-8.8 0-16 7.2-16 16zm144-16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V400c0-8.8-7.2-16-16-16H208zm112 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16V400c0-8.8-7.2-16-16-16H336c-8.8 0-16 7.2-16 16z"/></svg></i></div>
+      <div>
+        <div class="info-lbl">Días de las visitas</div>
+        <div class="info-val">14 y 16<br>de octubre</div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="badge"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M337.8 5.4C327-1.8 313-1.8 302.2 5.4L166.3 96H48C21.5 96 0 117.5 0 144V464c0 26.5 21.5 48 48 48H256V416c0-35.3 28.7-64 64-64s64 28.7 64 64v96H592c26.5 0 48-21.5 48-48V144c0-26.5-21.5-48-48-48H473.7L337.8 5.4zM96 192h32c8.8 0 16 7.2 16 16v64c0 8.8-7.2 16-16 16H96c-8.8 0-16-7.2-16-16V208c0-8.8 7.2-16 16-16zm400 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v64c0 8.8-7.2 16-16 16H512c-8.8 0-16-7.2-16-16V208zM96 320h32c8.8 0 16 7.2 16 16v64c0 8.8-7.2 16-16 16H96c-8.8 0-16-7.2-16-16V336c0-8.8 7.2-16 16-16zm400 16c0-8.8 7.2-16 16-16h32c8.8 0 16 7.2 16 16v64c0 8.8-7.2 16-16 16H512c-8.8 0-16-7.2-16-16V336zM232 176a88 88 0 1 1 176 0 88 88 0 1 1 -176 0zm88-48c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16s-7.2-16-16-16H336V144c0-8.8-7.2-16-16-16z"/></svg></i></div>
+      <div>
+        <div class="info-lbl">Escuela</div>
+        <div class="info-val">IPEFH<small>Planteles Toluca, Metepec y Calimaya</small></div>
+      </div>
+    </div>
+    <div class="info-item">
+      <div class="badge"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M256 0a256 256 0 1 1 0 512A256 256 0 1 1 256 0zM232 120V256c0 8 4 15.5 10.7 20l96 64c11 7.4 25.9 4.4 33.3-6.7s4.4-25.9-6.7-33.3L280 243.2V120c0-13.3-10.7-24-24-24s-24 10.7-24 24z"/></svg></i></div>
+      <div>
+        <div class="info-lbl">Hora de recepción</div>
+        <div class="info-val">9:00 a.m.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== OBJETIVO ===== -->
+  <div class="abs obj">
+    <div class="obj-mark"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/></svg></i></div>
+    <div>
+      <div class="obj-lbl">OBJETIVO</div>
+      <p class="obj-txt">Está centrado en crear una experiencia que permita que los aspirantes de las Preparatorias <b>se enamoren de la Universidad y de todo su ecosistema.</b></p>
+    </div>
+  </div>
+
+  <!-- ===== PROGRAMA ===== -->
+  <div class="abs prog-h"><h2>Programa del evento</h2><div class="rule"></div></div>
+
+  <div class="abs timeline">
+    <div class="tl-line"></div>
+
+    <div class="step">
+      <div class="time">9:00 – 9:30 a.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M320 32c0-9.9-4.5-19.2-12.3-25.2S289.8-1.4 280.2 1l-179.9 45C79 51.3 64 70.5 64 92.5V448H32c-17.7 0-32 14.3-32 32s14.3 32 32 32H96 288h32V480 32zM256 256c0 17.7-10.7 32-24 32s-24-14.3-24-32s10.7-32 24-32s24 14.3 24 32zm96-128h96V480c0 17.7 14.3 32 32 32h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H512V128c0-35.3-28.7-64-64-64H352v64z"/></svg></i></div>
+      <div class="what"><div class="ttl">Bienvenida</div><div class="det">En el área de admisiones</div></div>
+    </div>
+    <div class="step hot">
+      <div class="time">9:30 – 10:15 a.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M315.4 15.5C309.7 5.9 299.2 0 288 0s-21.7 5.9-27.4 15.5l-96 160c-5.9 9.9-6.1 22.2-.4 32.2s16.3 16.2 27.8 16.2H384c11.5 0 22.2-6.2 27.8-16.2s5.5-22.3-.4-32.2l-96-160zM288 312V456c0 22.1 17.9 40 40 40H472c22.1 0 40-17.9 40-40V312c0-22.1-17.9-40-40-40H328c-22.1 0-40 17.9-40 40zM128 512a128 128 0 1 0 0-256 128 128 0 1 0 0 256z"/></svg></i></div>
+      <div class="what"><div class="ttl">Actividad por licenciatura</div><div class="det">Consulta tu lugar →</div></div>
+    </div>
+    <div class="step">
+      <div class="time">10:20 – 10:40 a.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M88 0C74.7 0 64 10.7 64 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C120.5 112.3 128 119.9 128 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C119.5 47.7 112 40.1 112 24c0-13.3-10.7-24-24-24zM32 192c-17.7 0-32 14.3-32 32V416c0 53 43 96 96 96H288c53 0 96-43 96-96h16c61.9 0 112-50.1 112-112s-50.1-112-112-112H352 32zm352 64h16c26.5 0 48 21.5 48 48s-21.5 48-48 48H384V256zM224 24c0-13.3-10.7-24-24-24s-24 10.7-24 24c0 38.9 23.4 59.4 39.1 73.1l1.1 1C232.5 112.3 240 119.9 240 136c0 13.3 10.7 24 24 24s24-10.7 24-24c0-38.9-23.4-59.4-39.1-73.1l-1.1-1C231.5 47.7 224 40.1 224 24z"/></svg></i></div>
+      <div class="what"><div class="ttl">Refrigerio</div><div class="det">En el foyer del auditorio · Convivencia libre</div></div>
+    </div>
+    <div class="step">
+      <div class="time">10:45 – 11:00 a.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M243.4 2.6l-224 96c-14 6-21.8 21-18.7 35.8S16.8 160 32 160v8c0 13.3 10.7 24 24 24H456c13.3 0 24-10.7 24-24v-8c15.2 0 28.3-10.7 31.3-25.6s-4.8-29.9-18.7-35.8l-224-96c-8-3.4-17.2-3.4-25.2 0zM128 224H64V420.3c-.6 .3-1.2 .7-1.8 1.1l-48 32c-11.7 7.8-17 22.4-12.9 35.9S17.9 512 32 512H480c14.1 0 26.5-9.2 30.6-22.7s-1.1-28.1-12.9-35.9l-48-32c-.6-.4-1.2-.7-1.8-1.1V224H384V416H344V224H280V416H232V224H168V416H128V224zM256 64a32 32 0 1 1 0 64 32 32 0 1 1 0-64z"/></svg></i></div>
+      <div class="what"><div class="ttl">Presentación de la universidad</div></div>
+    </div>
+    <div class="step">
+      <div class="time">11:00 – 11:10 a.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M400 0H176c-26.5 0-48.1 21.8-47.1 48.2c.2 5.3 .4 10.6 .7 15.8H24C10.7 64 0 74.7 0 88c0 92.6 33.5 157 78.5 200.7c44.3 43.1 98.3 64.8 138.1 75.8c23.4 6.5 39.4 26 39.4 45.6c0 20.9-17 37.9-37.9 37.9H192c-17.7 0-32 14.3-32 32s14.3 32 32 32H384c17.7 0 32-14.3 32-32s-14.3-32-32-32H357.9C337 448 320 431 320 410.1c0-19.6 15.9-39.2 39.4-45.6c39.9-11 93.9-32.7 138.2-75.8C542.5 245 576 180.6 576 88c0-13.3-10.7-24-24-24H446.4c.3-5.2 .5-10.4 .7-15.8C448.1 21.8 426.5 0 400 0zM48.9 112h84.4c9.1 90.1 29.2 150.3 51.9 190.6c-24.9-11-50.8-26.5-73.2-48.3c-32-31.1-58-76-63-142.3zM464.1 254.3c-22.4 21.8-48.3 37.3-73.2 48.3c22.7-40.3 42.8-100.5 51.9-190.6h84.4c-5.1 66.3-31.1 111.2-63 142.3z"/></svg></i></div>
+      <div class="what"><div class="ttl">Premiación de la actividad</div><div class="det">Auditorio</div></div>
+    </div>
+    <div class="step">
+      <div class="time">11:10 – 11:40 a.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M512 96c0 50.2-59.1 125.1-84.6 155c-3.8 4.4-9.4 6.1-14.5 5H320c-17.7 0-32 14.3-32 32s14.3 32 32 32h96c53 0 96 43 96 96s-43 96-96 96H139.6c8.7-9.9 19.3-22.6 30-36.8c6.3-8.4 12.8-17.6 19-27.2H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320c-53 0-96-43-96-96s43-96 96-96h39.8c-21-31.5-39.8-67.7-39.8-96c0-53 43-96 96-96s96 43 96 96zM117.1 489.1c-3.8 4.3-7.2 8.1-10.1 11.3l-1.8 2-.2-.2c-6 4.6-14.6 4-20-1.8C59.8 473 0 402.5 0 352c0-53 43-96 96-96s96 43 96 96c0 30-21.1 67-43.5 97.9c-10.7 14.7-21.7 28-30.8 38.5l-.6 .7zM128 352a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM416 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg></i></div>
+      <div class="what"><div class="ttl">Recorrido</div><div class="det">A cargo de admisiones</div></div>
+    </div>
+    <div class="step last">
+      <div class="time">11:40 – 12:00 p.m.</div>
+      <div class="node"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M149.1 64.8L138.7 96H64C28.7 96 0 124.7 0 160V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V160c0-35.3-28.7-64-64-64H373.3L362.9 64.8C356.4 45.2 338.1 32 317.4 32H194.6c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z"/></svg></i></div>
+      <div class="what"><div class="ttl">Cierre y despedida</div><div class="det">Fotos y videos · Contenido para redes sociales</div></div>
+    </div>
+  </div>
+
+  <svg class="abs connector" viewBox="0 0 90 40">
+    <path d="M2 20 H 80" stroke="#F2C94C" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round" fill="none"/>
+    <circle cx="82" cy="20" r="7" fill="#F2C94C"/>
+  </svg>
+
+  <div class="abs lic">
+    <i class="ic lic-wm"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M320 32c-8.1 0-16.1 1.4-23.7 4.1L15.8 137.4C6.3 140.9 0 149.9 0 160s6.3 19.1 15.8 22.6l57.9 20.9C57.3 229.3 48 259.8 48 291.9v28.1c0 28.4-10.8 57.7-22.3 80.8c-6.5 13-13.9 25.8-22.5 37.6C0 442.7-.9 448.3 .9 453.4s6 8.9 11.2 10.2l64 16c4.2 1.1 8.7 .3 12.4-2s6.3-6.1 7.1-10.4c8.6-42.8 4.3-81.2-2.1-108.7C90.3 344.3 86 329.8 80 316.5V291.9c0-30.2 10.2-58.7 27.9-81.5c12.9-15.5 29.6-28 49.2-35.7l157-61.7c8.2-3.2 17.5 .8 20.7 9s-.8 17.5-9 20.7l-157 61.7c-12.4 4.9-23.3 12.4-32.2 21.6l159.6 57.6c7.6 2.7 15.6 4.1 23.7 4.1s16.1-1.4 23.7-4.1L624.2 182.6c9.5-3.4 15.8-12.5 15.8-22.6s-6.3-19.1-15.8-22.6L343.7 36.1C336.1 33.4 328.1 32 320 32zM128 408c0 35.3 86 72 192 72s192-36.7 192-72L496.7 262.6 354.5 314c-11.1 4-22.8 6-34.5 6s-23.5-2-34.5-6L143.3 262.6 128 408z"/></svg></i>
+    <span class="lic-time">9:30 – 10:15 a.m.</span>
+    <h3>Actividad por<br><span>licenciatura</span></h3>
+    <ul>
+      <li><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M64 64c0-17.7-14.3-32-32-32S0 46.3 0 64V400c0 44.2 35.8 80 80 80H480c17.7 0 32-14.3 32-32s-14.3-32-32-32H80c-8.8 0-16-7.2-16-16V64zm406.6 86.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L320 210.7l-57.4-57.4c-12.5-12.5-32.8-12.5-45.3 0l-112 112c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L240 221.3l57.4 57.4c12.5 12.5 32.8 12.5 45.3 0l128-128z"/></svg></i></div>
+        <div><div class="car">Administración y Dirección Empresarial y Mercadotecnia</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón grande</div></div></li>
+      <li><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M352 96c0 14.3-3.1 27.9-8.8 40.2L396 227.4c-23.7 25.3-54.2 44.1-88.5 53.6L256 192h0 0l-68 117.5c21.5 6.8 44.3 10.5 68.1 10.5c70.7 0 133.8-32.7 174.9-84c11.1-13.8 31.2-16 45-5s16 31.2 5 45C428.1 341.8 347 384 256 384c-35.4 0-69.4-6.4-100.7-18.1L98.7 463.7C94 471.8 87 478.4 78.6 482.6L23.2 510.3c-5 2.5-10.9 2.2-15.6-.7S0 501.5 0 496V440.6c0-8.4 2.2-16.7 6.5-24.1l60-103.7C53.7 301.6 41.8 289.3 31.2 276c-11.1-13.8-8.8-33.9 5-45s33.9-8.8 45 5c5.7 7.1 11.8 13.8 18.2 20.1l69.4-119.9c-5.6-12.2-8.8-25.8-8.8-40.2c0-53 43-96 96-96s96 43 96 96zm21 297.9c32.6-12.8 62.5-30.8 88.9-52.9l43.7 75.5c4.2 7.3 6.5 15.6 6.5 24.1V496c0 5.5-2.9 10.7-7.6 13.6s-10.6 3.2-15.6 .7l-55.4-27.7c-8.4-4.2-15.4-10.8-20.1-18.9L373 393.9zM256 128a32 32 0 1 0 0-64 32 32 0 1 0 0 64z"/></svg></i></div>
+        <div><div class="car">Arquitectura y Arquitectura de Interiores</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón 201</div></div></li>
+      <li><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M186.1 52.1C169.3 39.1 148.7 32 127.5 32C74.7 32 32 74.7 32 127.5v6.2c0 15.8 3.7 31.3 10.7 45.5l23.5 47.1c4.5 8.9 7.6 18.4 9.4 28.2l36.7 205.8c2 11.2 11.6 19.4 22.9 19.8s21.4-7.4 24-18.4l28.9-121.3C192.2 323.7 207 312 224 312s31.8 11.7 35.8 28.3l28.9 121.3c2.6 11.1 12.7 18.8 24 18.4s20.9-8.6 22.9-19.8l36.7-205.8c1.8-9.8 4.9-19.3 9.4-28.2l23.5-47.1c7.1-14.1 10.7-29.7 10.7-45.5v-2.1c0-55-44.6-99.6-99.6-99.6c-24.1 0-47.4 8.8-65.6 24.6l-3.2 2.8 19.5 15.2c7 5.4 8.2 15.5 2.8 22.5s-15.5 8.2-22.5 2.8l-24.4-19-37-28.8z"/></svg></i></div>
+        <div><div class="car">Cirujano Dentista</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Laboratorios</div></div></li>
+      <li><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><path d="M384 32H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H398.4c-5.2 25.8-22.9 47.1-46.4 57.3V448H512c17.7 0 32 14.3 32 32s-14.3 32-32 32H320 128c-17.7 0-32-14.3-32-32s14.3-32 32-32H288V153.3c-23.5-10.3-41.2-31.6-46.4-57.3H128c-17.7 0-32-14.3-32-32s14.3-32 32-32H256c14.6-19.4 37.8-32 64-32s49.4 12.6 64 32zm55.6 288H584.4L512 195.8 439.6 320zM512 416c-62.9 0-115.2-34-126-78.9c-2.6-11 1-22.3 6.7-32.1l95.2-163.2c5-8.6 14.2-13.8 24.1-13.8s19.1 5.3 24.1 13.8l95.2 163.2c5.7 9.8 9.3 21.1 6.7 32.1C627.2 382 574.9 416 512 416zM126.8 195.8L54.4 320H199.3L126.8 195.8zM.9 337.1c-2.6-11 1-22.3 6.7-32.1l95.2-163.2c5-8.6 14.2-13.8 24.1-13.8s19.1 5.3 24.1 13.8l95.2 163.2c5.7 9.8 9.3 21.1 6.7 32.1C242 382 189.7 416 126.8 416S11.7 382 .9 337.1z"/></svg></i></div>
+        <div><div class="car">Derecho</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Sala de Juicios Orales</div></div></li>
+      <li><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M184 0c30.9 0 56 25.1 56 56V456c0 30.9-25.1 56-56 56c-28.9 0-52.7-21.9-55.7-50.1c-5.2 1.4-10.7 2.1-16.3 2.1c-35.3 0-64-28.7-64-64c0-7.4 1.3-14.6 3.6-21.2C21.4 367.4 0 338.2 0 304c0-31.9 18.7-59.5 45.8-72.3C37.1 220.8 32 207 32 192c0-30.7 21.6-56.3 50.4-62.6C80.8 123.9 80 118 80 112c0-29.9 20.6-55.1 48.3-62.1C131.3 21.9 155.1 0 184 0zM328 0c28.9 0 52.6 21.9 55.7 49.9c27.8 7 48.3 32.1 48.3 62.1c0 6-.8 11.9-2.4 17.4c28.8 6.2 50.4 31.9 50.4 62.6c0 15-5.1 28.8-13.8 39.7C493.3 244.5 512 272.1 512 304c0 34.2-21.4 63.4-51.6 74.8c2.3 6.6 3.6 13.8 3.6 21.2c0 35.3-28.7 64-64 64c-5.6 0-11.1-.7-16.3-2.1c-3 28.2-26.8 50.1-55.7 50.1c-30.9 0-56-25.1-56-56V56c0-30.9 25.1-56 56-56z"/></svg></i></div>
+        <div><div class="car">Psicología y Pedagogía</div><div class="loc"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón 8, junto a dirección</div></div></li>
+      <li><div class="b"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M57.7 193l9.4 16.4c8.3 14.5 21.9 25.2 38 29.8L163 255.7c17.2 4.9 29 20.6 29 38.5v39.9c0 11 6.2 21 16 25.9s16 14.9 16 25.9v39c0 15.6 14.9 26.9 29.9 22.6c16.1-4.6 28.6-17.5 32.7-33.8l2.8-11.2c4.2-16.9 15.2-31.4 30.3-40l8.1-4.6c15-8.5 24.2-24.5 24.2-41.7v-8.3c0-12.7-5.1-24.9-14.1-33.9l-3.9-3.9c-9-9-21.2-14.1-33.9-14.1H257c-11.1 0-22.1-2.9-31.8-8.4l-34.5-19.7c-4.3-2.5-7.6-6.5-9.2-11.2c-3.2-9.6 1.1-20 10.2-24.5l5.9-3c6.6-3.3 14.3-3.9 21.3-1.5l23.2 7.7c8.2 2.7 17.2-.4 21.9-7.5c4.7-7 4.2-16.3-1.2-22.8l-13.6-16.3c-10-12-9.9-29.5 .3-41.3l15.7-18.3c8.8-10.3 10.2-25 3.5-36.7l-2.4-4.2c-3.5-.2-6.9-.3-10.4-.3C163.1 48 84.4 108.9 57.7 193zM464 256c0-36.8-9.6-71.4-26.4-101.5L412 164.8c-15.7 6.3-23.8 23.8-18.5 39.8l16.9 50.7c3.5 10.4 12 18.3 22.6 20.9l29.1 7.3c1.2-9 1.8-18.2 1.8-27.5zM0 256a256 256 0 1 1 512 0A256 256 0 1 1 0 256z"/></svg></i></div>
+        <div><div class="car">Relaciones Internacionales</div><div class="loc tbd"><i class="ic"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><path d="M215.7 499.2C267 435 384 279.4 384 192C384 86 298 0 192 0S0 86 0 192c0 87.4 117 243 168.3 307.2c12.3 15.3 35.1 15.3 47.4 0zM192 128a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></i>Salón pendiente de confirmar</div></div></li>
+    </ul>
+  </div>
+
+  <!-- ===== FOOTER (olas institucionales) ===== -->
+  <svg class="abs foot" viewBox="0 0 1800 230" preserveAspectRatio="none">
+    <path d="M0 40 C 500 -10, 1200 120, 1800 30 L1800 230 L0 230 Z" fill="#F2C94C"/>
+    <path d="M0 64 C 500 14, 1200 144, 1800 54 L1800 230 L0 230 Z" fill="#266294"/>
+  </svg>
+  <div class="abs foot-tag">#SOMOS<b>WESTHILL</b></div>
+  <div class="abs foot-handle">@univwesthill</div>
+  <img class="abs foot-logo" src="img/logo_westhill_blanco.png" alt="Universidad Westhill">
+</div>
+
+<script>
+  // 360° dial: a tick every 5°, longer every 30°, around the main photo
+  (function () {
+    const g = document.getElementById("ticks"), cx = 1210, cy = 610;
+    for (let a = 0; a < 360; a += 5) {
+      const major = a % 30 === 0, r1 = 404, r2 = major ? 432 : 418;
+      const t = (a - 90) * Math.PI / 180;
+      const l = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      l.setAttribute("x1", cx + r1 * Math.cos(t)); l.setAttribute("y1", cy + r1 * Math.sin(t));
+      l.setAttribute("x2", cx + r2 * Math.cos(t)); l.setAttribute("y2", cy + r2 * Math.sin(t));
+      l.setAttribute("stroke-width", major ? 4 : 2);
+      l.setAttribute("stroke-opacity", major ? .75 : .35);
+      g.appendChild(l);
+    }
+  })();
+  // 360° arrow: arc around the dial ending in an arrowhead (angles clockwise from top)
+  (function () {
+    const g = document.getElementById("arc"), cx = 1210, cy = 610, r = 560, a0 = -24, a1 = 138;
+    const pt = a => { const t = a * Math.PI / 180; return [cx + r * Math.sin(t), cy - r * Math.cos(t)]; };
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    const t = a1 * Math.PI / 180, dx = Math.cos(t), dy = Math.sin(t);
+    const back = (s) => { const c = Math.cos(s), n = Math.sin(s); return [x1 - 34 * (dx * c - dy * n), y1 - 34 * (dx * n + dy * c)]; };
+    const [ax, ay] = back(0.55), [bx, by] = back(-0.55);
+    g.innerHTML = `<path d="M ${x0} ${y0} A ${r} ${r} 0 0 1 ${x1} ${y1}"/><path d="M ${ax} ${ay} L ${x1} ${y1} L ${bx} ${by}"/>`;
+  })();
+</script>
+</body>
+</html>
