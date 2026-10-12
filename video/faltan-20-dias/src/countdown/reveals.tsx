@@ -49,7 +49,7 @@ const sampleGlyph = (txt: string, size: number, step: number, erode: number): Gl
 	return out;
 };
 
-const useGlyph = (txt: string, size: number, step: number, erode = 0) => {
+export const useGlyph = (txt: string, size: number, step: number, erode = 0) => {
 	const [g, setG] = useState<Glyph | null>(null);
 	const [handle] = useState(() => delayRender('glifo ' + txt));
 	useEffect(() => {

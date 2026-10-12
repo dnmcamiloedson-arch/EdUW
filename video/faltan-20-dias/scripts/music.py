@@ -172,3 +172,30 @@ def outro(bus, O):
     bus.place(sfx.air(500, 1.8, (500, 1400), (1400, 5000)), diss0 - 0.1, 0.22, 0.15, wet=0.45)
     bus.reverb_only(sfx.bell(1174.66, 2.4), diss0 + 0.25, 0.08)
     bus.reverb_only(sfx.bell(1760.0, 2.0), diss0 + 0.45, 0.05)
+
+
+def caracol(f0, dur, vel=1.0, seed=0):
+    """Caracol / atecocolli: sierra con formante, glissando de ataque y soplo."""
+    t = _t(dur)
+    f = f0 * (2 ** ((-2 + 2 * np.clip(t / 0.35, 0, 1)) / 12)) * (1 + 0.004 * np.sin(2 * np.pi * 4.8 * t))
+    ph = 2 * np.pi * np.cumsum(f) / SR
+    saw = sum(np.sin(h * ph) / h for h in range(1, 14))
+    tone = sfx.bp(saw, 250, 1400) + 0.4 * sfx.bp(saw, 1700, 2600)
+    breath = sfx.bp(noise(len(t), seed), 400, 3000) * 0.2
+    return (tone / (np.max(np.abs(tone)) + 1e-9) + breath) * adsr(len(t), 0.25, 0.2, 0.85, min(0.6, dur * 0.35)) * vel
+
+
+def river(dur, seed=0):
+    """Corriente de río: ruido rosa filtrado con borboteo y gotas."""
+    n = int(dur * SR)
+    p = sfx.pink(n, seed)
+    flow = sfx.bp(p, 200, 1800) * (0.7 + 0.3 * np.tanh(sfx.smooth_noise(n, 2.0, seed + 1)))
+    bubbles = np.zeros(n)
+    r = np.random.default_rng(seed + 2)
+    for _ in range(int(dur * 3)):
+        at = int(r.uniform(0, n - SR * 0.1))
+        d = int(0.05 * SR)
+        tt = np.arange(d) / SR
+        f = r.uniform(500, 1400) * (1 + 1.5 * tt / 0.05)
+        bubbles[at : at + d] += np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt / 0.012) * r.uniform(0.2, 0.6)
+    return flow + bubbles

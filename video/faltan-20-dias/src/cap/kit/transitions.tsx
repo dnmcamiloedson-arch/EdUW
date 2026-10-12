@@ -15,7 +15,7 @@ export const LightLeak: React.FC<{f: number; at: number; dur?: number; color?: s
 	return (
 		<AbsoluteFill style={{pointerEvents: 'none'}}>
 			<div style={{position: 'absolute', left: x - 700, top: 200, width: 1400, height: 1500, borderRadius: '50%', mixBlendMode: 'screen', opacity: k, background: `radial-gradient(closest-side, ${rgba('#FFF2D0', 0.95)}, ${rgba(color, 0.7)} 40%, ${rgba(C.cempa, 0.25)} 70%, transparent)`}} />
-			<AbsoluteFill style={{background: rgba('#FFE8C0', 0.55 * k ** 3), mixBlendMode: 'screen'}} />
+			<AbsoluteFill style={{background: rgba('#FFE8C0', 0.32 * k ** 3), mixBlendMode: 'screen'}} />
 		</AbsoluteFill>
 	);
 };

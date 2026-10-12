@@ -68,12 +68,206 @@ def cap16(bus):
     return c + fr(REV)
 
 
-SCORES = {16: cap16}
+# ---------------------------------------------------------------- 15 · Los volcanes
+def cap15(bus):
+    S1, S2, S3, REV, HIT = 126, 96, 84, 126, 62
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.09, wind=0.45, seed=15)
+    # caracol que abre la noche
+    bus.place(M.caracol(midi(45), 2.6, seed=1), 0.25, 0.32, -0.2, wet=1.0)
+    bus.place(M.caracol(midi(52), 2.0, seed=2), a + 0.1, 0.24, 0.2, wet=1.0)
+    # coro grave: Am → F → Dm → E
+    for (tt, notes, d) in [(0.2, [45, 52, 57, 60], a), (a, [41, 48, 53, 57], fr(S2)), (b, [38, 50, 53, 57], fr(S3) * 0.6), (b + fr(S3) * 0.6, [40, 52, 56, 59], fr(S3) * 0.4 + 0.3)]:
+        bus.place2(np.stack([M.choir(notes, d + 0.4, 'o', seed=int(tt * 7))] * 2), tt, 0.14, wet=0.9)
+    # huéhuetl lento, como pasos de guardia
+    for k in range(int((c) / 1.0)):
+        bus.place(M.huehuetl(0.75, 0.85, seed=k), 0.6 + k * 1.0, 0.5, wet=0.25)
+    # brasas del cráter
+    bus.place(sfx.fire(fr(S2) + 0.4, 151) * 0.5, a, 0.16, 0.1)
+    # estrellas que titilan (cajita musical, La menor pentatónica)
+    sc = M.scale(69, 'penta_m')
+    for k in range(10):
+        bus.place(M.musicbox(midi(sc(k % 7 + 2)), 1.4, 0.7), b + 0.3 + k * 0.24, 0.1, -0.5 + (k % 5) * 0.25, wet=1.2)
+    # las estrellas viajan al número: arpegio ascendente
+    for k in range(14):
+        bus.place(M.musicbox(midi(sc(k + 3)), 1.6, 0.8), c + 0.1 + k * fr(HIT) / 15, 0.12, -0.6 + k * 0.09, wet=1.0)
+    bus.place(sfx.air(150, fr(HIT) + 0.3, (400, 1200), (1200, 6000)), c, 0.08, wet=0.6)
+    # la constelación se completa: golpe + La mayor (picardía)
+    bus.place(M.huehuetl(1.3, 0.8, seed=77), hit, 0.95, wet=0.3)
+    bus.place(sfx.boom(15), hit, 0.85, wet=0.35)
+    bus.place2(np.stack([M.choir([45, 57, 61, 64, 69], fr(REV - HIT) + 0.6, 'a', seed=15, attack=0.15)] * 2), hit, 0.18, wet=0.9)
+    for k, m in enumerate([69, 73, 76, 81]):
+        bus.place(M.musicbox(midi(m), 2.0), hit + 0.05 + k * 0.06, 0.16, -0.3 + k * 0.2, wet=1.0)
+    return c + fr(REV)
+
+
+# ---------------------------------------------------------------- 14 · Xólotl
+def cap14(bus):
+    S1, S2, S3, REV, HIT = 126, 96, 72, 126, 64
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.06, wind=0.25, seed=14)
+    rv = M.river(c + 0.5, 14)
+    bus.place(rv, 0, 0.2, -0.2)
+    bus.place(np.roll(rv, 20000), 0, 0.16, 0.3)
+    # pasos del perro: teponaztli a ritmo de caminata
+    for k in range(int(a / 0.33)):
+        bus.place(M.teponaztli(260 if k % 2 == 0 else 196, 0.55, seed=k), 0.2 + k * 0.33, 0.12, -0.6 + 1.2 * (k * 0.33) / a, wet=0.3)
+    # melodía de marimba grave, Mi menor pentatónica
+    sc = M.scale(52, 'penta_m')
+    mel = [(0.4, 0), (1.0, 2), (1.3, 3), (1.9, 4), (2.8, 3), (3.4, 2), (a + 0.1, 4), (a + 0.6, 5), (a + 1.0, 4), (a + 1.6, 2), (a + 2.2, 3)]
+    for k, (tt, d) in enumerate(mel):
+        bus.place(sfx.marimba(midi(sc(d)), 1.6, seed=k), tt, 0.24, -0.2 + 0.1 * (k % 4), wet=0.7)
+    bus.place2(np.stack([M.choir([40, 47, 52, 55], c + 0.6, 'u', seed=14, attack=1.2)] * 2), 0.3, 0.1, wet=0.9)
+    # la mirada: flauta grave y una nota sostenida
+    bus.place(M.flute(midi(59), 1.6, 0.9, seed=3), b + 0.6, 0.18, 0.2, wet=1.0)
+    bus.place(M.flute(midi(62), 1.0, 0.8, seed=4), b + 1.5, 0.15, 0.2, wet=1.0)
+    # las almas se acomodan: gotas brillantes ascendentes
+    sc2 = M.scale(64, 'penta_m')
+    for k in range(16):
+        bus.place(M.musicbox(midi(sc2(k % 9)), 1.0, 0.7), c + 0.35 + k * fr(HIT) / 18, 0.09, -0.6 + 0.08 * k, wet=1.2)
+    bus.place(sfx.air(141, fr(HIT) + 0.3, (300, 900), (900, 3200)), c, 0.07, wet=0.5)
+    # llegada
+    bus.place(M.huehuetl(1.2, 0.9, seed=41), hit, 0.9, wet=0.3)
+    bus.place(sfx.boom(14), hit, 0.85, wet=0.35)
+    for k, m in enumerate([52, 59, 64, 66, 71]):
+        bus.place(sfx.marimba(midi(m), 2.2), hit + k * 0.05, 0.28, -0.4 + k * 0.2, wet=0.6)
+    bus.place2(np.stack([M.choir([40, 52, 55, 59, 66], fr(REV - HIT) + 0.6, 'a', seed=41, attack=0.2)] * 2), hit, 0.17, wet=0.9)
+    return c + fr(REV)
+
+
+# ---------------------------------------------------------------- 13 · Las monarcas
+def harp(m, dur=2.2, vel=0.9, seed=0):
+    return M.pluck(midi(m), dur, bright=0.75, decay=0.9975, vel=vel, seed=seed)
+
+
+def cap13(bus):
+    S1, S2, S3, REV, HIT = 126, 96, 78, 126, 66
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.04, wind=0.35, seed=13)
+    beat = 60 / 96
+    # arpegios de arpa: G – Em – C – D
+    prog = [[55, 59, 62, 67], [52, 55, 59, 64], [48, 55, 60, 64], [50, 54, 57, 62]]
+    k = 0
+    tt = 0.15
+    while tt < c:
+        ch = prog[int(tt / (beat * 4)) % 4]
+        for j, m in enumerate(ch + [ch[1] + 12]):
+            bus.place(harp(m, 2.0, 0.75, seed=k), tt + j * beat / 2.5, 0.16, -0.5 + j * 0.25, wet=0.6)
+            k += 1
+        tt += beat * 2
+    # flauta, melodía sencilla
+    mel = [(1.0, 74, 0.6), (1.6, 76, 0.4), (2.0, 79, 1.0), (3.2, 78, 0.5), (3.7, 74, 0.9), (a + 0.3, 71, 0.6), (a + 0.9, 74, 0.5), (a + 1.4, 76, 1.2), (b + 0.2, 79, 0.4), (b + 0.6, 81, 0.4), (b + 1.0, 83, 0.9)]
+    for k, (tt, m, d) in enumerate(mel):
+        bus.place(M.flute(midi(m), d, 0.85, seed=k), tt, 0.13, 0.15, wet=0.9)
+    # aleteo: sonaja muy suave en el remolino
+    for k in range(int(fr(S3) / (beat / 2))):
+        bus.place(M.sonaja(0.5, 0.1, seed=k), b + k * beat / 2, 0.07, (-0.4, 0.4)[k % 2])
+    bus.place(sfx.air(131, fr(S3) + 0.4, (600, 1800), (1800, 6000)), b, 0.08, wet=0.5)
+    # glissando de arpa mientras se forma el número
+    sc = M.scale(55, 'mayor')
+    for k in range(22):
+        bus.place(harp(sc(k), 1.6, 0.8, seed=200 + k), c + 0.2 + k * (fr(HIT) - 0.3) / 22, 0.14, -0.7 + k * 0.065, wet=0.7)
+    bus.place(M.huehuetl(1.1, 1.0, seed=31), hit, 0.75, wet=0.3)
+    bus.place(sfx.boom(13), hit, 0.8, wet=0.35)
+    bus.place2(np.stack([M.choir([43, 55, 59, 62, 67], fr(REV - HIT) + 0.6, 'a', seed=13, attack=0.15)] * 2), hit, 0.17, wet=0.9)
+    for k, m in enumerate([67, 71, 74, 79, 83]):
+        bus.place(harp(m, 2.4, 0.9, seed=300 + k), hit + k * 0.035, 0.2, -0.4 + k * 0.2, wet=0.7)
+    return c + fr(REV)
+
+
+# ---------------------------------------------------------------- 12 · El Callejón del Beso (bolero de trío)
+def cap12(bus):
+    S1, S2, S3, REV, HIT = 126, 108, 66, 126, 66
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.03, wind=0.2, seed=12)
+    beat = 60 / 76
+    prog = [[47, 54, 59, 62, 66], [40, 52, 55, 59, 64], [42, 54, 58, 61, 64], [47, 54, 59, 62, 66], [38, 50, 54, 57, 62], [43, 50, 55, 59, 62], [42, 54, 58, 61, 64], [47, 54, 59, 62, 66]]
+    tt = 0.2
+    bar = 0
+    while tt < c - 0.1:
+        ch = prog[bar % len(prog)]
+        # guitarrón en 1 y 3
+        bus.place(M.pluck(midi(ch[0] - 12 if ch[0] > 44 else ch[0]), 1.4, 0.35, 0.997, 0.9, seed=bar), tt, 0.3, -0.1, wet=0.3)
+        bus.place(M.pluck(midi(ch[0] - 5), 1.2, 0.35, 0.997, 0.7, seed=bar + 50), tt + 2 * beat, 0.24, -0.1, wet=0.3)
+        # guitara: rasgueo de bolero (1, 2y, 3, 4)
+        for k, (off, down) in enumerate([(0, True), (1.5, False), (2, True), (3, True)]):
+            bus.place(M.strum(ch[1:], 0.9, 0.012, 0.5, 0.7, down, seed=bar * 10 + k), tt + off * beat, 0.16, 0.25, wet=0.4)
+        # maracas
+        for k in range(8):
+            bus.place(M.sonaja(0.6 if k % 2 == 0 else 0.35, 0.08, seed=bar * 20 + k), tt + k * beat / 2, 0.08, 0.5)
+        tt += 4 * beat
+        bar += 1
+    # requinto: melodía
+    mel = [(0.9, 71, 0.5), (1.4, 74, 0.5), (1.9, 78, 1.0), (3.0, 76, 0.4), (3.4, 74, 0.4), (3.8, 73, 1.0), (a + 0.2, 71, 0.6), (a + 0.8, 73, 0.4), (a + 1.2, 74, 0.8), (a + 2.4, 78, 0.5), (a + 2.9, 81, 1.2)]
+    for k, (t0, m, d) in enumerate(mel):
+        bus.place(M.pluck(midi(m), d + 0.8, 0.85, 0.998, 0.9, seed=400 + k), t0, 0.2, -0.25, wet=0.7)
+    # el beso: la chispa
+    ign = a + fr(56)
+    bus.place(sfx.ignite(12), ign - 0.03, 0.4, 0.3, wet=0.3)
+    bus.reverb_only(sfx.bell(1479.98, 2.0), ign, 0.08)
+    # ventanas que se encienden: notas de requinto ascendentes
+    sc = M.scale(62, 'mayor')
+    for k in range(14):
+        bus.place(M.pluck(midi(sc(k)), 1.0, 0.9, 0.997, 0.7, seed=500 + k), c + 0.3 + k * (fr(HIT) - 0.3) / 14, 0.13, -0.6 + k * 0.09, wet=0.6)
+    bus.place(M.huehuetl(1.0, 1.1, seed=12), hit, 0.7, wet=0.3)
+    bus.place(sfx.boom(12), hit, 0.75, wet=0.35)
+    bus.place(M.strum([50, 57, 62, 66, 69, 76], 2.6, 0.03, 0.6, 1.0, True, seed=700), hit, 0.4, 0.1, wet=0.8)
+    bus.place(M.pluck(midi(38), 2.4, 0.3, 0.998, 1.0, seed=701), hit, 0.35, wet=0.3)
+    bus.place2(np.stack([M.choir([50, 57, 62, 66], fr(REV - HIT) + 0.5, 'o', seed=12, attack=0.3)] * 2), hit, 0.1, wet=0.9)
+    return c + fr(REV)
+
+
+# ---------------------------------------------------------------- 11 · La Llorona (cajita musical)
+def cap11(bus):
+    S1, S2, S3, REV, HIT = 126, 96, 72, 126, 60
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.05, wind=0.5, seed=11)
+    rv = M.river(c + 0.4, 11)
+    bus.place(rv, 0, 0.12, -0.3)
+    # cuerdas graves: Am – Am/G – F – E
+    pad = sfx.strings([midi(45), midi(52), midi(57), midi(60)], a + 0.4, lambda u: np.minimum(1, u * 3), 300, 900, release=0.4, seed=111)
+    bus.place2(pad, 0.1, 0.16, wet=0.8)
+    pad2 = sfx.strings([midi(41), midi(48), midi(53), midi(57)], fr(S2) + 0.4, lambda u: np.ones_like(u), 300, 1000, release=0.4, seed=112)
+    bus.place2(pad2, a, 0.15, wet=0.8)
+    pad3 = sfx.strings([midi(40), midi(47), midi(52), midi(56)], fr(S3) + 0.4, lambda u: 1 - 0.5 * u, 400, 1400, release=0.3, seed=113)
+    bus.place2(pad3, b, 0.15, wet=0.8)
+    # cajita musical: vals lento en 3/4
+    mel = [(0.6, 76), (1.1, 72), (1.6, 69), (2.4, 71), (2.9, 72), (3.4, 74), (a + 0.2, 72), (a + 0.7, 69), (a + 1.2, 65), (a + 2.0, 64), (a + 2.5, 65), (a + 3.0, 68), (b + 0.4, 69), (b + 0.9, 71), (b + 1.4, 72)]
+    for k, (tt, m) in enumerate(mel):
+        bus.place(M.musicbox(midi(m), 1.8, 0.9), tt, 0.2, -0.2 + 0.1 * (k % 4), wet=1.2)
+        bus.place(M.musicbox(midi(m - 24), 1.2, 0.5), tt, 0.08, 0.2, wet=1.0)
+    # coro lejano, como un lamento
+    bus.place2(np.stack([M.choir([69, 72], 3.4, 'u', seed=114, attack=1.4)] * 2), 0.8, 0.07, wet=1.4)
+    bus.place2(np.stack([M.choir([65, 69], 2.8, 'u', seed=115, attack=1.2)] * 2), a + 0.4, 0.07, wet=1.4)
+    # viento que se lleva el rebozo
+    bus.place(sfx.air(116, fr(S3) + 0.6, (300, 1000), (1000, 5000)), b - 0.1, 0.18, 0.2, wet=0.4)
+    # la gota
+    drop = c + fr(10)
+    n = int(0.25 * SR)
+    tt_ = np.arange(n) / SR
+    plink = np.sin(2 * np.pi * np.cumsum(900 + 1400 * tt_ / 0.25) / SR) * np.exp(-tt_ / 0.05)
+    bus.place(plink, drop, 0.35, wet=1.5)
+    for k in range(10):
+        bus.place(M.musicbox(midi([69, 72, 76, 79, 81, 84, 88, 81, 84, 88][k]), 1.6, 0.7), drop + 0.15 + k * 0.13, 0.1, -0.5 + k * 0.1, wet=1.3)
+    bus.place(sfx.boom(11), hit, 0.7, wet=0.4)
+    bus.place(M.huehuetl(0.9, 1.0, seed=111), hit, 0.55, wet=0.3)
+    bus.place2(np.stack([M.choir([45, 57, 61, 64, 69], fr(REV - HIT) + 0.6, 'a', seed=116, attack=0.3)] * 2), hit, 0.15, wet=1.0)
+    for k, m in enumerate([69, 73, 76, 81]):
+        bus.place(M.musicbox(midi(m), 2.4, 0.9), hit + 0.04 * k, 0.16, -0.3 + 0.2 * k, wet=1.2)
+    return c + fr(REV)
+
+
+SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11}
 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120}
+    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)
