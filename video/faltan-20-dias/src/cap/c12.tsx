@@ -1,12 +1,13 @@
 import React, {useEffect, useState} from 'react';
 import {AbsoluteFill, Sequence, continueRender, delayRender, useCurrentFrame} from 'remotion';
-import {C, E, FPS, H, W, clamp, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
+import {C, E, FPS, H, W, clamp, css, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
 import {Flame, Light, PaperTexture} from '../components/core';
 import {PetalRain, PETAL_LAYERS, Sparks} from '../components/Particles';
 import {fontsReady} from '../lib/fonts';
 import {Orb, Sky} from './kit/land';
 import {Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {Dip, LightLeak} from './kit/transitions';
+import {Camera, Stage3D, project} from './kit/three';
 
 // Capítulo 12 · "El Callejón del Beso" — dos balcones tan cerca que cabe un beso.
 export const C12 = {S1: 126, S2: 108, S3: 66, REV: 126, HIT: 66};
@@ -96,25 +97,88 @@ const Callejon: React.FC = () => {
 	);
 };
 
-const Balcon: React.FC<{x: number; side: 1 | -1; lit: number}> = ({x, side, lit}) => (
-	<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-		<g transform={`translate(${x} 0) scale(${side} 1)`}>
-			<rect x={-700} y={0} width={700} height={H} fill={rgba(mixRGB(C.ink, side > 0 ? C.terracota : C.verde, 0.45 * lit + 0.1))} />
-			<path d="M -520 1240 L -520 640 Q -320 470 -120 640 L -120 1240 Z" fill={rgba(mixRGB('#2a1206', C.flama, 0.4 * lit))} />
-			<path d="M -320 560 L -320 1240 M -520 900 L -120 900" stroke="#100605" strokeWidth={16} />
-			<rect x={-600} y={1240} width={560} height={26} fill="#0d0605" />
-			{Array.from({length: 11}).map((_, k) => (
-				<path key={k} d={`M ${-590 + k * 52} 1266 l 0 190`} stroke="#0d0605" strokeWidth={9} />
-			))}
-			<path d="M -600 1310 Q -320 1380 -40 1310" stroke="#0d0605" strokeWidth={7} fill="none" />
-			<rect x={-600} y={1450} width={560} height={20} fill="#0d0605" />
-			<circle cx={-470} cy={1205} r={36} fill={rgba(mixRGB(C.ink, C.cempa, 0.8 * lit + 0.1))} />
-			<circle cx={-420} cy={1215} r={26} fill={rgba(mixRGB(C.ink, C.flama, 0.7 * lit + 0.1))} />
+// ---------- Los dos balcones en 3D: fachadas frente a frente en un callejón de 1.2 m ----------
+const GAP = 3.0; // de muro a muro
+const BAL_Y = 7.6;
+const VELA_L: [number, number, number] = [-0.28, BAL_Y + 1.0 + 0.36, 0.25];
+const VELA_R: [number, number, number] = [0.28, BAL_Y + 1.0 + 0.36, -0.25];
+const Fachada3D: React.FC<{side: 1 | -1; color: string; lit: number}> = ({side, color, lit}) => {
+	const x = side * (GAP / 2 + 0.5);
+	const face = -side; // hacia el callejón
+	const win = css(mixRGB('#2a1206', C.flama, 0.35 + 0.45 * lit));
+	return (
+		<group>
+			{/* muro */}
+			<mesh position={[x, 8, 0]} receiveShadow castShadow>
+				<boxGeometry args={[1, 18, 14]} />
+				<meshStandardMaterial color={color} roughness={0.95} />
+			</mesh>
+			{/* ventanas en arco, encendidas, piso por piso */}
+			{[2.6, 5.0, BAL_Y + 1.6, 12.5].map((wy, k) =>
+				[-4.4, 0, 4.4].map((wz, j) => {
+					const on = k === 2 && j === 1 ? 1 : hash(k * 5 + j, side + 3) > 0.45 ? 0.8 : 0.15;
+					return (
+						<group key={k + '-' + j} position={[x + face * 0.51, wy, wz + (side > 0 ? 0.3 : -0.3)]} rotation={[0, (face * Math.PI) / 2, 0]}>
+							<mesh>
+								<planeGeometry args={[1.3, 2.1]} />
+								<meshBasicMaterial color={on > 0.5 ? win : '#120806'} />
+							</mesh>
+							<mesh position={[0, 1.05, 0]}>
+								<circleGeometry args={[0.65, 16, 0, Math.PI]} />
+								<meshBasicMaterial color={on > 0.5 ? win : '#120806'} />
+							</mesh>
+							{/* marco de cantera */}
+							<mesh position={[0, -1.12, 0.06]}>
+								<boxGeometry args={[1.6, 0.14, 0.18]} />
+								<meshStandardMaterial color="#b89a78" roughness={0.9} />
+							</mesh>
+							<mesh position={[0, 0.2, 0.01]}>
+								<boxGeometry args={[0.07, 2.6, 0.04]} />
+								<meshStandardMaterial color="#120806" />
+							</mesh>
+						</group>
+					);
+				}),
+			)}
+			{/* balcón */}
+			<group position={[side * (GAP / 2) - side * 0.6, BAL_Y, side > 0 ? 0.3 : -0.3]}>
+				<mesh castShadow receiveShadow>
+					<boxGeometry args={[1.2, 0.16, 2.6]} />
+					<meshStandardMaterial color="#6a5446" roughness={0.9} />
+				</mesh>
+				{/* barandal de hierro */}
+				<mesh position={[-side * 0.58, 1.0, 0]} castShadow>
+					<boxGeometry args={[0.05, 0.06, 2.6]} />
+					<meshStandardMaterial color="#0d0605" roughness={0.5} metalness={0.4} />
+				</mesh>
+				{Array.from({length: 13}).map((_, k) => (
+					<mesh key={k} position={[-side * 0.58, 0.5, -1.25 + k * 0.21]} castShadow>
+						<cylinderGeometry args={[0.018, 0.018, 1, 6]} />
+						<meshStandardMaterial color="#0d0605" roughness={0.5} metalness={0.4} />
+					</mesh>
+				))}
+				{/* macetas con cempasúchil */}
+				{[-0.8, 0.8].map((pz, k) => (
+					<group key={k} position={[0, 0.3, pz]}>
+						<mesh castShadow>
+							<cylinderGeometry args={[0.2, 0.14, 0.3, 10]} />
+							<meshStandardMaterial color={C.terracota} roughness={0.9} />
+						</mesh>
+						<mesh position={[0, 0.26, 0]} castShadow>
+							<sphereGeometry args={[0.17, 10, 8]} />
+							<meshStandardMaterial color={C.cempa} roughness={0.8} flatShading />
+						</mesh>
+					</group>
+				))}
+			</group>
 			{/* vela sobre el barandal */}
-			<rect x={-92} y={1150} width={34} height={92} rx={4} fill={rgba(mixRGB(C.ink, C.marfil, 0.5 + 0.5 * lit))} />
-		</g>
-	</svg>
-);
+			<mesh position={side < 0 ? [VELA_L[0], VELA_L[1] - 0.18, VELA_L[2]] : [VELA_R[0], VELA_R[1] - 0.18, VELA_R[2]]} castShadow>
+				<cylinderGeometry args={[0.07, 0.07, 0.36, 12]} />
+				<meshStandardMaterial color={C.marfil} roughness={0.6} emissive="#3a2008" emissiveIntensity={0.4 * lit} />
+			</mesh>
+		</group>
+	);
+};
 
 const Beso: React.FC = () => {
 	const f = useCurrentFrame();
@@ -124,59 +188,97 @@ const Beso: React.FC = () => {
 	const flR = flicker(t + 3, 122);
 	const g2 = f < IGN ? 0 : clamp((f - IGN) / 10) * (1 + 0.3 * Math.exp(-(f - IGN) / 6));
 	const lit = 0.6 + 0.4 * clamp((f - IGN) / 20);
-	const xL = 540 - 60;
-	const xR = 540 + 60;
+	const u = E.inOut(clamp(f / C12.S2));
+	const cam: [number, number, number] = [lerp(0.25, -0.15, u), BAL_Y + lerp(1.9, 1.4, u), lerp(6.5, 5.2, u)];
+	const look: [number, number, number] = [0, BAL_Y + 0.6, -0.5];
+	const pL = project(VELA_L, cam, look, 58);
+	const pR = project(VELA_R, cam, look, 58);
+	const sc = 1.2; // tamaño de la llama según la distancia
 	return (
 		<AbsoluteFill style={{background: '#050308'}}>
 			<Sky t={t} top="#04030a" mid="#0d0a16" horizon="#1d1420" hy={1700} stars={80} />
-			<Orb x={540} y={250} r={40} color={C.marfil} core="#FFFBF0" halo={4} o={0.85} />
-			<Balcon x={xL} side={1} lit={lit} />
-			<Balcon x={xR} side={-1} lit={lit} />
-			<Light x={xL - 75} y={1140} r={420} color={C.cempa} o={0.4 * flL} />
-			<Flame x={xL - 75} y={1150} size={70} t={t} seed={121} fl={flL} />
-			{/* la chispa cruza el hueco y enciende la otra vela */}
-			<Sparks t={(f - IGN + 4) / FPS} x={xR + 75} y={1146} n={18} seed={12} />
+			<Orb x={560} y={260} r={36} color={C.marfil} core="#FFFBF0" halo={4} o={0.85} />
+			<Stage3D fov={58}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#0a0610', 10, 45]} />
+				<hemisphereLight args={['#5a5a80', '#0a0608', 0.35]} />
+				<directionalLight position={[0, 30, -4]} intensity={0.8} color="#b8b0d8" />
+				<pointLight position={VELA_L} intensity={10 * flL} distance={10} color={C.cempa} castShadow />
+				<pointLight position={VELA_R} intensity={10 * flR * Math.min(1, g2)} distance={10} color={C.cempa} />
+				<Fachada3D side={-1} color="#8a3a26" lit={lit} />
+				<Fachada3D side={1} color="#2a5a48" lit={lit} />
+				<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+					<planeGeometry args={[GAP + 2, 40]} />
+					<meshStandardMaterial color="#2a2420" roughness={1} />
+				</mesh>
+			</Stage3D>
+			<Light x={pL.x} y={pL.y} r={360} color={C.cempa} o={0.4 * flL} />
+			<Flame x={pL.x} y={pL.y + 6} size={46 * sc} t={t} seed={121} fl={flL} />
+			<Sparks t={(f - IGN + 4) / FPS} x={pR.x} y={pR.y} n={18} seed={12} />
 			{g2 > 0 ? (
 				<>
-					<Light x={xR + 75} y={1140} r={420} color={C.cempa} o={0.4 * flR * Math.min(1, g2)} />
-					<Flame x={xR + 75} y={1150} size={70} t={t + 1.3} seed={122} grow={g2} fl={flR} />
+					<Light x={pR.x} y={pR.y} r={360} color={C.cempa} o={0.4 * flR * Math.min(1, g2)} />
+					<Flame x={pR.x} y={pR.y + 6} size={46 * sc} t={t + 1.3} seed={122} grow={g2} fl={flR} />
 				</>
 			) : null}
 			{f > IGN - 14 && f < IGN + 2 ? (
 				<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
 					{(() => {
-						const u = clamp((f - (IGN - 14)) / 14);
-						const x = lerp(xL - 60, xR + 75, u);
-						const y = 1090 - Math.sin(u * Math.PI) * 90;
+						const k = clamp((f - (IGN - 14)) / 14);
+						const x = lerp(pL.x, pR.x, k);
+						const y = lerp(pL.y - 40, pR.y, k) - Math.sin(k * Math.PI) * 70;
 						return <circle cx={x} cy={y} r={7} fill="#FFF4D6" style={{filter: 'drop-shadow(0 0 12px #F5C242)'}} />;
 					})()}
 				</svg>
 			) : null}
-			<PaperTexture o={0.2} />
-			<Kinetic text={'…tan cerca,\nque cabe un beso.'} f={f} at={6} out={96} y={1540} size={54} />
+			<PaperTexture o={0.18} />
+			<Kinetic text={'…tan cerca,\nque cabe un beso.'} f={f} at={6} out={96} y={1500} size={54} scrim={0.45} />
 		</AbsoluteFill>
 	);
 };
 
+// Las dos velas juntas, de cerca, sobre el barandal
 const Petalos: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 8;
 	const fl = flicker(t, 123);
+	const cam: [number, number, number] = [lerp(-0.6, 0.6, f / C12.S3), 0.55, 2.4];
+	const look: [number, number, number] = [0, 0.35, 0];
+	const tops: [number, number, number][] = [[-0.16, 0.62, 0], [0.16, 0.62, 0.05]];
+	const pts = tops.map((p) => project(p, cam, look, 40));
 	return (
 		<AbsoluteFill style={{background: '#070308'}}>
 			<Light x={540} y={900} r={900} color={C.cempa} o={0.5 * fl} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				<g transform="translate(540 1500) scale(2.2) translate(-540 -1150)">
-					<rect x={480} y={1150} width={34} height={92} rx={4} fill={C.marfil} />
-					<rect x={566} y={1150} width={34} height={92} rx={4} fill={C.marfil} />
-				</g>
-			</svg>
-			<Flame x={540 - 58} y={1500} size={150} t={t} seed={124} fl={fl} />
-			<Flame x={540 + 58} y={1500} size={150} t={t + 2} seed={125} fl={fl} />
-			<Light x={540} y={1380} r={300} color={C.flama} o={0.6 * fl} />
+			<Stage3D fov={40}>
+				<Camera pos={cam} look={look} />
+				<ambientLight intensity={0.15} />
+				<pointLight position={[0, 0.9, 0.1]} intensity={3 * fl} distance={6} color={C.cempa} castShadow />
+				<directionalLight position={[-2, 3, -3]} intensity={0.6} color="#8a7aa0" />
+				{tops.map((p, i) => (
+					<group key={i} position={[p[0], 0, p[2]]}>
+						<mesh position={[0, 0.3, 0]} castShadow receiveShadow>
+							<cylinderGeometry args={[0.07, 0.075, 0.6, 20]} />
+							<meshStandardMaterial color={C.marfil} roughness={0.5} emissive="#6a3a10" emissiveIntensity={0.1} />
+						</mesh>
+						{/* cera derretida */}
+						<mesh position={[0.05, 0.5, 0.04]} scale={[0.4, 1.5, 0.4]}>
+							<sphereGeometry args={[0.05, 8, 6]} />
+							<meshStandardMaterial color="#f6efe0" roughness={0.4} />
+						</mesh>
+					</group>
+				))}
+				<mesh position={[0, -0.05, 0]} receiveShadow>
+					<boxGeometry args={[3, 0.1, 0.5]} />
+					<meshStandardMaterial color="#1a0e08" roughness={0.6} metalness={0.3} />
+				</mesh>
+			</Stage3D>
+			{pts.map((p, i) => (
+				<Flame key={i} x={p.x} y={p.y} size={130} t={t + i * 2} seed={124 + i} fl={fl} />
+			))}
+			<Light x={(pts[0].x + pts[1].x) / 2} y={pts[0].y - 80} r={300} color={C.flama} o={0.6 * fl} />
 			<PetalRain t={t - 6} layer={{...PETAL_LAYERS[1], n: 36, seed: 126}} light={{x: 540, y: 1400, sigma: 900, L: 1}} />
 			<PetalRain t={t - 6} layer={{...PETAL_LAYERS[2], n: 6, seed: 127}} light={{x: 540, y: 1400, sigma: 900, L: 1}} />
-			<PaperTexture o={0.18} />
+			<PaperTexture o={0.16} />
 		</AbsoluteFill>
 	);
 };
