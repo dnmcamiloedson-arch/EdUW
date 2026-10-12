@@ -77,7 +77,8 @@ export const Mountain: React.FC<{
 	scaleZ?: number;
 }> = ({pos, r, h, color, seed = 1, seg = 11, rough = 0.18, snow, snowLine = 0.78, crater = 0, scaleZ = 1}) => {
 	const geo = useMemo(() => {
-		const g = new THREE.ConeGeometry(r, h, seg, 6, true);
+		// con cráter se usa un radio superior mínimo: así three genera los triángulos de la fila de la cima
+		const g = crater ? new THREE.CylinderGeometry(0.01, r, h, seg, 6, true) : new THREE.ConeGeometry(r, h, seg, 6, true);
 		const p = g.attributes.position as THREE.BufferAttribute;
 		const cols: number[] = [];
 		const base = new THREE.Color(color);
@@ -87,10 +88,12 @@ export const Mountain: React.FC<{
 			let y = p.getY(i);
 			const z = p.getZ(i);
 			const u = (y + h / 2) / h; // 0 base, 1 cima
-			const k = rough * (1 - u * 0.6);
+			const k = rough * (1 - u * 0.6) * (crater ? 1 - u : 1);
 			const d = n3(x * 0.08 + seed, y * 0.08, z * 0.08, seed) * k;
-			let sx = x * (1 + d);
-			let sz = z * (1 + d);
+			// con cráter, el cono se trunca: el radio baja linealmente hasta el anillo del cráter
+			const trunc = crater && u < 0.98 ? (crater + (1 - crater) * (1 - u)) / Math.max(1e-3, 1 - u) : 1;
+			let sx = x * (1 + d) * trunc;
+			let sz = z * (1 + d) * trunc;
 			if (crater && u > 0.98) {
 				// cráter: la punta se abre en anillo (el ángulo sale del índice: en la punta x = z = 0)
 				const th = ((i % (seg + 1)) / seg) * Math.PI * 2;
