@@ -70,12 +70,12 @@ export const Xolo3D: React.FC<{pos: [number, number, number]; t: number; walk?: 
 		return (
 			<group position={[x, 0.86, z]} rotation={[0, 0, a1]}>
 				<mesh position={[0, -0.22, 0]} castShadow>
-					<cylinderGeometry args={[0.1, 0.06, 0.46, 8]} />
+					<cylinderGeometry args={[0.13, 0.07, 0.46, 8]} />
 					{skin}
 				</mesh>
 				<group position={[0, -0.44, 0]} rotation={[0, 0, (x > 0 ? -1 : 1) * a2]}>
 					<mesh position={[0, -0.2, 0]} castShadow>
-						<cylinderGeometry args={[0.05, 0.04, 0.42, 8]} />
+						<cylinderGeometry args={[0.075, 0.05, 0.42, 8]} />
 						{skin}
 					</mesh>
 					<mesh position={[0.04, -0.41, 0]} castShadow>
@@ -123,13 +123,14 @@ export const Xolo3D: React.FC<{pos: [number, number, number]; t: number; walk?: 
 				</mesh>
 				{[-1, 1].map((sd) => (
 					<group key={sd}>
-						<mesh position={[-0.06, 0.24, sd * 0.1]} rotation={[sd * -0.42, 0.25 * sd, 0.18]} scale={[1, 1, 0.32]} castShadow>
-							<coneGeometry args={[0.13, 0.32, 10]} />
+						{/* oreja grande y redondeada (de murciélago, pero suave) */}
+						<mesh position={[-0.05, 0.2, sd * 0.11]} rotation={[sd * -0.5, 0.35 * sd, 0.1]} scale={[0.9, 1.7, 0.28]} castShadow>
+							<sphereGeometry args={[0.13, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.62]} />
 							{skin}
 						</mesh>
 						<mesh position={[0.12, 0.03, sd * 0.13]}>
-							<sphereGeometry args={[0.022, 8, 6]} />
-							<meshStandardMaterial color="#c88a2a" emissive="#6a3a08" roughness={0.2} />
+							<sphereGeometry args={[0.02, 8, 6]} />
+							<meshStandardMaterial color="#3a2008" emissive="#2a1404" roughness={0.15} />
 						</mesh>
 					</group>
 				))}
@@ -179,29 +180,48 @@ const AlmasGlow: React.FC<{almas: Alma[]; cam: [number, number, number]; look: [
 	return <canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0, mixBlendMode: 'screen'}} />;
 };
 
+// Ondas de luz de luna sobre el agua (desde el horizonte proyectado hacia abajo)
+const Ondas: React.FC<{y0: number; t: number; x?: number}> = ({y0, t, x = 830}) => (
+	<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
+		{Array.from({length: 34}).map((_, i) => {
+			const y = y0 + 4 + i * i * 0.7;
+			if (y > H) return null;
+			const w = 20 + i * 10 * (0.6 + 0.4 * Math.sin(t * 2 + i * 1.7));
+			return <rect key={i} x={x - w / 2 + Math.sin(t * 1.3 + i) * 12} y={y} width={w} height={1.5 + i * 0.08} rx={2} fill="#E8E0F0" opacity={0.3 - i * 0.007} />;
+		})}
+		{Array.from({length: 26}).map((_, i) => {
+			const y = y0 + 8 + i * i * 1.2;
+			return <rect key={'l' + i} x={-40 + Math.sin(t * 1.1 + i) * (6 + i)} y={y} width={W + 80} height={1.2} fill="#D8D0E8" opacity={0.035} />;
+		})}
+	</svg>
+);
+
 // Ribera nocturna: lomas lejanas, agua translúcida sobre el reflejo, orilla donde camina el perro
-const Paisaje: React.FC<{children?: React.ReactNode; mirror?: React.ReactNode}> = ({children, mirror}) => (
+const Paisaje: React.FC<{children?: React.ReactNode; mirror?: React.ReactNode; bank?: boolean}> = ({children, mirror, bank = true}) => (
 	<>
 		<fog attach="fog" args={['#0e0c16', 25, 140]} />
 		<hemisphereLight args={['#7a7aa8', '#0a0608', 0.6]} />
-		<directionalLight position={[30, 25, -60]} intensity={3.2} color="#d8d0e8" castShadow shadow-mapSize={[1024, 1024]} />
+		<directionalLight position={[30, 25, -60]} intensity={4.5} color="#d8d0e8" castShadow shadow-mapSize={[1024, 1024]} />
+		<directionalLight position={[-10, 14, -30]} intensity={2.0} color="#b8b0d8" />
 		<directionalLight position={[-20, 6, 20]} intensity={0.35} color={C.cempa} />
 		<Range z={-90} x0={-120} x1={120} n={12} r={18} h={16} color="#141020" seed={141} />
 		<Range z={-60} x0={-90} x1={90} n={9} r={12} h={7} color="#100c16" seed={142} />
 		{/* orilla cercana */}
-		<mesh position={[0, -0.05, 2.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-			<planeGeometry args={[400, 6]} />
-			<meshStandardMaterial color="#141012" roughness={1} />
-		</mesh>
+		{bank ? (
+			<mesh position={[0, -0.05, 2.5]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+				<planeGeometry args={[400, 6]} />
+				<meshStandardMaterial color="#0c0a0a" roughness={1} />
+			</mesh>
+		) : null}
 		{children}
 		<group scale={[1, -1, 1]}>
 			<Range z={-90} x0={-120} x1={120} n={12} r={18} h={16} color="#141020" seed={141} />
 			<Range z={-60} x0={-90} x1={90} n={9} r={12} h={7} color="#100c16" seed={142} />
 			{mirror}
 		</group>
-		<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, -50]}>
-			<planeGeometry args={[400, 100]} />
-			<meshBasicMaterial color="#05050b" transparent opacity={0.68} />
+		<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, -45]}>
+			<planeGeometry args={[400, 120]} />
+			<meshBasicMaterial color="#030308" transparent opacity={0.72} fog={false} />
 		</mesh>
 	</>
 );
@@ -210,8 +230,8 @@ const Orilla: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const dogX = lerp(-4, 3.2, f / C14.S1);
-	const cam: [number, number, number] = [dogX - 0.8, 1.3, 7];
-	const look: [number, number, number] = [dogX + 0.3, 2.2, -6];
+	const cam: [number, number, number] = [dogX - 0.3, 0.55, 7.8];
+	const look: [number, number, number] = [dogX + 0.5, 2.3, -6];
 	const almas = Array.from({length: 7}).map((_, i) => almaPos(i, t, dogX));
 	return (
 		<AbsoluteFill>
@@ -223,6 +243,7 @@ const Orilla: React.FC = () => {
 					<Xolo3D pos={[dogX, 0, 1.6]} t={t} />
 				</Paisaje>
 			</Stage3D>
+			<Ondas y0={project([dogX, 0, -100], cam, look, 50).y} t={t} />
 			<AlmasGlow almas={almas} cam={cam} look={look} fov={50} f={f} />
 			<Fog y={1200} color="#c8b8c8" o={0.08} h={240} />
 			<PaperTexture o={0.16} />
@@ -243,8 +264,9 @@ const Almas: React.FC = () => {
 			<Sky t={t} top="#020208" mid="#08080f" horizon="#140e16" hy={1100} stars={120} />
 			<Stage3D fov={50}>
 				<Camera pos={cam} look={look} />
-				<Paisaje />
+				<Paisaje bank={false} />
 			</Stage3D>
+			<Ondas y0={project([cam[0], 0, -100], cam, look, 50).y} t={t} x={540} />
 			<AlmasGlow almas={almas} cam={cam} look={look} fov={50} f={f} />
 			<PaperTexture o={0.16} />
 			<Kinetic text={'Xólotl nunca deja\na nadie atrás.'} f={f} at={10} out={82} y={380} size={52} scrim={0.4} />
