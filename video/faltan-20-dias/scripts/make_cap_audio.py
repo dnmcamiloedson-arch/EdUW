@@ -665,12 +665,90 @@ def cap4(bus):
     return c + fr(REV)
 
 
-SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5, 4: cap4}
+def cap3(bus):
+    # REEL: cada elemento que llega al altar suma un instrumento; al final suena todo junto
+    INTRO, SEG, N, PULL, REV, HIT = 72, 42, 8, 66, 150, 66
+    e0 = fr(INTRO)
+    p0 = fr(INTRO + SEG * N)
+    r0 = fr(INTRO + SEG * N + PULL)
+    hit = r0 + fr(HIT)
+    beat = SEG / FPS / 3
+    bed(bus, 0, drone=0.08, wind=0.12, seed=3)
+    sc = M.scale(58, 'mayor')
+    prog = [[46, 58, 62, 65], [43, 55, 58, 62], [51, 55, 58, 63], [53, 57, 60, 65]]
+    # intro: los manteles caen
+    for k, at in enumerate([14, 23, 32]):
+        bus.place(whoosh(0.45, 200, 2500, seed=300 + k, up=False), fr(at) - 0.15, 0.16, -0.3 + 0.3 * k, wet=0.4)
+        bus.place(sfx.thump(160, 60, 0.4, 0.08), fr(at) + 0.25, 0.25, wet=0.3)
+    bus.place(M.choir([midi(46), midi(53), midi(58)], e0 + 0.3, 'o', 0.45, seed=3), 0.2, 0.08, wet=1.0)
+    end = r0 + fr(10)
+    tt, k = e0, 0
+    while tt < end:
+        seg = int((tt - e0) / (SEG / FPS))
+        ch = prog[seg % 4]
+        layers = min(N, seg + 1)
+        pos = k % 3
+        # 1 papel picado: caja musical
+        bus.place(M.musicbox(midi(ch[1 + pos] + 12), 0.9, 0.6), tt, 0.07, 0.4, wet=1.0)
+        if layers >= 2:  # agua: bajo de marimba
+            if pos == 0:
+                bus.place(sfx.marimba(midi(ch[0]), 1.0, seed=k), tt, 0.2, -0.1, wet=0.3)
+        if layers >= 3:  # sal: sonaja
+            bus.place(M.sonaja(0.55, seed=k), tt + beat * 0.5, 0.07, -0.45)
+        if layers >= 4:  # velas: arpegio pulsado
+            for j in range(2):
+                bus.place(M.pluck(midi(ch[1 + (pos + j) % 3]), 0.5, 0.55, 0.994, 0.7, seed=k * 2 + j), tt + j * beat * 0.5, 0.1, 0.25, wet=0.4)
+        if layers >= 5 and pos == 0:  # copal: coro
+            bus.place(M.choir([midi(m) for m in ch[1:]], SEG / FPS + 0.2, 'a', 0.45, seed=seg), tt, 0.07, wet=1.0)
+        if layers >= 7:  # pan: huehuetl
+            if pos == 0:
+                bus.place(M.huehuetl(0.7, 1.2, seed=k), tt, 0.3, wet=0.25)
+        if layers >= 8:  # calaveritas: teponaztli y quijada
+            bus.place(M.teponaztli(990 if pos else 740, 0.5, seed=k), tt + beat * 0.5, 0.07, 0.45, wet=0.3)
+            if pos == 2:
+                bus.place(M.quijada(0.5, seed=k), tt, 0.06, -0.5, wet=0.3)
+        tt += beat
+        k += 1
+    # 6 cempasúchil: la flauta canta la melodía desde aquí
+    mel = [(4, 1), (5, 1), (7, 1), (9, 2), (7, 1), (8, 1), (7, 1), (5, 1), (4, 3), (2, 1), (4, 1), (5, 1), (4, 3), (6, 1), (5, 1), (4, 1)]
+    tt = e0 + 5 * SEG / FPS
+    for j, (dg, d) in enumerate(mel):
+        if tt > r0:
+            break
+        bus.place(M.flute(midi(sc(dg) + 12), d * beat * 0.95, 0.85, seed=90 + j), tt, 0.15, -0.15, wet=0.8)
+        tt += d * beat
+    # llegada de cada elemento: golpe suave + campanita que sube
+    for i in range(N):
+        at = e0 + fr(i * SEG + 8)
+        bus.place(sfx.thump(220, 80, 0.3, 0.06), at + 0.12, 0.2, wet=0.3)
+        bus.place(sfx.bell(midi(sc(i + 7)), 1.6), at + 0.1, 0.07, -0.4 + 0.1 * i, wet=0.9)
+        bus.place(whoosh(0.3, 600, 6000, seed=320 + i, up=False), at - 0.2, 0.06, wet=0.3)
+    # velas encendiéndose
+    for i in range(8):
+        bus.place(sfx.ignite(330 + i), e0 + fr(3 * SEG + 14 + i * 3), 0.06, -0.5 + 0.13 * i, wet=0.4)
+    # entrar al retrato
+    bus.place(whoosh(1.6, 150, 6000, seed=341), r0 + fr(6), 0.25, wet=0.6)
+    sw = sfx.strings([midi(46), midi(53), midi(58), midi(62)], fr(HIT) - 0.1, lambda u: u ** 2.2, 300, 2600, release=0.1, seed=33)
+    bus.place2(sw, r0 + 0.1, 0.22, wet=0.7)
+    for j in range(10):
+        bus.place(M.musicbox(midi(sc(j + 7) + 12), 1.4, 0.7), r0 + fr(40) + j * 0.05, 0.07, -0.5 + j * 0.1, wet=1.2)
+    # golpe final con todo el ensamble
+    bus.place(M.huehuetl(1.0, 1.0, seed=35), hit, 0.6, wet=0.3)
+    bus.place(sfx.boom(3), hit, 0.75, wet=0.35)
+    bus.place(M.strum([midi(m) for m in (46, 53, 58, 62, 65, 70)], 2.6, 0.02, 0.6, 0.9, seed=36), hit, 0.28, wet=0.4)
+    bus.place(M.choir([midi(46), midi(58), midi(62), midi(65), midi(70)], 3.0, 'a', 0.7, seed=37, attack=0.05), hit, 0.14, wet=1.0)
+    for j, m in enumerate([70, 74, 77, 82]):
+        bus.place(sfx.marimba(midi(m), 1.6, seed=340 + j), hit + 0.05 * j, 0.18, -0.3 + 0.2 * j, wet=0.6)
+    bus.place(M.flute(midi(82), 1.6, 0.8, seed=99), hit + 0.2, 0.12, 0.2, wet=1.0)
+    return r0 + fr(REV)
+
+
+SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5, 4: cap4, 3: cap3}
 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132}
+    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132, 3: 72 + 42 * 8 + 66 + 150}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)
