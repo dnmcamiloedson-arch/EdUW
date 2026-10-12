@@ -9,7 +9,7 @@ import {Kinetic, Lockup, NumberRise} from './kit/type';
 
 // Capítulo 3 (REEL) · "Poner la mesa" — el altar se arma pieza por pieza y cada una dice su porqué.
 // Al final, la cámara entra en el retrato: ahí está el número.
-export const SEG = 42;
+export const SEG = 54;
 export const ELEMS = [
 	{name: 'PAPEL PICADO', txt: 'El aire, y lo frágil de la vida.', x: 540, y: 660, z: 1.45},
 	{name: 'AGUA', txt: 'Calma la sed del largo viaje.', x: 800, y: 950, z: 2.1},
@@ -331,8 +331,8 @@ const Rotulos: React.FC<{f: number}> = ({f}) => {
 		if (f < at - 4 || f > at + SEG + 4) return;
 		out.push(
 			<React.Fragment key={i}>
-				<Kinetic text={e.name} f={f} at={at + 8} out={at + SEG - 8} y={300} size={e.name.length > 10 ? 78 : 92} font="Rye" color={C.flama} stagger={1.4} spacing="0.06em" scrim={0.65} />
-				<Kinetic text={e.txt} f={f} at={at + 14} out={at + SEG - 8} y={420} size={44} />
+				<Kinetic text={e.name} f={f} at={at + 4} out={at + SEG - 6} y={300} size={e.name.length > 10 ? 78 : 92} font="Rye" color={C.flama} stagger={0.7} spacing="0.06em" scrim={0.65} />
+				<Kinetic text={e.txt} f={f} at={at + 9} out={at + SEG - 6} y={420} size={44} stagger={0.35} />
 			</React.Fragment>,
 		);
 	});
