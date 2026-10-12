@@ -1,11 +1,12 @@
 import React from 'react';
 import {AbsoluteFill, Sequence, useCurrentFrame} from 'remotion';
 import {noise2D} from '@remotion/noise';
-import {C, E, FPS, H, W, clamp, curl, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
+import {C, E, FPS, H, W, clamp, css, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
 import {Light, PaperTexture, useCanvasDraw} from '../components/core';
 import {Bokeh} from '../components/Particles';
 import {useGlyph} from '../countdown/reveals';
-import {Fog, Sky} from './kit/land';
+import {Sky} from './kit/land';
+import {Camera, Ground, Oyamel, Stage3D, THREE} from './kit/three';
 import {GoldNumber, Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {LightLeak, PetalWipe} from './kit/transitions';
 
@@ -92,83 +93,124 @@ export const drawMonarch = (ctx: CanvasRenderingContext2D, x: number, y: number,
 	ctx.restore();
 };
 
-// Silueta de oyamel (abeto)
-const firPath = (x: number, base: number, h: number) => {
-	let d = `M ${x} ${base - h}`;
-	const tiers = 7;
-	for (let i = 1; i <= tiers; i++) {
-		const y = base - h + (h * i) / tiers;
-		const w = (h * 0.32 * i) / tiers;
-		d += ` L ${x + w} ${y} L ${x + w * 0.55} ${y - h * 0.035}`;
-	}
-	d += ` L ${x + 8} ${base} L ${x - 8} ${base}`;
-	for (let i = tiers; i >= 1; i--) {
-		const y = base - h + (h * i) / tiers;
-		const w = (h * 0.32 * i) / tiers;
-		d += ` L ${x - w * 0.55} ${y - h * 0.035} L ${x - w} ${y}`;
-	}
-	return d + ' Z';
+// ---------- Monarcas en 3D: dos alas con la textura de la mariposa, bisagra en el cuerpo ----------
+let monarchTex: THREE.CanvasTexture | null = null;
+const getMonarchTex = () => {
+	if (monarchTex) return monarchTex;
+	const cv = document.createElement('canvas');
+	cv.width = 512;
+	cv.height = 512;
+	const ctx = cv.getContext('2d')!;
+	drawMonarch(ctx, 256, 270, 5.4, 0, 0, 1, true);
+	monarchTex = new THREE.CanvasTexture(cv);
+	monarchTex.colorSpace = THREE.SRGBColorSpace;
+	monarchTex.anisotropy = 4;
+	return monarchTex;
 };
+const wingGeo = (side: 1 | -1) => {
+	const g = new THREE.PlaneGeometry(1, 2);
+	g.translate(side * 0.5, 0, 0);
+	const uv = g.attributes.uv as THREE.BufferAttribute;
+	for (let i = 0; i < uv.count; i++) uv.setX(i, side > 0 ? 0.5 + 0.5 * uv.getX(i) : 0.5 * uv.getX(i));
+	return g;
+};
+const WING_R = wingGeo(1);
+const WING_L = wingGeo(-1);
 
-const Forest: React.FC<{t: number; layers: {y: number; h: number; c: string; n: number; seed: number; dx?: number}[]}> = ({layers}) => (
-	<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-		{layers.map((L, li) => (
-			<g key={li} transform={`translate(${L.dx ?? 0} 0)`}>
-				{Array.from({length: L.n}).map((_, i) => {
-					const x = -100 + (i + hash(i, L.seed) * 0.6) * ((W + 200) / L.n);
-					const h = L.h * (0.75 + 0.5 * hash(i, L.seed + 1));
-					return <path key={i} d={firPath(x, L.y + 40 * hash(i, L.seed + 2), h)} fill={L.c} />;
-				})}
-				<rect x={-200} y={L.y + 30} width={W + 400} height={H} fill={L.c} />
-			</g>
-		))}
-	</svg>
-);
-
-const Swarm: React.FC<{f: number; n: number; seed: number; area: [number, number, number, number]; size: [number, number]; swirl?: number; up?: number; lit?: number}> = ({f, n, seed, area, size, swirl = 0, up = 0, lit = 1}) => {
-	const t = f / FPS;
-	const ref = useCanvasDraw(
-		(ctx) => {
-			for (let i = 0; i < n; i++) {
-				const r = (q: number) => hash(i * 7 + q, seed);
-				let x = area[0] + r(1) * area[2];
-				let y = area[1] + r(2) * area[3];
-				const [cx, cy] = curl(x, y, t * 0.3 + r(3), 0.003);
-				x += cx * 140 * t + Math.sin(t * (0.8 + r(4)) + i) * 40;
-				y += cy * 140 * t - up * t * (0.6 + 0.8 * r(5));
-				if (swirl) {
-					const a = r(6) * 6.28 + t * swirl * (0.7 + 0.6 * r(7));
-					const rad = 120 + 360 * r(8);
-					x = 540 + Math.cos(a) * rad;
-					y = area[1] + area[3] * (1 - ((r(9) + t * 0.25 * (0.5 + r(10))) % 1)) + Math.sin(a) * 60;
-				}
-				const s = size[0] + (size[1] - size[0]) * r(11);
-				drawMonarch(ctx, x, y, s / 40, Math.sin(t * 2 + i) * 0.5 + (r(12) - 0.5), t * (9 + 4 * r(13)) + i, lit * (0.7 + 0.4 * r(14)));
+export type Mariposa = {p: [number, number, number]; head: number; pitch?: number; roll?: number; flap: number; s: number};
+export const Monarcas3D: React.FC<{items: Mariposa[]; lit?: number}> = ({items, lit = 1}) => {
+	const refR = React.useRef<THREE.InstancedMesh>(null);
+	const refL = React.useRef<THREE.InstancedMesh>(null);
+	const tex = React.useMemo(() => getMonarchTex(), []);
+	React.useLayoutEffect(() => {
+		const base = new THREE.Object3D();
+		const hinge = new THREE.Object3D();
+		base.add(hinge);
+		items.forEach((m, i) => {
+			base.position.set(...m.p);
+			base.rotation.set(0, 0, 0);
+			base.rotateY(m.head);
+			base.rotateX(-Math.PI / 2 + (m.pitch ?? 0));
+			base.rotateY(m.roll ?? 0);
+			base.scale.setScalar(m.s);
+			for (const [ref, sd] of [[refR, 1], [refL, -1]] as const) {
+				hinge.rotation.set(0, -sd * m.flap, 0);
+				hinge.updateMatrixWorld(true);
+				base.updateMatrixWorld(true);
+				ref.current?.setMatrixAt(i, hinge.matrixWorld);
 			}
-		},
-		[f],
+		});
+		for (const ref of [refR, refL]) if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+	});
+	// emisivo: las alas se leen naranjas aun a contraluz (nunca como siluetas oscuras)
+	const mat = <meshStandardMaterial map={tex} emissiveMap={tex} emissive="#ffffff" emissiveIntensity={0.55 * lit} transparent alphaTest={0.4} side={THREE.DoubleSide} roughness={0.7} color={css(mixRGB('#000000', '#ffffff', lit))} />;
+	return (
+		<group>
+			<instancedMesh ref={refR} args={[WING_R, undefined, items.length]} castShadow>
+				{mat}
+			</instancedMesh>
+			<instancedMesh ref={refL} args={[WING_L, undefined, items.length]} castShadow>
+				{mat}
+			</instancedMesh>
+		</group>
 	);
-	return <canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />;
 };
+
+// aleteo: abierto (0) a casi cerrado (~1.3 rad)
+const aleteo = (t: number, i: number, vel = 10) => 0.65 + 0.62 * Math.sin(t * vel + i * 1.7);
+
+// bosque de oyameles al atardecer
+const ARBOLES = Array.from({length: 70}).map((_, i) => {
+	let x = (hash(i, 131) - 0.5) * 120;
+	if (Math.abs(x) < 4) x += x < 0 ? -5 : 5;
+	return {x, z: -hash(i, 132) * 160 + 20, h: 16 + 14 * hash(i, 133), seed: i};
+});
+const Bosque3D: React.FC = () => (
+	<>
+		{ARBOLES.map((a) => (
+			<Oyamel key={a.seed} pos={[a.x, 0, a.z]} h={a.h} color={a.seed % 3 ? '#1e2a1c' : '#24301e'} seed={a.seed} />
+		))}
+		<Ground color="#0e0906" seed={13} amp={0.8} />
+	</>
+);
+// racimos de monarcas posadas en los árboles (alas casi cerradas)
+const RACIMOS: Mariposa[] = ARBOLES.slice(0, 22).flatMap((a, k) =>
+	Array.from({length: 14}).map((_, j) => {
+		const ang = hash(k * 30 + j, 7) * Math.PI * 2;
+		const y = a.h * (0.35 + 0.4 * hash(k * 30 + j, 8));
+		const r = a.h * 0.22 * (1 - (y / a.h - 0.25) * 0.9);
+		return {p: [a.x + Math.cos(ang) * r, y, a.z + Math.sin(ang) * r], head: ang, pitch: 1.1, flap: 1.25, s: 0.32};
+	}),
+);
 
 const Bosque: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
-	const push = ramp(f, [0, C13.S1], [0, 1], E.inOut);
+	const u = E.inOut(clamp(f / C13.S1));
+	const cam: [number, number, number] = [0, 3 + u * 2, 30 - u * 22];
+	const look: [number, number, number] = [0, 9 + u * 3, -40];
+	const vuelan: Mariposa[] = Array.from({length: 60}).map((_, i) => {
+		const x = (hash(i, 1) - 0.5) * 24 + noise2D('bx', i, t * 0.3) * 4;
+		const z = 10 - hash(i, 2) * 50;
+		const y = 3 + hash(i, 3) * 12 + t * (0.6 + 0.8 * hash(i, 4)) + noise2D('by', i, t * 0.4) * 1.5;
+		return {p: [x, y, z], head: noise2D('bh', i, t * 0.2) * 3, pitch: 0.5, flap: aleteo(t, i), s: 0.7};
+	});
 	return (
 		<AbsoluteFill>
 			<Sky t={t} top="#1a0e10" mid="#5a2c18" horizon="#c46a32" hy={1150} />
-			<Light x={700} y={900} r={1200} color={C.flama} o={0.45} />
-			<AbsoluteFill style={{transform: `scale(${1 + push * 0.06})`, transformOrigin: '540px 1200px'}}>
-				<Forest t={t} layers={[{y: 1080, h: 360, c: rgba(mixRGB('#3a1c14', C.terracota, 0.4)), n: 14, seed: 131, dx: -push * 20}]} />
-				<Fog y={1100} color={C.flama} o={0.35} h={300} />
-				<Forest t={t} layers={[{y: 1320, h: 560, c: '#2a120c', n: 9, seed: 132, dx: -push * 50}]} />
-				<Fog y={1330} color={C.cempa} o={0.22} h={300} />
-				<Swarm f={f} n={40} seed={133} area={[100, 500, 900, 900]} size={[16, 30]} up={30} />
-				<Forest t={t} layers={[{y: 1700, h: 900, c: '#0e0605', n: 5, seed: 134, dx: -push * 110}]} />
-			</AbsoluteFill>
-			<PaperTexture o={0.2} />
-			<Kinetic text={'Cada otoño llegan\nmillones de alas naranjas…'} f={f} at={14} out={110} y={330} size={50} />
+			<Light x={620} y={1000} r={1200} color={C.flama} o={0.5} />
+			<Stage3D fov={50}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#8a4422', 15, 150]} />
+				<hemisphereLight args={['#e09060', '#140a06', 0.55]} />
+				<directionalLight position={[10, 90, -120]} intensity={2.0} color={C.flama} castShadow shadow-mapSize={[1024, 1024]} />
+				<directionalLight position={[-20, 10, 40]} intensity={0.4} color="#9a7a8a" />
+				<Bosque3D />
+				<Monarcas3D items={RACIMOS} lit={0.85} />
+				<Monarcas3D items={vuelan} />
+			</Stage3D>
+			<PaperTexture o={0.18} />
+			<Kinetic text={'Cada otoño llegan\nmillones de alas naranjas…'} f={f} at={14} out={110} y={330} size={50} scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
@@ -176,43 +218,66 @@ const Bosque: React.FC = () => {
 const Macro: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 4;
-	const ref = useCanvasDraw(
-		(ctx) => {
-			const flap = Math.PI / 2 - (0.5 + 0.5 * Math.sin(t * 1.6)) * 1.35;
-			drawMonarch(ctx, 540, 900, 9.5, -0.08, flap, 1, true);
-		},
-		[f],
-	);
+	const orb = lerp(-0.5, 0.35, E.inOut(clamp(f / C13.S2)));
+	const cam: [number, number, number] = [Math.sin(orb) * 4.2, 2.1, Math.cos(orb) * 4.2];
+	const flap = 0.15 + 0.55 * (0.5 + 0.5 * Math.sin(t * 1.6));
+	const rama = React.useMemo(() => new THREE.TubeGeometry(new THREE.CatmullRomCurve3([new THREE.Vector3(-6, -0.3, 0.4), new THREE.Vector3(-2, 0, 0), new THREE.Vector3(2, -0.1, -0.3), new THREE.Vector3(6, 0.4, -0.6)]), 40, 0.16, 8, false), []);
 	return (
 		<AbsoluteFill style={{background: '#070302'}}>
 			<Light x={540} y={900} r={1100} color={C.cempa} o={0.4} />
 			<Bokeh t={t} L={1} n={22} seed={135} blur={6} />
-			{/* rama */}
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				<path d="M -40 1180 C 300 1120 700 1150 1120 1060" stroke="#1a0d07" strokeWidth={34} fill="none" strokeLinecap="round" />
-				{Array.from({length: 18}).map((_, i) => (
-					<path key={i} d={`M ${40 + i * 60} ${1170 - i * 5} l ${-18 + (i % 2) * 36} ${60 + (i % 3) * 14}`} stroke="#123a2e" strokeWidth={6} strokeLinecap="round" />
-				))}
-			</svg>
-			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			<PaperTexture o={0.18} />
-			<Kinetic text={'Dicen que en cada una\nviaja alguien que vuelve.'} f={f} at={10} out={84} y={1420} size={50} />
+			<Stage3D fov={40}>
+				<Camera pos={cam} look={[0, 0.5, 0]} />
+				<ambientLight intensity={0.2} />
+				<directionalLight position={[-4, 6, 3]} intensity={2.2} color={C.flama} castShadow shadow-mapSize={[1024, 1024]} />
+				<directionalLight position={[3, 2, -5]} intensity={1.4} color={C.cempa} />
+				<mesh geometry={rama} castShadow receiveShadow>
+					<meshStandardMaterial color="#2a1a10" roughness={0.9} />
+				</mesh>
+				{Array.from({length: 60}).map((_, i) => {
+					const x = -5.5 + i * 0.19;
+					return (
+						<mesh key={i} position={[x, -0.15 + (i % 2) * 0.05, 0.1 - x * 0.06 + ((i % 3) - 1) * 0.12]} rotation={[((i % 2) - 0.5) * 1.6, 0, 0.3]}>
+							<boxGeometry args={[0.03, 0.55, 0.03]} />
+							<meshStandardMaterial color="#1f4a34" roughness={0.8} />
+						</mesh>
+					);
+				})}
+				<Monarcas3D items={[{p: [0, 0.22, 0], head: 0.4, pitch: 0.25, flap, s: 0.8}]} />
+			</Stage3D>
+			<PaperTexture o={0.16} />
+			<Kinetic text={'Dicen que en cada una\nviaja alguien que vuelve.'} f={f} at={10} out={84} y={1420} size={50} scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
 
 const Remolino: React.FC = () => {
 	const f = useCurrentFrame();
-	const t = f / FPS;
-	const tilt = ramp(f, [0, C13.S3], [0, 200], E.inOut);
+	const t = f / FPS + 1;
+	const u = E.inOut(clamp(f / C13.S3));
+	// cámara al pie del oyamel, mirando hacia arriba mientras gira
+	const ang = u * 1.2;
+	const cam: [number, number, number] = [Math.sin(ang) * 15, 2.5, Math.cos(ang) * 15];
+	const items: Mariposa[] = Array.from({length: 200}).map((_, i) => {
+		const a = hash(i, 6) * Math.PI * 2 + t * (0.8 + 0.5 * hash(i, 7));
+		const r = 2 + 5 * hash(i, 8);
+		const y = ((hash(i, 9) * 30 + t * (2 + 2 * hash(i, 10))) % 30) + 1;
+		return {p: [Math.cos(a) * r, y, Math.sin(a) * r], head: -a, pitch: -0.4, flap: aleteo(t, i, 12), s: 0.35 + 0.25 * hash(i, 11)};
+	});
 	return (
 		<AbsoluteFill style={{background: '#0a0503'}}>
 			<div style={{position: 'absolute', left: 240, top: -200, width: 600, height: 2400, background: `linear-gradient(90deg, transparent, ${rgba(C.flama, 0.22)}, transparent)`, filter: 'blur(30px)', transform: 'rotate(8deg)'}} />
-			<AbsoluteFill style={{transform: `translateY(${tilt}px)`}}>
-				<Forest t={t} layers={[{y: 1650, h: 1100, c: '#140805', n: 4, seed: 136}]} />
-			</AbsoluteFill>
-			<Swarm f={f + 40} n={170} seed={137} area={[0, 0, W, 1900]} size={[14, 46]} swirl={1.2} />
-			<PaperTexture o={0.18} />
+			<Stage3D fov={70}>
+				<Camera pos={cam} look={[0, 12, 0]} />
+				<fog attach="fog" args={['#3a1a0c', 10, 60]} />
+				<hemisphereLight args={['#e0905a', '#100804', 0.6]} />
+				<directionalLight position={[10, 40, -10]} intensity={2} color={C.flama} />
+				<Oyamel pos={[0, 0, 0]} h={34} color="#1e2a1c" seed={4} />
+				<Oyamel pos={[-9, 0, -6]} h={30} color="#1a241a" seed={5} />
+				<Oyamel pos={[8, 0, -9]} h={32} color="#1a241a" seed={6} />
+				<Monarcas3D items={items} />
+			</Stage3D>
+			<PaperTexture o={0.16} />
 		</AbsoluteFill>
 	);
 };

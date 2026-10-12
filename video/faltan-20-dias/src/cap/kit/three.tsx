@@ -273,8 +273,8 @@ export const Oyamel: React.FC<{pos: [number, number, number]; h?: number; color:
 			const u = i / 5;
 			return (
 				<mesh key={i} position={[0, h * (0.25 + u * 0.62), 0]} rotation={[0, hash(i, seed) * 3, 0]} castShadow receiveShadow>
-					<coneGeometry args={[h * (0.26 - u * 0.04) * (1 - u * 0.55), h * 0.32, 7, 1]} />
-					{flat(color)}
+					<coneGeometry args={[h * (0.26 - u * 0.04) * (1 - u * 0.55), h * 0.32, 7, 1, true]} />
+					{flat(color, {side: THREE.DoubleSide})}
 				</mesh>
 			);
 		})}
