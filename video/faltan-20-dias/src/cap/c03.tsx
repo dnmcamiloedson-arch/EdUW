@@ -1,11 +1,11 @@
 import React from 'react';
 import {AbsoluteFill, spring, useCurrentFrame} from 'remotion';
-import {C, E, FPS, H, W, clamp, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
-import {Flame, Light, PaperTexture, useCanvasDraw} from '../components/core';
-import {Calavera} from '../components/Calavera';
-import {Cirio, MarcoFoto, MiniVeladora, PanDeMuerto, Pompon, Ramo, Sahumerio, VasoAgua} from '../components/Objetos';
+import {C, E, FPS, H, W, clamp, css, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
+import {Flame, Light, PaperTexture} from '../components/core';
+import {Pompon} from '../components/Objetos';
 import {Bokeh, Smoke} from '../components/Particles';
 import {Kinetic, Lockup, NumberRise} from './kit/type';
+import {Camera, Cempasuchil3D, Cordel3D, Pan3D, Stage3D, THREE, makeProjector} from './kit/three';
 
 // Capítulo 3 (REEL) · "Poner la mesa" — el altar se arma pieza por pieza y cada una dice su porqué.
 // Al final, la cámara entra en el retrato: ahí está el número.
@@ -26,14 +26,27 @@ export const PULL0 = ELEM0 + SEG * C03.N;
 export const REV0 = PULL0 + C03.PULL;
 export const C03_LEN = REV0 + C03.REV;
 
-const T3 = {top: 900, bot: 1040, x0: 300, x1: 780};
-const T2 = {top: 1040, bot: 1200, x0: 190, x1: 890};
-const T1 = {top: 1200, bot: 1370, x0: 80, x1: 1000};
-const ARCH = {cx: 540, cy: 860, rx: 470, ry: 600};
-const FOCUS = {x: 540, y: 1100}; // a dónde lleva la cámara el punto de interés
-export const MARCO = {x: 540, y: 790, s: 0.62, w: 300, h: 380};
-
-const ink = (c: string, l: number) => rgba(mixRGB(C.ink, c, Math.max(0, Math.min(1, l))));
+// ---------- El altar en 3D ----------
+// Niveles (ancho, alto, fondo) y su posición; arriba de cada uno se colocan las ofrendas visuales.
+const TIERS = [
+	{w: 6.2, h: 0.9, d: 2.2, y: 0.45, z: 0, cloth: C.cempa},
+	{w: 4.7, h: 0.9, d: 1.6, y: 1.35, z: -0.45, cloth: C.terracota},
+	{w: 3.3, h: 0.9, d: 1.1, y: 2.25, z: -0.75, cloth: C.verde},
+];
+const topY = (k: number) => TIERS[k].y + TIERS[k].h / 2;
+// dónde mira la cámara para cada elemento (punto, distancia)
+const FOCO3D: {p: [number, number, number]; d: number}[] = [
+	{p: [0, 4.2, 0], d: 7.5},
+	{p: [1.6, 2.2, -0.3], d: 3.2},
+	{p: [0.55, 2.0, -0.3], d: 2.8},
+	{p: [0, 2.9, -0.4], d: 5.2},
+	{p: [-2.5, 0.7, 1.5], d: 5.0},
+	{p: [0, 2.8, 0], d: 13},
+	{p: [-1.35, 2.1, -0.3], d: 3.0},
+	{p: [0.15, 2.05, -0.2], d: 2.8},
+];
+const VISTA_TOTAL = {p: [0, 2.7, 0] as [number, number, number], d: 12.5};
+export const MARCO3D: [number, number, number] = [0, topY(2) + 0.62, -0.85];
 
 // llegada de cada elemento: cae desde arriba con resorte
 const useArrive = (f: number) => (i: number, delay = 8) => {
@@ -41,236 +54,299 @@ const useArrive = (f: number) => (i: number, delay = 8) => {
 	return spring({frame: f - at, fps: FPS, config: {stiffness: 110, damping: 13, mass: 0.9}});
 };
 
-const Mantel: React.FC<{tier: typeof T1; cloth: string; drop: number; lit: number; seed: number}> = ({tier, cloth, drop, lit, seed}) => {
-	const w = tier.x1 - tier.x0;
-	const h = (tier.bot - tier.top) * drop;
-	const n = Math.round(w / 58);
-	const fw = w / n;
+let faldonTex: THREE.CanvasTexture | null = null;
+const getFaldon = () => {
+	if (faldonTex) return faldonTex;
+	const cv = document.createElement('canvas');
+	cv.width = 512;
+	cv.height = 64;
+	const g = cv.getContext('2d')!;
 	const cols = [C.cempa, C.verde, C.flama, C.terracota, C.marfil];
+	for (let k = 0; k < 8; k++) {
+		g.fillStyle = cols[k % cols.length];
+		const x = k * 64;
+		g.beginPath();
+		g.moveTo(x + 2, 0);
+		g.lineTo(x + 62, 0);
+		g.lineTo(x + 62, 48);
+		g.lineTo(x + 47, 62);
+		g.lineTo(x + 32, 48);
+		g.lineTo(x + 17, 62);
+		g.lineTo(x + 2, 48);
+		g.closePath();
+		g.fill();
+		g.globalCompositeOperation = 'destination-out';
+		g.beginPath();
+		g.arc(x + 32, 22, 9, 0, Math.PI * 2);
+		g.fill();
+		g.globalCompositeOperation = 'source-over';
+	}
+	faldonTex = new THREE.CanvasTexture(cv);
+	faldonTex.colorSpace = THREE.SRGBColorSpace;
+	faldonTex.wrapS = THREE.RepeatWrapping;
+	return faldonTex;
+};
+
+const Nivel3D: React.FC<{k: number; drop: number}> = ({k, drop}) => {
+	const T = TIERS[k];
+	const tex = React.useMemo(() => {
+		const t = getFaldon().clone();
+		t.needsUpdate = true;
+		t.repeat.set(T.w / 0.9, 1);
+		return t;
+	}, [T.w]);
 	return (
-		<g>
-			<rect x={tier.x0} y={tier.top} width={w} height={h} fill={ink(cloth, lit * 0.85)} />
-			<rect x={tier.x0} y={tier.top} width={w} height={10} fill={ink(C.marfil, lit * 0.85)} />
-			<rect x={tier.x0} y={tier.top + 10} width={w} height={Math.max(0, h - 10)} fill="url(#c3shade)" />
-			{drop > 0.6
-				? Array.from({length: n}).map((_, i) => (
-						<g key={i} transform={`translate(${tier.x0 + i * fw} ${tier.top + 8})`} opacity={clamp((drop - 0.6) / 0.4)}>
-							<path d={`M 2 0 H ${fw - 2} V 46 L ${fw * 0.75} 56 L ${fw / 2} 46 L ${fw * 0.25} 56 L 2 46 Z`} fill={ink(cols[(i + seed) % 5], lit)} />
-							<circle cx={fw / 2} cy={22} r={7} fill="#000" opacity={0.7} />
-							<path d={`M ${fw / 2 - 12} 38 L ${fw / 2} 32 L ${fw / 2 + 12} 38 L ${fw / 2} 44 Z`} fill="#000" opacity={0.7} />
-						</g>
-					))
-				: null}
-		</g>
+		<group position={[0, T.y, T.z]} scale={[1, Math.max(0.001, drop), 1]}>
+			<mesh castShadow receiveShadow>
+				<boxGeometry args={[T.w, T.h, T.d]} />
+				<meshStandardMaterial color={T.cloth} roughness={0.85} />
+			</mesh>
+			<mesh position={[0, T.h / 2 + 0.005, 0]}>
+				<boxGeometry args={[T.w + 0.02, 0.02, T.d + 0.02]} />
+				<meshStandardMaterial color={C.marfil} roughness={0.8} />
+			</mesh>
+			{/* faldón de papel picado colgando del borde frontal */}
+			<mesh position={[0, T.h / 2 - 0.18, T.d / 2 + 0.012]}>
+				<planeGeometry args={[T.w, 0.34]} />
+				<meshStandardMaterial map={tex} transparent alphaTest={0.4} side={THREE.DoubleSide} roughness={0.9} emissive="#ffffff" emissiveMap={tex} emissiveIntensity={0.12} />
+			</mesh>
+		</group>
 	);
 };
 
-// Cordel de papel picado (elemento 1)
-const Cordel: React.FC<{p: number; t: number; lit: number}> = ({p, t, lit}) => {
-	const n = 7;
-	const cols = [C.cempa, C.verde, C.flama, C.terracota, C.marfil, C.verde, C.cempa];
-	const y0 = 560;
-	const sag = (u: number) => y0 + Math.sin(Math.PI * u) * 70;
-	return (
-		<g>
-			<path d={`M 40 ${y0} Q 540 ${y0 + 140} 1040 ${y0}`} stroke={ink(C.arena, lit)} strokeWidth={3} fill="none" strokeDasharray="1200" strokeDashoffset={1200 * (1 - clamp(p * 1.6))} />
-			{Array.from({length: n}).map((_, i) => {
-				const u = (i + 0.5) / n;
-				const x = 40 + u * 1000;
-				const q = clamp(p * 1.6 - 0.1 - i * 0.07);
-				const sw = Math.sin(t * 1.6 + i * 0.9) * 4;
-				const fw = 118;
-				const fh = 150;
-				return (
-					<g key={i} transform={`translate(${x} ${sag(u)}) rotate(${sw}) scale(1 ${q})`} opacity={clamp(q * 2)}>
-						<path
-							fillRule="evenodd"
-							d={`M ${-fw / 2} 0 H ${fw / 2} V ${fh - 16} L ${fw / 3} ${fh} L ${fw / 6} ${fh - 16} L 0 ${fh} L ${-fw / 6} ${fh - 16} L ${-fw / 3} ${fh} L ${-fw / 2} ${fh - 16} Z
-							M -22 40 a 22 22 0 1 0 44 0 a 22 22 0 1 0 -44 0 Z
-							M -40 92 L -20 80 L 0 92 L 20 80 L 40 92 L 20 104 L 0 92 L -20 104 Z
-							M -44 18 a 6 6 0 1 0 12 0 a 6 6 0 1 0 -12 0 Z M 32 18 a 6 6 0 1 0 12 0 a 6 6 0 1 0 -12 0 Z
-							M -6 116 h 12 v 12 h -12 Z`}
-							fill={ink(cols[i], lit)}
-						/>
-					</g>
-				);
-			})}
-		</g>
-	);
-};
-
-const Sal: React.FC<{lit: number}> = ({lit}) => (
-	<g>
-		<ellipse cx={3} cy={3} rx={70} ry={12} fill="#000" opacity={0.5} />
-		<path d="M -64 -46 C -60 -6 -30 0 0 0 C 30 0 60 -6 64 -46 Z" fill={ink(C.terracota, lit)} />
-		<path d="M -58 -32 L 58 -32" stroke={ink(C.arena, lit * 0.8)} strokeWidth={4} strokeDasharray="5 6" />
-		<path d="M -60 -46 C -40 -84 40 -84 60 -46 Z" fill={ink('#F4EEE2', lit)} />
-		{Array.from({length: 18}).map((_, i) => (
-			<circle key={i} cx={-44 + hash(i, 3) * 88} cy={-50 - hash(i, 4) * 24 * (1 - Math.abs(hash(i, 3) - 0.5) * 1.6)} r={2.4} fill="#fff" opacity={0.6 * lit} />
-		))}
-	</g>
+// cirio y veladora
+const Cirio3D: React.FC<{pos: [number, number, number]; h: number; r?: number}> = ({pos, h, r = 0.09}) => (
+	<group position={pos}>
+		<mesh position={[0, h / 2, 0]} castShadow>
+			<cylinderGeometry args={[r, r, h, 16]} />
+			<meshStandardMaterial color={C.marfil} roughness={0.5} emissive="#5a3010" emissiveIntensity={0.25} />
+		</mesh>
+		<mesh position={[0, h * 0.45, 0]}>
+			<cylinderGeometry args={[r + 0.005, r + 0.005, 0.07, 16]} />
+			<meshStandardMaterial color={C.cempa} roughness={0.6} />
+		</mesh>
+	</group>
 );
-
-const Arco: React.FC<{p: number; lit: number}> = ({p, lit}) => (
-	<g>
-		{Array.from({length: 64}).map((_, i) => {
-			const u = i / 63;
-			const legs = 0.16;
-			let x: number;
-			let y: number;
-			if (u < legs) {
-				x = ARCH.cx - ARCH.rx;
-				y = T1.top - (u / legs) * (T1.top - ARCH.cy);
-			} else if (u > 1 - legs) {
-				x = ARCH.cx + ARCH.rx;
-				y = ARCH.cy + ((u - (1 - legs)) / legs) * (T1.top - ARCH.cy);
-			} else {
-				const a = Math.PI + ((u - legs) / (1 - 2 * legs)) * Math.PI;
-				x = ARCH.cx + Math.cos(a) * ARCH.rx;
-				y = ARCH.cy + Math.sin(a) * ARCH.ry;
-			}
-			// crece desde ambas patas hacia la clave del arco
-			const order = Math.min(i, 63 - i) / 32;
-			const q = E.out(clamp((p - order * 0.6) / 0.25));
-			if (q <= 0) return null;
-			return <Pompon key={i} x={x} y={y} r={(28 + 8 * hash(i, 61)) * q} lit={lit * (0.75 + 0.3 * hash(i, 63))} seed={i} />;
-		})}
-	</g>
+const Veladora3D: React.FC<{pos: [number, number, number]; color: string; glow: number}> = ({pos, color, glow}) => (
+	<mesh position={[pos[0], pos[1] + 0.13, pos[2]]} castShadow>
+		<cylinderGeometry args={[0.1, 0.1, 0.26, 14]} />
+		<meshStandardMaterial color={color} transparent opacity={0.85} roughness={0.1} emissive={color} emissiveIntensity={0.25 + 0.9 * glow} />
+	</mesh>
 );
-
-type Vela = {x: number; y: number; kind: 'v' | 'c'; h: number; glass?: string};
-export const VELAS: Vela[] = [
-	{x: 360, y: T3.top, kind: 'c', h: 170},
-	{x: 720, y: T3.top, kind: 'c', h: 170},
-	{x: 160, y: T1.top, kind: 'v', h: 84, glass: C.terracota},
-	{x: 920, y: T1.top, kind: 'v', h: 84, glass: C.terracota},
-	{x: 330, y: T1.top, kind: 'v', h: 76},
-	{x: 750, y: T1.top, kind: 'v', h: 76},
-	{x: 470, y: T1.top, kind: 'v', h: 70, glass: C.verde},
-	{x: 610, y: T1.top, kind: 'v', h: 70, glass: C.verde},
+type Llama3 = {p: [number, number, number]; s: number};
+export const VELAS3D: Llama3[] = [
+	{p: [-1.1, topY(2) + 1.05, -0.95], s: 1.3},
+	{p: [1.1, topY(2) + 1.05, -0.95], s: 1.3},
+	...[-2.6, -1.6, -0.6, 0.6, 1.6, 2.6].map((x) => ({p: [x, topY(0) + 0.3, 0.75] as [number, number, number], s: 0.9})),
 ];
-export const flameTop = (v: Vela) => (v.kind === 'c' ? v.y - v.h - 4 : v.y - v.h + 10);
 
-// El altar completo; cada pieza aparece según `f` (frame global del capítulo)
-export const Altar: React.FC<{f: number; t: number; marco?: React.ReactNode}> = ({f, t, marco}) => {
+// calaverita de azúcar: cráneo con cuencas de flores, nariz de corazón y dientes
+const Calaverita3D: React.FC<{pos: [number, number, number]; rotY?: number; s?: number}> = ({pos, rotY = 0, s = 1}) => (
+	<group position={pos} rotation={[0, rotY, 0]} scale={s}>
+		<mesh position={[0, 0.22, 0]} scale={[1, 1.05, 0.95]} castShadow>
+			<sphereGeometry args={[0.22, 20, 16]} />
+			<meshStandardMaterial color="#f7f0e4" roughness={0.6} />
+		</mesh>
+		<mesh position={[0, 0.07, 0.03]} castShadow>
+			<boxGeometry args={[0.26, 0.12, 0.3]} />
+			<meshStandardMaterial color="#f7f0e4" roughness={0.6} />
+		</mesh>
+		{[-1, 1].map((sd) => (
+			<group key={sd} position={[sd * 0.085, 0.24, 0.18]}>
+				<mesh>
+					<sphereGeometry args={[0.06, 12, 10]} />
+					<meshStandardMaterial color="#1a1018" roughness={0.3} />
+				</mesh>
+				{Array.from({length: 8}).map((_, i) => {
+					const a = (i / 8) * Math.PI * 2;
+					return (
+						<mesh key={i} position={[Math.cos(a) * 0.075, Math.sin(a) * 0.075, -0.01]}>
+							<sphereGeometry args={[0.02, 6, 4]} />
+							<meshStandardMaterial color={i % 2 ? C.cempa : C.terracota} emissive={C.cempa} emissiveIntensity={0.2} />
+						</mesh>
+					);
+				})}
+			</group>
+		))}
+		<mesh position={[0, 0.16, 0.21]} rotation={[0, 0, Math.PI / 4]}>
+			<boxGeometry args={[0.04, 0.04, 0.02]} />
+			<meshStandardMaterial color={C.terracota} />
+		</mesh>
+		{Array.from({length: 5}).map((_, i) => (
+			<mesh key={i} position={[-0.08 + i * 0.04, 0.06, 0.19]}>
+				<boxGeometry args={[0.025, 0.05, 0.02]} />
+				<meshStandardMaterial color="#e8dcc8" />
+			</mesh>
+		))}
+		<mesh position={[0, 0.38, 0.12]} rotation={[0.6, 0, 0]}>
+			<torusGeometry args={[0.07, 0.015, 6, 16]} />
+			<meshStandardMaterial color={C.verde} />
+		</mesh>
+	</group>
+);
+
+const Marco3D: React.FC<{glow: number}> = ({glow}) => (
+	<group position={MARCO3D}>
+		{[
+			[0, 0.6, 1.1, 0.16],
+			[0, -0.6, 1.1, 0.16],
+			[-0.47, 0, 0.16, 1.36],
+			[0.47, 0, 0.16, 1.36],
+		].map(([x, y, w, h], i) => (
+			<mesh key={i} position={[x, y, 0]} castShadow>
+				<boxGeometry args={[w, h, 0.1]} />
+				<meshStandardMaterial color="#e6d6b8" roughness={0.6} />
+			</mesh>
+		))}
+		{Array.from({length: 16}).map((_, i) => {
+			const a = (i / 16) * Math.PI * 2;
+			return (
+				<mesh key={'c' + i} position={[Math.cos(a) * 0.5, Math.sin(a) * 0.64, 0.06]}>
+					<sphereGeometry args={[0.035, 8, 6]} />
+					<meshStandardMaterial color={i % 2 ? C.terracota : C.verde} />
+				</mesh>
+			);
+		})}
+		<mesh position={[0, 0, -0.02]}>
+			<planeGeometry args={[0.8, 1.06]} />
+			<meshBasicMaterial color={css(mixRGB('#2a1206', '#FFE9B0', 0.25 + 0.75 * glow))} />
+		</mesh>
+	</group>
+);
+
+// El altar completo; cada pieza aparece según f (frame del capítulo)
+export const Altar3D: React.FC<{f: number; t: number; marcoGlow?: number}> = ({f, t, marcoGlow = 0}) => {
 	const arrive = useArrive(f);
-	const drop = (i: number) => {
-		const p = arrive(i);
-		return {p, tr: `translate(0 ${(1 - p) * -160})`, o: clamp(p * 2.5)};
-	};
-	const mantel = (k: number) => E.out(clamp((f - 14 - k * 9) / 22));
-	// la luz sube conforme llegan las velas
-	const ignite = (i: number) => clamp((f - (ELEM0 + 3 * SEG + 14 + i * 3)) / 6);
-	const allLit = clamp((f - PULL0 - 20) / 30);
-	const lit = 0.5 + 0.4 * clamp((f - (ELEM0 + 3 * SEG + 14)) / 30) + 0.1 * allLit;
-	const fl = flicker(t, 33);
+	const drop = (i: number, delay = 8) => (1 - arrive(i, delay)) * 3;
 	const show = (i: number) => f >= ELEM0 + i * SEG + 6;
+	const mantel = (k: number) => E.out(clamp((f - 14 - k * 9) / 22));
+	const ignite = (i: number) => clamp((f - (ELEM0 + 3 * SEG + 14 + i * 3)) / 6);
+	const arch = clamp((f - (ELEM0 + 5 * SEG + 6)) / 30);
+	const fl = flicker(t, 33);
+	const mq = spring({frame: f - PULL0 - 6, fps: FPS, config: {stiffness: 100, damping: 14}});
 	return (
-		<>
-			{/* luz cálida general de las velas */}
-			<Light x={540} y={1000} r={900} color={C.flama} o={(0.15 + 0.35 * (lit - 0.5) * 2) * fl} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-				<defs>
-					<linearGradient id="c3shade" x1="0" y1="0" x2="0" y2="1">
-						<stop offset="0%" stopColor="#000" stopOpacity={0.05} />
-						<stop offset="100%" stopColor="#000" stopOpacity={0.55} />
-					</linearGradient>
-				</defs>
-				{show(5) ? <Arco p={clamp((f - (ELEM0 + 5 * SEG + 6)) / 30)} lit={lit} /> : null}
-				{show(0) ? <Cordel p={clamp((f - (ELEM0 + 6)) / 30)} t={t} lit={lit} /> : null}
-				<Mantel tier={T3} cloth={C.verde} drop={mantel(0)} lit={lit} seed={1} />
-				{marco ? (
-					<g transform={`translate(${MARCO.x} ${MARCO.y}) scale(${MARCO.s})`}>
-						{marco}
-					</g>
-				) : null}
-				<Mantel tier={T2} cloth={C.terracota} drop={mantel(1)} lit={lit} seed={2} />
-				{show(6) ? (
-					<g transform={drop(6).tr} opacity={drop(6).o}>
-						<g transform={`translate(300 ${T2.top}) scale(0.42)`}>
-							<PanDeMuerto lit={lit} rim={lit} id="c3pan" />
-						</g>
-					</g>
-				) : null}
-				{show(2) ? (
-					<g transform={drop(2).tr} opacity={drop(2).o}>
-						<g transform={`translate(470 ${T2.top})`}>
-							<Sal lit={lit} />
-						</g>
-					</g>
-				) : null}
-				{show(7)
-					? [0, 1].map((k) => {
-							const d = drop(7);
-							const q = arrive(7, 8 + k * 5);
-							return (
-								<g key={k} transform={`translate(0 ${(1 - q) * -160})`} opacity={d.o}>
-									<g transform={`translate(${600 + k * 90 - 50} ${T2.top - 98})`}>
-										<Calavera L={lit} eye={0} rim={0.4 * lit} t={t} size={100} />
-									</g>
-								</g>
-							);
-						})
-					: null}
-				{show(1) ? (
-					<g transform={drop(1).tr} opacity={drop(1).o}>
-						<g transform={`translate(800 ${T2.top}) scale(0.36)`}>
-							<VasoAgua lit={lit} id="c3vaso" flameX={-40} />
-						</g>
-					</g>
-				) : null}
-				<Mantel tier={T1} cloth={C.cempa} drop={mantel(2)} lit={lit * 0.9} seed={3} />
-				{show(5)
-					? [0, 1].map((k) => {
-							const q = arrive(5, 4 + k * 4);
-							return (
-								<g key={k} transform={`translate(${(1 - q) * (k ? 200 : -200)} 0)`} opacity={clamp(q * 2)}>
-									<g transform={`translate(${k ? 985 : 95} ${T1.bot + 10}) scale(0.95)`}>
-										<Ramo lit={lit} seed={k ? 9 : 4} flip={k === 1} />
-									</g>
-								</g>
-							);
-						})
-					: null}
-				{show(3)
-					? VELAS.map((v, i) => {
-							const q = arrive(3, 6 + i * 2);
-							return (
-								<g key={i} transform={`translate(${v.x} ${v.y + (1 - q) * -140})`} opacity={clamp(q * 2.5)}>
-									{v.kind === 'c' ? <Cirio lit={lit} h={v.h} w={52} /> : <MiniVeladora lit={lit} glow={ignite(i) * fl} h={v.h} glass={v.glass} />}
-								</g>
-							);
-						})
-					: null}
-				{show(4) ? (
-					<g transform={drop(4).tr} opacity={drop(4).o}>
-						<g transform="translate(230 1500) scale(1.1)">
-							<Sahumerio lit={lit} ember={0.6 + 0.4 * fl} />
-						</g>
-					</g>
-				) : null}
-			</svg>
-			{show(3)
-				? VELAS.map((v, i) => {
-						const g = ignite(i);
-						return g > 0 ? <Flame key={i} x={v.x} y={flameTop(v)} size={v.kind === 'c' ? 60 : 40} t={t + i * 1.7} seed={30 + i} grow={g} fl={fl} /> : null;
-					})
-				: null}
-			{show(4) && f > ELEM0 + 4 * SEG + 16 ? <Smoke t={(f - (ELEM0 + 4 * SEG + 16)) / FPS} x={230} y={1430} L={1} n={110} rate={20} rise={260} wind={20} seed={33} tint={C.marfil} lightX={540} lightY={1000} /> : null}
-		</>
+		<group>
+			{/* luz general de las velas encendidas */}
+			{show(3) ? <pointLight position={[0, 3.2, 1.2]} intensity={14 * fl * ignite(0)} distance={12} color={C.cempa} castShadow /> : null}
+			{show(3) ? <pointLight position={[0, 1.4, 1.8]} intensity={8 * fl * ignite(4)} distance={8} color={C.flama} /> : null}
+			{[0, 1, 2].map((k) => (
+				<Nivel3D key={k} k={k} drop={mantel(2 - k)} />
+			))}
+			{/* 1 · papel picado */}
+			{show(0) ? (
+				<group position={[0, drop(0, 6) * 0.5, 0]}>
+					<Cordel3D a={[-3.6, 5.2, -0.6]} b={[3.6, 5.2, -0.6]} n={8} sag={0.5} t={t} size={0.75} />
+					<Cordel3D a={[-3.6, 4.7, 0.5]} b={[3.6, 4.7, 0.5]} n={8} sag={0.45} t={t + 1} size={0.7} seed={3} />
+				</group>
+			) : null}
+			{/* 2 · agua */}
+			{show(1) ? (
+				<group position={[1.6, topY(1) + drop(1), -0.3]}>
+					<mesh position={[0, 0.3, 0]}>
+						<cylinderGeometry args={[0.2, 0.16, 0.6, 24, 1, true]} />
+						<meshStandardMaterial color="#d8e8f0" transparent opacity={0.35} roughness={0.05} side={THREE.DoubleSide} />
+					</mesh>
+					<mesh position={[0, 0.22, 0]}>
+						<cylinderGeometry args={[0.185, 0.155, 0.42, 24]} />
+						<meshStandardMaterial color="#8ab0c8" transparent opacity={0.45} roughness={0.05} />
+					</mesh>
+				</group>
+			) : null}
+			{/* 3 · sal */}
+			{show(2) ? (
+				<group position={[0.55, topY(1) + drop(2), -0.3]}>
+					<mesh position={[0, 0.12, 0]} rotation={[Math.PI, 0, 0]} castShadow>
+						<sphereGeometry args={[0.28, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+						<meshStandardMaterial color={C.terracota} roughness={0.9} side={THREE.DoubleSide} />
+					</mesh>
+					<mesh position={[0, 0.13, 0]} scale={[1, 0.45, 1]}>
+						<sphereGeometry args={[0.25, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+						<meshStandardMaterial color="#f8f4ee" roughness={0.95} />
+					</mesh>
+				</group>
+			) : null}
+			{/* 4 · velas */}
+			{show(3) ? (
+				<group position={[0, drop(3, 6), 0]}>
+					<Cirio3D pos={[-1.1, topY(2), -0.95]} h={1.0} />
+					<Cirio3D pos={[1.1, topY(2), -0.95]} h={1.0} />
+					{[-2.6, -1.6, -0.6, 0.6, 1.6, 2.6].map((x, i) => (
+						<Veladora3D key={i} pos={[x, topY(0), 0.75]} color={[C.terracota, C.cempa, C.verde, C.verde, C.cempa, C.terracota][i]} glow={ignite(i + 2) * fl} />
+					))}
+				</group>
+			) : null}
+			{/* 5 · copal */}
+			{show(4) ? (
+				<group position={[-2.7, drop(4), 1.7]}>
+					<mesh position={[0, 0.15, 0]} castShadow>
+						<cylinderGeometry args={[0.3, 0.22, 0.3, 16]} />
+						<meshStandardMaterial color={C.terracota} roughness={0.9} />
+					</mesh>
+					<mesh position={[0, 0.31, 0]}>
+						<cylinderGeometry args={[0.24, 0.24, 0.02, 16]} />
+						<meshStandardMaterial color={C.cempa} emissive={C.flama} emissiveIntensity={0.6 + 0.4 * fl} />
+					</mesh>
+				</group>
+			) : null}
+			{/* 6 · cempasúchil: ramos y arco */}
+			{show(5) ? (
+				<>
+					{[-3.5, 3.5].map((x, k) => (
+						<group key={k} position={[x, drop(5, 4 + k * 4), 0.9]}>
+							<mesh position={[0, 0.35, 0]} castShadow>
+								<cylinderGeometry args={[0.3, 0.22, 0.7, 14]} />
+								<meshStandardMaterial color={C.terracota} roughness={0.9} />
+							</mesh>
+							{Array.from({length: 7}).map((_, i) => (
+								<Cempasuchil3D key={i} pos={[(hash(i, k + 5) - 0.5) * 0.7, 1.0 + hash(i, k + 6) * 0.6, (hash(i, k + 7) - 0.5) * 0.5]} s={0.16} rot={[0.4, hash(i, k) * 3, 0]} seed={i + k * 10} />
+							))}
+						</group>
+					))}
+					{Array.from({length: 40}).map((_, i) => {
+						const u = i / 39;
+						const order = Math.min(i, 39 - i) / 20;
+						const q = E.out(clamp((arch - order * 0.6) / 0.25));
+						if (q <= 0) return null;
+						const a = Math.PI * u;
+						return (
+							<mesh key={i} position={[-Math.cos(a) * 3.3, 0.9 + Math.sin(a) * 4.6, -1.3]} scale={q}>
+								<icosahedronGeometry args={[0.2, 1]} />
+								<meshStandardMaterial color={i % 3 ? C.cempa : C.flama} roughness={0.8} flatShading emissive={C.cempa} emissiveIntensity={0.15} />
+							</mesh>
+						);
+					})}
+				</>
+			) : null}
+			{/* 7 · pan de muerto */}
+			{show(6) ? <Pan3D pos={[-1.35, topY(1) + drop(6), -0.3]} s={0.3} /> : null}
+			{/* 8 · calaveritas */}
+			{show(7) ? (
+				<>
+					<Calaverita3D pos={[-0.1, topY(1) + drop(7, 8), -0.25]} rotY={0.25} s={0.85} />
+					<Calaverita3D pos={[0.45 + 0.0, topY(1) + drop(7, 13), 0.15]} rotY={-0.3} s={0.7} />
+				</>
+			) : null}
+			{/* retrato al centro (llega en la grúa final) */}
+			{f >= PULL0 ? (
+				<group position={[0, (1 - mq) * 2, 0]}>
+					<Marco3D glow={marcoGlow} />
+				</group>
+			) : null}
+			<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+				<planeGeometry args={[40, 40]} />
+				<meshStandardMaterial color="#1c0f08" roughness={1} />
+			</mesh>
+			<mesh position={[0, 4, -1.8]} receiveShadow>
+				<planeGeometry args={[40, 12]} />
+				<meshStandardMaterial color="#2a160c" roughness={1} />
+			</mesh>
+		</group>
 	);
 };
-
-export const Fondo: React.FC<{lit: number}> = ({lit}) => (
-	<>
-		<AbsoluteFill style={{background: `linear-gradient(180deg, #0d0705 0%, ${ink('#3a2014', 0.4 + 0.6 * lit)} 55%, #0a0503 72%, #070302 100%)`}} />
-		<div style={{position: 'absolute', left: 0, top: 1370, width: W, height: H - 1370, background: 'linear-gradient(180deg, #1c0f08, #070302)'}} />
-	</>
-);
 
 // Cámara: viaja de un elemento al siguiente
-const camAt = (f: number) => {
-	const pts = [{x: FOCUS.x, y: FOCUS.y, z: 1}, ...ELEMS.map((e) => ({x: e.x, y: e.y, z: e.z})), {x: FOCUS.x, y: FOCUS.y, z: 1}];
+const camFoco = (f: number) => {
+	const pts = [VISTA_TOTAL, ...FOCO3D, VISTA_TOTAL];
 	let i: number;
 	let u: number;
 	if (f < ELEM0) [i, u] = [0, 0];
@@ -279,32 +355,17 @@ const camAt = (f: number) => {
 		i = k;
 		u = E.inOut(clamp((f - ELEM0 - k * SEG) / 14));
 	} else {
-		i = ELEMS.length;
+		i = FOCO3D.length;
 		u = E.inOut(clamp((f - PULL0) / 30));
 	}
 	const a = pts[i];
 	const b = pts[i + 1];
-	// curva de zoom: se abre a la mitad del viaje para dar sensación de grúa
-	const zMid = Math.min(a.z, b.z) * (1 - 0.12 * Math.sin(Math.PI * u));
-	const z = lerp(a.z, b.z, u) * (zMid / Math.min(a.z, b.z));
-	return {x: lerp(a.x, b.x, u), y: lerp(a.y, b.y, u), z};
+	const p: [number, number, number] = [lerp(a.p[0], b.p[0], u), lerp(a.p[1], b.p[1], u), lerp(a.p[2], b.p[2], u)];
+	// a mitad del viaje la cámara se abre un poco (grúa)
+	const d = lerp(a.d, b.d, u) * (1 + 0.15 * Math.sin(Math.PI * u));
+	return {p, d};
 };
 
-const World: React.FC<{f: number; t: number; cam: {x: number; y: number; z: number}; marco?: React.ReactNode}> = ({f, t, cam, marco}) => {
-	const lit = clamp((f - (ELEM0 + 3 * SEG + 14)) / 30);
-	return (
-		<AbsoluteFill style={{transformOrigin: '0 0', transform: `translate(${FOCUS.x - cam.x * cam.z}px, ${FOCUS.y - cam.y * cam.z}px) scale(${cam.z})`}}>
-			<div style={{position: 'absolute', left: -1200, top: -1200, width: W + 2400, height: H + 2400}}>
-				<div style={{position: 'absolute', left: 1200, top: 1200, width: W, height: H}}>
-					<Fondo lit={lit} />
-					<Altar f={f} t={t} marco={marco} />
-				</div>
-			</div>
-		</AbsoluteFill>
-	);
-};
-
-// Marcadores de progreso: 8 flores que se van llenando
 const Progreso: React.FC<{f: number}> = ({f}) => {
 	const o = ramp(f, [ELEM0 - 6, ELEM0 + 6], [0, 1]) * ramp(f, [PULL0 + 10, PULL0 + 24], [1, 0]);
 	if (o <= 0) return null;
@@ -344,28 +405,18 @@ export const Cap03: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) =>
 	const t = f / FPS;
 	// fase final: entrar al retrato
 	const rf = f - REV0;
-	const push = E.in(clamp((rf - 6) / 44));
-	const base = camAt(Math.min(f, REV0));
-	const inner = {x: MARCO.x, y: MARCO.y, z: 11};
-	const cam = rf > 0 ? {x: lerp(base.x, inner.x, E.inOut(clamp((rf - 6) / 44))), y: lerp(base.y, inner.y, E.inOut(clamp((rf - 6) / 44))), z: lerp(1, inner.z, push)} : base;
-	// el marco aparece al inicio de la grúa final
-	const mq = spring({frame: f - PULL0 - 6, fps: FPS, config: {stiffness: 100, damping: 14}});
-	const marcoLit = 0.6 + 0.4 * clamp((f - PULL0 - 20) / 30);
-	const marco =
-		f >= PULL0 ? (
-			<g transform={`translate(0 ${(1 - mq) * -200})`} opacity={clamp(mq * 2)}>
-				<MarcoFoto lit={marcoLit} w={MARCO.w} h={MARCO.h} id="c3marco">
-					<rect x={-MARCO.w / 2 + 64} y={-MARCO.h / 2 + 64} width={MARCO.w - 128} height={MARCO.h - 128} fill="url(#c3in)" />
-					<defs>
-						<radialGradient id="c3in">
-							<stop offset="0%" stopColor="#FFE9B0" stopOpacity={0.15 + 0.85 * push} />
-							<stop offset="60%" stopColor={C.cempa} stopOpacity={0.1 + 0.6 * push} />
-							<stop offset="100%" stopColor="#2a1206" stopOpacity={0.9} />
-						</radialGradient>
-					</defs>
-				</MarcoFoto>
-			</g>
-		) : null;
+	const push = E.inOut(clamp((rf - 6) / 44));
+	const base = camFoco(Math.min(f, REV0));
+	const sway = Math.sin(t * 0.4) * 0.35;
+	const camBase: [number, number, number] = [base.p[0] + sway, base.p[1] + base.d * 0.12, base.p[2] + base.d];
+	const lookBase = base.p;
+	const camIn: [number, number, number] = [MARCO3D[0], MARCO3D[1], MARCO3D[2] + 0.35];
+	const cam: [number, number, number] = rf > 0 ? [lerp(camBase[0], camIn[0], push), lerp(camBase[1], camIn[1], push), lerp(camBase[2], camIn[2], E.in(push))] : camBase;
+	const look: [number, number, number] = rf > 0 ? [lerp(lookBase[0], MARCO3D[0], push), lerp(lookBase[1], MARCO3D[1], push), lerp(lookBase[2], MARCO3D[2], push)] : lookBase;
+	const marcoGlow = rf > 0 ? push : 0.2 * clamp((f - PULL0 - 20) / 30);
+	const P = makeProjector(cam, look, 45);
+	const fl = flicker(t, 33);
+	const ignite = (i: number) => clamp((f - (ELEM0 + 3 * SEG + 14 + i * 3)) / 6);
 	const insideO = ramp(rf, [40, 52], [0, 1], E.inOut);
 	const HIT = C03.HIT;
 	// guirnalda de cempasúchil alrededor del número: el número es ahora "el retrato"
@@ -376,7 +427,38 @@ export const Cap03: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) =>
 	});
 	return (
 		<AbsoluteFill style={{background: '#070302'}}>
-			{insideO < 1 ? <World f={Math.min(f, REV0 + 60)} t={t} cam={cam} marco={marco} /> : null}
+			{insideO < 1 ? (
+				<>
+					<Stage3D fov={45}>
+						<Camera pos={cam} look={look} />
+						<fog attach="fog" args={['#0a0503', 10, 40]} />
+						<ambientLight intensity={0.22} />
+						<hemisphereLight args={['#8a6a5a', '#0a0604', 0.35]} />
+						<directionalLight position={[-4, 8, 8]} intensity={0.9} color="#ffd8b0" castShadow shadow-mapSize={[1024, 1024]} />
+						<Altar3D f={Math.min(f, REV0 + 60)} t={t} marcoGlow={marcoGlow} />
+					</Stage3D>
+					{f >= ELEM0 + 3 * SEG + 6
+						? VELAS3D.map((v, i) => {
+								const g = i < 2 ? ignite(0) : ignite(i);
+								if (g <= 0) return null;
+								const p = P(...v.p);
+								if (!p.ok) return null;
+								return (
+									<React.Fragment key={i}>
+										<Light x={p.x} y={p.y} r={(1400 / p.d) * v.s} color={C.cempa} o={0.35 * fl} />
+										<Flame x={p.x} y={p.y} size={(420 / p.d) * v.s} t={t + i * 1.7} seed={30 + i} grow={g} fl={fl} />
+									</React.Fragment>
+								);
+							})
+						: null}
+					{f > ELEM0 + 4 * SEG + 16
+						? (() => {
+								const p = P(-2.7, 0.35, 1.7);
+								return <Smoke t={(f - (ELEM0 + 4 * SEG + 16)) / FPS} x={p.x} y={p.y} L={1} n={110} rate={20} rise={260} wind={20} seed={33} tint={C.marfil} lightX={540} lightY={1000} />;
+							})()
+						: null}
+				</>
+			) : null}
 			{/* banda superior para que los rótulos respiren sobre el papel picado */}
 			<AbsoluteFill style={{opacity: ramp(f, [4, 16], [0, 1]) * ramp(rf, [20, 36], [1, 0]), background: 'linear-gradient(180deg, rgba(7,3,2,0.9) 0%, rgba(7,3,2,0.86) 26%, rgba(7,3,2,0) 33%)'}} />
 			<Progreso f={f} />

@@ -12,7 +12,8 @@ import {Dip, LightLeak} from './kit/transitions';
 import {drawMonarch} from './c13';
 import {Xolo} from './c14';
 import {Alebrije, Patrones} from './c05';
-import {Altar, MARCO, PULL0, VELAS, flameTop} from './c03';
+import {Altar3D, PULL0, VELAS3D} from './c03';
+import {Camera, Stage3D, makeProjector} from './kit/three';
 
 // Capítulo 1 (REEL) · "Ya vienen" — el final de temporada: todo lo que contamos viene por el camino,
 // llega al altar ya puesto y se arremolina en el último número.
@@ -155,26 +156,35 @@ const Viaje: React.FC = () => {
 };
 
 // ---------- 3 · El altar ya está puesto ----------
-const marcoNode = (
-	<MarcoFoto lit={1} w={MARCO.w} h={MARCO.h} id="c1marco">
-		<rect x={-MARCO.w / 2 + 64} y={-MARCO.h / 2 + 64} width={MARCO.w - 128} height={MARCO.h - 128} fill="url(#c1in)" />
-		<defs>
-			<radialGradient id="c1in">
-				<stop offset="0%" stopColor="#FFE9B0" stopOpacity={0.5} />
-				<stop offset="60%" stopColor={C.cempa} stopOpacity={0.35} />
-				<stop offset="100%" stopColor="#2a1206" stopOpacity={0.9} />
-			</radialGradient>
-		</defs>
-	</MarcoFoto>
-);
-
-const AltarListo: React.FC<{f: number; t: number; z: number; o?: number}> = ({f, t, z, o = 1}) => (
-	<AbsoluteFill style={{opacity: o, transform: `scale(${z})`, transformOrigin: '540px 1000px'}}>
-		<AbsoluteFill style={{background: 'linear-gradient(180deg, #0d0705 0%, #3a2014 55%, #0a0503 72%, #070302 100%)'}} />
-		<div style={{position: 'absolute', left: 0, top: 1370, width: W, height: H - 1370, background: 'linear-gradient(180deg, #1c0f08, #070302)'}} />
-		<Altar f={PULL0 + 80 + f} t={t} marco={marcoNode} />
-	</AbsoluteFill>
-);
+// El altar ya puesto (el mismo altar 3D del capítulo 3, completo y encendido)
+const altarCam = (z: number) => ({cam: [0, 4.0, 13 / z] as [number, number, number], look: [0, 2.7, 0] as [number, number, number]});
+const AltarListo: React.FC<{f: number; t: number; z: number; o?: number}> = ({f, t, z, o = 1}) => {
+	const {cam, look} = altarCam(z);
+	const P = makeProjector(cam, look, 45);
+	const fl = flicker(t, 33);
+	return (
+		<AbsoluteFill style={{opacity: o}}>
+			<AbsoluteFill style={{background: 'linear-gradient(180deg, #0d0705 0%, #3a2014 55%, #0a0503 72%, #070302 100%)'}} />
+			<Stage3D fov={45}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#0a0503', 12, 40]} />
+				<ambientLight intensity={0.22} />
+				<hemisphereLight args={['#8a6a5a', '#0a0604', 0.35]} />
+				<directionalLight position={[-4, 8, 8]} intensity={0.9} color="#ffd8b0" castShadow shadow-mapSize={[1024, 1024]} />
+				<Altar3D f={PULL0 + 80 + f} t={t} marcoGlow={0.35} />
+			</Stage3D>
+			{VELAS3D.map((v, i) => {
+				const p = P(...v.p);
+				return (
+					<React.Fragment key={i}>
+						<Light x={p.x} y={p.y} r={(1400 / p.d) * v.s} color={C.cempa} o={0.35 * fl} />
+						<Flame x={p.x} y={p.y} size={(420 / p.d) * v.s} t={t + i * 1.7} seed={30 + i} fl={fl} />
+					</React.Fragment>
+				);
+			})}
+		</AbsoluteFill>
+	);
+};
 
 const Llegada: React.FC = () => {
 	const f = useCurrentFrame();
@@ -211,15 +221,18 @@ const Remolino: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) => {
 	const HIT = C01.HIT;
 	const g = useGlyph(txt, size, 18, 3);
 	const spin = clamp((f - 8) / (HIT - 12));
+	const ac = altarCam(1.08);
+	const PV = makeProjector(ac.cam, ac.look, 45);
 	const ref = useCanvasDraw(
 		(ctx) => {
 			if (!g) return;
 			const n = g.pts.length;
 			g.pts.forEach(([gx, gy], i) => {
 				// cada partícula sale de una vela del altar o del cielo y entra girando
-				const src = i % 3 === 0 ? VELAS[i % VELAS.length] : null;
-				const sx = src ? src.x : hash(i, 1) * W;
-				const sy = src ? flameTop(src) : hash(i, 2) * H;
+				const v = i % 3 === 0 ? VELAS3D[i % VELAS3D.length] : null;
+				const sp = v ? PV(...v.p) : null;
+				const sx = sp ? sp.x : hash(i, 1) * W;
+				const sy = sp ? sp.y : hash(i, 2) * H;
 				const d = (i / n) * 0.35 + hash(i, 3) * 0.15;
 				const a = E.inOut(clamp((spin - d) / 0.5));
 				const ang0 = Math.atan2(sy - NUM_Y, sx - 540);
