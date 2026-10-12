@@ -35,7 +35,7 @@ const muroGeo = (() => {
 })();
 
 // camino: curva en el suelo desde la puerta hacia los cerros
-const CAMINO = new THREE.CatmullRomCurve3([
+export const CAMINO = new THREE.CatmullRomCurve3([
 	new THREE.Vector3(0, 0, -0.6),
 	new THREE.Vector3(0.6, 0, -6),
 	new THREE.Vector3(-1.6, 0, -14),
@@ -90,7 +90,7 @@ const farolPos = (k: number): [number, number, number] => {
 	return [p.x - tng.z * side, 0, p.z + tng.x * side];
 };
 
-const Campo: React.FC<{reach: number; light: number}> = ({reach, light}) => (
+export const Campo: React.FC<{reach: number; light: number}> = ({reach, light}) => (
 	<>
 		<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -40]} receiveShadow>
 			<planeGeometry args={[200, 120]} />
@@ -117,7 +117,7 @@ const Campo: React.FC<{reach: number; light: number}> = ({reach, light}) => (
 		})}
 	</>
 );
-const LlamasFaroles: React.FC<{light: number; P: ReturnType<typeof makeProjector>; t: number}> = ({light, P, t}) => (
+export const LlamasFaroles: React.FC<{light: number; P: ReturnType<typeof makeProjector>; t: number}> = ({light, P, t}) => (
 	<>
 		{FAROLES_U.map((_, k) => {
 			const g = clamp(light * (FAROLES_U.length + 2) - (FAROLES_U.length - 1 - k));
@@ -143,7 +143,7 @@ const NocheCielo: React.FC<{t: number}> = ({t}) => (
 	</>
 );
 
-const LucesNoche: React.FC<{warm?: number}> = ({warm = 1}) => (
+export const LucesNoche: React.FC<{warm?: number}> = ({warm = 1}) => (
 	<>
 		<hemisphereLight args={['#6a6a90', '#0a0608', 0.45]} />
 		<directionalLight position={[20, 30, -60]} intensity={0.9} color="#d8d0e8" castShadow shadow-mapSize={[1024, 1024]} />

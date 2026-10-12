@@ -9,11 +9,12 @@ import {Orb, Ridge, Sky} from './kit/land';
 import {Hummingbird, Maguey} from './kit/props';
 import {GoldNumber, Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {Dip, LightLeak} from './kit/transitions';
-import {drawMonarch} from './c13';
-import {Xolo} from './c14';
-import {Alebrije, Patrones} from './c05';
+import {Monarcas3D, drawMonarch, type Mariposa} from './c13';
+import {Xolo3D} from './c14';
+import {Alebrije3D} from './c05';
+import {CAMINO, Campo, LlamasFaroles, LucesNoche} from './c02';
 import {Altar3D, PULL0, VELAS3D} from './c03';
-import {Camera, Stage3D, makeProjector} from './kit/three';
+import {Camera, Mountain, Range, Stage3D, makeProjector} from './kit/three';
 
 // Capítulo 1 (REEL) · "Ya vienen" — el final de temporada: todo lo que contamos viene por el camino,
 // llega al altar ya puesto y se arremolina en el último número.
@@ -39,112 +40,93 @@ const Noche: React.FC<{t: number; moon?: boolean}> = ({t, moon = true}) => (
 );
 
 // ---------- 1 · Dieciséis noches ----------
+const Volcanes1: React.FC = () => (
+	<group>
+		<group position={[-60, 0, -420]} scale={[0.85, 0.95, 0.6]}>
+			<Mountain pos={[-60, 0, 0]} r={34} h={62} color="#2a1e28" snow="#d8d2c6" snowLine={0.62} seed={151} />
+			<Mountain pos={[-10, 0, 6]} r={46} h={88} color="#2a1e28" snow="#d8d2c6" snowLine={0.55} seed={152} />
+			<Mountain pos={[40, 0, -4]} r={40} h={72} color="#2a1e28" snow="#d8d2c6" snowLine={0.6} seed={153} />
+		</group>
+		<Mountain pos={[80, 0, -330]} r={105} h={128} seg={18} rough={0.05} crater={0.12} color="#2e1e24" snow="#ddd6ca" snowLine={0.72} seed={155} />
+		<Range z={-200} x0={-200} x1={200} n={10} r={30} h={18} color="#140c12" seed={11} />
+	</group>
+);
 const Inicio: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
-	const ref = useCanvasDraw(
-		(ctx) => {
-			// las monarcas empiezan a levantarse desde la tierra
-			for (let i = 0; i < 40; i++) {
-				const st = 10 + hash(i, 1) * 60;
-				const a = clamp((f - st) / 90);
-				if (a <= 0) continue;
-				const x = hash(i, 2) * W + Math.sin(t * 1.4 + i) * 40;
-				const y = lerp(1900, 1100 - hash(i, 3) * 500, E.out(a));
-				drawMonarch(ctx, x, y, 0.35 + 0.35 * hash(i, 4), Math.sin(t * 2 + i) * 0.5, t * (9 + 4 * hash(i, 5)) + i, 0.9);
-			}
-		},
-		[f],
-	);
+	const u = E.inOut(clamp(f / C01.S1));
+	const cam: [number, number, number] = [0, lerp(1.2, 2.2, u), 8];
+	const look: [number, number, number] = [0, lerp(8, 22, u), -100];
+	const items: Mariposa[] = Array.from({length: 46}).map((_, i) => {
+		const st = 10 + hash(i, 1) * 60;
+		const a = clamp((f - st) / 90);
+		return {p: [(hash(i, 2) - 0.5) * 14 + Math.sin(t * 1.4 + i) * 0.4, lerp(-0.5, 2 + hash(i, 3) * 6, E.out(a)), -hash(i, 4) * 14 + 2], head: Math.sin(t + i) * 2, pitch: 0.4, flap: 0.65 + 0.62 * Math.sin(t * 11 + i * 1.7), s: 0.35 + 0.2 * hash(i, 5)};
+	});
 	return (
 		<AbsoluteFill>
-			<Noche t={t} />
-			<Light x={540} y={HZ} r={700} sy={0.4} color={C.cempa} o={0.3} />
-			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
+			<Sky t={t} top="#04030b" mid="#110a1a" horizon="#341a18" hy={1100} stars={170} />
+			<Orb x={800} y={560} r={36} color="#EEE2C4" core="#FFFBEF" halo={4} o={0.85} />
+			<Light x={540} y={1100} r={700} sy={0.4} color={C.cempa} o={0.3} />
+			<Stage3D fov={50}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#1a0e14', 60, 600]} />
+				<hemisphereLight args={['#7a6a90', '#0a0608', 0.45]} />
+				<directionalLight position={[-200, 200, 100]} intensity={0.9} color="#d0c8e0" />
+				<Volcanes1 />
+				<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, -100]} receiveShadow>
+					<planeGeometry args={[800, 300]} />
+					<meshStandardMaterial color="#120a08" roughness={1} />
+				</mesh>
+				<Monarcas3D items={items} />
+			</Stage3D>
 			<PaperTexture o={0.14} />
 			<Kinetic text={'Dieciséis noches,\ndieciséis historias.'} f={f} at={10} out={84} y={330} size={54} scrim={0.55} />
 		</AbsoluteFill>
 	);
 };
 
-// ---------- 2 · Todo viene por el camino ----------
-const pathAt = (u: number) => {
-	const z = 1 + u * 11;
-	return {x: 540 + (Math.sin(u * 6 + 0.5) * 300 * Math.min(1, u * 3) * 1.6) / z, y: HZ + 980 / z, s: 1 / z};
-};
-
+// ---------- 2 · Todo viene por el camino (recorremos el camino de pétalos del día 2) ----------
 const Viaje: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 4;
-	const speed = 0.11;
-	const ref = useCanvasDraw(
-		(ctx) => {
-			// pétalos del camino que corren hacia la cámara (vamos avanzando)
-			const items: [number, number, number, number, number][] = [];
-			for (let i = 0; i < 1300; i++) {
-				const u = (((hash(i, 1) - (f / FPS) * speed) % 1) + 1) % 1;
-				const p = pathAt(u);
-				items.push([p.x + (hash(i, 2) - 0.5) * 300 * p.s * 1.6, p.y, (12 + 10 * hash(i, 3)) * Math.max(p.s * 3.2, 0.25), hash(i, 4) * 6.28 + t * 0.3, u]);
-			}
-			items.sort((a, b) => b[4] - a[4]);
-			for (const [x, y, s, r, u] of items) drawPetal(ctx, x, y, s, r, 1, 0.5, 0.6 + 0.6 * Math.exp(-u * 3), hash(Math.round(x * 7), 9));
-			// monarcas que acompañan
-			for (let i = 0; i < 26; i++) {
-				const k = (((hash(i, 11) - (f / FPS) * 0.07) % 1) + 1) % 1;
-				const p = pathAt(k);
-				const s = clamp(p.s * 3.6, 0.12, 0.8);
-				drawMonarch(ctx, p.x + (hash(i, 12) - 0.5) * 900 * p.s * 1.4, p.y - (180 + 260 * hash(i, 13)) * p.s * 1.6, s, Math.sin(t * 2 + i) * 0.4, t * 10 + i, 0.95);
-			}
-		},
-		[f],
-	);
-	// faroles que pasan a los lados
-	const faroles = Array.from({length: 10}).map((_, i) => {
-		const u = (((hash(i, 21) - (f / FPS) * speed) % 1) + 1) % 1;
-		const p = pathAt(u);
-		const side = i % 2 ? 1 : -1;
-		return {x: p.x + side * 240 * p.s * 1.6, y: p.y, s: p.s * 3.4, i, u};
-	});
-	// tres momentos: el que guía, los que vuelan, las luces que esperan
+	const u = lerp(0.02, 0.42, f / C01.S2);
+	const p = CAMINO.getPoint(u);
+	const ahead = CAMINO.getPoint(Math.min(1, u + 0.12));
+	const cam: [number, number, number] = [p.x, 1.6, p.z + 2];
+	const look: [number, number, number] = [ahead.x, 1.0, ahead.z];
+	const P = makeProjector(cam, look, 50);
+	// el xolo camina delante, a un lado del camino
 	const xoloIn = ramp(f, [0, 20], [0, 1]) * ramp(f, [62, 80], [1, 0]);
+	const dq = CAMINO.getPoint(Math.min(1, u + 0.12));
+	const dt = CAMINO.getTangent(Math.min(1, u + 0.12));
 	const flyU = clamp((f - 70) / 80);
+	const mariposas: Mariposa[] = Array.from({length: 26}).map((_, i) => {
+		const k = ((hash(i, 11) + (f / FPS) * 0.05) % 1) * 0.5;
+		const q = CAMINO.getPoint(Math.min(1, u + 0.03 + k));
+		return {p: [q.x + (hash(i, 12) - 0.5) * 6, 1 + hash(i, 13) * 3 + Math.sin(t * 2 + i) * 0.3, q.z], head: Math.PI + Math.sin(t + i), pitch: 0.4, flap: 0.65 + 0.62 * Math.sin(t * 11 + i * 1.7), s: 0.3};
+	});
 	const hb = clamp((f - 100) / 60);
 	return (
 		<AbsoluteFill>
-			<Noche t={t} />
-			<Patrones />
-			<Light x={540} y={H} r={700} sy={0.5} color={C.flama} o={0.4} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-				<Maguey x={40} y={1560} s={1.6} color="#0a0608" />
-				<Maguey x={1040} y={1420} s={1.2} color="#0c0709" />
-			</svg>
-			{faroles
-				.sort((a, b) => b.u - a.u)
-				.map((p) => {
-					const fl = flicker(t + p.i, 70 + p.i);
-					return (
-						<React.Fragment key={p.i}>
-							<Light x={p.x} y={p.y - 40 * p.s} r={280 * p.s} color={C.flama} o={0.55 * fl} />
-							<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-								<rect x={p.x - 16 * p.s} y={p.y - 40 * p.s} width={32 * p.s} height={40 * p.s} rx={3 * p.s} fill={C.cempa} />
-							</svg>
-							<Flame x={p.x} y={p.y - 38 * p.s} size={34 * p.s} t={t + p.i} seed={70 + p.i} fl={fl} wick={false} />
-						</React.Fragment>
-					);
-				})}
-			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			{/* el xolo camina a nuestro lado */}
-			{xoloIn > 0 ? (
-				<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible', opacity: xoloIn}}>
-					<Xolo x={330} y={1620} s={1.5} t={t} walk={1.3} rim={C.flama} />
-				</svg>
-			) : null}
-			{/* el alebrije cruza el cielo */}
-			{flyU > 0 && flyU < 1 ? <Alebrije x={lerp(-350, 1450, flyU)} y={lerp(860, 560, flyU) - Math.sin(flyU * Math.PI) * 80} s={0.55} t={t} flap={1.8} glow={0.7} /> : null}
-			{/* colibrí */}
+			<Sky t={t} top="#05030c" mid="#0f0a1c" horizon="#2a1a26" hy={1050} stars={140} />
+			<Orb x={800} y={600} r={36} color="#EEE2C4" core="#FFFBEF" halo={4} o={0.85} />
+			<Stage3D fov={50}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#0e0a14', 20, 110]} />
+				<LucesNoche />
+				<Campo reach={1} light={1} />
+				{xoloIn > 0 ? <Xolo3D pos={[dq.x - dt.z * 0.9, 0, dq.z + dt.x * 0.9]} rotY={Math.atan2(-dt.z, dt.x) + Math.PI} t={t} walk={1.2} /> : null}
+				{flyU > 0 && flyU < 1 ? (
+					<group position={[lerp(-7, 7, flyU) + p.x, 1.4 + Math.sin(flyU * Math.PI) * 0.8, p.z - 9]} rotation={[0, 0.3, 0.15]} scale={0.6}>
+						<Alebrije3D t={t} flap={1.8} />
+					</group>
+				) : null}
+				<Monarcas3D items={mariposas} />
+			</Stage3D>
+			<LlamasFaroles light={1} P={P} t={t} />
 			{hb > 0 && hb < 1 ? (
 				<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-					<Hummingbird x={lerp(1200, -150, hb)} y={1180 + Math.sin(hb * 9) * 40} s={0.9} t={t} flip glow={0.6} />
+					<Hummingbird x={lerp(1200, -150, hb)} y={1050 + Math.sin(hb * 9) * 40} s={0.9} t={t} flip glow={0.6} />
 				</svg>
 			) : null}
 			<PaperTexture o={0.14} />
@@ -155,7 +137,6 @@ const Viaje: React.FC = () => {
 	);
 };
 
-// ---------- 3 · El altar ya está puesto ----------
 // El altar ya puesto (el mismo altar 3D del capítulo 3, completo y encendido)
 const altarCam = (z: number) => ({cam: [0, 4.0, 13 / z] as [number, number, number], look: [0, 2.7, 0] as [number, number, number]});
 const AltarListo: React.FC<{f: number; t: number; z: number; o?: number}> = ({f, t, z, o = 1}) => {
