@@ -1,81 +1,92 @@
 import React from 'react';
 import {AbsoluteFill, Sequence, useCurrentFrame} from 'remotion';
-import {C, E, FPS, H, W, clamp, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
+import {C, E, FPS, H, W, clamp, css, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
 import {Light, PaperTexture, useCanvasDraw} from '../components/core';
 import {Bokeh} from '../components/Particles';
 import {Fog, Orb, Ridge, Sky, ridgePath} from './kit/land';
 import {Bloom, Hummingbird, Maguey, pyramidPath} from './kit/props';
 import {GoldNumber, Kinetic, Lockup} from './kit/type';
 import {LightLeak} from './kit/transitions';
+import {Camera, Cempasuchil3D, Ground, Maguey3D, Piramide, Range, Stage3D, Tallo, project} from './kit/three';
 
 // Capítulo 16 · "El sol hecho flor" — la leyenda de Xóchitl y Huitzilin.
 // Ella se volvió flor de cempasúchil; él, colibrí, volvió a encontrarla.
 export const C16 = {S1: 120, S2: 108, S3: 72, REV: 120, HIT: 50};
 export const C16_LEN = C16.S1 + C16.S2 + C16.S3 + C16.REV;
 
+// Escena en 3D real: valle con la pirámide asentada en el llano, sierras detrás y magueyes al frente
 const Amanecer: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const rise = ramp(f, [0, C16.S1], [0, 1], E.inOut);
-	const sunY = lerp(1210, 1065, rise);
-	const push = lerp(1.0, 1.06, rise);
-	const par = (k: number) => ({transform: `translateY(${-rise * 40 * k}px) scale(${1 + (push - 1) * k})`, transformOrigin: '540px 1200px'});
+	const sunY = lerp(40, 125, rise);
+	const cam: [number, number, number] = [lerp(-8, 6, rise), lerp(13, 17, rise), lerp(100, 80, rise)];
+	const horizon = mixRGB('#3a160b', C.cempa, 0.25 + 0.35 * rise);
+	const look: [number, number, number] = [0, 28, -80];
+	const sun = project([30, sunY, -470], cam, look, 50);
 	return (
 		<AbsoluteFill>
-			<Sky t={t} top="#05030a" mid="#1d0c12" horizon={rgba(mixRGB('#3a160b', C.cempa, 0.25 + 0.35 * rise))} hy={1180} stars={140} starO={1 - rise * 0.8} />
-			<Orb x={600} y={sunY} r={82} color={C.flama} halo={6} o={0.4 + 0.6 * rise} />
-			<Light x={600} y={sunY} r={1100} color={C.cempa} o={0.35 + 0.3 * rise} />
-			<AbsoluteFill style={par(0.3)}>
-				<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-					<path d={ridgePath(16, 1190, 60, 0.002)} fill={rgba(mixRGB('#2a120c', C.terracota, 0.35))} />
-					<path d={pyramidPath(330, 1172, 330, 150)} fill={rgba(mixRGB('#2a120c', C.terracota, 0.45))} />
-					<path d={pyramidPath(330, 1172, 330, 150)} fill="none" stroke={C.flama} strokeWidth={2} opacity={0.35 + 0.4 * rise} />
-				</svg>
-				<Fog y={1170} color={C.cempa} o={0.3} />
-			</AbsoluteFill>
-			<AbsoluteFill style={par(0.6)}>
-				<Ridge seed={161} y={1360} amp={120} color={rgba(mixRGB('#120806', C.verde, 0.45))} rim={C.flama} rimO={0.25 + 0.35 * rise} />
-				<Fog y={1360} color={C.terracota} o={0.18} />
-			</AbsoluteFill>
-			<AbsoluteFill style={par(1)}>
-				<Ridge seed={162} y={1600} amp={70} color="#0a0503" rim={C.cempa} rimO={0.3 * rise} />
-				<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-					<Maguey x={150} y={1610} s={1.1} color="#0a0503" />
-					<Maguey x={950} y={1640} s={0.8} color="#0a0503" />
-				</svg>
-			</AbsoluteFill>
-			<PaperTexture o={0.22} />
-			<Kinetic text={'Dicen que Xóchitl\nse volvió flor…'} f={f} at={14} out={100} y={1430} size={52} />
+			<Sky t={t} top="#05030a" mid="#1d0c12" horizon={rgba(horizon)} hy={1180} stars={140} starO={1 - rise * 0.8} />
+			<Light x={sun.x} y={sun.y} r={1100} color={C.cempa} o={0.35 + 0.3 * rise} />
+			<Orb x={sun.x} y={sun.y} r={52} color={C.flama} halo={6} o={0.5 + 0.5 * rise} />
+			<Stage3D fov={50}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={[css(mixRGB('#4a1c10', C.cempa, 0.2 + 0.3 * rise)), 70, 560]} />
+				<hemisphereLight args={[css(mixRGB('#e08a5a', C.flama, rise * 0.4)), '#0e0604', 0.3 + 0.25 * rise]} />
+				<directionalLight position={[40, 180 + sunY, -400]} intensity={0.9 + 1.1 * rise} color={C.cempa} castShadow shadow-mapSize={[1024, 1024]} />
+				<directionalLight position={[-60, 40, 120]} intensity={0.45 + 0.3 * rise} color="#b08a9a" />
+				{/* sol */}
+				<Range z={-330} x0={-420} x1={420} n={13} r={70} h={95} color="#5a2a1c" seed={161} />
+				<Range z={-200} x0={-300} x1={300} n={10} r={48} h={52} color="#3e2016" seed={162} />
+				<Range z={-110} x0={-200} x1={-60} n={4} r={26} h={22} color="#2e2a18" seed={163} />
+				<Range z={-120} x0={70} x1={220} n={4} r={26} h={20} color="#2e2a18" seed={164} />
+				<Ground color="#1e100a" seed={16} amp={1.4} />
+				<Piramide pos={[-12, 0, -78]} base={36} tiers={5} tierH={3.8} color="#8a5236" dark="#4a2616" accent="#9a5e3e" rotY={0.38} />
+				<Maguey3D pos={[-11, 0, 50]} s={1.5} color="#24402e" seed={3} />
+				<Maguey3D pos={[13, 0, 36]} s={1.2} color="#22382a" seed={5} />
+				<Maguey3D pos={[-26, 0, -10]} s={1.4} color="#2a3a28" seed={9} />
+				<Maguey3D pos={[30, 0, -40]} s={1.6} color="#2a3a28" seed={11} />
+			</Stage3D>
+			<Fog y={1180} color={C.cempa} o={0.18 + 0.12 * rise} />
+			<PaperTexture o={0.2} />
+			<Kinetic text={'Dicen que Xóchitl\nse volvió flor…'} f={f} at={14} out={100} y={1430} size={52} scrim={0.4} />
+			{void H}
 		</AbsoluteFill>
 	);
 };
 
+// La flor en 3D: se abre mientras la cámara la rodea
 const Flor: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const open = E.inOut(clamp((f - 4) / 86));
 	const fl = flicker(t + 9, 16);
-	const s = lerp(1.08, 1.0, E.out(clamp(f / C16.S2)));
+	const orbit = lerp(-0.22, 0.18, E.inOut(clamp(f / C16.S2)));
+	const dist = lerp(13.5, 12, E.out(clamp(f / C16.S2)));
 	return (
 		<AbsoluteFill style={{background: '#050201'}}>
 			<Light x={260} y={300} r={1300} color={C.cempa} o={0.35} />
 			<Bokeh t={t + 4} L={0.9} n={20} seed={161} blur={5} />
 			{/* haz de sol diagonal */}
 			<div style={{position: 'absolute', left: -300, top: -200, width: 700, height: 2600, transform: 'rotate(-28deg)', background: `linear-gradient(90deg, transparent, ${rgba(C.flama, 0.16 * open)}, transparent)`, mixBlendMode: 'screen', filter: 'blur(20px)'}} />
-			<AbsoluteFill style={{transform: `scale(${s})`, transformOrigin: '540px 980px'}}>
-				<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-					<path d="M 540 1080 C 530 1300 560 1600 548 2000" stroke={rgba(mixRGB(C.ink, C.verde, 0.9))} strokeWidth={26} fill="none" />
-					<path d="M 545 1500 C 420 1440 330 1470 260 1560 C 360 1580 470 1560 545 1500 Z" fill={rgba(mixRGB(C.ink, C.verde, 0.85))} />
-					<path d="M 550 1720 C 690 1650 790 1690 850 1780 C 750 1790 640 1780 550 1720 Z" fill={rgba(mixRGB(C.ink, C.verde, 0.75))} />
-					<Bloom cx={540} cy={980} R={430} open={open} lit={0.85 + 0.2 * fl} id="c16b" t={t} />
-					{/* gota de rocío */}
-					<circle cx={720} cy={860} r={13 * open} fill={rgba('#FFF4D6', 0.35)} />
-					<circle cx={716} cy={855} r={4 * open} fill="#fff" opacity={0.9} />
-				</svg>
-			</AbsoluteFill>
-			<Light x={720} y={858} r={60} color="#FFF4D6" o={0.5 * open * (0.7 + 0.3 * Math.sin(t * 6))} />
-			<PaperTexture o={0.18} />
-			<Kinetic text={'para que Huitzilin\npudiera encontrarla.'} f={f} at={10} out={92} y={1430} size={52} />
+			<Stage3D fov={35}>
+				<Camera pos={[Math.sin(orbit) * dist, 2.2, Math.cos(orbit) * dist]} look={[0, -0.6, 0]} />
+				<ambientLight intensity={0.18} />
+				<directionalLight position={[-8, 10, 6]} intensity={2.4 * (0.85 + 0.15 * fl)} color={C.flama} castShadow shadow-mapSize={[1024, 1024]} />
+				<directionalLight position={[6, 4, -8]} intensity={1.6} color={C.cempa} />
+				<directionalLight position={[4, -2, 8]} intensity={0.35} color="#8a6a8a" />
+				<group position={[0, 0.2, 0]} rotation={[0.75, 0, 0.05]}>
+					<Cempasuchil3D s={0.86} open={open} seed={16} lit={0.95 + 0.1 * fl} />
+				</group>
+				<Tallo
+					pts={[[0, 0, -0.5], [0.15, -3, -0.6], [-0.1, -6, -0.4], [0.1, -10, -0.5]]}
+					r={0.2}
+					color="#2f5a3c"
+					leaves={[{u: 0.42, side: -1, s: 0.9}, {u: 0.66, side: 1, s: 1.1}]}
+				/>
+			</Stage3D>
+			<PaperTexture o={0.16} />
+			<Kinetic text={'para que Huitzilin\npudiera encontrarla.'} f={f} at={10} out={92} y={1430} size={52} scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
@@ -124,9 +135,16 @@ const Llegada: React.FC = () => {
 		<AbsoluteFill style={{background: '#060201'}}>
 			<Light x={420} y={1000} r={1000} color={C.cempa} o={0.4} />
 			<Bokeh t={t + 7} L={0.8} n={16} seed={162} blur={6} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-				<Bloom cx={330} cy={1050} R={300} open={1} lit={0.9} id="c16c" t={t + 3} />
-			</svg>
+			<Stage3D fov={35}>
+				<Camera pos={[0.6, 2.4, 13]} look={[0, 0, 0]} />
+				<ambientLight intensity={0.18} />
+				<directionalLight position={[8, 8, 6]} intensity={2.2} color={C.flama} castShadow shadow-mapSize={[1024, 1024]} />
+				<directionalLight position={[-6, 4, -8]} intensity={1.4} color={C.cempa} />
+				<group position={[-1.9, -0.9, 0]} rotation={[0.7, 0.35, 0.1]}>
+					<Cempasuchil3D s={0.78} open={1} seed={17} />
+				</group>
+				<Tallo pts={[[-1.9, -1.4, -0.4], [-1.7, -4, -0.5], [-2, -8, -0.4]]} r={0.16} color="#2f5a3c" leaves={[{u: 0.5, side: 1, s: 0.8}]} />
+			</Stage3D>
 			<Trail pts={path} f={f} />
 			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
 				<Hummingbird x={bx} y={by} s={1.6} t={t} tilt={lerp(-12, 6, p)} glow={0.6} />

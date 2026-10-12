@@ -11,13 +11,17 @@
   "author": "Universidad Westhill",
   "license": "ISC",
   "dependencies": {
+    "@react-three/fiber": "9.3.0",
     "@remotion/cli": "4.0.534",
     "@remotion/fonts": "4.0.534",
     "@remotion/motion-blur": "4.0.534",
     "@remotion/noise": "4.0.534",
+    "@remotion/three": "4.0.534",
+    "@types/three": "0.178.1",
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "remotion": "4.0.534"
+    "remotion": "4.0.534",
+    "three": "0.178.0"
   },
   "devDependencies": {
     "@fontsource/alike": "5.2.6",

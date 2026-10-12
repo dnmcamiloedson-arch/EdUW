@@ -99,3 +99,8 @@ export const C = {
 	pan: '#B8692E', // mezcla arena + terracota para la corteza
 	core: '#FFF4D6',
 };
+// color sólido para three.js (sin alfa)
+export const css = (c: [number, number, number] | string) => {
+	const v = typeof c === 'string' ? hex(c) : c;
+	return `rgb(${v[0]},${v[1]},${v[2]})`;
+};
