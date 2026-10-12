@@ -14,6 +14,7 @@ import {C08_LEN, Cap08} from './c08';
 import {C07_LEN, Cap07} from './c07';
 import {C06_LEN, Cap06} from './c06';
 import {C05_LEN, Cap05} from './c05';
+import {C04_LEN, Cap04} from './c04';
 
 // Cada día de la cuenta regresiva es un capítulo con escenas, música y revelación propias.
 type Cap = {len: number; Comp: React.FC<{dias: number; fecha: string}>};
@@ -30,6 +31,7 @@ export const CAPS: Record<number, Cap> = {
 	7: {len: C07_LEN, Comp: Cap07},
 	6: {len: C06_LEN, Comp: Cap06},
 	5: {len: C05_LEN, Comp: Cap05},
+	4: {len: C04_LEN, Comp: Cap04},
 };
 export type CapProps = {dias: number; fecha: string};
 export const capLength = (dias: number) => (CAPS[dias]?.len ?? 300) + OUTRO_LEN;

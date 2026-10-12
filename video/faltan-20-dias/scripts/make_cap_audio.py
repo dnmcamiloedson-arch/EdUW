@@ -609,12 +609,68 @@ def cap5(bus):
     return c + fr(REV)
 
 
-SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5}
+def cap4(bus):
+    # pirekua purépecha: guitarra en 6/8, dueto en terceras, campanas del panteón
+    S1, S2, S3, REV, HIT = 120, 108, 72, 132, 70
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.08, wind=0.2, seed=4)
+    bus.place(M.river(b, seed=4) * 0.5, 0.0, 0.1, wet=0.3)
+    for k, at in enumerate([0.9, 2.3, 3.6]):
+        bus.place(sfx.rustle(400 + k, 0.5), at, 0.06, -0.3 + 0.3 * k, wet=0.4)
+    sc = M.scale(62, 'menor')
+    e8 = 60 / 92 / 2
+    prog = [[38, 50, 53, 57], [45, 52, 57, 61], [43, 50, 55, 58], [45, 52, 57, 61]]
+    tt, k = 0.3, 0
+    while tt < c - 0.05:
+        ch = prog[(k // 6) % 4]
+        pos = k % 6
+        if pos == 0:
+            bus.place(M.pluck(midi(ch[0]), 1.2, 0.45, 0.996, 0.9, seed=k), tt, 0.24, -0.2, wet=0.35)
+        elif pos in (2, 4):
+            bus.place(M.strum([midi(m) for m in ch[1:]], 0.5, 0.012, 0.5, 0.6, down=pos == 2, seed=k), tt, 0.14, 0.15, wet=0.4)
+        elif pos == 3:
+            bus.place(M.pluck(midi(ch[0] + 7), 0.8, 0.4, 0.995, 0.7, seed=k), tt, 0.16, -0.2, wet=0.35)
+        tt += e8
+        k += 1
+    # dueto: flauta y voz en terceras
+    mel = [(4, 2), (3, 1), (2, 2), (1, 1), (2, 3), (4, 2), (5, 1), (4, 2), (2, 1), (1, 3), (0, 3)]
+    tt = a - e8 * 6
+    for j, (dg, d) in enumerate(mel):
+        dur = d * e8
+        if tt > b - 0.1:
+            break
+        bus.place(M.flute(midi(sc(dg) + 12), dur * 0.95, 0.8, seed=40 + j), tt, 0.15, -0.25, wet=0.9)
+        bus.place(M.choir([midi(sc(dg - 2) + 12)], dur * 1.1, 'u', 0.5, seed=60 + j, attack=0.08), tt, 0.1, 0.25, wet=0.9)
+        tt += dur
+    # campanas del panteón
+    for k, at in enumerate([a + 0.15, a + 1.75]):
+        bus.place(sfx.bell(midi(50), 4.0), at, 0.22, 0.3, wet=1.0)
+        bus.place(sfx.bell(midi(57), 3.0), at + 0.02, 0.08, 0.3, wet=1.0)
+    bus.place(M.choir([midi(50), midi(57), midi(62), midi(65)], fr(S2) + 0.6, 'o', 0.55, seed=4), a, 0.1, wet=1.0)
+    # una vela enciende a otra: silencio, chispa
+    bus.place(sfx.ignite(41), b + fr(30), 0.32, 0.25, wet=0.5)
+    bus.place(M.musicbox(midi(74), 2.0, 0.6), b + fr(32), 0.1, 0.3, wet=1.2)
+    # desde el cielo: cada vela que prende es un destello que se contagia
+    for j in range(26):
+        at = c + fr(18) + j * (fr(HIT - 22) / 26)
+        bus.place(M.musicbox(midi(sc(j % 8 + 4) + 12), 1.2, 0.5 + 0.02 * j), at, 0.06, -0.6 + (j % 7) * 0.2, wet=1.2)
+    sw = sfx.strings([midi(50), midi(57), midi(62), midi(65)], fr(HIT) - 0.1, lambda u: u ** 2, 300, 2200, release=0.1, seed=44)
+    bus.place2(sw, c + 0.1, 0.22, wet=0.7)
+    bus.place(M.choir([midi(50), midi(57), midi(62), midi(66), midi(69)], 3.2, 'a', 0.8, seed=45, attack=0.05), hit, 0.16, wet=1.0)
+    bus.place(sfx.bell(midi(62), 4.0), hit, 0.22, -0.2, wet=1.0)
+    bus.place(M.huehuetl(1.0, 0.9, seed=46), hit, 0.55, wet=0.3)
+    bus.place(sfx.boom(4), hit, 0.7, wet=0.4)
+    bus.place(M.strum([midi(m) for m in (38, 45, 50, 54, 57, 62)], 2.6, 0.03, 0.55, 0.9, seed=47), hit + 0.05, 0.26, wet=0.5)
+    return c + fr(REV)
+
+
+SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5, 4: cap4}
 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126}
+    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)
