@@ -72,6 +72,8 @@ Los MP4 de la serie no se guardan en git porque pesan demasiado.
 
 ## Temporada 2 · Capítulos (días 16 → 1)
 
+Los escenarios son 3D reales, hechos con three.js mediante `@remotion/three`: la pirámide, los volcanes, el xolo, los oyameles, el alebrije, el pan de muerto, el altar, etc. Las piezas comunes están en `src/cap/kit/three.tsx`: cámara, montañas facetadas, pirámide escalonada, magueyes, cempasúchil, pan de muerto, papel picado y proyección de 3D a pantalla. Los textos, las llamas y los brillos se dibujan en 2D encima, alineados con la proyección de cada objeto.
+
 Cada día es un capítulo con su propia leyenda, sus escenas, su forma de revelar el número y su música. El código está en `src/cap/` (composición `Capitulo`). El kit compartido está en `src/cap/kit/`: tipografía cinética, paisajes, transiciones y utilería.
 
 | Día | Capítulo | Revelación del número | Música |
