@@ -70,6 +70,37 @@ COMP=CuentaRegresiva PROPS='{"dias":7}' node scripts/stills.mjs /tmp/stills 0.5 
 
 Los MP4 de la serie no se guardan en git porque pesan demasiado.
 
+## Temporada 2 · Capítulos (días 16 → 1)
+
+Cada día es un capítulo con su propia leyenda, sus escenas, su forma de revelar el número y su música. El código está en `src/cap/` (composición `Capitulo`). El kit compartido está en `src/cap/kit/`: tipografía cinética, paisajes, transiciones y utilería.
+
+| Día | Capítulo | Revelación del número | Música |
+|---|---|---|---|
+| 16 | El sol hecho flor (Xóchitl y Huitzilin) | el vuelo del colibrí lo descubre | flauta, re dórico |
+| 15 | Los volcanes | una constelación de antorchas | caracol, coro, caja musical |
+| 14 | Xólotl | las almas se posan en el río | río, teponaztli, marimba |
+| 13 | Las monarcas | las mariposas forman el número | arpa, sol mayor |
+| 12 | Callejón del Beso | las ventanas de las fachadas se encienden | trío de bolero |
+| 11 | La Llorona | una gota y ondas en el agua | caja musical, la menor |
+| 10 | REEL El Mictlán | número tallado en piedra que se llena de lava | percusión prehispánica |
+| 9 | Papel picado | perforaciones de cincel | son jarocho |
+| 8 | Pan de muerto | granos de azúcar | vals en fa |
+| 7 | REEL La Catrina | abanico que se abre | vals mexicano |
+| 6 | Calaverita literaria | gota de tinta que se vuelve oro | marimba juguetona |
+| 5 | Alebrijes | pintado con los patrones del alebrije | marimba y flauta, mi mixolidio |
+| 4 | El panteón | las velas del panteón, vistas desde el cielo | pirekua: guitarra y dueto |
+| 3 | REEL Poner la mesa | la cámara entra en el retrato | cada elemento suma un instrumento |
+| 2 | El camino | el camino de pétalos escribe el número | arpa y latido |
+| 1 | REEL Ya vienen | todo se arremolina en el «1» | regresa el tema del día 16, ahora en re mayor |
+
+La música de cada capítulo está en `scripts/make_cap_audio.py`: síntesis en numpy, masterizada a -14 LUFS con pico real de -1.5 dBTP. El logo del outro y su sonido son los mismos en todos los capítulos.
+
+```bash
+./scripts/render_cap.sh             # los 16 capítulos → out/temporada2/
+./scripts/render_cap.sh 4 3         # solo algunos
+COMP=Capitulo PROPS='{"dias":4}' node scripts/stills.mjs /tmp/stills 0.5 100 400
+```
+
 ## Renderizar en tu computadora
 
 Requisitos: [Node.js 18+](https://nodejs.org), Python 3 y [ffmpeg](https://ffmpeg.org/download.html).

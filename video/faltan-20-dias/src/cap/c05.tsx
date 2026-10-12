@@ -15,7 +15,7 @@ const PAL = [C.cempa, C.flama, C.verde, C.terracota, C.marfil, '#2f8a5e', '#F79A
 const OUT = '#120806';
 
 // Patrones de alebrije reutilizables (SVG <pattern>)
-const Patrones: React.FC = () => (
+export const Patrones: React.FC = () => (
 	<svg width={0} height={0} style={{position: 'absolute'}}>
 		<defs>
 			<pattern id="alZig" width={60} height={40} patternUnits="userSpaceOnUse">

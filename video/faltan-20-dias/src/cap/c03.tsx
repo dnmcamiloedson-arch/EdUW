@@ -31,7 +31,7 @@ const T2 = {top: 1040, bot: 1200, x0: 190, x1: 890};
 const T1 = {top: 1200, bot: 1370, x0: 80, x1: 1000};
 const ARCH = {cx: 540, cy: 860, rx: 470, ry: 600};
 const FOCUS = {x: 540, y: 1100}; // a dónde lleva la cámara el punto de interés
-const MARCO = {x: 540, y: 790, s: 0.62, w: 300, h: 380};
+export const MARCO = {x: 540, y: 790, s: 0.62, w: 300, h: 380};
 
 const ink = (c: string, l: number) => rgba(mixRGB(C.ink, c, Math.max(0, Math.min(1, l))));
 
@@ -139,7 +139,7 @@ const Arco: React.FC<{p: number; lit: number}> = ({p, lit}) => (
 );
 
 type Vela = {x: number; y: number; kind: 'v' | 'c'; h: number; glass?: string};
-const VELAS: Vela[] = [
+export const VELAS: Vela[] = [
 	{x: 360, y: T3.top, kind: 'c', h: 170},
 	{x: 720, y: T3.top, kind: 'c', h: 170},
 	{x: 160, y: T1.top, kind: 'v', h: 84, glass: C.terracota},
@@ -149,10 +149,10 @@ const VELAS: Vela[] = [
 	{x: 470, y: T1.top, kind: 'v', h: 70, glass: C.verde},
 	{x: 610, y: T1.top, kind: 'v', h: 70, glass: C.verde},
 ];
-const flameTop = (v: Vela) => (v.kind === 'c' ? v.y - v.h - 4 : v.y - v.h + 10);
+export const flameTop = (v: Vela) => (v.kind === 'c' ? v.y - v.h - 4 : v.y - v.h + 10);
 
 // El altar completo; cada pieza aparece según `f` (frame global del capítulo)
-const Altar: React.FC<{f: number; t: number; marco?: React.ReactNode}> = ({f, t, marco}) => {
+export const Altar: React.FC<{f: number; t: number; marco?: React.ReactNode}> = ({f, t, marco}) => {
 	const arrive = useArrive(f);
 	const drop = (i: number) => {
 		const p = arrive(i);
@@ -261,7 +261,7 @@ const Altar: React.FC<{f: number; t: number; marco?: React.ReactNode}> = ({f, t,
 	);
 };
 
-const Fondo: React.FC<{lit: number}> = ({lit}) => (
+export const Fondo: React.FC<{lit: number}> = ({lit}) => (
 	<>
 		<AbsoluteFill style={{background: `linear-gradient(180deg, #0d0705 0%, ${ink('#3a2014', 0.4 + 0.6 * lit)} 55%, #0a0503 72%, #070302 100%)`}} />
 		<div style={{position: 'absolute', left: 0, top: 1370, width: W, height: H - 1370, background: 'linear-gradient(180deg, #1c0f08, #070302)'}} />
