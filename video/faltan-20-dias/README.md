@@ -93,7 +93,7 @@ Cada día es un capítulo con su propia leyenda, sus escenas, su forma de revela
 | 2 | El camino | el camino de pétalos escribe el número | arpa y latido |
 | 1 | REEL Ya vienen | todo se arremolina en el «1» | regresa el tema del día 16, ahora en re mayor |
 
-La música de cada capítulo está en `scripts/make_cap_audio.py`: síntesis en numpy, masterizada a -14 LUFS con pico real de -1.5 dBTP. El logo del outro y su sonido son los mismos en todos los capítulos.
+La música de cada capítulo está en `scripts/make_cap_audio.py`: síntesis en numpy, masterizada a -14 LUFS con pico real por debajo de -1 dBTP. El logo del outro y su sonido son los mismos en todos los capítulos.
 
 ```bash
 ./scripts/render_cap.sh             # los 16 capítulos → out/temporada2/
