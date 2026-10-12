@@ -140,10 +140,10 @@ const Llegada: React.FC = () => {
 				<ambientLight intensity={0.18} />
 				<directionalLight position={[8, 8, 6]} intensity={2.2} color={C.flama} castShadow shadow-mapSize={[1024, 1024]} />
 				<directionalLight position={[-6, 4, -8]} intensity={1.4} color={C.cempa} />
-				<group position={[-1.9, -0.9, 0]} rotation={[0.7, 0.35, 0.1]}>
-					<Cempasuchil3D s={0.78} open={1} seed={17} />
+				<group position={[-0.7, -0.95, 0]} rotation={[0.7, 0.35, 0.1]}>
+					<Cempasuchil3D s={0.66} open={1} seed={17} />
 				</group>
-				<Tallo pts={[[-1.9, -1.4, -0.4], [-1.7, -4, -0.5], [-2, -8, -0.4]]} r={0.16} color="#2f5a3c" leaves={[{u: 0.5, side: 1, s: 0.8}]} />
+				<Tallo pts={[[-0.7, -1.45, -0.4], [-0.55, -4, -0.5], [-0.8, -8, -0.4]]} r={0.16} color="#2f5a3c" leaves={[{u: 0.5, side: 1, s: 0.8}]} />
 			</Stage3D>
 			<Trail pts={path} f={f} />
 			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
