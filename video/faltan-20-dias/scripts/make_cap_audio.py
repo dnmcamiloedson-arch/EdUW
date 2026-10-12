@@ -262,12 +262,246 @@ def cap11(bus):
     return c + fr(REV)
 
 
-SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11}
+# ---------------------------------------------------------------- 10 · El Mictlán (reel)
+def whoosh(dur, lo=300, hi=4000, seed=0, up=True):
+    n = int(dur * SR)
+    k = np.linspace(0, 1, n) if up else np.linspace(1, 0, n)
+    nz = sfx.noise(n, seed)
+    return (sfx.bp(nz, lo, lo * 3) * (1 - k) + sfx.bp(nz, hi / 3, hi) * k) * np.sin(np.pi * np.linspace(0, 1, n)) ** 1.5
+
+
+def cap10(bus):
+    INTRO, LEVEL, REV, HIT = 84, 40, 156, 72
+    d0 = fr(INTRO)
+    lv = fr(LEVEL)
+    rev = d0 + 9 * lv
+    hit = rev + fr(HIT)
+    bed(bus, 0, drone=0.1, wind=0.3, seed=10)
+    bus.place(M.caracol(midi(38), 2.4, seed=10), 0.15, 0.3, wet=1.0)
+    bus.place(whoosh(1.5, 200, 3000, 1, up=False), d0 - 1.4, 0.3, wet=0.4)
+    # pulso que se acelera nivel a nivel
+    tt = d0
+    k = 0
+    while tt < rev - 0.05:
+        lvl = int((tt - d0) / lv)
+        bpm = 100 + lvl * 4
+        step = 60 / bpm / 2
+        if k % 4 == 0:
+            bus.place(M.huehuetl(0.8 + 0.03 * lvl, 0.9, seed=k), tt, 0.5, wet=0.2)
+        if k % 2 == 1:
+            bus.place(M.sonaja(0.6, 0.1, seed=k), tt, 0.09, (-0.4, 0.4)[(k // 2) % 2])
+        if k % 4 == 2:
+            bus.place(M.teponaztli(220 if lvl < 8 else 294, 0.6, seed=k), tt, 0.12, 0.2, wet=0.3)
+        tt += step
+        k += 1
+    # coro grave que sube con el descenso (Re menor) y resuelve en IX
+    for i, notes in enumerate([[38, 45, 50], [38, 45, 50], [37, 45, 52], [38, 46, 50], [38, 45, 53], [40, 46, 52], [41, 48, 53], [40, 45, 52]]):
+        bus.place2(np.stack([M.choir(notes, lv + 0.3, 'o', seed=100 + i, attack=0.2)] * 2), d0 + i * lv, 0.11, wet=0.9)
+    # un sonido por nivel
+    for i in range(9):
+        t0 = d0 + i * lv
+        bus.place(M.huehuetl(1.0, 0.8, seed=200 + i), t0 + lv * 0.5, 0.35, wet=0.3)
+        if i == 0:
+            bus.place(M.river(lv + 0.2, 101), t0, 0.14)
+        elif i == 1:
+            for c_ in [0.52, 0.52 + 2.09]:
+                if c_ < lv:
+                    bus.place(sfx.thump(90, 40, 0.8, 0.3), t0 + c_, 0.6, wet=0.3)
+        elif i == 2:
+            for j in range(5):
+                bus.reverb_only(sfx.bell(1800 + 400 * j, 1.2), t0 + 0.1 + j * 0.2, 0.05)
+        elif i == 3:
+            bus.place(whoosh(lv, 500, 6000, 3), t0, 0.22, 0.3, wet=0.3)
+        elif i == 4:
+            bus.place(sfx.rustle(104, lv), t0, 0.14, -0.2)
+        elif i == 5:
+            for j in range(6):
+                bus.place(whoosh(0.22, 1500, 7000, 50 + j), t0 + 0.1 + j * 0.2, 0.14, (-0.6, 0.6)[j % 2])
+        elif i == 6:
+            bus.place(sfx.thump(70, 35, 1.2, 0.4), t0 + 0.4, 0.45, wet=0.2)
+            bus.reverb_only(sfx.bell(1318.5, 1.6), t0 + 0.7, 0.06)
+        elif i == 7:
+            bus.place(M.river(lv + 0.2, 107), t0, 0.12, 0.2)
+        else:
+            bus.place2(np.stack([M.choir([50, 57, 62, 66, 69], lv + 0.6, 'a', seed=109, attack=0.25)] * 2), t0, 0.16, wet=1.0)
+            for j, m in enumerate([62, 66, 69, 74, 78]):
+                bus.place(sfx.marimba(midi(m), 1.6), t0 + 0.1 + j * 0.08, 0.18, -0.4 + j * 0.2, wet=0.6)
+    # la luz baja a la piedra
+    sw = sfx.strings([midi(50), midi(57), midi(62), midi(66)], fr(HIT) - 0.1, lambda u: u ** 2, 300, 2200, release=0.08, seed=110)
+    bus.place2(sw, rev, 0.3, wet=0.6)
+    bus.place(whoosh(fr(HIT), 200, 5000, 111), rev, 0.12, wet=0.5)
+    bus.place(M.huehuetl(1.4, 0.8, seed=99), hit, 1.0, wet=0.3)
+    bus.place(sfx.boom(10), hit, 0.95, wet=0.4)
+    bus.place(M.caracol(midi(50), 1.8, seed=11), hit + 0.05, 0.16, wet=1.0)
+    bus.place2(np.stack([M.choir([38, 50, 57, 62, 66], fr(REV - HIT) + 0.6, 'a', seed=112, attack=0.15)] * 2), hit, 0.18, wet=0.9)
+    for j, m in enumerate([62, 66, 69, 74]):
+        bus.place(sfx.marimba(midi(m), 2.0), hit + 0.04 * j, 0.24, -0.3 + 0.2 * j, wet=0.6)
+    return rev + fr(REV)
+
+
+# ---------------------------------------------------------------- 9 · Papel picado (son jarocho)
+def golpe_cincel(seed=0):
+    n = int(0.4 * SR)
+    t = np.arange(n) / SR
+    wood = sfx.bp(sfx.noise(n, seed), 200, 1400) * np.exp(-t / 0.02) + np.sin(2 * np.pi * 180 * t) * np.exp(-t / 0.06)
+    tink = np.sin(2 * np.pi * 2900 * t) * np.exp(-t / 0.08) * 0.35 + np.sin(2 * np.pi * 4700 * t) * np.exp(-t / 0.04) * 0.2
+    return wood + tink
+
+
+def cap9(bus):
+    S1, S2, S3, REV, HIT = 108, 108, 78, 132, 74
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.02, wind=0.12, seed=9)
+    eighth = 60 / 132 / 2 * 1.0
+    prog = [[55, 59, 62, 67], [55, 59, 62, 67], [48, 55, 60, 64], [50, 54, 57, 60]]
+    # sesquiáltera: dos compases de 6/8 y uno de 3/4 (acentos 1-3-5 / 1-4)
+    tt = 0.1
+    k = 0
+    while tt < c - 0.05:
+        bar = int(k / 6)
+        pos = k % 6
+        ch = prog[bar % 4]
+        accents = (0, 2, 4) if bar % 2 == 0 else (0, 3)
+        if pos in accents:
+            bus.place(M.strum(ch, 0.6, 0.008, 0.65, 0.9, pos % 2 == 0, seed=k), tt, 0.2, 0.15, wet=0.35)
+            bus.place(M.tarima(0.8, seed=k), tt, 0.16, -0.2)
+        else:
+            bus.place(M.strum(ch[1:], 0.4, 0.006, 0.6, 0.55, False, seed=k + 500), tt, 0.12, 0.15, wet=0.3)
+        if pos == 0 and bar % 2 == 1:
+            bus.place(M.quijada(0.8, seed=k), tt, 0.12, -0.4, wet=0.2)
+        tt += eighth
+        k += 1
+    # guitarra leona: bajo
+    for j in range(int(c / (eighth * 6))):
+        ch = prog[j % 4]
+        bus.place(M.pluck(midi(ch[0] - 12), 0.9, 0.4, 0.996, 0.9, seed=900 + j), 0.1 + j * eighth * 6, 0.22, -0.1, wet=0.25)
+    # golpes del cincel
+    for st in [14, 34, 54, 74, 94]:
+        bus.place(golpe_cincel(st), a + fr(st), 0.5, 0.05, wet=0.2)
+    bus.place(sfx.rustle(91, 1.4), b + 0.1, 0.18, 0.1)
+    for st in [6, 16, 26, 36, 46, 56, 66]:
+        bus.place(golpe_cincel(100 + st), c + fr(st), 0.45, 0.05, wet=0.2)
+    # luz detrás del papel
+    sw = sfx.strings([midi(55), midi(62), midi(67), midi(71)], fr(HIT) - 0.1, lambda u: u ** 2.5, 300, 2400, release=0.08, seed=99)
+    bus.place2(sw, c, 0.22, wet=0.6)
+    bus.place(M.huehuetl(1.1, 1.0, seed=9), hit, 0.75, wet=0.3)
+    bus.place(sfx.boom(9), hit, 0.8, wet=0.35)
+    bus.place(M.strum([43, 55, 59, 62, 67, 71], 2.6, 0.02, 0.7, 1.0, True, seed=990), hit, 0.38, 0.0, wet=0.7)
+    bus.place(M.quijada(1.0, seed=991), hit + 0.02, 0.14, -0.3, wet=0.3)
+    bus.place2(np.stack([M.choir([43, 55, 59, 62, 67], fr(REV - HIT) + 0.5, 'a', seed=9, attack=0.2)] * 2), hit, 0.1, wet=0.8)
+    return c + fr(REV)
+
+
+# ---------------------------------------------------------------- 8 · Pan de muerto (vals)
+def cap8(bus):
+    S1, S2, S3, REV, HIT = 108, 108, 78, 126, 70
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.02, wind=0.08, seed=8)
+    bus.place(sfx.fire(a + 0.5, 81) * 0.7, 0, 0.3, -0.1)
+    beat = 60 / 108
+    prog = [[41, 57, 60, 65], [36, 55, 58, 64], [36, 55, 58, 64], [41, 57, 60, 65], [46, 58, 62, 65], [41, 57, 60, 65], [36, 55, 60, 64], [41, 57, 60, 65]]
+    tt = 0.3
+    bar = 0
+    while tt < c - 0.1:
+        ch = prog[bar % len(prog)]
+        bus.place(M.pluck(midi(ch[0]), 1.2, 0.35, 0.997, 0.9, seed=bar), tt, 0.28, -0.1, wet=0.3)
+        for k in (1, 2):
+            bus.place(M.strum(ch[1:], 0.5, 0.01, 0.55, 0.6, True, seed=bar * 3 + k), tt + k * beat, 0.14, 0.2, wet=0.4)
+        tt += 3 * beat
+        bar += 1
+    sc = M.scale(65, 'mayor')
+    mel = [(0, 4, 2), (3, 3, 1), (4, 2, 1), (5, 1, 3), (8, 2, 1), (9, 3, 1), (10, 4, 1), (11, 5, 3), (14, 4, 1), (15, 2, 1), (16, 0, 2), (18, 1, 1), (19, 2, 3), (22, 4, 1), (23, 6, 2), (25, 7, 3)]
+    for k, (bt, d, ln) in enumerate(mel):
+        t0 = 0.3 + bt * beat
+        if t0 > c:
+            break
+        bus.place(sfx.marimba(midi(sc(d)), 1.4, seed=k), t0, 0.2, -0.2, wet=0.6)
+        bus.place(M.flute(midi(sc(d)), ln * beat * 0.95, 0.7, seed=k), t0, 0.08, 0.2, wet=0.9)
+    # masa y huesos
+    bus.place(sfx.thump(90, 50, 0.6, 0.15), a + 0.1, 0.25)
+    for k in range(4):
+        bus.place(sfx.thump(140, 80, 0.4, 0.08), a + fr(40 + k * 10), 0.3, -0.2 + k * 0.15)
+    bus.place(sfx.thump(160, 90, 0.4, 0.08), a + fr(82), 0.32)
+    # azúcar: brillos
+    for k in range(12):
+        bus.reverb_only(sfx.bell(2000 + 300 * (k % 5), 1.0), b + 0.2 + k * 0.2, 0.035, pan=(-0.5, 0.5)[k % 2])
+    # el número de azúcar
+    n = int((fr(HIT) + 0.4) * SR)
+    grains = (np.random.default_rng(8).random(n) < 0.02) * sfx.noise(n, 801)
+    bus.place(sfx.bp(grains, 4000, 11000) * np.linspace(0.3, 1, n), c, 0.3, wet=0.3)
+    for k in range(8):
+        bus.reverb_only(sfx.bell(1760 * 2 ** (k / 12 * 2), 1.4), hit - 0.3 + k * 0.09, 0.05, pan=-0.6 + k * 0.17)
+    bus.place(M.huehuetl(1.0, 1.1, seed=8), hit, 0.6, wet=0.3)
+    bus.place(sfx.boom(8), hit, 0.75, wet=0.35)
+    bus.place(M.strum([41, 53, 57, 60, 65, 69], 2.4, 0.03, 0.6, 1.0, True, seed=880), hit, 0.36, 0.1, wet=0.7)
+    for k, m in enumerate([65, 69, 72, 77]):
+        bus.place(sfx.marimba(midi(m), 2.0), hit + 0.04 * k, 0.22, -0.3 + 0.2 * k, wet=0.6)
+    return c + fr(REV)
+
+
+# ---------------------------------------------------------------- 7 · La Catrina (vals mexicano, reel)
+def cap7(bus):
+    S1, S2, S3, S4, REV, HIT = 108, 126, 150, 66, 156, 58
+    a, b, c, d = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3), fr(S1 + S2 + S3 + S4)
+    hit = d + fr(HIT)
+    bed(bus, 0, drone=0.02, wind=0.1, seed=7)
+    beat = 60 / 132
+    sc = M.scale(60, 'mayor')
+    # tocador: cajita musical
+    intro = [(0.5, 4), (0.95, 2), (1.4, 0), (1.85, 4), (2.3, 5), (2.75, 4), (3.2, 2)]
+    for k, (tt, dg) in enumerate(intro):
+        bus.place(M.musicbox(midi(sc(dg + 7)), 1.6, 0.8), tt, 0.18, -0.2 + 0.07 * k, wet=1.2)
+    # vals desde el retrato
+    prog = [[48, 64, 67, 72], [43, 62, 65, 71], [43, 62, 65, 71], [48, 64, 67, 72], [41, 60, 65, 69], [48, 64, 67, 72], [43, 62, 65, 71], [48, 64, 67, 72]]
+    mel = [4, 4, 5, 7, 7, 6, 5, 4, 3, 2, 2, 3, 4, 4, 3, 2, 1, 0, 0, 1, 2, 4, 3, 1]
+    tt = a
+    bar = 0
+    while tt < d - 0.05:
+        ch = prog[bar % len(prog)]
+        full = tt >= b
+        bus.place(M.pluck(midi(ch[0]), 1.0, 0.35, 0.997, 0.9, seed=bar), tt, 0.3 if full else 0.2, -0.1, wet=0.3)
+        for k in (1, 2):
+            if full:
+                bus.place(M.strum(ch[1:], 0.4, 0.008, 0.55, 0.6, True, seed=bar * 3 + k), tt + k * beat, 0.14, 0.25, wet=0.4)
+            else:
+                bus.place(sfx.marimba(midi(ch[1]), 0.8), tt + k * beat, 0.08, 0.25, wet=0.5)
+        for j in range(3):
+            dg = mel[(bar * 3 + j) % len(mel)]
+            if j == 0 or full:
+                bus.place(sfx.marimba(midi(sc(dg + 7)), 1.2, seed=bar * 3 + j), tt + j * beat, 0.24 if full else 0.18, -0.25, wet=0.6)
+                if full:
+                    bus.place(sfx.marimba(midi(sc(dg + 5)), 1.2, seed=900 + bar * 3 + j), tt + j * beat + 0.012, 0.12, 0.25, wet=0.6)
+        tt += 3 * beat
+        bar += 1
+    pad = sfx.strings([midi(48), midi(55), midi(64), midi(67)], b - a + 0.4, lambda u: np.minimum(1, u * 3), 400, 1600, release=0.3, seed=71)
+    bus.place2(pad, a, 0.14, wet=0.9)
+    # pétalos al pasar al vals
+    bus.place(sfx.air(72, 1.0, (600, 1800), (1800, 6000)), b - 0.4, 0.12, wet=0.4)
+    # abanico que se abre
+    for k in range(12):
+        bus.place(sfx.marimba(midi(sc(k + 7)), 0.9), c + 0.27 + k * 0.08, 0.12, -0.6 + k * 0.1, wet=0.6)
+    bus.place(sfx.air(73, 1.0, (800, 2000), (2000, 7000)), c + 0.2, 0.14, wet=0.3)
+    sw = sfx.strings([midi(48), midi(55), midi(64), midi(67)], fr(HIT) - 0.1, lambda u: u ** 2, 400, 2400, release=0.08, seed=74)
+    bus.place2(sw, d, 0.26, wet=0.6)
+    for k in range(10):
+        bus.place(sfx.marimba(midi(sc(k + 4)), 0.9), d + 0.2 + k * (fr(HIT) - 0.3) / 10, 0.12, -0.6 + k * 0.12, wet=0.6)
+    bus.place(M.huehuetl(1.1, 1.0, seed=7), hit, 0.7, wet=0.3)
+    bus.place(sfx.boom(7), hit, 0.85, wet=0.35)
+    bus.place(M.strum([36, 48, 55, 64, 67, 72], 2.6, 0.03, 0.65, 1.0, True, seed=770), hit, 0.36, 0.1, wet=0.7)
+    for k, m in enumerate([72, 76, 79, 84]):
+        bus.place(sfx.marimba(midi(m), 2.0), hit + 0.04 * k, 0.24, -0.3 + 0.2 * k, wet=0.6)
+    bus.place2(np.stack([M.choir([48, 60, 64, 67, 72], fr(REV - HIT) + 0.5, 'a', seed=7, attack=0.2)] * 2), hit, 0.12, wet=0.9)
+    return d + fr(REV)
+
+
+SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7}
 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126}
+    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)

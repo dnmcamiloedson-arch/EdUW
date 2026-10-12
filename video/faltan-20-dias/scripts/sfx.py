@@ -258,7 +258,7 @@ def master(bus, fade=None, target=-14.0):
         mix *= e
     mix = hp(mix, 25)
     meter = pyln.Meter(SR)
-    for ceil in (-1.5, -1.5, -1.5):
+    for ceil in (-1.5,) * 7:
         mix *= 10 ** ((target - meter.integrated_loudness(mix.T)) / 20)
         mix = true_peak_limiter(mix, ceil)
     mix = true_peak_limiter(mix, -1.3)

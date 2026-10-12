@@ -13,7 +13,7 @@ export const C14 = {S1: 126, S2: 96, S3: 72, REV: 126, HIT: 64};
 export const C14_LEN = C14.S1 + C14.S2 + C14.S3 + C14.REV;
 
 // ---------- Xoloitzcuintle (perfil, mira a la derecha) ----------
-const Xolo: React.FC<{x: number; y: number; s?: number; t: number; walk?: number; color?: string; rim?: string; look?: number}> = ({x, y, s = 1, t, walk = 1, color = '#0d0809', rim = C.marfil, look = 0}) => {
+export const Xolo: React.FC<{x: number; y: number; s?: number; t: number; walk?: number; color?: string; rim?: string; look?: number}> = ({x, y, s = 1, t, walk = 1, color = '#0d0809', rim = C.marfil, look = 0}) => {
 	const ph = t * Math.PI * 2 * 1.5 * walk;
 	const bob = Math.sin(ph * 2) * 3 * walk;
 	const leg = (hx: number, hy: number, o: number, front: boolean) => {

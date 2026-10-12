@@ -17,11 +17,16 @@ export const Kinetic: React.FC<{
 	lineHeight?: number;
 	glow?: string;
 	weight?: number;
-}> = ({text, f, at, out, y, size = 46, font = 'Alike', color = C.marfil, stagger = 1.1, spacing = '0.02em', lineHeight = 1.3, glow = C.cempa, weight = 400}) => {
+	scrim?: number;
+}> = ({text, f, at, out, y, size = 46, font = 'Alike', color = C.marfil, stagger = 1.1, spacing = '0.02em', lineHeight = 1.3, glow = C.cempa, weight = 400, scrim = 0}) => {
 	const lines = text.split('\n');
 	let k = 0;
 	const exit = out !== undefined ? ramp(f, [out, out + 14], [0, 1], E.in) : 0;
+	const sIn = ramp(f, [at - 4, at + 10], [0, 1], E.out) * (1 - exit);
+	const hh = lines.length * size * lineHeight;
 	return (
+		<>
+		{scrim > 0 ? <div style={{position: 'absolute', left: 0, top: y - hh * 0.6, width: W, height: hh * 2.2, opacity: scrim * sIn, background: 'linear-gradient(180deg, transparent, rgba(6,2,1,0.82) 35%, rgba(6,2,1,0.82) 65%, transparent)'}} /> : null}
 		<div
 			style={{
 				position: 'absolute',
@@ -63,6 +68,7 @@ export const Kinetic: React.FC<{
 				</div>
 			))}
 		</div>
+		</>
 	);
 };
 

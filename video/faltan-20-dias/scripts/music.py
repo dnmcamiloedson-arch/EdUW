@@ -199,3 +199,24 @@ def river(dur, seed=0):
         f = r.uniform(500, 1400) * (1 + 1.5 * tt / 0.05)
         bubbles[at : at + d] += np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-tt / 0.012) * r.uniform(0.2, 0.6)
     return flow + bubbles
+
+
+def quijada(vel=1.0, seed=0):
+    """Quijada de burro: dientes que vibran (tren de clics que decae)."""
+    n = int(0.6 * SR)
+    t = np.arange(n) / SR
+    clicks = np.zeros(n)
+    rate = 34
+    for k in range(int(0.6 * rate)):
+        i = int(k / rate * SR)
+        clicks[i] += np.exp(-k / 6)
+    body = sfx.bp(np.convolve(clicks, np.exp(-np.arange(200) / 30), 'same'), 900, 5000)
+    return body * np.exp(-t / 0.3) * vel
+
+
+def tarima(vel=1.0, seed=0):
+    """Taconeo sobre tarima de madera."""
+    n = int(0.18 * SR)
+    t = np.arange(n) / SR
+    s = sfx.bp(noise(n, seed), 120, 900) * np.exp(-t / 0.03) + np.sin(2 * np.pi * 140 * t) * np.exp(-t / 0.05) * 0.6
+    return s * vel
