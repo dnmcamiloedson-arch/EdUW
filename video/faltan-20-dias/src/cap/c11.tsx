@@ -7,154 +7,234 @@ import {drawPetal} from '../components/Particles';
 import {Fog, Orb, Sky} from './kit/land';
 import {Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {Dip} from './kit/transitions';
+import {Camera, Range, Stage3D, THREE, project} from './kit/three';
 
 // Capítulo 11 · "La Llorona" — en el río, alguien sigue buscando… y cada noche enciende una luz.
 export const C11 = {S1: 126, S2: 96, S3: 72, REV: 126, HIT: 60};
 export const C11_LEN = C11.S1 + C11.S2 + C11.S3 + C11.REV;
 
-// Ramas de sauce llorón que cuelgan y se mecen
-const Sauce: React.FC<{t: number; x0: number; x1: number; n?: number; seed: number; color?: string; len?: number}> = ({t, x0, x1, n = 22, seed, color = '#07060a', len = 900}) => (
-	<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-		{Array.from({length: n}).map((_, i) => {
-			const x = x0 + (i / n) * (x1 - x0) + hash(i, seed) * 30;
-			const L = len * (0.6 + 0.5 * hash(i, seed + 1));
-			const sw = noise2D('sau' + seed, i * 0.3, t * 0.4) * 40;
-			const d = `M ${x} -20 C ${x + sw * 0.2} ${L * 0.3} ${x + sw * 0.7} ${L * 0.65} ${x + sw} ${L}`;
-			return (
-				<g key={i}>
-					<path d={d} stroke={color} strokeWidth={3} fill="none" />
-					{Array.from({length: 14}).map((_, k) => {
-						const u = (k + 1) / 15;
-						const px = x + sw * u ** 1.5;
-						const py = L * u;
-						return <path key={k} d={`M ${px} ${py} q ${k % 2 ? 10 : -10} 12 ${k % 2 ? 4 : -4} 30`} stroke={color} strokeWidth={5} fill="none" strokeLinecap="round" />;
-					})}
-				</g>
-			);
-		})}
-	</svg>
-);
+// ---------- La Llorona en 3D: río con sauces, rebozo de tela real y barquitas de papel ----------
+// Rebozo: textura de algodón marfil con rayas finas y flecos (rapacejo) con transparencia
+let rebozoTex: THREE.CanvasTexture | null = null;
+const getRebozoTex = () => {
+	if (rebozoTex) return rebozoTex;
+	const cv = document.createElement('canvas');
+	cv.width = 1024;
+	cv.height = 384;
+	const g = cv.getContext('2d')!;
+	const fr = 90; // flecos a cada lado
+	g.fillStyle = '#f4eee6';
+	g.fillRect(fr, 0, cv.width - fr * 2, cv.height);
+	for (let y = 0; y < cv.height; y += 6) {
+		g.fillStyle = `rgba(150,140,160,${y % 48 < 6 ? 0.35 : 0.06})`;
+		g.fillRect(fr, y, cv.width - fr * 2, 2);
+	}
+	for (let x = fr; x < cv.width - fr; x += 4) {
+		g.fillStyle = 'rgba(120,110,120,0.05)';
+		g.fillRect(x, 0, 1, cv.height);
+	}
+	// flecos anudados
+	g.strokeStyle = '#ece4da';
+	g.lineWidth = 3;
+	for (const side of [0, 1]) {
+		for (let k = 0; k < 40; k++) {
+			const y = 6 + k * 9.4;
+			const x0 = side ? cv.width - fr : fr;
+			g.beginPath();
+			g.moveTo(x0, y);
+			g.quadraticCurveTo(x0 + (side ? 1 : -1) * 40, y + 6, x0 + (side ? 1 : -1) * (70 + (k % 3) * 8), y + 10);
+			g.stroke();
+		}
+	}
+	rebozoTex = new THREE.CanvasTexture(cv);
+	rebozoTex.colorSpace = THREE.SRGBColorSpace;
+	return rebozoTex;
+};
 
-// Rebozo blanco a la deriva: tela con pliegues, rayas y flecos (rapacejo)
-const Rebozo: React.FC<{x: number; y: number; t: number; s?: number; o?: number}> = ({x, y, t, s = 1, o = 0.85}) => {
-	const N = 24;
-	const edge = (base: number, amp: number, ph: number) =>
-		Array.from({length: N + 1}).map((_, i) => {
-			const u = i / N;
-			return [-300 + u * 600, base + Math.sin(u * 9 + t * 1.5 + ph) * amp + Math.sin(u * 3.3 - t * 0.7) * amp * 0.8] as const;
-		});
-	const top = edge(-55, 16, 0);
-	const bot = edge(55, 22, 1.1);
-	const d = `M ${top.map(([a, b]) => `${a} ${b}`).join(' L ')} L ${bot.slice().reverse().map(([a, b]) => `${a} ${b}`).join(' L ')} Z`;
+// Tela flotante: malla que ondula con el agua (o con el viento)
+const Tela: React.FC<{pos: [number, number, number]; t: number; rot?: [number, number, number]; s?: number; wind?: number; o?: number}> = ({pos, t, rot = [0, 0, 0], s = 1, wind = 0, o = 0.95}) => {
+	const geo = React.useMemo(() => new THREE.PlaneGeometry(3, 1.1, 48, 18), []);
+	const base = React.useMemo(() => Float32Array.from(geo.attributes.position.array as Float32Array), [geo]);
+	React.useLayoutEffect(() => {
+		const p = geo.attributes.position as THREE.BufferAttribute;
+		for (let i = 0; i < p.count; i++) {
+			const x = base[i * 3];
+			const y = base[i * 3 + 1];
+			const z = Math.sin(x * 2.2 + t * 1.4) * 0.07 + Math.sin(y * 3 + x * 1.3 - t * 0.9) * 0.05 + wind * (Math.sin(x * 1.6 - t * 5) * 0.35 + Math.sin(y * 4 + t * 4) * 0.15 + x * x * 0.08);
+			p.setZ(i, z);
+		}
+		p.needsUpdate = true;
+		geo.computeVertexNormals();
+	});
 	return (
-		<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-			<defs>
-				<linearGradient id="rbz" x1="0" y1="0" x2="1" y2="0">
-					<stop offset="0%" stopColor="#FFF8F0" stopOpacity={0.15} />
-					<stop offset="20%" stopColor="#FFF8F0" stopOpacity={0.92} />
-					<stop offset="80%" stopColor="#EEE4DA" stopOpacity={0.88} />
-					<stop offset="100%" stopColor="#EEE4DA" stopOpacity={0.15} />
-				</linearGradient>
-			</defs>
-			<g transform={`translate(${x} ${y}) scale(${s} ${s * 0.8})`} opacity={o}>
-				<path d={d} fill="url(#rbz)" />
-				{/* pliegues */}
-				{Array.from({length: 9}).map((_, k) => {
-					const i = 2 + k * 2.4;
-					const a = top[Math.round(i)];
-					const b = bot[Math.round(i)];
-					return <path key={k} d={`M ${a[0]} ${a[1]} Q ${a[0] + 14} ${(a[1] + b[1]) / 2} ${b[0]} ${b[1]}`} stroke="#B8AEB8" strokeOpacity={0.35} strokeWidth={6} fill="none" />;
-				})}
-				{/* rayas del rebozo */}
-				{[-30, -10, 10, 30].map((off, k) => (
-					<path key={'r' + k} d={`M ${top.map(([a], i) => `${a} ${(top[i][1] + bot[i][1]) / 2 + off * (1 + 0.2 * Math.sin(i))}`).join(' L ')}`} stroke="#9a8ea0" strokeOpacity={0.22} strokeWidth={3} fill="none" />
-				))}
-				{/* flecos */}
-				{[top[0], top[N]].map(([ex], side) =>
-					Array.from({length: 10}).map((_, k) => {
-						const yy = -50 + k * 11;
-						const dir = side ? 1 : -1;
-						return <path key={`${side}-${k}`} d={`M ${ex} ${yy} q ${dir * 22} ${Math.sin(t * 2 + k) * 6} ${dir * 44} ${6 + Math.sin(t * 2 + k) * 8}`} stroke="#EEE4DA" strokeOpacity={0.55} strokeWidth={2.5} fill="none" />;
-					}),
-				)}
-			</g>
-			{/* reflejo tenue */}
-			<g transform={`translate(${x} ${y + 70 * s}) scale(${s} ${-s * 0.5})`} opacity={o * 0.18}>
-				<path d={d} fill="#EEE4DA" style={{filter: 'blur(4px)'}} />
-			</g>
-		</svg>
+		<mesh geometry={geo} position={pos} rotation={rot} scale={s} castShadow receiveShadow>
+			<meshStandardMaterial map={getRebozoTex()} transparent alphaTest={0.1} opacity={o} side={THREE.DoubleSide} roughness={0.95} />
+		</mesh>
 	);
 };
 
-// Velitas en barquitos de papel
-const Barcos: React.FC<{t: number; n: number; seed: number; y0: number; spread: number; s?: number; drift?: number}> = ({t, n, seed, y0, spread, s = 1, drift = 20}) => (
-	<>
-		{Array.from({length: n}).map((_, i) => {
-			const x = (hash(i, seed) * (W + 300) - 150 + t * drift * (0.6 + hash(i, seed + 1))) % (W + 300) - 50;
-			const y = y0 + hash(i, seed + 2) * spread;
-			const k = s * (0.6 + 0.6 * ((y - y0) / spread));
-			const bob = Math.sin(t * 1.5 + i) * 3 * k;
-			return (
-				<React.Fragment key={i}>
-					<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-						<g transform={`translate(${x} ${y + bob}) scale(${k})`}>
-							<path d="M -40 0 L 40 0 L 26 16 L -26 16 Z" fill="#E8D8C0" opacity={0.85} />
-							<path d="M -40 0 L 0 -26 L 40 0 Z" fill="#D9CDB6" opacity={0.7} />
-						</g>
-					</svg>
-					<Flame x={x} y={y + bob - 22 * k} size={34 * k} t={t + i} seed={300 + i} />
-					<Light x={x} y={y + bob - 30 * k} r={160 * k} color={C.cempa} o={0.45} />
-					<div style={{position: 'absolute', left: x - 6 * k, top: y + bob + 18 * k, width: 12 * k, height: 90 * k, background: `linear-gradient(180deg, ${rgba(C.flama, 0.45)}, transparent)`, filter: 'blur(3px)'}} />
-				</React.Fragment>
-			);
-		})}
-	</>
+// Sauce llorón: tronco y cortina de ramas colgantes que se mecen
+const Sauce3D: React.FC<{pos: [number, number, number]; t: number; seed: number; s?: number}> = ({pos, t, seed, s = 1}) => {
+	const ref = React.useRef<THREE.InstancedMesh>(null);
+	const N = 260;
+	const strand = React.useMemo(() => {
+		const g = new THREE.PlaneGeometry(0.12, 1, 1, 6);
+		g.translate(0, -0.5, 0);
+		return g;
+	}, []);
+	React.useLayoutEffect(() => {
+		const o = new THREE.Object3D();
+		for (let i = 0; i < N; i++) {
+			const a = hash(i, seed) * Math.PI * 2;
+			const r = 1.2 + 2.6 * Math.sqrt(hash(i, seed + 1));
+			const top = 6.2 + 1.2 * Math.cos((r / 3.8) * 1.4);
+			const len = 3.2 + 2.6 * hash(i, seed + 2);
+			o.position.set(Math.cos(a) * r, top, Math.sin(a) * r);
+			o.rotation.set(noise2D('sz' + seed, i * 0.2, t * 0.4) * 0.12, a + hash(i, seed + 3), noise2D('sx' + seed, i * 0.2, t * 0.4) * 0.12);
+			o.scale.set(1, len, 1);
+			o.updateMatrix();
+			ref.current?.setMatrixAt(i, o.matrix);
+		}
+		if (ref.current) ref.current.instanceMatrix.needsUpdate = true;
+	});
+	return (
+		<group position={pos} scale={s}>
+			<mesh position={[0, 3, 0]} rotation={[0, 0, 0.08]} castShadow>
+				<cylinderGeometry args={[0.25, 0.45, 6, 8]} />
+				<meshStandardMaterial color="#120c0a" roughness={1} />
+			</mesh>
+			{/* ramas principales que se arquean */}
+			{Array.from({length: 7}).map((_, k) => {
+				const a = (k / 7) * Math.PI * 2 + seed;
+				return (
+					<mesh key={k} position={[Math.cos(a) * 1.3, 6.4, Math.sin(a) * 1.3]} rotation={[Math.sin(a) * 0.9, 0, -Math.cos(a) * 0.9]} castShadow>
+						<cylinderGeometry args={[0.05, 0.12, 3, 5]} />
+						<meshStandardMaterial color="#120c0a" roughness={1} />
+					</mesh>
+				);
+			})}
+			<instancedMesh ref={ref} args={[strand, undefined, N]} castShadow>
+				<meshStandardMaterial color="#141c14" side={THREE.DoubleSide} roughness={1} />
+			</instancedMesh>
+		</group>
+	);
+};
+
+// Barquita de papel doblado
+const barcoGeo = (() => {
+	const v = [
+		// costados
+		-0.5, 0.15, 0, 0.5, 0.15, 0, 0.32, -0.02, 0.14,
+		-0.5, 0.15, 0, 0.32, -0.02, 0.14, -0.32, -0.02, 0.14,
+		0.5, 0.15, 0, -0.5, 0.15, 0, -0.32, -0.02, -0.14,
+		0.5, 0.15, 0, -0.32, -0.02, -0.14, 0.32, -0.02, -0.14,
+		// fondo
+		-0.32, -0.02, 0.14, 0.32, -0.02, 0.14, 0.32, -0.02, -0.14,
+		-0.32, -0.02, 0.14, 0.32, -0.02, -0.14, -0.32, -0.02, -0.14,
+		// vela triangular
+		-0.34, 0.15, 0, 0.34, 0.15, 0, 0, 0.5, 0,
+	];
+	const g = new THREE.BufferGeometry();
+	g.setAttribute('position', new THREE.Float32BufferAttribute(v, 3));
+	g.computeVertexNormals();
+	return g;
+})();
+type Barca = {p: [number, number, number]; rot: number; s: number};
+const Barcas3D: React.FC<{items: Barca[]; t: number}> = ({items, t}) => (
+	<group>
+		{items.map((b, i) => (
+			<group key={i} position={[b.p[0], b.p[1] + Math.sin(t * 1.5 + i) * 0.02, b.p[2]]} rotation={[Math.sin(t + i) * 0.05, b.rot, Math.sin(t * 1.3 + i) * 0.06]} scale={b.s}>
+				<mesh geometry={barcoGeo} castShadow>
+					<meshStandardMaterial color="#e8dcc6" side={THREE.DoubleSide} roughness={0.9} emissive="#5a3010" emissiveIntensity={0.25} />
+				</mesh>
+				<mesh position={[0.18, 0.2, 0.05]}>
+					<cylinderGeometry args={[0.035, 0.035, 0.1, 10]} />
+					<meshStandardMaterial color={C.marfil} emissive="#7a4010" emissiveIntensity={0.5} />
+				</mesh>
+			</group>
+		))}
+	</group>
 );
 
-const Water: React.FC<{y: number; t: number}> = ({y, t}) => (
+// Río nocturno: agua translúcida sobre el reflejo de todo lo que está arriba
+const Rio3D: React.FC<{above: React.ReactNode; fog?: [number, number]}> = ({above, fog = [10, 70]}) => (
 	<>
-		<div style={{position: 'absolute', left: 0, top: y, width: W, height: H - y, background: 'linear-gradient(180deg,#0b0b14,#040308)'}} />
-		{Array.from({length: 26}).map((_, i) => {
-			const yy = y + 6 + i * i * 1.7;
-			const off = Math.sin(t * 1.1 + i * 1.2) * (5 + i);
-			return <div key={i} style={{position: 'absolute', left: -60 + off, top: yy, width: W + 120, height: 1.5 + i * 0.1, background: rgba('#D8D0E8', 0.03 + 0.015 * Math.sin(t * 2 + i))}} />;
-		})}
+		<fog attach="fog" args={['#0a0a12', fog[0], fog[1]]} />
+		<hemisphereLight args={['#7a7aa0', '#08060a', 0.45]} />
+		<directionalLight position={[20, 25, -40]} intensity={1.6} color="#e0d8f0" castShadow shadow-mapSize={[1024, 1024]} />
+		{above}
+		<group scale={[1, -1, 1]}>{above}</group>
+		<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, -20]}>
+			<planeGeometry args={[300, 160]} />
+			<meshBasicMaterial color="#06060c" transparent opacity={0.66} />
+		</mesh>
 	</>
 );
+const LomasRio: React.FC = () => <Range z={-70} x0={-90} x1={90} n={10} r={14} h={9} color="#100e18" seed={111} />;
 
 const Rio: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const drift = ramp(f, [0, C11.S1], [0, 1], E.inOut);
+	const cam: [number, number, number] = [lerp(-1.4, -0.4, drift), 2.6, 7];
+	const look: [number, number, number] = [0.5, 1.2, -6];
+	const above = (
+		<>
+			<LomasRio />
+			<Sauce3D pos={[-6.5, 0, -2]} t={t} seed={111} />
+			<Sauce3D pos={[7, 0, -9]} t={t + 2} seed={112} s={0.9} />
+			<Sauce3D pos={[-3, 0, -18]} t={t + 4} seed={113} s={0.8} />
+		</>
+	);
 	return (
 		<AbsoluteFill>
-			<Sky t={t} top="#030308" mid="#0a0a14" horizon="#16141e" hy={1150} stars={120} />
-			<Orb x={760} y={520} r={58} color="#E8E0F0" core="#FFFFFF" halo={4} o={0.8} />
-			<Water y={1150} t={t} />
-			<div style={{position: 'absolute', left: 730, top: 1150, width: 60, height: 600, background: `linear-gradient(180deg, ${rgba('#E8E0F0', 0.28)}, transparent)`, filter: 'blur(8px)'}} />
-			<Rebozo x={lerp(300, 620, drift)} y={1380} t={t} s={1.1} />
-			<Fog y={1180} color="#B8B0C8" o={0.14} h={300} />
-			<Sauce t={t} x0={-80} x1={360} seed={111} />
-			<Sauce t={t + 2} x0={800} x1={1160} n={12} seed={112} len={700} />
-			<PaperTexture o={0.18} />
-			<Kinetic text={'Dicen que en el río\nalguien sigue buscando…'} f={f} at={14} out={110} y={1580} size={48} color="#EDE6F2" glow="#B8B0C8" />
+			<Sky t={t} top="#030308" mid="#0a0a14" horizon="#16141e" hy={1120} stars={120} />
+			<Orb x={760} y={500} r={58} color="#E8E0F0" core="#FFFFFF" halo={4} o={0.8} />
+			<Stage3D fov={50}>
+				<Camera pos={cam} look={look} />
+				<Rio3D above={above} />
+				<Tela pos={[lerp(-1.0, 0.9, drift), 0.04, -2.6]} rot={[-Math.PI / 2, 0, 0.3]} t={t} s={1.3} />
+			</Stage3D>
+			<div style={{position: 'absolute', left: 735, top: 1130, width: 50, height: 600, background: `linear-gradient(180deg, ${rgba('#E8E0F0', 0.24)}, transparent)`, filter: 'blur(8px)'}} />
+			<Fog y={1150} color="#B8B0C8" o={0.12} h={300} />
+			<PaperTexture o={0.16} />
+			<Kinetic text={'Dicen que en el río\nalguien sigue buscando…'} f={f} at={14} out={110} y={1560} size={48} color="#EDE6F2" glow="#B8B0C8" scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
 
+const BARCAS: Barca[] = Array.from({length: 11}).map((_, i) => ({p: [(hash(i, 113) - 0.5) * 9, 0.02, -hash(i, 114) * 16 + 2], rot: hash(i, 115) * 3, s: 0.9 + 0.4 * hash(i, 116)}));
 const Velas: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 6;
 	const fl = flicker(t, 11);
+	const cam: [number, number, number] = [lerp(-0.8, 0.8, f / C11.S2), 1.6, 7];
+	const look: [number, number, number] = [0, 0.4, -4];
+	const items = BARCAS.map((b, i) => ({...b, p: [b.p[0] + t * 0.12 * (0.5 + hash(i, 117)), b.p[1], b.p[2]] as [number, number, number]}));
+	const flames = items.map((b) => {
+		const tip: [number, number, number] = [b.p[0] + Math.cos(b.rot) * 0.18 * b.s, b.p[1] + 0.26 * b.s, b.p[2] - Math.sin(b.rot) * 0.18 * b.s];
+		return {a: project(tip, cam, look, 50), r: project([tip[0], -tip[1], tip[2]], cam, look, 50), d: Math.hypot(tip[0] - cam[0], tip[1] - cam[1], tip[2] - cam[2])};
+	});
 	return (
 		<AbsoluteFill>
 			<Sky t={t} top="#030308" mid="#08080f" horizon="#140f16" hy={900} stars={80} />
-			<Water y={900} t={t} />
-			<Light x={540} y={1300} r={900} color={C.cempa} o={0.25 * fl} />
-			<Barcos t={t} n={9} seed={113} y0={980} spread={760} s={1.6} />
-			<Fog y={940} color="#B8B0C8" o={0.1} h={240} />
-			<PaperTexture o={0.18} />
-			<Kinetic text={'…y cada noche\nenciende una luz.'} f={f} at={8} out={84} y={340} size={52} color="#EDE6F2" glow={C.cempa} />
+			<Stage3D fov={50}>
+				<Camera pos={cam} look={look} />
+				<Rio3D above={<><LomasRio /><Barcas3D items={items} t={t} /></>} />
+				{items.slice(0, 4).map((b, i) => (
+					<pointLight key={i} position={[b.p[0], 0.4, b.p[2]]} intensity={1.6 * fl} distance={3} color={C.cempa} />
+				))}
+			</Stage3D>
+			{flames.map(({a, r, d}, i) => (
+				<React.Fragment key={i}>
+					<Light x={a.x} y={a.y} r={900 / d} color={C.cempa} o={0.4} />
+					<div style={{position: 'absolute', left: r.x - 60 / d, top: r.y - 40 / d, width: 120 / d, height: 900 / d, background: `linear-gradient(180deg, ${rgba(C.flama, 0.4)}, transparent)`, filter: 'blur(3px)'}} />
+					<Flame x={a.x} y={a.y + 4} size={380 / d} t={t + i} seed={300 + i} fl={fl} />
+				</React.Fragment>
+			))}
+			<Fog y={940} color="#B8B0C8" o={0.08} h={240} />
+			<PaperTexture o={0.16} />
+			<Kinetic text={'…y cada noche\nenciende una luz.'} f={f} at={8} out={84} y={340} size={52} color="#EDE6F2" glow={C.cempa} scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
@@ -172,7 +252,7 @@ const Viento: React.FC = () => {
 				const p = clamp((u - born) / 0.5);
 				if (p <= 0) continue;
 				const x = 540 + (r(2) - 0.5) * 420 + p * (200 + 500 * r(3)) + Math.sin(t * 2 + i) * 20;
-				const y = 1250 - (r(4) - 0.5) * 80 - p * (600 + 600 * r(5));
+				const y = 1150 - (r(4) - 0.5) * 80 - p * (600 + 600 * r(5));
 				drawPetal(ctx, x, y, 22 + 16 * r(6), r(7) * 6.28 + t * 2, Math.cos(t * 4 + i), 0.85, 0.8 + 0.3 * r(8), r(9));
 			}
 		},
@@ -181,10 +261,17 @@ const Viento: React.FC = () => {
 	return (
 		<AbsoluteFill style={{background: '#050308'}}>
 			<Light x={540} y={1100} r={900} color={C.cempa} o={0.3} />
-			<Sauce t={t} x0={-120} x1={1200} n={26} seed={115} len={1100} color="#08070c" />
-			<Rebozo x={540 + u * 200} y={1250 - u * 500} t={t * 2} s={1.6 + u} o={0.85 * (1 - u)} />
+			<Stage3D fov={50}>
+				<Camera pos={[0, 1.5, 7]} look={[0, 2.5, 0]} />
+				<hemisphereLight args={['#8a80a8', '#08060a', 0.5]} />
+				<directionalLight position={[-3, 6, 4]} intensity={1.4} color="#e8e0f0" />
+				<directionalLight position={[3, 1, -4]} intensity={1.2} color={C.cempa} />
+				<Sauce3D pos={[-5.5, -1, -3]} t={t} seed={115} />
+				<Sauce3D pos={[5.5, -1, -4]} t={t + 3} seed={116} />
+				<Tela pos={[u * 1.2, 1.2 + u * 3.5, -u * 1.5]} rot={[-0.4 - u * 0.6, u * 0.8, 0.2 + u * 0.5]} t={t * 1.4} s={1 + u * 0.4} wind={0.5 + u} o={0.95 * (1 - u * u)} />
+			</Stage3D>
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			<PaperTexture o={0.18} />
+			<PaperTexture o={0.16} />
 		</AbsoluteFill>
 	);
 };
