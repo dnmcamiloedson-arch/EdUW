@@ -496,12 +496,125 @@ def cap7(bus):
     return d + fr(REV)
 
 
-SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7}
+# ---------------------------------------------------------------- 6 · Calaverita literaria (son juguetón)
+def pluma(dur, seed=0):
+    n = int(dur * SR)
+    r = np.random.default_rng(seed)
+    g = (r.random(n) < 0.05) * r.normal(0, 1, n)
+    strokes = 0.5 + 0.5 * np.sin(2 * np.pi * 7 * np.arange(n) / SR + r.uniform(0, 6))
+    return sfx.bp(g, 2500, 9000) * strokes
+
+
+def cap6(bus):
+    S1, S2, REV, HIT = 84, 216, 132, 62
+    a, b = fr(S1), fr(S1 + S2)
+    hit = b + fr(HIT)
+    bed(bus, 0, drone=0.0, wind=0.05, seed=6)
+    beat = 60 / 116
+    sc = M.scale(69, 'mayor')
+    prog = [[45, 57, 61, 64], [52, 56, 59, 64], [52, 56, 59, 62], [45, 57, 61, 64]]
+    tt = 0.2
+    k = 0
+    while tt < b - 0.05:
+        ch = prog[(k // 4) % 4]
+        if k % 2 == 0:
+            bus.place(M.pluck(midi(ch[0] - 12), 0.6, 0.4, 0.995, 0.9, seed=k), tt, 0.28, -0.1, wet=0.2)
+        else:
+            bus.place(sfx.marimba(midi(ch[1]), 0.5), tt, 0.1, 0.25, wet=0.4)
+            bus.place(sfx.marimba(midi(ch[2]), 0.5), tt + 0.005, 0.1, 0.25, wet=0.4)
+        bus.place(sfx.wood(1700 if k % 2 else 1300), tt, 0.06, 0.4, wet=0.3)
+        tt += beat
+        k += 1
+    # melodía de marimba "con picardía": una frase por cada línea del verso
+    phrases = [[4, 5, 4, 2, 0], [1, 2, 4, 2, 1], [4, 5, 7, 5, 4], [2, 1, 0, -1, 0]]
+    for li, at in enumerate([6, 54, 102, 150]):
+        t0 = a + fr(at)
+        for j, dg in enumerate(phrases[li]):
+            bus.place(sfx.marimba(midi(sc(dg)), 1.0, seed=li * 10 + j), t0 + j * beat * 0.5, 0.24, -0.2, wet=0.5)
+        bus.place(pluma(fr(42), 600 + li), t0, 0.1, 0.3)
+    bus.place(pluma(1.6, 699), 0.35, 0.1, 0.3)
+    # la gota de tinta
+    drop = b + fr(14)
+    n = int(0.3 * SR)
+    tt_ = np.arange(n) / SR
+    bloop = np.sin(2 * np.pi * np.cumsum(300 + 500 * np.exp(-tt_ / 0.04)) / SR) * np.exp(-tt_ / 0.08)
+    bus.place(bloop, drop, 0.4, wet=0.5)
+    sw = sfx.strings([midi(57), midi(64), midi(69), midi(73)], fr(HIT) - 0.1, lambda u: u ** 2, 400, 2200, release=0.08, seed=61)
+    bus.place2(sw, b + 0.3, 0.2, wet=0.6)
+    bus.place(M.huehuetl(1.0, 1.1, seed=6), hit, 0.6, wet=0.3)
+    bus.place(sfx.boom(6), hit, 0.75, wet=0.35)
+    for j, m in enumerate([69, 73, 76, 81, 85]):
+        bus.place(sfx.marimba(midi(m), 1.8), hit + 0.04 * j, 0.24, -0.4 + 0.2 * j, wet=0.6)
+    bus.place(M.pluck(midi(33), 2.0, 0.4, 0.998, 1.0, seed=666), hit, 0.3, wet=0.3)
+    return b + fr(REV)
+
+
+def cap5(bus):
+    S1, S2, S3, REV, HIT = 108, 120, 72, 126, 64
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, a, drone=0.12, wind=0.25, seed=5)
+    sc = M.scale(64, 'mixolidio')
+    beat = 60 / 126
+    # humo: destellos de caja musical que suben mientras las piezas llegan volando
+    for k in range(12):
+        bus.place(M.musicbox(midi(sc(k % 9 + 1)), 1.4, 0.6 + 0.03 * k), 0.4 + k * 0.24, 0.08, -0.6 + (k % 6) * 0.24, wet=1.2)
+    for k in range(6):
+        at = fr(30) + (k * 0.08) * fr(70)
+        bus.place(whoosh(0.7, 400, 5000, seed=500 + k), at, 0.16, -0.7 + 0.28 * k, wet=0.5)
+    bus.place(M.choir([midi(52), midi(59), midi(64), midi(68)], a + 0.4, 'o', 0.5, seed=5), 0.2, 0.08, wet=0.9)
+    # retrato + vuelo: el alebrije cobra vida con un groove alegre
+    prog = [[40, 52, 56, 59], [38, 50, 54, 57], [45, 52, 57, 61], [40, 52, 56, 62]]
+    tt, k = a, 0
+    while tt < c - 0.05:
+        ch = prog[(k // 4) % 4]
+        if k % 4 == 0:
+            bus.place(M.huehuetl(0.6, 1.3, seed=k), tt, 0.3, wet=0.25)
+        if k % 2 == 0:
+            bus.place(M.pluck(midi(ch[0]), 0.5, 0.45, 0.994, 0.9, seed=k), tt, 0.26, -0.15, wet=0.2)
+        else:
+            for j, m in enumerate(ch[1:]):
+                bus.place(sfx.marimba(midi(m), 0.4, seed=k * 3 + j), tt + 0.004 * j, 0.08, 0.3, wet=0.35)
+        bus.place(M.teponaztli(880 if k % 2 else 660, 0.5, seed=k), tt + beat * 0.5, 0.08, 0.45, wet=0.3)
+        bus.place(M.sonaja(0.6, seed=k), tt + beat * 0.75, 0.07, -0.45)
+        tt += beat
+        k += 1
+    mel = [(4, 1), (5, 0.5), (4, 0.5), (2, 1), (0, 1), (2, 0.5), (4, 0.5), (6, 1.5), (7, 0.5)]
+    tt = a + beat * 2
+    for j, (dg, d) in enumerate(mel):
+        bus.place(M.flute(midi(sc(dg) + 12), d * beat * 0.95, 0.85, seed=50 + j), tt, 0.17, 0.1, wet=0.8)
+        tt += d * beat
+    # vuelo: aleteos y escala de flauta que se eleva
+    flap = 1 / (1.4 * 1.8)
+    t2 = b
+    while t2 < c - 0.1:
+        bus.place(whoosh(flap * 0.8, 200, 1800, seed=int(t2 * 100)), t2, 0.12, 0.0, wet=0.3)
+        t2 += flap
+    for j in range(10):
+        bus.place(M.flute(midi(sc(j + 4) + 12), 0.2, 0.8, seed=80 + j), b + 0.1 + j * 0.2, 0.15, -0.5 + j * 0.1, wet=0.9)
+    bus.place(whoosh(1.0, 300, 6000, seed=599), c - 0.7, 0.2, 0.4, wet=0.5)
+    # número: cada pincelada es un barrido y una nota que sube
+    for i in range(7):
+        at = c + fr(6 + i * 7)
+        bus.place(whoosh(0.35, 800, 7000, seed=610 + i), at, 0.12, -0.5 + i * 0.16, wet=0.4)
+        bus.place(sfx.marimba(midi(sc(i + 2) + 12), 1.0, seed=620 + i), at + 0.03, 0.18, -0.5 + i * 0.16, wet=0.6)
+    sw = sfx.strings([midi(52), midi(59), midi(64), midi(68)], fr(HIT) - 0.1, lambda u: u ** 2, 400, 2600, release=0.08, seed=51)
+    bus.place2(sw, c + 0.2, 0.2, wet=0.6)
+    bus.place(M.huehuetl(1.0, 1.0, seed=55), hit, 0.6, wet=0.3)
+    bus.place(sfx.boom(5), hit, 0.75, wet=0.35)
+    bus.place(M.strum([midi(m) for m in (40, 47, 52, 56, 59, 64)], 2.4, 0.02, 0.6, 0.9, seed=56), hit, 0.3, wet=0.4)
+    for j, m in enumerate([64, 68, 71, 74, 76]):
+        bus.place(sfx.marimba(midi(m + 12), 1.6, seed=630 + j), hit + 0.05 * j, 0.2, -0.4 + 0.2 * j, wet=0.6)
+    bus.place(M.chirp(57, 3), hit + 0.4, 0.06, 0.5, wet=0.6)
+    return c + fr(REV)
+
+
+SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5}
 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156}
+    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)

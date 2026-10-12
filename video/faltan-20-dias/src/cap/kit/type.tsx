@@ -119,7 +119,8 @@ export const NumberRise: React.FC<{f: number; at: number; dias: number}> = ({f, 
 	return <GoldNumber txt={String(dias)} o={clamp(p * 1.4)} blur={(1 - clamp(p)) * 14} scale={lerp(0.86, 1, p)} style={{transform: `translateY(${(1 - p) * 40}px) scale(${lerp(0.86, 1, p)})`}} />;
 };
 
-export const Lockup: React.FC<{f: number; at: number; dias: number; fecha: string; top?: number; bottom?: number}> = ({f, at, dias, fecha, top = 400, bottom = 1150}) => {
+export const Lockup: React.FC<{f: number; at: number; dias: number; fecha: string; top?: number; bottom?: number; tone?: 'light' | 'dark'}> = ({f, at, dias, fecha, top = 400, bottom = 1150, tone = 'light'}) => {
+	const dark = tone === 'dark';
 	const word = (txt: string, y: number, size: number, start: number, color: string, track: number) => (
 		<div style={{position: 'absolute', left: 0, width: W, top: y, textAlign: 'center', fontFamily: 'Rye', fontSize: size, color, letterSpacing: `${track}em`, paddingLeft: `${track}em`}}>
 			{Array.from(txt).map((ch, i) => {
@@ -132,7 +133,7 @@ export const Lockup: React.FC<{f: number; at: number; dias: number; fecha: strin
 							opacity: clamp(p * 1.3),
 							transform: `translateY(${(1 - p) * 30}px) rotate(${(1 - p) * (i % 2 ? 8 : -8)}deg)`,
 							filter: p < 0.98 ? `blur(${(1 - clamp(p)) * 8}px)` : undefined,
-							textShadow: `0 0 20px ${rgba(C.cempa, 0.5)}, 0 2px 8px rgba(0,0,0,0.85)`,
+							textShadow: dark ? `0 1px 0 ${rgba('#FFF6E6', 0.6)}` : `0 0 20px ${rgba(C.cempa, 0.5)}, 0 2px 8px rgba(0,0,0,0.85)`,
 						}}
 					>
 						{ch}
@@ -145,12 +146,12 @@ export const Lockup: React.FC<{f: number; at: number; dias: number; fecha: strin
 	const pd = E.out(clamp((f - at - 22) / 20));
 	return (
 		<>
-			{word(dias === 1 ? 'FALTA' : 'FALTAN', top, 66, at - 4, C.arena, 0.26)}
-			{word(dias === 1 ? 'DÍA' : 'DÍAS', bottom, 100, at + 2, C.marfil, 0.12)}
+			{word(dias === 1 ? 'FALTA' : 'FALTAN', top, 66, at - 4, dark ? '#6a3014' : C.arena, 0.26)}
+			{word(dias === 1 ? 'DÍA' : 'DÍAS', bottom, 100, at + 2, dark ? '#3a1a0c' : C.marfil, 0.12)}
 			<div style={{position: 'absolute', left: 0, width: W, top: bottom + 132, display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22}}>
-				<div style={{width: 110 * pl, height: 1.5, background: `linear-gradient(90deg, transparent, ${rgba(C.arena, 0.8)})`}} />
-				<div style={{fontFamily: 'Alike', fontSize: 42, letterSpacing: '0.18em', color: C.arena, opacity: pd, transform: `translateY(${(1 - pd) * 10}px)`, textShadow: '0 2px 10px rgba(0,0,0,0.9)'}}>{fecha}</div>
-				<div style={{width: 110 * pl, height: 1.5, background: `linear-gradient(270deg, transparent, ${rgba(C.arena, 0.8)})`}} />
+				<div style={{width: 110 * pl, height: 1.5, background: `linear-gradient(90deg, transparent, ${rgba(dark ? '#6a3014' : C.arena, 0.8)})`}} />
+				<div style={{fontFamily: 'Alike', fontSize: 42, letterSpacing: '0.18em', color: dark ? '#6a3014' : C.arena, opacity: pd, transform: `translateY(${(1 - pd) * 10}px)`, textShadow: dark ? 'none' : '0 2px 10px rgba(0,0,0,0.9)'}}>{fecha}</div>
+				<div style={{width: 110 * pl, height: 1.5, background: `linear-gradient(270deg, transparent, ${rgba(dark ? '#6a3014' : C.arena, 0.8)})`}} />
 			</div>
 		</>
 	);
