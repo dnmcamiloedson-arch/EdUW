@@ -4,225 +4,298 @@ import {C, E, FPS, H, W, clamp, flicker, hash, lerp, ramp, rgba} from '../lib/ut
 import {Flame, Light, PaperTexture, useCanvasDraw} from '../components/core';
 import {Embers, PETAL_LAYERS, PetalRain} from '../components/Particles';
 import {useGlyph} from '../countdown/reveals';
-import {Fog, Orb, Ridge, Sky, WaterReflect} from './kit/land';
+import {Orb, Sky} from './kit/land';
 import {Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {Dip, LightLeak} from './kit/transitions';
+import {Camera, Mountain, Range, Stage3D, THREE, makeProjector, project} from './kit/three';
 
 // Capítulo 4 · "El panteón" — la noche de velación: canoas en el lago, tumbas florecidas
 // y, vistas desde el cielo, miles de velas que dibujan el número.
 export const C04 = {S1: 120, S2: 108, S3: 72, REV: 132, HIT: 70};
 export const C04_LEN = C04.S1 + C04.S2 + C04.S3 + C04.REV;
 
-const HORIZON = 1150;
+// ---------- Utilería 3D del capítulo ----------
+// red de mariposa: textura de malla con transparencia
+let redTex: THREE.CanvasTexture | null = null;
+const getRedTex = () => {
+	if (redTex) return redTex;
+	const cv = document.createElement('canvas');
+	cv.width = 256;
+	cv.height = 128;
+	const g = cv.getContext('2d')!;
+	g.strokeStyle = 'rgba(210,190,170,0.9)';
+	g.lineWidth = 2;
+	for (let x = 0; x <= 256; x += 14) {
+		g.beginPath();
+		g.moveTo(x, 0);
+		g.lineTo(x, 128);
+		g.stroke();
+	}
+	for (let y = 0; y <= 128; y += 14) {
+		g.beginPath();
+		g.moveTo(0, y);
+		g.lineTo(256, y);
+		g.stroke();
+	}
+	g.lineWidth = 5;
+	g.strokeRect(2, 2, 252, 124);
+	redTex = new THREE.CanvasTexture(cv);
+	return redTex;
+};
 
-// ---------- Canoa con red de mariposa y vela ----------
-const Canoa: React.FC<{x: number; y: number; s: number; t: number; seed: number; net?: boolean}> = ({x, y, s, t, seed, net = true}) => {
-	const bob = Math.sin(t * 1.4 + seed) * 3;
-	const tilt = Math.sin(t * 1.1 + seed * 2) * 1.5;
-	const fl = flicker(t, 40 + seed);
-	const body = (
-		<g>
-			<path d="M -150 0 C -120 18 120 18 160 -4 L 150 -14 C 90 -6 -100 -6 -160 -12 Z" fill="#0b0607" />
-			<path d="M -150 -12 C -100 -6 90 -6 150 -14" stroke={C.flama} strokeWidth={3} opacity={0.85 * fl} fill="none" vectorEffect="non-scaling-stroke" />
-			{/* remero */}
-			<path d="M -70 -10 L -72 -70 C -74 -88 -56 -92 -54 -74 L -50 -10 Z" fill="#0b0607" />
-			<circle cx={-62} cy={-98} r={13} fill="#0b0607" />
-			<path d="M -60 -60 L 10 40" stroke="#0b0607" strokeWidth={5} />
+// Canoa purépecha con pescador, red de mariposa y veladora en la proa
+const Canoa3D: React.FC<{pos: [number, number, number]; rotY?: number; t: number; seed: number; net?: boolean}> = ({pos, rotY = 0, t, seed, net = true}) => {
+	const bob = Math.sin(t * 1.4 + seed) * 0.04;
+	return (
+		<group position={[pos[0], pos[1] + bob, pos[2]]} rotation={[Math.sin(t + seed) * 0.03, rotY, Math.sin(t * 1.1 + seed * 2) * 0.03]}>
+			<mesh scale={[2.4, 0.35, 0.5]} rotation={[Math.PI, 0, 0]} castShadow>
+				<sphereGeometry args={[1, 24, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+				<meshStandardMaterial color="#2a1a12" roughness={0.8} side={THREE.DoubleSide} />
+			</mesh>
+			{/* pescador de pie con su remo */}
+			<mesh position={[-0.9, 0.6, 0]} castShadow>
+				<capsuleGeometry args={[0.16, 0.7, 4, 8]} />
+				<meshStandardMaterial color="#120c0c" roughness={0.8} />
+			</mesh>
+			<mesh position={[-0.9, 1.2, 0]} castShadow>
+				<sphereGeometry args={[0.14, 10, 8]} />
+				<meshStandardMaterial color="#120c0c" roughness={0.8} />
+			</mesh>
+			<mesh position={[-0.6, 0.4, 0.2]} rotation={[0.3, 0, -0.6]} castShadow>
+				<cylinderGeometry args={[0.025, 0.025, 2.2, 6]} />
+				<meshStandardMaterial color="#1a120c" roughness={0.8} />
+			</mesh>
 			{net ? (
-				<g transform={`translate(40 -12) rotate(${-8 + Math.sin(t * 0.9 + seed) * 3})`}>
-					<path d="M 0 0 L 0 -150" stroke="#0b0607" strokeWidth={4} />
+				<group position={[0.5, 0.2, 0]} rotation={[0, 0, -0.12 + Math.sin(t * 0.9 + seed) * 0.05]}>
+					<mesh position={[0, 0.9, 0]}>
+						<cylinderGeometry args={[0.025, 0.025, 1.8, 6]} />
+						<meshStandardMaterial color="#1a120c" />
+					</mesh>
 					{[-1, 1].map((sd) => (
-						<g key={sd}>
-							<path d={`M 0 -150 C ${sd * 30} -200 ${sd * 140} -190 ${sd * 140} -90 C ${sd * 140} -30 ${sd * 40} -10 0 -10`} fill={rgba('#1a1210', 0.55)} stroke="#0b0607" strokeWidth={3} />
-							{Array.from({length: 6}).map((_, i) => (
-								<path key={i} d={`M 0 ${-140 + i * 22} Q ${sd * 80} ${-150 + i * 14} ${sd * 136} ${-110 + i * 12}`} stroke={rgba(C.arena, 0.35)} strokeWidth={1} fill="none" vectorEffect="non-scaling-stroke" />
-							))}
-						</g>
+						<mesh key={sd} position={[0, 1.5, 0]} rotation={[0, sd > 0 ? 0.25 : Math.PI - 0.25, 0]}>
+							<circleGeometry args={[1.0, 24, -Math.PI / 2, Math.PI]} />
+							<meshStandardMaterial map={getRedTex()} transparent alphaTest={0.3} side={THREE.DoubleSide} color="#d8c8b8" roughness={1} />
+						</mesh>
 					))}
-				</g>
+				</group>
 			) : null}
 			{/* veladora en la proa */}
-			<rect x={100} y={-30} width={18} height={20} rx={2} fill={C.cempa} opacity={0.9} />
-		</g>
-	);
-	return (
-		<>
-			{/* contraluz: el agua brilla detrás de la canoa */}
-			<Light x={x - 10 * s} y={y - 60 * s} r={330 * s} sy={0.55} color={C.arena} o={0.32} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-				{/* reflejo */}
-				<g transform={`translate(${x} ${y + 6}) scale(${s} ${-s * 0.8}) rotate(${tilt})`} opacity={0.14} style={{filter: 'blur(4px)'}}>
-					{body}
-				</g>
-				<g transform={`translate(${x} ${y + bob}) scale(${s}) rotate(${tilt})`}>{body}</g>
-			</svg>
-			<Light x={x + 109 * s} y={y + bob - 34 * s} r={260 * s} color={C.flama} o={0.55 * fl} />
-			<Light x={x + 109 * s} y={y + 40 * s} r={150 * s} sy={0.3} color={C.cempa} o={0.5 * fl} />
-			<Flame x={x + 109 * s} y={y + bob - 30 * s} size={50 * s} t={t} seed={70 + seed} fl={fl} />
-		</>
+			<mesh position={[1.9, 0.12, 0]}>
+				<cylinderGeometry args={[0.08, 0.08, 0.18, 10]} />
+				<meshStandardMaterial color={C.cempa} emissive={C.cempa} emissiveIntensity={0.6} />
+			</mesh>
+		</group>
 	);
 };
+const proaDe = (pos: [number, number, number], rotY: number): [number, number, number] => [pos[0] + Math.cos(rotY) * 1.9, pos[1] + 0.32, pos[2] - Math.sin(rotY) * 1.9];
 
-// Isla con su panteón encendido
-const Isla: React.FC<{t: number}> = ({t}) => {
-	const d = `M 120 ${HORIZON + 4} C 260 ${HORIZON - 60} 360 ${HORIZON - 230} 520 ${HORIZON - 270} C 640 ${HORIZON - 250} 760 ${HORIZON - 120} 960 ${HORIZON + 4} Z`;
-	const ref = useCanvasDraw(
-		(ctx) => {
-			ctx.globalCompositeOperation = 'lighter';
-			for (let i = 0; i < 160; i++) {
-				const u = hash(i, 1);
-				const x = lerp(220, 880, u);
-				const top = HORIZON - 260 * Math.sin(Math.PI * clamp((x - 120) / 840)) ** 1.4;
-				const y = lerp(top + 20, HORIZON - 6, hash(i, 2) ** 0.7);
-				const a = 0.5 + 0.5 * Math.sin(t * (3 + hash(i, 3) * 4) + i);
-				const g = ctx.createRadialGradient(x, y, 0, x, y, 9);
-				g.addColorStop(0, rgba('#FFE7B0', 0.9 * a));
-				g.addColorStop(1, rgba(C.cempa, 0));
-				ctx.fillStyle = g;
-				ctx.fillRect(x - 9, y - 9, 18, 18);
-			}
-		},
-		[t],
-	);
-	return (
-		<>
-			<Light x={540} y={HORIZON - 120} r={520} sy={0.5} color={C.cempa} o={0.45} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				<path d={d} fill="#0a0507" />
-				<path d={d} fill="none" stroke={C.flama} strokeWidth={2} opacity={0.35} />
-			</svg>
-			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-		</>
-	);
-};
+// Lápida con cruz y arco de cempasúchil
+const TUMBAS3D = Array.from({length: 14}).map((_, i) => ({x: (i % 4) * 3.4 - 5.1 + ((Math.floor(i / 4) % 2) * 1.7), z: -Math.floor(i / 4) * 3.6 + 1, seed: i, rot: (hash(i, 7) - 0.5) * 0.25}));
+const lapidaGeo = (() => {
+	const sh = new THREE.Shape();
+	sh.moveTo(-0.55, 0);
+	sh.lineTo(-0.55, 0.9);
+	sh.absarc(0, 0.9, 0.55, Math.PI, 0, true);
+	sh.lineTo(0.55, 0);
+	sh.closePath();
+	return new THREE.ExtrudeGeometry(sh, {depth: 0.18, bevelEnabled: true, bevelSize: 0.03, bevelThickness: 0.03, bevelSegments: 2});
+})();
+const Tumba3D: React.FC<{x: number; z: number; rot: number; seed: number}> = ({x, z, rot, seed}) => (
+	<group position={[x, 0, z]} rotation={[0, rot, 0]}>
+		{/* montículo con pétalos */}
+		<mesh position={[0, 0.12, 0.8]} scale={[0.75, 0.22, 1.2]} castShadow receiveShadow>
+			<sphereGeometry args={[1, 16, 10, 0, Math.PI * 2, 0, Math.PI / 2]} />
+			<meshStandardMaterial color="#2a1608" roughness={1} />
+		</mesh>
+		{Array.from({length: 30}).map((_, i) => (
+			<mesh key={i} position={[(hash(i, seed) - 0.5) * 1.2, 0.2 + hash(i, seed + 1) * 0.06, 0.8 + (hash(i, seed + 2) - 0.5) * 2]}>
+				<sphereGeometry args={[0.06, 6, 4]} />
+				<meshStandardMaterial color={i % 2 ? C.cempa : C.terracota} emissive={C.cempa} emissiveIntensity={0.15} />
+			</mesh>
+		))}
+		<mesh geometry={lapidaGeo} position={[0, 0, -0.2]} castShadow receiveShadow>
+			<meshStandardMaterial color="#4a3a32" roughness={0.95} />
+		</mesh>
+		<mesh position={[0, 0.95, 0.02]}>
+			<boxGeometry args={[0.1, 0.6, 0.04]} />
+			<meshStandardMaterial color="#2a1e18" />
+		</mesh>
+		<mesh position={[0, 1.1, 0.02]}>
+			<boxGeometry args={[0.36, 0.1, 0.04]} />
+			<meshStandardMaterial color="#2a1e18" />
+		</mesh>
+		{/* arco de flores */}
+		{Array.from({length: 30}).map((_, i) => {
+			const a = Math.PI * (i / 29);
+			return (
+				<mesh key={'a' + i} position={[-Math.cos(a) * 0.95, 0.3 + Math.sin(a) * 1.6, 0.05]}>
+					<icosahedronGeometry args={[0.085, 0]} />
+					<meshStandardMaterial color={i % 3 ? C.cempa : C.flama} roughness={0.8} emissive={C.cempa} emissiveIntensity={0.2} flatShading />
+				</mesh>
+			);
+		})}
+		{/* veladoras */}
+		{[-0.55, -0.2, 0.2, 0.55].map((vx, i) => (
+			<mesh key={'v' + i} position={[vx, 0.1, 0.3 + (i % 2) * 0.12]}>
+				<cylinderGeometry args={[0.06, 0.06, 0.18, 8]} />
+				<meshStandardMaterial color={i % 2 ? C.cempa : C.terracota} emissive={C.cempa} emissiveIntensity={0.7} />
+			</mesh>
+		))}
+	</group>
+);
 
+// ---------- 1 · El lago y la isla ----------
+const ISLA_LUCES = Array.from({length: 170}).map((_, i) => {
+	const a = hash(i, 1) * Math.PI * 2;
+	const r = Math.sqrt(hash(i, 2)) * 15;
+	const h = 10 * Math.max(0, 1 - r / 16) * 0.95;
+	return [Math.cos(a) * r, h + 0.3, -80 + Math.sin(a) * r * 0.6] as [number, number, number];
+});
+const CANOAS = [
+	{p: [-3, 0, -14] as [number, number, number], rot: 0.15, net: true, v: 0.5},
+	{p: [3.5, 0, -6] as [number, number, number], rot: -0.25, net: true, v: 0.35},
+	{p: [4.5, 0, 1.5] as [number, number, number], rot: 0.35, net: false, v: 0.25},
+];
 const Lago: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
+	const u = E.inOut(clamp(f / C04.S1));
+	const cam: [number, number, number] = [lerp(-2, 1, u), 3.2, lerp(16, 12, u)];
+	const look: [number, number, number] = [0, 3.6, -40];
+	const canoas = CANOAS.map((c, i) => ({...c, p: [c.p[0] - t * c.v + 2, c.p[1], c.p[2]] as [number, number, number], i}));
 	const above = (
 		<>
-			<Sky t={t} top="#05030a" mid="#120a16" horizon="#2a1410" hy={HORIZON} stars={160} />
-			<Orb x={700} y={640} r={38} color="#F3E3C0" core="#FFFBEF" halo={4} o={0.9} />
-			<Ridge seed={41} y={HORIZON} amp={120} color="#120a10" rim={C.arena} rimO={0.15} />
-			<Isla t={t} />
+			<Range z={-150} x0={-160} x1={160} n={12} r={30} h={22} color="#120a10" seed={41} />
+			<Mountain pos={[0, 0, -80]} r={16} h={10} color="#140a0c" seed={44} rough={0.12} scaleZ={0.7} />
+			{canoas.map((c) => (
+				<Canoa3D key={c.i} pos={c.p} rotY={c.rot} t={t} seed={c.i + 1} net={c.net} />
+			))}
 		</>
+	);
+	const P = makeProjector(cam, look, 45);
+	const ref = useCanvasDraw(
+		(ctx) => {
+			ctx.globalCompositeOperation = 'lighter';
+			ISLA_LUCES.forEach(([x, y, z], i) => {
+				for (const yy of [y, -y]) {
+					const p = P(x, yy, z);
+					if (!p.ok) continue;
+					const a = (0.5 + 0.5 * Math.sin(t * (3 + hash(i, 3) * 4) + i)) * (yy < 0 ? 0.3 : 0.9);
+					const r = 5 + 2 * hash(i, 4);
+					const gr = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, r * 2);
+					gr.addColorStop(0, rgba('#FFE7B0', a));
+					gr.addColorStop(1, rgba(C.cempa, 0));
+					ctx.fillStyle = gr;
+					ctx.fillRect(p.x - r * 2, p.y - r * 2, r * 4, r * 4);
+				}
+			});
+		},
+		[f],
 	);
 	return (
 		<AbsoluteFill>
-			{above}
-			<WaterReflect y={HORIZON} t={t} o={0.5}>
+			<Sky t={t} top="#05030a" mid="#120a16" horizon="#2a1410" hy={1100} stars={160} />
+			<Orb x={700} y={560} r={38} color="#F3E3C0" core="#FFFBEF" halo={4} o={0.9} />
+			<Stage3D fov={45}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#140c12', 30, 220]} />
+				<hemisphereLight args={['#6a5a80', '#0a0608', 0.4]} />
+				<directionalLight position={[40, 50, -150]} intensity={1.6} color="#e0d8f0" />
+				<pointLight position={[0, 10, -78]} intensity={900} distance={50} color={C.cempa} />
+				{canoas.map((c) => {
+					const q = proaDe(c.p, c.rot);
+					return <pointLight key={c.i} position={[q[0], q[1] + 0.4, q[2]]} intensity={8} distance={6} color={C.flama} />;
+				})}
 				{above}
-			</WaterReflect>
-			<Fog y={HORIZON} h={160} color={C.arena} o={0.12} />
-			<Light x={700} y={HORIZON + 380} r={700} sy={0.45} color="#9a8aa8" o={0.22} />
+				<group scale={[1, -1, 1]}>{above}</group>
+				<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.01, -60]}>
+					<planeGeometry args={[600, 200]} />
+					<meshBasicMaterial color="#06050a" transparent opacity={0.68} />
+				</mesh>
+			</Stage3D>
+			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
+			{/* camino de luna y llamas de las canoas */}
 			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				{Array.from({length: 46}).map((_, i) => {
-					const y = HORIZON + 8 + i * i * 0.36;
-					const w = 20 + i * 4.2 * (0.6 + 0.4 * Math.sin(t * 2.2 + i * 1.7));
-					return <rect key={i} x={700 - w / 2 + Math.sin(t * 1.3 + i) * 10} y={y} width={w} height={2 + i * 0.08} rx={2} fill="#FFF3D6" opacity={0.5 - i * 0.008} />;
+				{Array.from({length: 40}).map((_, i) => {
+					const y = P(0, 0, -100).y + 6 + i * i * 0.45;
+					const w = 20 + i * 4.5 * (0.6 + 0.4 * Math.sin(t * 2.2 + i * 1.7));
+					return <rect key={i} x={700 - w / 2 + Math.sin(t * 1.3 + i) * 10} y={y} width={w} height={2 + i * 0.08} rx={2} fill="#FFF3D6" opacity={0.42 - i * 0.009} />;
 				})}
 			</svg>
-			<Canoa x={lerp(1250, 160, t / 9)} y={HORIZON + 70} s={0.42} t={t} seed={1} />
-			<Canoa x={lerp(-260, 640, E.out(clamp(t / 4.2)))} y={HORIZON + 250} s={1.0} t={t} seed={2} />
-			<Canoa x={lerp(1450, 820, E.out(clamp((t - 0.6) / 3.6)))} y={HORIZON + 560} s={1.5} t={t} seed={3} net={false} />
+			{canoas.map((c) => {
+				const q = proaDe(c.p, c.rot);
+				const p = P(q[0], q[1], q[2]);
+				const fl = flicker(t, 40 + c.i);
+				return (
+					<React.Fragment key={c.i}>
+						<Light x={p.x} y={p.y} r={2200 / p.d} color={C.flama} o={0.5 * fl} />
+						<Flame x={p.x} y={p.y} size={900 / p.d} t={t} seed={70 + c.i} fl={fl} wick={false} />
+					</React.Fragment>
+				);
+			})}
 			<PaperTexture o={0.14} />
 			<Kinetic text={'En la isla, esta noche\nnadie duerme.'} f={f} at={14} out={104} y={330} size={50} scrim={0.55} />
 		</AbsoluteFill>
 	);
 };
 
-// ---------- Panteón: tumbas con arcos de cempasúchil ----------
-type Tumba = {x: number; y: number; s: number; seed: number};
-const TUMBAS: Tumba[] = [
-	{x: 230, y: 1080, s: 0.55, seed: 1},
-	{x: 560, y: 1060, s: 0.5, seed: 2},
-	{x: 880, y: 1090, s: 0.55, seed: 3},
-	{x: 110, y: 1330, s: 0.8, seed: 4},
-	{x: 760, y: 1320, s: 0.82, seed: 5},
-	{x: 420, y: 1620, s: 1.15, seed: 6},
-];
-
-const Arco: React.FC<{s: number; seed: number}> = ({s, seed}) => {
-	const n = 22;
-	return (
-		<g>
-			{Array.from({length: n}).map((_, i) => {
-				const a = Math.PI * (i / (n - 1));
-				const x = -Math.cos(a) * 150;
-				const y = -60 - Math.sin(a) * 210;
-				const r = 15 + 4 * hash(i, seed);
-				return (
-					<g key={i}>
-						<circle cx={x} cy={y} r={r} fill={i % 3 ? C.cempa : C.flama} />
-						<circle cx={x} cy={y} r={r * 0.55} fill="#c2481f" opacity={0.6} />
-						<circle cx={x - r * 0.3} cy={y - r * 0.3} r={r * 0.3} fill="#FFD9A0" opacity={0.35} />
-					</g>
-				);
-			})}
-			{void s}
-		</g>
-	);
-};
-
-const Tumbas: React.FC<{t: number}> = ({t}) => (
-	<>
-		{TUMBAS.map((tb) => {
-			const fl = flicker(t, 90 + tb.seed);
-			return (
-				<React.Fragment key={tb.seed}>
-					<Light x={tb.x} y={tb.y - 40 * tb.s} r={420 * tb.s} color={C.flama} o={0.5 * fl} />
-					<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-						<g transform={`translate(${tb.x} ${tb.y}) scale(${tb.s})`}>
-							{/* lápida */}
-							<path d="M -80 0 L -80 -150 C -80 -210 80 -210 80 -150 L 80 0 Z" fill="#2a1d18" stroke="#120a08" strokeWidth={4} />
-							<path d="M -80 -150 C -80 -210 80 -210 80 -150" stroke={C.flama} strokeWidth={3} fill="none" opacity={0.35 * fl} />
-							<path d="M 0 -170 L 0 -90 M -26 -146 L 26 -146" stroke="#5a4438" strokeWidth={8} strokeLinecap="round" />
-							{/* montículo de tierra cubierto de pétalos */}
-							<path d="M -170 10 C -150 -30 150 -30 170 10 C 120 40 -120 40 -170 10 Z" fill="#1a0f0a" />
-							{Array.from({length: 26}).map((_, i) => (
-								<circle key={i} cx={-150 + hash(i, tb.seed) * 300} cy={-10 + hash(i, tb.seed + 9) * 26} r={5} fill={i % 2 ? C.cempa : C.terracota} opacity={0.85} />
-							))}
-							<Arco s={tb.s} seed={tb.seed} />
-							{/* veladoras */}
-							{[-120, -60, 60, 120].map((vx, i) => (
-								<rect key={i} x={vx - 12} y={-22 + (i % 2) * 12} width={24} height={32} rx={3} fill={i % 2 ? C.cempa : C.terracota} opacity={0.9} />
-							))}
-						</g>
-					</svg>
-					{[-120, -60, 60, 120].map((vx, i) => (
-						<Flame key={i} x={tb.x + vx * tb.s} y={tb.y + (-22 + (i % 2) * 12) * tb.s} size={34 * tb.s} t={t} seed={tb.seed * 10 + i} fl={fl} wick={tb.s > 0.9} />
-					))}
-				</React.Fragment>
-			);
-		})}
-	</>
-);
-
-// silueta de quien vela, sentada con rebozo
-const Veladora: React.FC<{x: number; y: number; s: number; t: number}> = ({x, y, s, t}) => (
-	<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-		<g transform={`translate(${x} ${y}) scale(${s})`}>
-			<path d={`M -70 0 C -80 -90 -60 -170 -10 -200 C -30 -230 -10 -268 18 -262 C 46 -256 50 -220 34 -200 C 80 -170 92 -80 80 0 Z`} fill="#070304" transform={`rotate(${Math.sin(t * 0.8) * 1.2})`} />
-			<path d="M -10 -200 C 30 -214 60 -190 76 -140" stroke={C.flama} strokeWidth={2.5} fill="none" opacity={0.5} vectorEffect="non-scaling-stroke" />
-		</g>
-	</svg>
-);
-
+// ---------- 2 · El panteón ----------
 const Panteon: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 4;
-	const z = ramp(f, [0, C04.S2], [1, 1.1], E.inOut);
-	const px = ramp(f, [0, C04.S2], [30, -30], E.inOut);
+	const u = E.inOut(clamp(f / C04.S2));
+	const cam: [number, number, number] = [lerp(-1.2, 1.0, u), 2.4, lerp(7.5, 5.2, u)];
+	const look: [number, number, number] = [0, 1.0, -4];
+	const P = makeProjector(cam, look, 48);
+	const llamas: {x: number; y: number; d: number; k: number}[] = [];
+	TUMBAS3D.forEach((tb) => {
+		[-0.55, -0.2, 0.2, 0.55].forEach((vx, i) => {
+			const cx = Math.cos(tb.rot);
+			const sx = Math.sin(tb.rot);
+			const lx = vx;
+			const lz = 0.3 + (i % 2) * 0.12;
+			const p = P(tb.x + lx * cx + lz * sx, 0.2, tb.z - lx * sx + lz * cx);
+			if (p.ok && p.d < 16) llamas.push({x: p.x, y: p.y, d: p.d, k: tb.seed * 10 + i});
+		});
+	});
+	const fl = flicker(t, 90);
 	return (
 		<AbsoluteFill style={{background: 'linear-gradient(180deg, #05030a 0%, #140a10 45%, #1d0e08 60%, #0d0604 100%)'}}>
-			<AbsoluteFill style={{transform: `translateX(${px}px) scale(${z})`, transformOrigin: '50% 60%'}}>
-				<Sky t={t} top="#05030a" mid="#100812" horizon="#24110c" hy={980} stars={90} />
-				<Ridge seed={44} y={990} amp={70} color="#0d0709" />
-				<Fog y={1000} h={260} color={C.cempa} o={0.16} />
-				<Tumbas t={t} />
-				<Veladora x={640} y={1700} s={1.15} t={t} />
-				<Embers t={t} n={46} L={0.8} seed={44} src={[100, 1200, 880, 600]} />
-			</AbsoluteFill>
+			<Sky t={t} top="#05030a" mid="#100812" horizon="#24110c" hy={900} stars={90} />
+			<Stage3D fov={48}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#1a0c08', 6, 26]} />
+				<hemisphereLight args={['#6a5a80', '#0a0608', 0.35]} />
+				<directionalLight position={[10, 14, -10]} intensity={0.7} color="#c8c0e0" />
+				{TUMBAS3D.slice(0, 8).map((tb) => (
+					<pointLight key={tb.seed} position={[tb.x, 0.6, tb.z + 0.6]} intensity={3 * fl} distance={5} color={C.cempa} />
+				))}
+				<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+					<planeGeometry args={[60, 60]} />
+					<meshStandardMaterial color="#160c06" roughness={1} />
+				</mesh>
+				{TUMBAS3D.map((tb) => (
+					<Tumba3D key={tb.seed} {...tb} />
+				))}
+				{/* quien vela, de rodillas, con rebozo */}
+				<group position={[1.4, 0, 2.6]} rotation={[0, -0.6, 0]}>
+					<mesh position={[0, 0.45, 0]} scale={[1, 1, 0.8]} castShadow>
+						<coneGeometry args={[0.45, 1.1, 14]} />
+						<meshStandardMaterial color="#0c0808" roughness={1} />
+					</mesh>
+					<mesh position={[0, 1.08, 0]} castShadow>
+						<sphereGeometry args={[0.17, 12, 10]} />
+						<meshStandardMaterial color="#0c0808" roughness={1} />
+					</mesh>
+				</group>
+			</Stage3D>
+			{llamas.map((l) => (
+				<React.Fragment key={l.k}>
+					<Light x={l.x} y={l.y} r={900 / l.d} color={C.flama} o={0.35 * fl} />
+					<Flame x={l.x} y={l.y} size={300 / l.d} t={t + l.k * 0.3} seed={l.k} fl={fl} wick={false} />
+				</React.Fragment>
+			))}
+			<Embers t={t} n={40} L={0.7} seed={44} src={[100, 1000, 880, 600]} />
 			<PetalRain t={t} layer={PETAL_LAYERS[2] ?? PETAL_LAYERS[0]} light={{x: 540, y: 1300, sigma: 700, L: 0.9}} fade={0.7} />
 			<PaperTexture o={0.14} />
 			<Kinetic text={'Se vela con flores,\ncon luz y con canto.'} f={f} at={10} out={94} y={330} size={50} scrim={0.6} />
@@ -230,61 +303,137 @@ const Panteon: React.FC = () => {
 	);
 };
 
-// ---------- Una vela enciende a otra ----------
-const Vela: React.FC<{x: number; y: number; h: number; rot?: number}> = ({x, y, h, rot = 0}) => (
-	<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-		<defs>
-			<linearGradient id="c4cera" x1="0" x2="1">
-				<stop offset="0" stopColor="#b9a585" />
-				<stop offset="0.35" stopColor={C.marfil} />
-				<stop offset="1" stopColor="#8a7258" />
-			</linearGradient>
-		</defs>
-		<g transform={`translate(${x} ${y}) rotate(${rot})`}>
-			<rect x={-46} y={-h} width={92} height={h} rx={6} fill="url(#c4cera)" />
-			<path d={`M -46 ${-h + 8} C -40 ${-h + 40} -30 ${-h + 60} -34 ${-h + 90} C -28 ${-h + 70} -24 ${-h + 30} -10 ${-h + 6} Z`} fill="#f6efe0" opacity={0.8} />
-			<path d={`M 30 ${-h + 4} C 36 ${-h + 30} 44 ${-h + 40} 40 ${-h + 58} C 46 ${-h + 40} 46 ${-h + 20} 46 ${-h + 6} Z`} fill="#f6efe0" opacity={0.6} />
-			<ellipse cx={0} cy={-h} rx={46} ry={10} fill="#efe4cc" />
-			<path d={`M 0 ${-h} L 2 ${-h - 22}`} stroke="#1a0d05" strokeWidth={4} strokeLinecap="round" />
-		</g>
-	</svg>
-);
-
+// ---------- 3 · Una vela enciende a otra ----------
 const Encender: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 8;
 	const lean = ramp(f, [4, 30], [0, 1], E.inOut) * (1 - ramp(f, [44, 66], [0, 1], E.inOut));
-	const rot = 24 * lean;
-	const hA = 760;
-	const xA = 330;
-	const yA = 1780;
-	// punta del pabilo de la vela A (rotada sobre su base)
-	const rad = (rot * Math.PI) / 180;
-	const tipAx = xA + Math.sin(rad) * (hA + 22);
-	const tipAy = yA - Math.cos(rad) * (hA + 22);
+	const rot = -0.42 * lean;
 	const ign = E.out(clamp((f - 30) / 14));
 	const fl = flicker(t, 81);
+	const cam: [number, number, number] = [lerp(-0.4, 0.4, f / C04.S3), 2.6, 5.2];
+	const look: [number, number, number] = [0, 2.3, 0];
+	const hA = 3.2;
+	const hB = 2.6;
+	const baseA: [number, number, number] = [-0.9, 0, 0];
+	const tipA: [number, number, number] = [baseA[0] - Math.sin(rot) * (hA + 0.08), Math.cos(rot) * (hA + 0.08), 0];
+	const tipB: [number, number, number] = [0.85, hB + 0.08, 0];
+	const pA = project(tipA, cam, look, 40);
+	const pB = project(tipB, cam, look, 40);
+	const vela = (h: number) => (
+		<>
+			<mesh position={[0, h / 2, 0]} castShadow receiveShadow>
+				<cylinderGeometry args={[0.32, 0.34, h, 28]} />
+				<meshStandardMaterial color={C.marfil} roughness={0.45} emissive="#6a3a10" emissiveIntensity={0.12} />
+			</mesh>
+			{/* cera escurrida */}
+			{[0.2, -0.15, 0.05].map((a, i) => (
+				<mesh key={i} position={[Math.cos(a * 9) * 0.3, h - 0.25 - i * 0.12, Math.sin(a * 9) * 0.3]} scale={[0.35, 1.4 + i * 0.5, 0.35]}>
+					<sphereGeometry args={[0.12, 10, 8]} />
+					<meshStandardMaterial color="#f6efe0" roughness={0.35} />
+				</mesh>
+			))}
+			<mesh position={[0, h + 0.05, 0]}>
+				<cylinderGeometry args={[0.012, 0.012, 0.14, 6]} />
+				<meshStandardMaterial color="#1a0d05" />
+			</mesh>
+		</>
+	);
 	return (
 		<AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 55%, #24130a, #060303 70%)'}}>
 			{Array.from({length: 18}).map((_, i) => (
 				<div key={i} style={{position: 'absolute', left: hash(i, 1) * W - 60, top: 500 + hash(i, 2) * 1100, width: 60 + 90 * hash(i, 3), height: 60 + 90 * hash(i, 3), borderRadius: '50%', background: rgba(i % 3 ? C.flama : C.cempa, 0.12 + 0.12 * hash(i, 4)), filter: 'blur(14px)'}} />
 			))}
-			<Light x={tipAx} y={tipAy - 30} r={620} color={C.flama} o={0.55 * fl} />
-			<Light x={770} y={yA - 640 - 50} r={620 * ign} color={C.flama} o={0.55 * ign * fl} />
-			<Vela x={770} y={yA} h={620} />
-			<Vela x={xA} y={yA} h={hA} rot={rot} />
-			<Flame x={tipAx} y={tipAy + 8} size={130} t={t} seed={81} fl={fl} wick={false} />
-			<Flame x={772} y={yA - 620 - 8} size={130} t={t + 0.7} seed={82} grow={ign} fl={fl} wick={false} />
-			{f > 28 && f < 50 ? (
-				<div style={{position: 'absolute', left: 772 - 90, top: yA - 640 - 140, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(closest-side, ${rgba('#FFF6DA', 0.9)}, transparent)`, opacity: Math.sin(Math.PI * clamp((f - 28) / 22))}} />
-			) : null}
+			<Stage3D fov={40}>
+				<Camera pos={cam} look={look} />
+				<ambientLight intensity={0.15} />
+				<pointLight position={[tipA[0], tipA[1] + 0.3, 0.3]} intensity={10 * fl} distance={10} color={C.flama} castShadow />
+				<pointLight position={[tipB[0], tipB[1] + 0.3, 0.3]} intensity={10 * fl * ign} distance={10} color={C.flama} />
+				<group position={baseA} rotation={[0, 0, rot]}>
+					{vela(hA)}
+				</group>
+				<group position={[0.85, 0, 0]}>{vela(hB)}</group>
+				<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+					<planeGeometry args={[20, 20]} />
+					<meshStandardMaterial color="#1a0d06" roughness={0.9} />
+				</mesh>
+			</Stage3D>
+			<Light x={pA.x} y={pA.y - 30} r={620} color={C.flama} o={0.5 * fl} />
+			<Light x={pB.x} y={pB.y - 30} r={620 * ign} color={C.flama} o={0.5 * ign * fl} />
+			<Flame x={pA.x} y={pA.y + 6} size={120} t={t} seed={81} fl={fl} wick={false} />
+			<Flame x={pB.x} y={pB.y + 6} size={120} t={t + 0.7} seed={82} grow={ign} fl={fl} wick={false} />
+			{f > 28 && f < 50 ? <div style={{position: 'absolute', left: pB.x - 90, top: pB.y - 140, width: 180, height: 180, borderRadius: '50%', background: `radial-gradient(closest-side, ${rgba('#FFF6DA', 0.9)}, transparent)`, opacity: Math.sin(Math.PI * clamp((f - 28) / 22))}} /> : null}
 			<PaperTexture o={0.14} />
 			<Kinetic text={'Cada luz es un nombre\nque se recuerda.'} f={f} at={34} out={200} y={330} size={50} scrim={0.6} />
 		</AbsoluteFill>
 	);
 };
 
-// ---------- Desde el cielo: las velas del panteón forman el número ----------
+// ---------- 4 · La grúa sube: desde el cielo, las velas del panteón escriben el número ----------
+// Al final la cámara mira en picada desde 26.4 u con fov 40: 1 u del suelo = 100 px, y z = -1 cae en NUM_Y.
+const PXU = 100;
+const tumbasCampo = Array.from({length: 13 * 9}).map((_, i) => {
+	const r = Math.floor(i / 9);
+	const c = i % 9;
+	return {x: (c - 4) * 1.5 + (r % 2) * 0.4 + (hash(i, 1) - 0.5) * 0.2, z: (r - 6) * 2.1 + (hash(i, 2) - 0.5) * 0.2, rot: (hash(i, 3) - 0.5) * 0.09, tone: Math.floor(hash(i, 4) * 3)};
+});
+const CampoTumbas: React.FC = () => {
+	const ref = React.useRef<THREE.InstancedMesh>(null);
+	const refH = React.useRef<THREE.InstancedMesh>(null);
+	const refF = React.useRef<THREE.InstancedMesh>(null);
+	const NF = 20;
+	React.useLayoutEffect(() => {
+		const o = new THREE.Object3D();
+		const cols = ['#2a1e18', '#33251c', '#241a16'].map((c) => new THREE.Color(c));
+		tumbasCampo.forEach((tb, i) => {
+			o.position.set(tb.x, 0.08, tb.z);
+			o.rotation.set(0, tb.rot, 0);
+			o.scale.set(1, 1, 1);
+			o.updateMatrix();
+			ref.current?.setMatrixAt(i, o.matrix);
+			ref.current?.setColorAt(i, cols[tb.tone]);
+			o.position.set(tb.x - Math.sin(tb.rot) * -0.75, 0.3, tb.z - 0.75);
+			o.updateMatrix();
+			refH.current?.setMatrixAt(i, o.matrix);
+			for (let p = 0; p < NF; p++) {
+				const u = p / NF;
+				const per = u * 2 * (0.96 + 1.7);
+				let lx: number;
+				let lz: number;
+				if (per < 0.96) [lx, lz] = [-0.48 + per, -0.89];
+				else if (per < 2.66) [lx, lz] = [0.52, -0.85 + (per - 0.96)];
+				else if (per < 3.62) [lx, lz] = [0.48 - (per - 2.66), 0.89];
+				else [lx, lz] = [-0.52, 0.85 - (per - 3.62)];
+				o.position.set(tb.x + lx, 0.12, tb.z + lz);
+				o.updateMatrix();
+				refF.current?.setMatrixAt(i * NF + p, o.matrix);
+				refF.current?.setColorAt(i * NF + p, new THREE.Color(p % 4 ? C.cempa : C.terracota));
+			}
+		});
+		for (const r of [ref, refH, refF]) {
+			if (!r.current) continue;
+			r.current.instanceMatrix.needsUpdate = true;
+			if (r.current.instanceColor) r.current.instanceColor.needsUpdate = true;
+		}
+	});
+	return (
+		<>
+			<instancedMesh ref={ref} args={[undefined, undefined, tumbasCampo.length]} castShadow receiveShadow>
+				<boxGeometry args={[0.96, 0.16, 1.7]} />
+				<meshStandardMaterial roughness={0.95} />
+			</instancedMesh>
+			<instancedMesh ref={refH} args={[undefined, undefined, tumbasCampo.length]} castShadow>
+				<boxGeometry args={[0.7, 0.5, 0.14]} />
+				<meshStandardMaterial color="#3d2f26" roughness={0.95} />
+			</instancedMesh>
+			<instancedMesh ref={refF} args={[undefined, undefined, tumbasCampo.length * NF]}>
+				<sphereGeometry args={[0.07, 6, 4]} />
+				<meshStandardMaterial roughness={0.8} emissive={C.cempa} emissiveIntensity={0.25} />
+			</instancedMesh>
+		</>
+	);
+};
+
 const Cielo: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 12;
@@ -292,62 +441,16 @@ const Cielo: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) => {
 	const size = numSize(txt);
 	const HIT = C04.HIT;
 	const g = useGlyph(txt, size, 22, 3);
-	const zoom = lerp(3.2, 1, E.inOut(clamp(f / 80)));
-	const spin = lerp(14, 0, E.inOut(clamp(f / 80)));
+	// grúa: de una vista baja entre las tumbas a la picada total
+	const u = E.inOut(clamp(f / 84));
+	const top: [number, number, number] = [0, 26.4, 0.0001];
+	const low: [number, number, number] = [3, 2.2, 12];
+	const cam: [number, number, number] = [lerp(low[0], top[0], u), lerp(low[1], top[1], u ** 0.8), lerp(low[2], top[2], u)];
+	const look: [number, number, number] = [0, 0, -1 * u];
+	const up: [number, number, number] = [0, 1 - u, -u];
+	const P = makeProjector(cam, look, 40, up);
 	const ref = useCanvasDraw(
 		(ctx) => {
-			ctx.save();
-			ctx.translate(540, NUM_Y);
-			ctx.rotate((spin * Math.PI) / 180);
-			ctx.scale(zoom, zoom);
-			ctx.translate(-540, -NUM_Y);
-			// tierra
-			ctx.fillStyle = '#140b07';
-			ctx.fillRect(-400, -400, W + 800, H + 800);
-			// tumbas vistas desde arriba, en hileras
-			for (let r = -2; r < 13; r++) {
-				for (let c = -2; c < 9; c++) {
-					const k = r * 31 + c;
-					const x = c * 150 + (r % 2) * 40 + (hash(k, 1) - 0.5) * 20;
-					const y = r * 210 + (hash(k, 2) - 0.5) * 20;
-					ctx.save();
-					ctx.translate(x + 48, y + 85);
-					ctx.rotate((hash(k, 3) - 0.5) * 0.09);
-					ctx.translate(-x - 48, -y - 85);
-					const tone = Math.floor(hash(k, 4) * 3);
-					ctx.fillStyle = ['#2a1e18', '#33251c', '#241a16'][tone];
-					ctx.fillRect(x, y, 96, 170);
-					ctx.fillStyle = '#3d2f26';
-					ctx.fillRect(x + 18, y + 6, 60, 22);
-					ctx.fillStyle = '#4a3a2e';
-					ctx.fillRect(x + 44, y + 40, 8, 50);
-					ctx.fillRect(x + 32, y + 54, 32, 8);
-					// marco de cempasúchil
-					ctx.fillStyle = rgba(C.cempa, 0.75);
-					for (let p = 0; p < 22; p++) {
-						const u = p / 22;
-						const per = u * 532;
-						let px: number;
-						let py: number;
-						if (per < 96) [px, py] = [x + per, y - 8];
-						else if (per < 266) [px, py] = [x + 104, y + per - 96];
-						else if (per < 362) [px, py] = [x + 96 - (per - 266), y + 178];
-						else [px, py] = [x - 8, y + 170 - (per - 362)];
-						ctx.fillStyle = rgba(p % 4 ? C.cempa : C.terracota, 0.8);
-						ctx.beginPath();
-						ctx.arc(px, py, 5 + 2 * hash(k * 40 + p, 6), 0, Math.PI * 2);
-						ctx.fill();
-					}
-					ctx.restore();
-				}
-			}
-			// pétalos regados en los pasillos
-			for (let i = 0; i < 700; i++) {
-				ctx.fillStyle = rgba(i % 3 ? C.cempa : C.flama, 0.35 + 0.3 * hash(i, 22));
-				ctx.beginPath();
-				ctx.ellipse(-300 + hash(i, 20) * (W + 600), -300 + hash(i, 21) * (H + 600), 4, 2.4, hash(i, 23) * 3, 0, Math.PI * 2);
-				ctx.fill();
-			}
 			ctx.globalCompositeOperation = 'lighter';
 			const dot = (x: number, y: number, r: number, a: number) => {
 				const gr = ctx.createRadialGradient(x, y, 0, x, y, r * 5);
@@ -357,38 +460,49 @@ const Cielo: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) => {
 				ctx.fillStyle = gr;
 				ctx.fillRect(x - r * 5, y - r * 5, r * 10, r * 10);
 			};
-			// velas sueltas en todo el panteón (tenues)
-			const dim = lerp(0.55, 0.22, clamp((f - 50) / 40));
-			for (let i = 0; i < 340; i++) {
-				const x = -200 + hash(i, 11) * (W + 400);
-				const y = -200 + hash(i, 12) * (H + 400);
-				dot(x, y, 3, dim * (0.6 + 0.4 * Math.sin(t * (3 + hash(i, 13) * 3) + i)));
+			// velas sueltas por todo el panteón
+			const dim = lerp(0.6, 0.25, clamp((f - 50) / 40));
+			for (let i = 0; i < 300; i++) {
+				const p = P((hash(i, 11) - 0.5) * 14, 0.2, (hash(i, 12) - 0.5) * 26);
+				if (!p.ok) continue;
+				dot(p.x, p.y, Math.min(7, 70 / p.d), dim * (0.6 + 0.4 * Math.sin(t * (3 + hash(i, 13) * 3) + i)));
 			}
-			// las velas del número se encienden en ola, una le pasa la luz a la otra
 			if (g) {
-				const top = g.pts.reduce((m, p) => (p[1] < m[1] ? p : m), g.pts[0]);
+				const topP = g.pts.reduce((m, q) => (q[1] < m[1] ? q : m), g.pts[0]);
 				g.pts.forEach(([gx, gy], i) => {
-					const dd = Math.hypot(gx - top[0], gy - top[1]);
+					const dd = Math.hypot(gx - topP[0], gy - topP[1]);
 					const lit = 18 + dd / 14 + hash(i, 5) * 6;
 					const a = E.out(clamp((f - lit) / 8));
 					if (a <= 0) return;
-					const al = a * (0.85 + 0.15 * Math.sin(t * 5 + i * 1.7));
-					dot(540 + gx, NUM_Y + gy, 4.2, al);
+					const p = P(gx / PXU, 0.2, gy / PXU - 1);
+					if (!p.ok) return;
+					dot(p.x, p.y, Math.min(9, 110 / p.d), a * (0.85 + 0.15 * Math.sin(t * 5 + i * 1.7)));
 				});
 			}
-			ctx.restore();
 		},
-		[f, g, zoom, spin],
+		[f, g],
 	);
 	const glow = ramp(f, [HIT - 16, HIT + 10], [0, 1], E.inOut);
 	return (
 		<AbsoluteFill style={{background: '#140b07'}}>
+			<Stage3D fov={40}>
+				<Camera pos={cam} look={look} up={up} />
+				<fog attach="fog" args={['#140b07', 20, 60]} />
+				<ambientLight intensity={0.3} />
+				<hemisphereLight args={['#8a6a5a', '#0a0604', 0.5]} />
+				<directionalLight position={[6, 20, 8]} intensity={0.6} color="#c8b8d8" castShadow shadow-mapSize={[1024, 1024]} />
+				<pointLight position={[0, 3, -1]} intensity={120 * (0.3 + 0.7 * glow)} distance={18} color={C.cempa} />
+				<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+					<planeGeometry args={[60, 60]} />
+					<meshStandardMaterial color="#1a0f08" roughness={1} />
+				</mesh>
+				<CampoTumbas />
+			</Stage3D>
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
 			{/* halo del número */}
 			<div style={{position: 'absolute', left: 0, width: W, top: NUM_Y - size / 2, height: size, lineHeight: `${size}px`, textAlign: 'center', fontFamily: 'Rye', fontSize: size, color: C.cempa, filter: 'blur(34px)', opacity: 0.45 * glow, mixBlendMode: 'screen'}}>
 				{txt}
 			</div>
-			{/* bandas oscuras tras los rótulos */}
 			<AbsoluteFill style={{opacity: glow, background: 'linear-gradient(180deg, transparent 17%, rgba(6,3,2,0.75) 21%, rgba(6,3,2,0.75) 27%, transparent 31%, transparent 57%, rgba(6,3,2,0.8) 60%, rgba(6,3,2,0.8) 70%, transparent 74%)'}} />
 			<Lockup f={f} at={HIT + 2} dias={dias} fecha={fecha} />
 			<PaperTexture o={0.12} />

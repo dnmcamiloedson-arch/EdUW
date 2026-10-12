@@ -28,11 +28,12 @@ export const Stage3D: React.FC<{children: React.ReactNode; fov?: number; style?:
 );
 
 // Cámara controlada por frame
-export const Camera: React.FC<{pos: [number, number, number]; look: [number, number, number]; fov?: number; roll?: number}> = ({pos, look, fov, roll = 0}) => {
+export const Camera: React.FC<{pos: [number, number, number]; look: [number, number, number]; fov?: number; roll?: number; up?: [number, number, number]}> = ({pos, look, fov, roll = 0, up}) => {
 	const {camera} = useThree();
 	useLayoutEffect(() => {
 		camera.position.set(...pos);
-		camera.up.set(Math.sin(roll), Math.cos(roll), 0);
+		if (up) camera.up.set(...up).normalize();
+		else camera.up.set(Math.sin(roll), Math.cos(roll), 0);
 		camera.lookAt(...look);
 		if (fov && (camera as THREE.PerspectiveCamera).isPerspectiveCamera) {
 			(camera as THREE.PerspectiveCamera).fov = fov;
@@ -287,9 +288,10 @@ export const Oyamel: React.FC<{pos: [number, number, number]; h?: number; color:
 );
 
 // Proyecta un punto del mundo a píxeles de pantalla (para alinear brillos 2D con objetos 3D)
-export const project = (pt: [number, number, number], pos: [number, number, number], look: [number, number, number], fov: number) => {
+export const project = (pt: [number, number, number], pos: [number, number, number], look: [number, number, number], fov: number, up?: [number, number, number]) => {
 	const cam = new THREE.PerspectiveCamera(fov, W / H, 0.1, 4000);
 	cam.position.set(...pos);
+	if (up) cam.up.set(...up).normalize();
 	cam.lookAt(...look);
 	cam.updateMatrixWorld();
 	const v = new THREE.Vector3(...pt).project(cam);
@@ -586,6 +588,21 @@ export const useSvgTexture = (node: React.ReactElement, w: number, h: number, ke
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [key]);
 	return tex;
+};
+
+// Proyector reutilizable para muchos puntos por frame
+export const makeProjector = (pos: [number, number, number], look: [number, number, number], fov: number, up?: [number, number, number]) => {
+	const cam = new THREE.PerspectiveCamera(fov, W / H, 0.1, 4000);
+	cam.position.set(...pos);
+	if (up) cam.up.set(...up).normalize();
+	cam.lookAt(...look);
+	cam.updateMatrixWorld();
+	const v = new THREE.Vector3();
+	return (x: number, y: number, z: number) => {
+		v.set(x, y, z).project(cam);
+		const d = Math.hypot(x - pos[0], y - pos[1], z - pos[2]);
+		return {x: ((v.x + 1) / 2) * W, y: ((1 - v.y) / 2) * H, d, ok: v.z < 1 && v.z > -1};
+	};
 };
 
 export {THREE};
