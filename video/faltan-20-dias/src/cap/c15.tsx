@@ -1,104 +1,137 @@
 import React from 'react';
 import {AbsoluteFill, Sequence, useCurrentFrame} from 'remotion';
-import {C, E, FPS, H, W, clamp, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
+import {C, E, FPS, H, W, clamp, css, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
 import {Light, PaperTexture, useCanvasDraw} from '../components/core';
 import {Embers, Smoke} from '../components/Particles';
 import {useGlyph} from '../countdown/reveals';
 import {Fog, Orb, Ridge, Sky, WaterReflect} from './kit/land';
 import {GoldNumber, Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {Dip, LightLeak} from './kit/transitions';
+import {Camera, Mountain, Range, Stage3D, THREE, project} from './kit/three';
 
 // Capítulo 15 · "Los volcanes" — Popocatépetl vela el sueño de Iztaccíhuatl.
 export const C15 = {S1: 126, S2: 96, S3: 84, REV: 126, HIT: 62};
 export const C15_LEN = C15.S1 + C15.S2 + C15.S3 + C15.REV;
 
-const IZTA =
-	'M -120 1300 L -120 1150 C -60 1118 -10 1062 36 1044 C 70 1026 108 1028 130 1052 C 160 1082 200 1092 244 1082 ' +
-	'C 300 1022 360 990 424 1000 C 474 1010 502 1050 532 1062 C 570 1042 602 1036 624 1052 C 654 1080 694 1112 724 1152 L 780 1300 Z';
-const IZTA_SNOW = 'M 36 1044 C 70 1026 108 1028 130 1052 M 300 1022 C 360 990 424 1000 474 1010 M 570 1042 C 602 1036 624 1052 640 1066';
-const POPO = 'M 540 1320 C 640 1220 730 1010 788 924 L 806 930 L 830 922 L 852 928 C 908 1012 1010 1220 1180 1320 Z';
-const POPO_SNOW = 'M 742 990 C 760 960 776 938 788 924 L 806 930 L 830 922 L 852 928 C 864 944 878 966 896 996 C 870 980 850 990 830 974 C 806 992 782 978 742 990 Z';
+// Los volcanes en 3D: Popocatépetl (cono con cráter encendido) e Iztaccíhuatl (la mujer dormida),
+// reflejados en el lago. El reflejo es la misma geometría invertida bajo un agua translúcida.
+// Paredes internas del cráter: roca oscura arriba, brasa al fondo
+const Embudo: React.FC<{fl: number}> = ({fl}) => {
+	const geo = React.useMemo(() => {
+		const g = new THREE.ConeGeometry(12.4, 16, 20, 6, true);
+		const p = g.attributes.position as THREE.BufferAttribute;
+		const cols: number[] = [];
+		const rock = new THREE.Color('#1a0e0e');
+		const lava = new THREE.Color('#e0501a');
+		for (let i = 0; i < p.count; i++) {
+			const u = (8 - p.getY(i)) / 16; // tras girarlo: 0 fondo (punta), 1 borde
+			const c = lava.clone().lerp(rock, Math.min(1, u * 1.6));
+			cols.push(c.r, c.g, c.b);
+		}
+		g.setAttribute('color', new THREE.Float32BufferAttribute(cols, 3));
+		return g;
+	}, []);
+	return (
+		<mesh geometry={geo} position={[90, 115, -300]} rotation={[Math.PI, 0, 0]}>
+			<meshBasicMaterial vertexColors side={THREE.DoubleSide} fog={false} color={css(mixRGB('#9a8a8a', '#ffffff', 0.5 + 0.5 * fl))} />
+		</mesh>
+	);
+};
 
-const Volcanes: React.FC<{t: number; lit: number}> = ({t, lit}) => (
-	<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-		<defs>
-			<linearGradient id="v15" x1="0" y1="0" x2="0" y2="1">
-				<stop offset="0%" stopColor="#5a3a40" />
-				<stop offset="45%" stopColor="#2c1a22" />
-				<stop offset="100%" stopColor="#120a10" />
-			</linearGradient>
-		</defs>
-		<path d={IZTA} fill="url(#v15)" />
-		<path d={IZTA} fill="none" stroke={rgba(C.marfil, 0.25)} strokeWidth={2} />
-		<path d={IZTA_SNOW} fill="none" stroke={rgba(C.marfil, 0.8)} strokeWidth={11} strokeLinecap="round" />
-		<path d={POPO} fill="url(#v15)" />
-		<path d={POPO} fill="none" stroke={rgba(C.cempa, 0.3)} strokeWidth={2} />
-		<path d={POPO_SNOW} fill={rgba(C.marfil, 0.72)} />
-		<ellipse cx={820} cy={926} rx={34} ry={8} fill={C.cempa} opacity={0.5 + 0.4 * lit * (0.8 + 0.2 * Math.sin(t * 5))} style={{filter: 'blur(3px)'}} />
-	</svg>
+const Volcanes3D: React.FC<{fl: number}> = ({fl}) => (
+	<group>
+		{/* Iztaccíhuatl: cabeza, pecho, rodillas y pies, con nieve */}
+		<group position={[-40, 0, -420]} scale={[0.85, 0.95, 0.6]}>
+			<Mountain pos={[-60, 0, 0]} r={34} h={62} color="#3a2a34" snow="#e8e2d6" snowLine={0.62} seed={151} />
+			<Mountain pos={[-10, 0, 6]} r={46} h={88} color="#3a2a34" snow="#e8e2d6" snowLine={0.55} seed={152} />
+			<Mountain pos={[40, 0, -4]} r={40} h={72} color="#3a2a34" snow="#e8e2d6" snowLine={0.6} seed={153} />
+			<Mountain pos={[86, 0, 4]} r={34} h={50} color="#3a2a34" snow="#e8e2d6" snowLine={0.7} seed={154} />
+		</group>
+		{/* Popocatépetl */}
+		<Mountain pos={[90, 0, -300]} r={105} h={128} seg={18} rough={0.05} crater={0.12} color="#3e2a30" snow="#ece6da" snowLine={0.72} seed={155} />
+		{/* fondo del cráter: embudo de lava */}
+		<Embudo fl={fl} />
+		<mesh position={[90, 108, -300]} rotation={[-Math.PI / 2, 0, 0]}>
+			<circleGeometry args={[3, 12]} />
+			<meshBasicMaterial color={css(mixRGB(C.flama, '#FFF0C0', 0.5 * fl))} fog={false} />
+		</mesh>
+		<pointLight position={[90, 135, -300]} intensity={180 * fl} distance={120} color={C.terracota} />
+		{/* sierra lejana */}
+		<Range z={-460} x0={-500} x1={500} n={12} r={60} h={70} color="#24182a" seed={156} />
+		{/* orillas cercanas */}
+		<Range z={-150} x0={-260} x1={-120} n={4} r={30} h={16} color="#120c10" seed={157} />
+		<Range z={-120} x0={160} x1={300} n={4} r={30} h={14} color="#120c10" seed={158} />
+	</group>
 );
 
 const Valle: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
-	const pan = ramp(f, [0, C15.S1], [0, -110], E.inOut);
+	const u = E.inOut(clamp(f / C15.S1));
 	const fl = flicker(t, 15);
-	const world = (
-		<>
-			<Volcanes t={t} lit={fl} />
-			<Light x={820} y={920} r={260} color={C.cempa} o={0.4 * fl} />
-		</>
-	);
+	const cam: [number, number, number] = [lerp(-30, 10, u), lerp(12, 16, u), lerp(300, 230, u)];
+	const look: [number, number, number] = [lerp(-10, 10, u), 62, -320];
+	const crater = project([90, 124, -300], cam, look, 40);
 	return (
 		<AbsoluteFill>
-			<Sky t={t} top="#05030c" mid="#170c18" horizon="#4a1e16" hy={1250} stars={240} />
-			<Orb x={230} y={360} r={46} color={C.marfil} core="#FFFBF0" halo={4} o={0.85} />
-			<AbsoluteFill style={{transform: `translateX(${pan}px) scale(1.38)`, transformOrigin: '520px 1180px'}}>
-				{world}
-				<Smoke t={t + 4} x={820} y={920} L={0.9} n={130} rate={20} rise={70} wind={28} seed={151} lightX={820} lightY={930} tint={C.arena} />
-				<Fog y={1280} color={C.terracota} o={0.22} />
-				<WaterReflect y={1320} t={t} o={0.45}>
-					<Sky t={t} top="#03020a" mid="#0d0814" horizon="#2a1414" hy={1250} stars={0} />
-					{world}
-				</WaterReflect>
-				<Ridge seed={151} y={1700} amp={60} color="#050304" rim={C.cempa} rimO={0.15} />
-			</AbsoluteFill>
-			<PaperTexture o={0.18} />
-			<Kinetic text={'Él prometió\ncuidar su sueño…'} f={f} at={14} out={110} y={1430} size={52} />
+			<Sky t={t} top="#05030c" mid="#170c18" horizon="#4a1e16" hy={1150} stars={240} />
+			<Orb x={230} y={420} r={46} color={C.marfil} core="#FFFBF0" halo={4} o={0.85} />
+			<Stage3D fov={40}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#2a1418', 300, 1100]} />
+				<hemisphereLight args={['#8a7aa0', '#140808', 0.32]} />
+				<directionalLight position={[-300, 220, 200]} intensity={0.75} color="#cfc6e0" castShadow shadow-mapSize={[1024, 1024]} />
+				<Volcanes3D fl={fl} />
+				{/* reflejo */}
+				<group scale={[1, -1, 1]}>
+					<Volcanes3D fl={fl} />
+				</group>
+				<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.2, -150]}>
+					<planeGeometry args={[1600, 900]} />
+					<meshStandardMaterial color="#120a16" transparent opacity={0.72} roughness={0.25} metalness={0.2} />
+				</mesh>
+			</Stage3D>
+			{/* ondas y brillo de la luna en el agua */}
+			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
+				{Array.from({length: 30}).map((_, i) => {
+					const y = 1240 + i * i * 0.75;
+					const w = 30 + i * 9 * (0.6 + 0.4 * Math.sin(t * 2 + i * 1.7));
+					return <rect key={i} x={230 - w / 2 + Math.sin(t * 1.3 + i) * 12} y={y} width={w} height={2 + i * 0.1} rx={2} fill="#FFF3D6" opacity={0.32 - i * 0.008} />;
+				})}
+			</svg>
+			<Light x={crater.x} y={crater.y} r={300} color={C.cempa} o={0.45 * fl} />
+			<Smoke t={t + 4} x={crater.x} y={crater.y} L={0.9} n={130} rate={20} rise={90} wind={28} seed={151} lightX={crater.x} lightY={crater.y + 10} tint={C.arena} />
+			<PaperTexture o={0.16} />
+			<Kinetic text={'Él prometió\ncuidar su sueño…'} f={f} at={14} out={110} y={1430} size={52} scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
 
+// Sobre el cráter del Popocatépetl: la cámara sube por la ladera y se asoma al fuego
 const Crater: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 6;
 	const fl = flicker(t, 151);
-	const tilt = ramp(f, [0, C15.S2], [0, 360], E.inOut);
+	const u = E.inOut(clamp(f / C15.S2));
+	const cam: [number, number, number] = [lerp(-60, 30, u), lerp(120, 215, u), lerp(-110, -215, u)];
+	const look: [number, number, number] = [90, 115, -300];
+	const c = project([90, 118, -300], cam, look, 42);
 	return (
 		<AbsoluteFill style={{background: '#030208'}}>
 			<Sky t={t} top="#03020a" mid="#0a0612" horizon="#1d0e10" hy={1500} stars={160} />
-			<AbsoluteFill style={{transform: `translateY(${tilt}px)`}}>
-				<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-					<defs>
-						<radialGradient id="v15c" cx="540" cy="1480" r="900" gradientUnits="userSpaceOnUse">
-							<stop offset="0%" stopColor="#6a2a1a" />
-							<stop offset="30%" stopColor="#2a1418" />
-							<stop offset="100%" stopColor="#0c070c" />
-						</radialGradient>
-					</defs>
-					<g transform="translate(540 1500) scale(3.4) translate(-820 -924)">
-						<path d={POPO} fill="url(#v15c)" />
-						<path d={POPO_SNOW} fill={rgba(C.marfil, 0.35)} />
-						<path d={POPO} fill="none" stroke={rgba(C.cempa, 0.4)} strokeWidth={0.8} />
-					</g>
-				</svg>
-				<Light x={548} y={1478} r={520} color={C.cempa} o={0.55 * fl} />
-				<Light x={548} y={1478} r={180} color={C.flama} o={0.6 * fl} />
-				<Embers t={t} L={1} n={40} seed={152} src={[420, 1380, 260, 140]} />
-			</AbsoluteFill>
-			<Smoke t={t + 2} x={540} y={1470 + tilt} L={1.1} n={170} rate={26} rise={150} wind={20} seed={153} lightX={540} lightY={1500 + tilt} tint={C.arena} />
-			<PaperTexture o={0.18} />
-			<Kinetic text={'…y su fuego\nsigue despierto.'} f={f} at={8} out={84} y={330} size={52} />
+			<Stage3D fov={42}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#120a10', 150, 900]} />
+				<hemisphereLight args={['#6a5a80', '#100606', 0.3]} />
+				<directionalLight position={[-300, 220, 200]} intensity={0.6} color="#cfc6e0" />
+				<Volcanes3D fl={fl} />
+			</Stage3D>
+			<Light x={c.x} y={c.y} r={520} color={C.cempa} o={0.5 * fl} />
+			<Light x={c.x} y={c.y} r={160} color={C.flama} o={0.55 * fl} />
+			<Embers t={t} L={1} n={40} seed={152} src={[c.x - 120, c.y - 60, 240, 120]} />
+			<Smoke t={t + 2} x={c.x} y={c.y} L={1.1} n={170} rate={26} rise={150} wind={20} seed={153} lightX={c.x} lightY={c.y + 20} tint={C.arena} />
+			<PaperTexture o={0.16} />
+			<Kinetic text={'…y su fuego\nsigue despierto.'} f={f} at={8} out={84} y={330} size={52} scrim={0.4} />
 		</AbsoluteFill>
 	);
 };
@@ -223,12 +256,7 @@ const Constelacion: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) =>
 		<AbsoluteFill style={{background: 'linear-gradient(180deg,#020108,#07040c 70%,#120808)'}}>
 			<GoldNumber txt={txt} o={ramp(f, [HIT - 6, HIT + 26], [0, 0.32], E.out)} blur={14} glow={0.5} />
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, opacity: 0.5}}>
-				<g transform="translate(-60 900)">
-					<path d={IZTA} fill="#0a060c" transform="translate(0 260) scale(1 0.7)" />
-					<path d={POPO} fill="#0c070d" transform="translate(0 260) scale(1 0.7)" />
-				</g>
-			</svg>
+			<Ridge seed={159} y={1830} amp={150} color="#0a060c" shadow={false} />
 			<Lockup f={f} at={HIT + 4} dias={dias} fecha={fecha} />
 			<PaperTexture o={0.14} />
 			<AbsoluteFill style={{background: '#000', opacity: ramp(f, [C15.REV - 8, C15.REV - 1], [0, 1], E.inOut)}} />

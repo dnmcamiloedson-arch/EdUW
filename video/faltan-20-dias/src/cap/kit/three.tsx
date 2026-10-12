@@ -92,13 +92,13 @@ export const Mountain: React.FC<{
 			let sx = x * (1 + d);
 			let sz = z * (1 + d);
 			if (crater && u > 0.98) {
-				// cráter: la punta se abre en anillo
-				const ang = Math.atan2(z, x);
-				sx = Math.cos(ang) * r * crater;
-				sz = Math.sin(ang) * r * crater;
+				// cráter: la punta se abre en anillo (el ángulo sale del índice: en la punta x = z = 0)
+				const th = ((i % (seg + 1)) / seg) * Math.PI * 2;
+				sx = Math.sin(th) * r * crater;
+				sz = Math.cos(th) * r * crater;
 				y -= h * 0.04;
 			}
-			p.setXYZ(i, sx, y + n3(x * 0.1, seed, z * 0.1, seed + 3) * h * 0.04 * (u > 0.02 ? 1 : 0), sz * scaleZ);
+			p.setXYZ(i, sx, y + n3(x * 0.1, seed, z * 0.1, seed + 3) * h * 0.04 * (u > 0.02 && !(crater && u > 0.9) ? 1 : 0), sz * scaleZ);
 			const c = base.clone();
 			if (sn && u > snowLine + n3(x * 0.2, 1, z * 0.2, seed + 9) * 0.06) c.lerp(sn, 0.9);
 			else c.multiplyScalar(0.85 + 0.25 * u);
