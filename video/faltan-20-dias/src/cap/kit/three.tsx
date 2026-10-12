@@ -421,4 +421,83 @@ export const Tallo: React.FC<{pts: [number, number, number][]; r?: number; color
 	);
 };
 
+// ---------- Pan de muerto en 3D: domo, cuatro huesos en cruz con nudos, bolita y azúcar ----------
+const azucarGeo = new THREE.BoxGeometry(0.02, 0.02, 0.02);
+export const Pan3D: React.FC<{pos?: [number, number, number]; s?: number; rise?: number; bones?: number[]; ball?: number; baked?: number; sugar?: number; rotY?: number}> = ({
+	pos = [0, 0, 0],
+	s = 1,
+	rise = 1,
+	bones = [1, 1, 1, 1],
+	ball = 1,
+	baked = 1,
+	sugar = 1,
+	rotY = 0,
+}) => {
+	const R = 1.6;
+	const Hd = 1.05 * rise;
+	const masa = new THREE.Color('#F0D0A0').lerp(new THREE.Color('#c27a3a'), baked);
+	const hueso = new THREE.Color('#E8BC88').lerp(new THREE.Color('#b0662c'), baked);
+	// superficie del domo: (θ desde la cima, φ alrededor)
+	const dome = (th: number, ph: number, lift = 0): [number, number, number] => [Math.sin(th) * Math.cos(ph) * (R + lift), Math.cos(th) * (Hd + lift), Math.sin(th) * Math.sin(ph) * (R + lift)];
+	const ref = React.useRef<THREE.InstancedMesh>(null);
+	const N = 1600;
+	React.useLayoutEffect(() => {
+		const m = ref.current;
+		if (!m) return;
+		const o = new THREE.Object3D();
+		for (let i = 0; i < N; i++) {
+			const th = Math.acos(1 - hash(i, 41) * 0.95);
+			const ph = hash(i, 42) * Math.PI * 2;
+			const [x, y, z] = dome(th, ph, 0.03);
+			o.position.set(x, y, z);
+			o.rotation.set(hash(i, 43) * 3, hash(i, 44) * 3, 0);
+			o.scale.setScalar(hash(i, 45) < sugar ? 1 : 0.0001);
+			o.updateMatrix();
+			m.setMatrixAt(i, o.matrix);
+		}
+		m.instanceMatrix.needsUpdate = true;
+	});
+	const huesos = [0, Math.PI / 2, Math.PI, (3 * Math.PI) / 2].map((ph, k) => {
+		const p = bones[k] ?? 0;
+		if (p <= 0) return null;
+		const pts = Array.from({length: 9}).map((_, j) => new THREE.Vector3(...dome(0.12 + (j / 8) * 1.38, ph + 0.4, 0.06)));
+		const curve = new THREE.CatmullRomCurve3(pts);
+		return (
+			<group key={k} position={[0, (1 - p) * 3, 0]}>
+				<mesh castShadow>
+					<tubeGeometry args={[curve, 32, 0.13, 8, false]} />
+					<meshStandardMaterial color={hueso} roughness={0.6} />
+				</mesh>
+				{[0.32, 0.62, 0.88].map((u, j) => {
+					const q = curve.getPoint(u);
+					return (
+						<mesh key={j} position={q} castShadow>
+							<sphereGeometry args={[0.2, 12, 10]} />
+							<meshStandardMaterial color={hueso} roughness={0.6} />
+						</mesh>
+					);
+				})}
+			</group>
+		);
+	});
+	return (
+		<group position={pos} scale={s} rotation={[0, rotY, 0]}>
+			<mesh scale={[R, Hd, R]} castShadow receiveShadow>
+				<sphereGeometry args={[1, 40, 20, 0, Math.PI * 2, 0, Math.PI / 2]} />
+				<meshStandardMaterial color={masa} roughness={0.55} />
+			</mesh>
+			{huesos}
+			{ball > 0 ? (
+				<mesh position={[0, Hd + 0.18 + (1 - ball) * 3, 0]} castShadow>
+					<sphereGeometry args={[0.32, 16, 12]} />
+					<meshStandardMaterial color={hueso} roughness={0.55} />
+				</mesh>
+			) : null}
+			<instancedMesh ref={ref} args={[azucarGeo, undefined, N]}>
+				<meshStandardMaterial color="#fffaf0" roughness={0.3} emissive="#ffffff" emissiveIntensity={0.15} />
+			</instancedMesh>
+		</group>
+	);
+};
+
 export {THREE};

@@ -1,92 +1,169 @@
 import React from 'react';
 import {AbsoluteFill, Sequence, spring, useCurrentFrame} from 'remotion';
-import {C, E, FPS, H, W, clamp, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
+import {C, E, FPS, H, W, clamp, css, flicker, hash, lerp, mixRGB, ramp, rgba} from '../lib/util';
 import {Flame, Light, PaperTexture, useCanvasDraw} from '../components/core';
 import {Embers, Smoke} from '../components/Particles';
-import {PanDeMuerto} from '../components/Objetos';
 import {useGlyph} from '../countdown/reveals';
 import {Kinetic, Lockup, NUM_Y, numSize} from './kit/type';
 import {Dip, LightLeak} from './kit/transitions';
+import {Camera, Pan3D, Stage3D, THREE, project} from './kit/three';
 
 // Capítulo 8 · "Pan de muerto" — del horno de leña al azúcar que cae como nieve.
 export const C08 = {S1: 108, S2: 108, S3: 78, REV: 126, HIT: 70};
 export const C08_LEN = C08.S1 + C08.S2 + C08.S3 + C08.REV;
+
+// ---------- El horno de adobe en 3D: domo, boca en arco, fuego dentro y la pala que mete el pan ----------
+let bocaTex: THREE.CanvasTexture | null = null;
+const getBocaTex = () => {
+	if (bocaTex) return bocaTex;
+	const cv = document.createElement('canvas');
+	cv.width = 256;
+	cv.height = 256;
+	const g = cv.getContext('2d')!;
+	const gr = g.createRadialGradient(128, 200, 10, 128, 170, 170);
+	gr.addColorStop(0, '#fff2c0');
+	gr.addColorStop(0.25, '#f5a040');
+	gr.addColorStop(0.6, '#a83a18');
+	gr.addColorStop(1, '#2a0804');
+	g.fillStyle = gr;
+	g.fillRect(0, 0, 256, 256);
+	bocaTex = new THREE.CanvasTexture(cv);
+	bocaTex.colorSpace = THREE.SRGBColorSpace;
+	return bocaTex;
+};
+// boca en arco: rectángulo con medio punto
+const arcoShape = (w: number, h: number) => {
+	const sh = new THREE.Shape();
+	sh.moveTo(-w / 2, 0);
+	sh.lineTo(-w / 2, h - w / 2);
+	sh.absarc(0, h - w / 2, w / 2, Math.PI, 0, true);
+	sh.lineTo(w / 2, 0);
+	sh.closePath();
+	return sh;
+};
+const Horno3D: React.FC<{fl: number}> = ({fl}) => {
+	const boca = React.useMemo(() => {
+		const g = new THREE.ShapeGeometry(arcoShape(2.2, 1.9), 16);
+		// uv según la forma (0..1)
+		const p = g.attributes.position as THREE.BufferAttribute;
+		const uv = g.attributes.uv as THREE.BufferAttribute;
+		for (let i = 0; i < p.count; i++) uv.setXY(i, p.getX(i) / 2.2 + 0.5, p.getY(i) / 1.9);
+		return g;
+	}, []);
+	const marco = React.useMemo(() => {
+		const outer = arcoShape(2.8, 2.25);
+		outer.holes.push(new THREE.Path(arcoShape(2.2, 1.9).getPoints(24)));
+		return new THREE.ExtrudeGeometry(outer, {depth: 0.35, bevelEnabled: true, bevelSize: 0.05, bevelThickness: 0.05, bevelSegments: 2, curveSegments: 16});
+	}, []);
+	return (
+		<group>
+			{/* base de ladrillo */}
+			<mesh position={[0, -0.6, 0]} castShadow receiveShadow>
+				<cylinderGeometry args={[3.5, 3.7, 1.2, 28]} />
+				<meshStandardMaterial color="#6a3220" roughness={0.95} flatShading />
+			</mesh>
+			{/* domo de adobe */}
+			<mesh castShadow receiveShadow scale={[1, 0.92, 1]}>
+				<sphereGeometry args={[3, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
+				<meshStandardMaterial color="#9a5a36" roughness={0.95} flatShading />
+			</mesh>
+			{/* boca encendida y su marco */}
+			<mesh geometry={boca} position={[0, 0, 2.62]} rotation={[-0.12, 0, 0]}>
+				<meshBasicMaterial map={getBocaTex()} color={css(mixRGB('#8a6a5a', '#ffffff', 0.55 + 0.45 * fl))} />
+			</mesh>
+			<mesh geometry={marco} position={[0, 0, 2.5]} rotation={[-0.12, 0, 0]} castShadow>
+				<meshStandardMaterial color="#7a3e24" roughness={1} flatShading />
+			</mesh>
+			{/* chimenea */}
+			<mesh position={[1.2, 2.6, -0.8]} castShadow>
+				<cylinderGeometry args={[0.3, 0.4, 1.4, 10]} />
+				<meshStandardMaterial color="#7a4028" roughness={1} flatShading />
+			</mesh>
+			<pointLight position={[0, 0.8, 3.6]} intensity={40 * fl} distance={12} color={C.flama} />
+		</group>
+	);
+};
 
 const Horno: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const fl = flicker(t, 81);
 	const peel = E.inOut(clamp((f - 30) / 50));
+	const u = E.inOut(clamp(f / C08.S1));
+	const cam: [number, number, number] = [lerp(4, 1.5, u), 2.6, lerp(13.5, 11, u)];
+	const look: [number, number, number] = [0, 1.1, 0];
+	const mouth = project([0, 0.7, 2.7], cam, look, 45);
+	const pz = lerp(8, 2.2, peel);
 	return (
 		<AbsoluteFill style={{background: '#0a0503'}}>
-			<Light x={540} y={1050} r={1200} color={C.cempa} o={0.5 * fl} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				{/* muro de ladrillo */}
-				{Array.from({length: 26}).map((_, r) =>
-					Array.from({length: 8}).map((_, c) => (
-						<rect key={`${r}-${c}`} x={-60 + c * 160 + (r % 2) * 80} y={300 + r * 56} width={150} height={48} rx={4} fill={rgba(mixRGB('#1a0c06', C.terracota, 0.35 + 0.25 * hash(r * 9 + c, 1)))} />
-					)),
-				)}
-				{/* boca del horno */}
-				<path d="M 160 1400 L 160 1000 Q 540 640 920 1000 L 920 1400 Z" fill="#100604" />
-				<path d="M 160 1400 L 160 1000 Q 540 640 920 1000 L 920 1400" fill="none" stroke="#3a1a0c" strokeWidth={60} />
-				<path d="M 230 1400 L 230 1020 Q 540 720 850 1020 L 850 1400 Z" fill={rgba(mixRGB('#3a1206', C.cempa, 0.55 * fl))} />
-			</svg>
-			{/* fuego dentro */}
-			{[300, 420, 540, 660, 780].map((x, i) => (
-				<Flame key={i} x={x} y={1390} size={220 + 60 * hash(i, 2)} t={t + i * 0.7} seed={80 + i} fl={fl} wick={false} />
-			))}
-			<Light x={540} y={1200} r={600} color={C.flama} o={0.55 * fl} />
-			<Embers t={t} L={1} n={30} seed={82} src={[260, 1000, 560, 380]} />
-			{/* pala con pan que entra */}
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				<g transform={`translate(${lerp(1300, 560, peel)} ${1390})`}>
-					<rect x={60} y={-10} width={700} height={22} rx={10} fill="#2a1408" />
-					<ellipse cx={0} cy={0} rx={150} ry={22} fill="#3a1e0c" />
-					<path d="M -110 -6 C -110 -90 -50 -128 0 -128 C 50 -128 110 -90 110 -6 Z" fill="#1a0a04" />
-				</g>
-			</svg>
-			<PaperTexture o={0.22} />
-			<Kinetic text={'Desde la madrugada,\nel horno ya está despierto.'} f={f} at={10} out={94} y={300} size={48} />
+			<Light x={mouth.x} y={mouth.y} r={1100} color={C.cempa} o={0.35 * fl} />
+			<Stage3D fov={45}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#0a0503', 12, 40]} />
+				<ambientLight intensity={0.2} />
+				<directionalLight position={[-5, 8, 6]} intensity={0.9} color="#c8a8d0" castShadow shadow-mapSize={[1024, 1024]} />
+				<Horno3D fl={fl} />
+				{/* piso */}
+				<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1.2, 0]} receiveShadow>
+					<planeGeometry args={[60, 60]} />
+					<meshStandardMaterial color="#1e0f08" roughness={1} />
+				</mesh>
+				{/* pala con el pan */}
+				<group position={[0, 0.1, pz]}>
+					<mesh rotation={[-Math.PI / 2, 0, 0]} castShadow>
+						<circleGeometry args={[0.9, 20]} />
+						<meshStandardMaterial color="#5a3018" roughness={0.9} side={THREE.DoubleSide} />
+					</mesh>
+					<mesh position={[0, 0.02, 4]} rotation={[Math.PI / 2, 0, 0]} castShadow>
+						<cylinderGeometry args={[0.07, 0.07, 7, 8]} />
+						<meshStandardMaterial color="#3a1e0c" roughness={0.9} />
+					</mesh>
+					<Pan3D pos={[0, 0.02, 0]} s={0.38} baked={0.35} sugar={0} />
+				</group>
+			</Stage3D>
+			{/* fuego visible por la boca */}
+			{[-0.55, 0, 0.55].map((x, i) => {
+				const p = project([x, 0.05, 2.62], cam, look, 45);
+				return <Flame key={i} x={p.x} y={p.y} size={95 + 30 * hash(i, 2)} t={t + i * 0.7} seed={80 + i} fl={fl} wick={false} />;
+			})}
+			<Light x={mouth.x} y={mouth.y} r={420} color={C.flama} o={0.5 * fl} />
+			<Embers t={t} L={1} n={30} seed={82} src={[mouth.x - 220, mouth.y - 300, 440, 300]} />
+			<PaperTexture o={0.18} />
+			<Kinetic text={'Desde la madrugada,\nel horno ya está despierto.'} f={f} at={10} out={94} y={300} size={48} scrim={0.45} />
 		</AbsoluteFill>
 	);
 };
 
+const LucesCocina: React.FC = () => (
+	<>
+		<ambientLight intensity={0.3} />
+		<directionalLight position={[-4, 7, 5]} intensity={2.2} color="#ffd8a8" castShadow shadow-mapSize={[1024, 1024]} />
+		<directionalLight position={[4, 3, -5]} intensity={1.0} color={C.cempa} />
+	</>
+);
+const MesaHarina: React.FC = () => (
+	<>
+		<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+			<planeGeometry args={[40, 40]} />
+			<meshStandardMaterial color="#5a3a20" roughness={0.9} />
+		</mesh>
+		<mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.005, 0]}>
+			<circleGeometry args={[3, 32]} />
+			<meshBasicMaterial color="#f6eedf" transparent opacity={0.25} />
+		</mesh>
+	</>
+);
+
 const Masa: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 4;
-	const rise = spring({frame: f - 4, fps: FPS, config: {stiffness: 40, damping: 9}});
+	const rise = 0.35 + 0.65 * spring({frame: f - 4, fps: FPS, config: {stiffness: 40, damping: 9}});
 	const bone = (k: number) => spring({frame: f - 34 - k * 10, fps: FPS, config: {stiffness: 140, damping: 14}});
 	const ball = spring({frame: f - 76, fps: FPS, config: {stiffness: 160, damping: 12}});
-	const cx = 540;
-	const cy = 1220;
-	// huesos que caen sobre la masa y se acomodan sobre el domo (vista lateral)
-	const top = cy - 330 * rise;
-	const bones = [
-		`M ${cx - 16} ${top + 8} C ${cx - 140} ${top + 30} ${cx - 260} ${cy - 140} ${cx - 300} ${cy - 20}`,
-		`M ${cx + 16} ${top + 8} C ${cx + 140} ${top + 30} ${cx + 260} ${cy - 140} ${cx + 300} ${cy - 20}`,
-		`M ${cx} ${top + 10} C ${cx + 10} ${top + 120} ${cx + 6} ${cy - 120} ${cx - 4} ${cy + 10}`,
-		`M ${cx - 20} ${top + 14} C ${cx - 70} ${top + 90} ${cx - 110} ${cy - 120} ${cx - 130} ${cy - 10}`,
-	];
-	const knobs = [
-		[[cx - 130, top + 48], [cx - 230, cy - 120]],
-		[[cx + 130, top + 48], [cx + 230, cy - 120]],
-		[[cx + 6, top + 140], [cx + 2, cy - 70]],
-		[[cx - 80, top + 120], [cx - 118, cy - 60]],
-	];
-	const strip = (k: number, p: number) => (
-		<g key={k} transform={`translate(0 ${(1 - p) * -520})`} opacity={clamp(p * 2)}>
-			<path d={bones[k]} stroke="#a8682f" strokeWidth={46} fill="none" strokeLinecap="round" transform="translate(0 6)" opacity={0.5} />
-			<path d={bones[k]} stroke="#d89a5c" strokeWidth={40} fill="none" strokeLinecap="round" />
-			{knobs[k].map(([x, y], i) => (
-				<g key={i}>
-					<circle cx={x} cy={y + 5} r={30} fill="#a8682f" opacity={0.5} />
-					<circle cx={x} cy={y} r={28} fill="#d89a5c" />
-					<circle cx={x - 8} cy={y - 9} r={10} fill="#f2c890" opacity={0.6} />
-				</g>
-			))}
-		</g>
-	);
+	const orb = lerp(-0.3, 0.3, E.inOut(clamp(f / C08.S2)));
+	const cam: [number, number, number] = [Math.sin(orb) * 6.5, 3.6, Math.cos(orb) * 6.5];
+	const look: [number, number, number] = [0, 0.7, 0];
+	const c = project([0, 1.1, 0], cam, look, 42);
 	const ref = useCanvasDraw(
 		(ctx) => {
 			// polvo de harina al caer cada pieza
@@ -97,8 +174,8 @@ const Masa: React.FC = () => {
 					const a = hash(i * 40 + k, 3) * Math.PI;
 					const sp = 60 + 200 * hash(i * 40 + k, 4);
 					const tt = d / FPS;
-					const x = cx + Math.cos(a) * sp * tt * (k % 2 ? 1 : -1) * 2;
-					const y = cy - 120 - Math.sin(a) * sp * tt + 80 * tt * tt;
+					const x = c.x + Math.cos(a) * sp * tt * (k % 2 ? 1 : -1) * 2;
+					const y = c.y - Math.sin(a) * sp * tt + 80 * tt * tt;
 					ctx.fillStyle = rgba('#F6EEDF', 0.5 * (1 - d / 30));
 					ctx.beginPath();
 					ctx.arc(x, y, 4 + 8 * (d / 30), 0, Math.PI * 2);
@@ -110,28 +187,17 @@ const Masa: React.FC = () => {
 	);
 	return (
 		<AbsoluteFill style={{background: 'linear-gradient(180deg,#1e0f07,#2e1a0c)'}}>
-			<Light x={300} y={500} r={1300} color={C.flama} o={0.35} />
-			{/* mesa enharinada */}
-			<div style={{position: 'absolute', left: 0, top: 1240, width: W, height: 700, background: 'linear-gradient(180deg,#5a3a20,#2a1608)'}} />
-			<div style={{position: 'absolute', left: 120, top: 1250, width: 840, height: 120, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(246,238,223,0.35), transparent)'}} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-				<defs>
-					<radialGradient id="masa" cx="40%" cy="30%" r="70%">
-						<stop offset="0%" stopColor="#F2D2A0" />
-						<stop offset="100%" stopColor="#C8925A" />
-					</radialGradient>
-				</defs>
-				<ellipse cx={cx} cy={cy + 20} rx={340} ry={40} fill="#000" opacity={0.35} />
-				<path d={`M ${cx - 330} ${cy} C ${cx - 330} ${cy - 260 * rise} ${cx - 160} ${cy - 330 * rise} ${cx} ${cy - 330 * rise} C ${cx + 160} ${cy - 330 * rise} ${cx + 330} ${cy - 260 * rise} ${cx + 330} ${cy} Z`} fill="url(#masa)" />
-				{strip(3, bone(3))}
-				{strip(0, bone(0))}
-				{strip(1, bone(1))}
-				{strip(2, bone(2))}
-				<circle cx={cx} cy={cy - 330 * rise - 30 + (1 - ball) * -400} r={58} fill="#d89a5c" opacity={clamp(ball * 2)} />
-			</svg>
+			<Light x={300} y={500} r={1300} color={C.flama} o={0.3} />
+			<Stage3D fov={42}>
+				<Camera pos={cam} look={look} />
+				<fog attach="fog" args={['#1e0f07', 10, 30]} />
+				<LucesCocina />
+				<MesaHarina />
+				<Pan3D rise={rise} bones={[0, 1, 2, 3].map(bone)} ball={ball} baked={0.05} sugar={0} />
+			</Stage3D>
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			<PaperTexture o={0.22} />
-			<Kinetic text={'Los huesos se ponen en cruz,\ncomo los cuatro rumbos.'} f={f} at={30} out={98} y={330} size={48} />
+			<PaperTexture o={0.2} />
+			<Kinetic text={'Los huesos se ponen en cruz,\ncomo los cuatro rumbos.'} f={f} at={30} out={98} y={330} size={48} scrim={0.45} />
 			{void t}
 		</AbsoluteFill>
 	);
@@ -140,7 +206,7 @@ const Masa: React.FC = () => {
 const Azucar: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 7;
-	const sheen = ramp(f, [4, 40], [-0.3, 1.3], E.inOut);
+	const sugar = E.out(clamp(f / 60));
 	const ref = useCanvasDraw(
 		(ctx) => {
 			for (let i = 0; i < 260; i++) {
@@ -163,22 +229,18 @@ const Azucar: React.FC = () => {
 		<AbsoluteFill style={{background: '#0d0603'}}>
 			<Light x={540} y={1050} r={900} color={C.cempa} o={0.45} />
 			<Smoke t={t} x={540} y={900} L={0.6} n={80} rate={16} rise={80} wind={6} seed={84} tint={C.marfil} />
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-				<defs>
-					<linearGradient id="sheen8" x1="0" y1="0" x2="1" y2="0">
-						<stop offset={Math.max(0, sheen - 0.15)} stopColor="#fff" stopOpacity={0} />
-						<stop offset={clamp(sheen)} stopColor="#FFF6DA" stopOpacity={0.45} />
-						<stop offset={Math.min(1, sheen + 0.15)} stopColor="#fff" stopOpacity={0} />
-					</linearGradient>
-				</defs>
-				<g transform="translate(540 1330) scale(1.55)">
-					<PanDeMuerto lit={1} rim={0.6} id="c8pan" />
-					<path d="M -290 10 C -290 -150 -160 -250 0 -250 C 160 -250 290 -150 290 10 C 200 52 -200 52 -290 10 Z" fill="url(#sheen8)" />
-				</g>
-			</svg>
+			<Stage3D fov={40}>
+				<Camera pos={[0, 3.1, 7.4]} look={[0, 0.75, 0]} />
+				<LucesCocina />
+				<mesh position={[0, -0.04, 0]} receiveShadow>
+					<cylinderGeometry args={[2.3, 2.1, 0.08, 40]} />
+					<meshStandardMaterial color="#e8dcc6" roughness={0.4} />
+				</mesh>
+				<Pan3D rotY={t * 0.35} baked={1} sugar={sugar} />
+			</Stage3D>
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			<PaperTexture o={0.2} />
-			<Kinetic text={'El aroma también\nlos guía de regreso.'} f={f} at={8} out={70} y={330} size={50} />
+			<PaperTexture o={0.18} />
+			<Kinetic text={'El aroma también\nlos guía de regreso.'} f={f} at={8} out={70} y={330} size={50} scrim={0.45} />
 		</AbsoluteFill>
 	);
 };
