@@ -743,12 +743,91 @@ def cap3(bus):
     return r0 + fr(REV)
 
 
-SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5, 4: cap4, 3: cap3}
+def rechinido(dur, seed=0):
+    # bisagra: tren de micro-impactos (stick-slip) con resonancia de madera
+    n = int(dur * SR)
+    out = np.zeros(n)
+    rng = np.random.default_rng(seed)
+    tt = 0.0
+    while tt < dur - 0.02:
+        u = tt / dur
+        rate = 18 + 50 * np.sin(np.pi * u)
+        i0 = int(tt * SR)
+        out[i0] += rng.uniform(0.5, 1.0)
+        tt += 1 / rate * rng.uniform(0.8, 1.2)
+    k = np.arange(int(0.03 * SR)) / SR
+    ping = np.sin(2 * np.pi * 620 * k) * np.exp(-k / 0.006) + 0.5 * np.sin(2 * np.pi * 1480 * k) * np.exp(-k / 0.003)
+    out = np.convolve(out, ping)[:n]
+    return sfx.bp(out, 300, 3000) * np.sin(np.pi * np.linspace(0, 1, n)) ** 0.5
+
+
+def cap2(bus):
+    # arpa y latido: la casa espera
+    S1, S2, S3, REV, HIT = 114, 108, 72, 132, 74
+    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
+    hit = c + fr(HIT)
+    bed(bus, 0, drone=0.07, wind=0.25, seed=2)
+    sc = M.scale(56, 'mayor')
+    # la puerta se abre
+    bus.place(rechinido(1.6, 21), fr(30), 0.22, 0.1, wet=0.5)
+    bus.place(sfx.air(22, 2.4), fr(40), 0.12, wet=0.6)
+    # grillos afuera
+    for k in range(14):
+        bus.place(M.chirp(220 + k, 3), fr(60) + k * 0.55 + hash_(k) * 0.2, 0.035, -0.7 if k % 2 else 0.7, wet=0.7)
+    # arpa: arpegios que empiezan cuando la puerta se abre
+    prog = [[44, 56, 60, 63, 68], [49, 56, 61, 65, 68], [51, 58, 63, 67, 70], [44, 56, 60, 63, 72]]
+    step = 60 / 72 / 2
+    tt, k = fr(48), 0
+    while tt < c + fr(HIT - 6):
+        ch = prog[(k // 8) % 4]
+        pat = [0, 2, 3, 4, 3, 2, 1, 2]
+        m = ch[pat[k % 8]]
+        bus.place(harp(m, 1.8, 0.7 + 0.15 * (k % 8 == 0), seed=k), tt, 0.16, -0.3 + 0.08 * (k % 8), wet=0.7)
+        tt += step
+        k += 1
+    # melodía de flauta muy suave en el camino
+    mel = [(4, 2), (5, 1), (4, 1), (2, 2), (4, 2), (7, 3), (6, 1), (4, 4)]
+    tt = a + step * 2
+    for j, (dg, d) in enumerate(mel):
+        if tt > b + 1.5:
+            break
+        bus.place(M.flute(midi(sc(dg) + 12), d * step * 0.95, 0.75, seed=20 + j), tt, 0.13, 0.15, wet=0.9)
+        tt += d * step
+    # pétalos que caen formando el camino
+    for k in range(10):
+        bus.place(sfx.rustle(230 + k, 0.6), a + 0.1 + k * 0.32, 0.05, -0.5 + 0.1 * k, wet=0.5)
+    # faroles que se encienden (de lejos a cerca) y mariposas
+    for i in range(7):
+        bus.place(sfx.ignite(240 + i), b + i * (fr(50) / 9) + 0.05, 0.05 + 0.012 * i, 0.4 if i % 2 else -0.4, wet=0.5)
+    # el latido: empieza lento y se acelera mientras el camino escribe el número
+    tt = b + 0.4
+    period = 1.05
+    while tt < hit - 0.3:
+        bus.place(sfx.heartbeat(int(tt * 10)), tt, 0.42, wet=0.2)
+        period = max(0.52, period * 0.94)
+        tt += period
+    sw = sfx.strings([midi(44), midi(51), midi(56), midi(60)], fr(HIT) - 0.1, lambda u: u ** 2, 300, 2400, release=0.1, seed=25)
+    bus.place2(sw, c + 0.2, 0.2, wet=0.7)
+    # glissando de arpa y llegada
+    for j in range(14):
+        bus.place(harp(sc(j + 7), 2.4, 0.75, seed=200 + j), hit - 0.36 + j * 0.026, 0.13, -0.6 + j * 0.09, wet=0.8)
+    bus.place(sfx.boom(2), hit, 0.7, wet=0.4)
+    bus.place(M.huehuetl(0.9, 0.95, seed=26), hit, 0.5, wet=0.3)
+    bus.place(M.choir([midi(44), midi(56), midi(60), midi(63), midi(68)], 3.0, 'a', 0.7, seed=27, attack=0.06), hit, 0.14, wet=1.0)
+    bus.place(sfx.bell(midi(68), 3.0), hit + 0.05, 0.12, 0.2, wet=1.0)
+    return c + fr(REV)
+
+
+def hash_(k):
+    return (np.sin(k * 12.9898) * 43758.5453) % 1.0
+
+
+SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: cap10, 9: cap9, 8: cap8, 7: cap7, 6: cap6, 5: cap5, 4: cap4, 3: cap3, 2: cap2}
 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132, 3: 72 + 42 * 8 + 66 + 150}
+    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132, 3: 72 + 42 * 8 + 66 + 150, 2: 114 + 108 + 72 + 132}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)
