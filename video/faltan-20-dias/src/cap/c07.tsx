@@ -6,9 +6,9 @@ import {Flame, Light, PaperTexture, useCanvasDraw} from '../components/core';
 import {Bokeh, drawPetal} from '../components/Particles';
 import {Marigold, CutFilter} from '../components/Calavera';
 import {Pompon} from '../components/Objetos';
-import {PapelDefs, PapelSheen, PapelString} from '../components/PapelPicado';
 import {GoldNumber, Kinetic, Lockup, NUM_Y} from './kit/type';
 import {Dip, LightLeak, PetalWipe} from './kit/transitions';
+import {Camera, Cempasuchil3D, Cordel3D, Stage3D, THREE, project, useSvgTexture} from './kit/three';
 
 // Capítulo 7 (REEL) · "La Catrina" — la muerte también se pone elegante.
 export const C07 = {S1: 108, S2: 126, S3: 150, S4: 66, REV: 156, HIT: 58};
@@ -110,96 +110,266 @@ const Catrina: React.FC<{x: number; y: number; s: number; lit: number; t: number
 	</svg>
 );
 
-// ---------- Escena 1: el tocador ----------
+// La catrina ilustrada como textura (para el espejo y el cuadro)
+const CatrinaTex = () =>
+	useSvgTexture(
+		<g transform="translate(450 760) scale(1.05)">
+			<Rostro lit={1} t={0} />
+			<Sombrero lit={1} t={0} />
+		</g>,
+		900,
+		1200,
+		'catrina',
+	);
+
+// velas 3D con llama 2D proyectada
+type Vela = {p: [number, number, number]; h: number; r?: number};
+const Velas3D: React.FC<{velas: Vela[]}> = ({velas}) => (
+	<>
+		{velas.map((v, i) => (
+			<mesh key={i} position={[v.p[0], v.p[1] + v.h / 2, v.p[2]]} castShadow>
+				<cylinderGeometry args={[v.r ?? 0.09, v.r ?? 0.09, v.h, 16]} />
+				<meshStandardMaterial color={C.marfil} roughness={0.5} emissive="#5a3010" emissiveIntensity={0.3} />
+			</mesh>
+		))}
+	</>
+);
+const LlamasVelas: React.FC<{velas: Vela[]; cam: [number, number, number]; look: [number, number, number]; fov: number; t: number; fl: number; k?: number}> = ({velas, cam, look, fov, t, fl, k = 1}) => (
+	<>
+		{velas.map((v, i) => {
+			const tip: [number, number, number] = [v.p[0], v.p[1] + v.h + 0.02, v.p[2]];
+			const pr = project(tip, cam, look, fov);
+			const d = Math.hypot(tip[0] - cam[0], tip[1] - cam[1], tip[2] - cam[2]);
+			return (
+				<React.Fragment key={i}>
+					<Light x={pr.x} y={pr.y - 20} r={(1600 / d) * k} color={C.cempa} o={0.35 * fl} />
+					<Flame x={pr.x} y={pr.y} size={(520 / d) * k} t={t + i * 1.7} seed={71 + i} fl={fl} />
+				</React.Fragment>
+			);
+		})}
+	</>
+);
+
+// ---------- Escena 1: el tocador en 3D ----------
+const MarcoOval: React.FC<{rx: number; ry: number; tube?: number}> = ({rx, ry, tube = 0.12}) => (
+	<group>
+		<mesh scale={[rx, ry, 1]} castShadow>
+			<torusGeometry args={[1, tube / Math.min(rx, ry), 12, 64]} />
+			<meshStandardMaterial color="#c8902a" metalness={0.85} roughness={0.3} />
+		</mesh>
+		{/* cuentas del marco */}
+		{Array.from({length: 28}).map((_, i) => {
+			const a = (i / 28) * Math.PI * 2;
+			return (
+				<mesh key={i} position={[Math.cos(a) * (rx + 0.13), Math.sin(a) * (ry + 0.13), 0.02]}>
+					<sphereGeometry args={[0.055, 10, 8]} />
+					<meshStandardMaterial color="#e0b050" metalness={0.8} roughness={0.25} />
+				</mesh>
+			);
+		})}
+	</group>
+);
+
 const Tocador: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS;
 	const fl = flicker(t, 71);
 	const appear = E.inOut(clamp((f - 20) / 60));
+	const u = E.inOut(clamp(f / C07.S1));
+	const cam: [number, number, number] = [lerp(-1.3, -0.5, u), 1.9, lerp(7.8, 6.6, u)];
+	const look: [number, number, number] = [0, 2.0, 0];
+	const tex = CatrinaTex();
+	const velas: Vela[] = [{p: [-1.7, 0.9, 0.5], h: 0.7}, {p: [1.6, 0.9, 0.6], h: 0.5}];
 	return (
 		<AbsoluteFill style={{background: '#080305'}}>
-			<CutFilter />
-			<Light x={160} y={1300} r={1100} color={C.cempa} o={0.4 * fl} />
-			{/* espejo ovalado con marco dorado */}
-			<div style={{position: 'absolute', left: 190, top: 330, width: 700, height: 980, borderRadius: '50%', background: 'radial-gradient(ellipse at 45% 40%, #2a1a22, #0a0508)', border: `26px solid ${rgba(mixRGB(C.ink, C.flama, 0.7))}`, boxShadow: `0 0 0 8px ${rgba(C.terracota, 0.8)}, 0 20px 60px rgba(0,0,0,0.7)`, overflow: 'hidden'}}>
-				<div style={{position: 'absolute', inset: 0, opacity: appear, transform: `translateY(${(1 - appear) * 60}px)`}}>
-					<svg width={700} height={980} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-						<g transform="translate(350 620) scale(0.95)">
-							<Rostro lit={0.55 * appear} t={t} />
-							<Sombrero lit={0.55 * appear} t={t} />
-						</g>
-					</svg>
-				</div>
-				<div style={{position: 'absolute', inset: 0, background: 'linear-gradient(120deg, transparent 40%, rgba(255,240,220,0.12) 50%, transparent 60%)'}} />
-			</div>
-			{/* velas del tocador */}
-			<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-				<rect x={0} y={1420} width={W} height={500} fill="#1a0c08" />
-				<rect x={110} y={1260} width={44} height={170} rx={4} fill={C.marfil} />
-				<rect x={930} y={1300} width={40} height={130} rx={4} fill={C.marfil} />
-			</svg>
-			<Flame x={132} y={1262} size={70} t={t} seed={71} fl={fl} />
-			<Flame x={950} y={1302} size={60} t={t + 2} seed={72} fl={fl} />
-			<PaperTexture o={0.2} />
-			<Kinetic text={'La muerte también\nse pone elegante.'} f={f} at={12} out={96} y={1500} size={54} />
+			<Stage3D fov={45}>
+				<Camera pos={cam} look={look} />
+				<ambientLight intensity={0.18} />
+				<pointLight position={[-1.7, 1.9, 0.7]} intensity={9 * fl} distance={10} color={C.cempa} castShadow />
+				<pointLight position={[1.6, 1.7, 0.8]} intensity={6 * fl} distance={10} color={C.cempa} />
+				<directionalLight position={[3, 5, 4]} intensity={0.3} color="#a898c8" />
+				{/* pared */}
+				<mesh position={[0, 2, -0.3]} receiveShadow>
+					<planeGeometry args={[14, 8]} />
+					<meshStandardMaterial color="#2a1418" roughness={1} />
+				</mesh>
+				{/* tocador */}
+				<mesh position={[0, 0.45, 0.4]} castShadow receiveShadow>
+					<boxGeometry args={[4.4, 0.9, 1.2]} />
+					<meshStandardMaterial color="#3a1e10" roughness={0.6} />
+				</mesh>
+				<mesh position={[0, 0.92, 0.4]} castShadow>
+					<boxGeometry args={[4.5, 0.05, 1.25]} />
+					<meshStandardMaterial color="#5a3018" roughness={0.4} />
+				</mesh>
+				{/* espejo */}
+				<group position={[0, 2.35, -0.1]}>
+					<MarcoOval rx={1.05} ry={1.4} />
+					<mesh scale={[1.05, 1.4, 1]}>
+						<circleGeometry args={[1, 64]} />
+						<meshStandardMaterial color="#1a1018" roughness={0.1} metalness={0.6} />
+					</mesh>
+					<mesh position={[0, -0.05, 0.01]} scale={[1, 1, 1]}>
+						<planeGeometry args={[1.95, 2.6]} />
+						<meshBasicMaterial map={tex} transparent opacity={0.85 * appear} color="#e0c8b8" />
+					</mesh>
+				</group>
+				<Velas3D velas={velas} />
+				{/* perfumeros de vidrio */}
+				{[[-0.9, 0.5], [-0.6, 0.65], [0.9, 0.55]].map(([x, z], i) => (
+					<group key={i} position={[x, 0.95, z]}>
+						<mesh position={[0, 0.16, 0]}>
+							<sphereGeometry args={[0.16, 16, 12]} />
+							<meshStandardMaterial color={i === 1 ? '#a83a5a' : '#c8a060'} transparent opacity={0.6} roughness={0.05} metalness={0.2} />
+						</mesh>
+						<mesh position={[0, 0.36, 0]}>
+							<cylinderGeometry args={[0.03, 0.04, 0.12, 8]} />
+							<meshStandardMaterial color="#c8902a" metalness={0.8} roughness={0.3} />
+						</mesh>
+					</group>
+				))}
+				<Cempasuchil3D pos={[1.05, 1.15, 0.35]} s={0.12} rot={[0.5, 0, 0]} />
+				<Cempasuchil3D pos={[1.25, 1.1, 0.5]} s={0.1} rot={[0.6, 0.5, 0]} />
+			</Stage3D>
+			<LlamasVelas velas={velas} cam={cam} look={look} fov={45} t={t} fl={fl} />
+			<PaperTexture o={0.18} />
+			<Kinetic text={'La muerte también\nse pone elegante.'} f={f} at={12} out={96} y={1500} size={54} scrim={0.45} />
 		</AbsoluteFill>
 	);
 };
 
-// ---------- Escena 2: retrato ----------
+// ---------- Escena 2: el retrato en su marco dorado ----------
 const Retrato: React.FC = () => {
 	const f = useCurrentFrame();
 	const t = f / FPS + 4;
 	const fl = flicker(t, 73);
-	const tiltUp = ramp(f, [0, C07.S2], [-220, 60], E.inOut);
+	const u = E.inOut(clamp(f / C07.S2));
+	const cam: [number, number, number] = [lerp(-0.9, 0.6, u), lerp(0.6, 2.2, u), lerp(7.4, 6.6, u)];
+	const look: [number, number, number] = [0, lerp(1.2, 2.4, u), 0];
+	const tex = CatrinaTex();
 	return (
 		<AbsoluteFill style={{background: '#0a0406'}}>
-			<CutFilter />
-			<Light x={220} y={800} r={1200} color={C.cempa} o={0.45 * fl} />
 			<Bokeh t={t} L={0.8} n={16} seed={74} blur={6} />
-			<Catrina x={560} y={1150 + tiltUp} s={1.45} lit={0.8 + 0.2 * fl} t={t} tilt={Math.sin(t * 0.8) * 2} />
-			<PaperTexture o={0.18} />
-			<Kinetic text={'Posada la dibujó;\nel pueblo la hizo reina.'} f={f} at={14} out={110} y={1500} size={48} scrim={1} />
+			<Stage3D fov={45}>
+				<Camera pos={cam} look={look} />
+				<ambientLight intensity={0.2} />
+				<pointLight position={[-2, 1, 2]} intensity={14 * fl} distance={12} color={C.cempa} castShadow />
+				<directionalLight position={[2, 6, 4]} intensity={0.5} color="#b8a8d8" />
+				<mesh position={[0, 2, -0.15]} receiveShadow>
+					<planeGeometry args={[12, 10]} />
+					<meshStandardMaterial color="#26121a" roughness={1} />
+				</mesh>
+				<group position={[0, 2, 0]}>
+					{/* marco dorado con moldura */}
+					{[
+						[0, 1.75, 2.9, 0.3],
+						[0, -1.75, 2.9, 0.3],
+						[-1.3, 0, 0.3, 3.8],
+						[1.3, 0, 0.3, 3.8],
+					].map(([x, y, w, h], i) => (
+						<mesh key={i} position={[x, y, 0.05]} castShadow>
+							<boxGeometry args={[w, h, 0.18]} />
+							<meshStandardMaterial color="#c8902a" metalness={0.85} roughness={0.3} />
+						</mesh>
+					))}
+					<mesh position={[0, 0, 0]}>
+						<planeGeometry args={[2.4, 3.3]} />
+						<meshStandardMaterial color="#1a0c10" roughness={0.9} />
+					</mesh>
+					<mesh position={[0, -0.05, 0.01]}>
+						<planeGeometry args={[2.4, 3.2]} />
+						<meshStandardMaterial map={tex} transparent roughness={0.7} />
+					</mesh>
+				</group>
+				<Velas3D velas={[{p: [-1.9, -0.6, 0.6], h: 1.1, r: 0.11}]} />
+			</Stage3D>
+			<LlamasVelas velas={[{p: [-1.9, -0.6, 0.6], h: 1.1}]} cam={cam} look={look} fov={45} t={t} fl={fl} />
+			<PaperTexture o={0.16} />
+			<Kinetic text={'Posada la dibujó;\nel pueblo la hizo reina.'} f={f} at={14} out={110} y={1500} size={48} scrim={0.8} />
 		</AbsoluteFill>
 	);
 };
 
-// ---------- Escena 3: el vals ----------
-const Bailarina: React.FC<{x: number; y: number; t: number; spin: number; s?: number}> = ({x, y, t, spin, s = 1}) => {
-	const sx = Math.cos(spin);
-	const flare = 1 + 0.25 * Math.abs(Math.sin(spin));
-	const hem = Array.from({length: 13})
-		.map((_, i) => {
-			const u = i / 12;
-			const xx = (-300 + u * 600) * flare;
-			const yy = 560 + Math.sin(u * 10 + t * 6) * 26;
-			return `${xx} ${yy}`;
-		})
-		.join(' L ');
+// ---------- Escena 3: el vals (bailarina 3D que gira) ----------
+const Falda: React.FC<{rTop: number; rBot: number; h: number; y: number; color: string; t: number; flare: number}> = ({rTop, rBot, h, y, color, t, flare}) => {
+	const geo = React.useMemo(() => new THREE.CylinderGeometry(rTop, rBot, h, 48, 6, true), [rTop, rBot, h]);
+	const base = React.useMemo(() => Float32Array.from(geo.attributes.position.array as Float32Array), [geo]);
+	React.useLayoutEffect(() => {
+		const p = geo.attributes.position as THREE.BufferAttribute;
+		for (let i = 0; i < p.count; i++) {
+			const x = base[i * 3];
+			const yy = base[i * 3 + 1];
+			const z = base[i * 3 + 2];
+			const u = (h / 2 - yy) / h; // 0 cintura, 1 dobladillo
+			const a = Math.atan2(z, x);
+			const k = 1 + u * (flare + 0.08 * Math.sin(a * 10 + t * 6));
+			p.setXYZ(i, x * k, yy + u * u * 0.06 * Math.sin(a * 6 - t * 5), z * k);
+		}
+		p.needsUpdate = true;
+		geo.computeVertexNormals();
+	});
 	return (
-		<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-			<g transform={`translate(${x} ${y}) scale(${s * (0.35 + 0.65 * Math.abs(sx))} ${s})`}>
-				{/* vestido en capas */}
-				<path d={`M -60 80 L ${hem} L 60 80 Z`} fill={C.terracota} />
-				<path d={`M -50 80 L ${hem.split(' L ').map((p) => p.split(' ').map((v, j) => (j === 0 ? +v * 0.8 : +v - 90)).join(' ')).join(' L ')} L 50 80 Z`} fill={C.cempa} />
-				<path d={`M -40 80 L ${hem.split(' L ').map((p) => p.split(' ').map((v, j) => (j === 0 ? +v * 0.6 : +v - 180)).join(' ')).join(' L ')} L 40 80 Z`} fill={C.flama} opacity={0.9} />
-				{/* torso */}
-				<path d="M -60 90 C -70 20 -50 -40 -30 -60 L 30 -60 C 50 -40 70 20 60 90 Z" fill="#1a0c10" />
-				{/* brazos: uno arriba con abanico */}
-				<path d={`M 34 -40 C 90 -80 120 -160 ${130 + Math.sin(t * 3) * 10} -230`} stroke="#E8DCC8" strokeWidth={14} fill="none" strokeLinecap="round" />
-				<path d="M -34 -40 C -90 0 -110 60 -100 120" stroke="#E8DCC8" strokeWidth={14} fill="none" strokeLinecap="round" />
-				<path d={`M ${130 + Math.sin(t * 3) * 10} -230 l -40 -60 a 70 70 0 0 1 80 0 Z`} fill={C.verde} />
-				{/* cabeza y sombrero */}
-				<circle cx={0} cy={-110} r={42} fill="#E8DCC8" />
-				<circle cx={-14} cy={-116} r={9} fill="#120806" />
-				<circle cx={14} cy={-116} r={9} fill="#120806" />
-				<ellipse cx={0} cy={-150} rx={150} ry={30} fill="#22101a" />
-				<path d="M -60 -160 C -60 -220 60 -220 60 -160 Z" fill="#1a0c10" />
-				<circle cx={-70} cy={-170} r={22} fill={C.cempa} />
-				<circle cx={-40} cy={-186} r={16} fill={C.flama} />
-				<path d="M 20 -200 C 40 -280 80 -320 120 -340" stroke={C.marfil} strokeWidth={10} fill="none" strokeLinecap="round" />
-			</g>
-		</svg>
+		<mesh geometry={geo} position={[0, y, 0]} castShadow>
+			<meshStandardMaterial color={color} side={THREE.DoubleSide} roughness={0.7} />
+		</mesh>
+	);
+};
+
+const Bailarina3D: React.FC<{t: number; spin: number}> = ({t, spin}) => {
+	const flare = 0.25 + 0.2 * Math.abs(Math.sin(spin));
+	const brazo = (pts: [number, number, number][]) => new THREE.CatmullRomCurve3(pts.map((q) => new THREE.Vector3(...q)));
+	return (
+		<group rotation={[0, spin, 0]}>
+			<Falda rTop={0.24} rBot={1.25} h={1.7} y={0.95} color={C.terracota} t={t} flare={flare} />
+			<Falda rTop={0.22} rBot={1.0} h={1.35} y={1.15} color={C.cempa} t={t + 0.4} flare={flare * 0.9} />
+			<Falda rTop={0.2} rBot={0.78} h={1.0} y={1.35} color={C.flama} t={t + 0.8} flare={flare * 0.8} />
+			{/* torso */}
+			<mesh position={[0, 2.15, 0]} castShadow>
+				<cylinderGeometry args={[0.24, 0.18, 0.75, 16]} />
+				<meshStandardMaterial color="#1a0c10" roughness={0.6} />
+			</mesh>
+			{/* cuello de encaje */}
+			<mesh position={[0, 2.55, 0]}>
+				<torusGeometry args={[0.16, 0.05, 8, 20]} />
+				<meshStandardMaterial color="#f4eee6" roughness={0.8} />
+			</mesh>
+			{/* cabeza (calavera) */}
+			<mesh position={[0, 2.82, 0]} scale={[0.9, 1.05, 0.95]} castShadow>
+				<sphereGeometry args={[0.22, 20, 16]} />
+				<meshStandardMaterial color="#efe6d6" roughness={0.6} />
+			</mesh>
+			{[-1, 1].map((sd) => (
+				<mesh key={sd} position={[sd * 0.075, 2.85, 0.17]}>
+					<sphereGeometry args={[0.055, 12, 10]} />
+					<meshStandardMaterial color="#120806" roughness={0.4} />
+				</mesh>
+			))}
+			{/* sombrero con flores */}
+			<mesh position={[0, 3.0, 0]} rotation={[0.15, 0, 0]} castShadow>
+				<cylinderGeometry args={[0.62, 0.62, 0.03, 32]} />
+				<meshStandardMaterial color="#22101a" roughness={0.6} />
+			</mesh>
+			<mesh position={[0, 3.12, -0.02]} rotation={[0.15, 0, 0]} castShadow>
+				<cylinderGeometry args={[0.2, 0.24, 0.24, 20]} />
+				<meshStandardMaterial color="#1a0c10" roughness={0.6} />
+			</mesh>
+			{[[-0.3, 0.12], [-0.12, 0.25], [0.2, 0.22]].map(([x, z], i) => (
+				<Cempasuchil3D key={i} pos={[x, 3.06, z]} s={0.07} rot={[0.4, 0, 0]} seed={i + 3} />
+			))}
+			{/* brazos: uno en alto con el abanico */}
+			<mesh castShadow>
+				<tubeGeometry args={[brazo([[0.22, 2.4, 0], [0.5, 2.7, 0.1], [0.6, 3.2, 0.15], [0.55, 3.5, 0.1]]), 16, 0.045, 8, false]} />
+				<meshStandardMaterial color="#e8dcc8" roughness={0.6} />
+			</mesh>
+			<mesh castShadow>
+				<tubeGeometry args={[brazo([[-0.22, 2.4, 0], [-0.5, 2.1, 0.15], [-0.55, 1.7, 0.25], [-0.5, 1.45, 0.3]]), 16, 0.045, 8, false]} />
+				<meshStandardMaterial color="#e8dcc8" roughness={0.6} />
+			</mesh>
+			<mesh position={[0.55, 3.65, 0.1]} rotation={[0, 0, Math.sin(t * 3) * 0.2]}>
+				<circleGeometry args={[0.35, 16, 0, Math.PI]} />
+				<meshStandardMaterial color={C.verde} side={THREE.DoubleSide} roughness={0.8} />
+			</mesh>
+		</group>
 	);
 };
 
@@ -208,6 +378,10 @@ const Vals: React.FC = () => {
 	const t = f / FPS + 8;
 	const fl = flicker(t, 75);
 	const spin = t * 2.4;
+	const orb = lerp(-0.3, 0.3, E.inOut(clamp(f / C07.S3)));
+	const cam: [number, number, number] = [Math.sin(orb) * 7.5, 1.6, Math.cos(orb) * 7.5];
+	const look: [number, number, number] = [0, 2.2, 0];
+	const velas: Vela[] = [-3, -1.8, 1.8, 3].map((x, i) => ({p: [x, 0, -1.5 - (i % 2) * 0.8], h: 0.9, r: 0.1}));
 	const ref = useCanvasDraw(
 		(ctx) => {
 			for (let i = 0; i < 60; i++) {
@@ -223,65 +397,88 @@ const Vals: React.FC = () => {
 	);
 	return (
 		<AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 60%, #2a1208, #070304 70%)'}}>
-			<PapelDefs />
-			<PapelSheen />
-			<PapelString cfg={{y: 20, sag: 60, count: 5, spacing: 252, x0: 36, scale: 0.75, seed: 77, types: [1, 0, 2, 3, 1], colorOffset: 2}} frame={200} t={t} light={0.8} lightPos={[540, 1400]} gust={0.9} />
-			{[150, 300, 780, 930].map((x, i) => (
-				<React.Fragment key={i}>
-					<svg width={W} height={H} style={{position: 'absolute', inset: 0}}>
-						<rect x={x - 18} y={1500} width={36} height={160} rx={4} fill={C.marfil} />
-					</svg>
-					<Flame x={x} y={1502} size={56} t={t + i} seed={78 + i} fl={fl} />
-					<Light x={x} y={1460} r={300} color={C.cempa} o={0.35 * fl} />
-				</React.Fragment>
-			))}
-			{/* sombra en el piso */}
-			<div style={{position: 'absolute', left: 240, top: 1640, width: 600, height: 80, borderRadius: '50%', background: 'radial-gradient(closest-side, rgba(0,0,0,0.6), transparent)'}} />
-			<Bailarina x={540} y={1080} t={t} spin={spin} s={1.15} />
+			<Stage3D fov={45}>
+				<Camera pos={cam} look={look} />
+				<ambientLight intensity={0.25} />
+				<spotLight position={[0, 8, 3]} angle={0.5} penumbra={0.6} intensity={120} distance={20} color="#ffd8a8" castShadow />
+				<pointLight position={[0, 1, -2]} intensity={10 * fl} distance={10} color={C.cempa} />
+				<mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
+					<circleGeometry args={[9, 48]} />
+					<meshStandardMaterial color="#2a160e" roughness={0.5} metalness={0.1} />
+				</mesh>
+				<Bailarina3D t={t} spin={spin} />
+				<Velas3D velas={velas} />
+				<Cordel3D a={[-5, 5.6, -2]} b={[5, 5.6, -2]} n={8} sag={0.7} t={t} size={0.9} />
+				<Cordel3D a={[-5, 5.0, 0.5]} b={[5, 5.0, 0.5]} n={8} sag={0.6} t={t + 1} size={0.8} seed={3} />
+			</Stage3D>
+			<LlamasVelas velas={velas} cam={cam} look={look} fov={45} t={t} fl={fl} />
 			<canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0}} />
-			<PaperTexture o={0.2} />
+			<PaperTexture o={0.18} />
 			<Kinetic text={'Y cuando suena el vals,\nnadie se queda sentado.'} f={f} at={16} out={130} y={330} size={48} scrim={0.8} />
 		</AbsoluteFill>
 	);
 };
 
-// ---------- Abanico ----------
-const Abanico: React.FC<{open: number; cx: number; cy: number; R: number; t: number}> = ({open, cx, cy, R, t}) => {
+// ---------- Abanico 3D plisado ----------
+const Abanico3D: React.FC<{open: number; R: number}> = ({open, R}) => {
 	const n = 17;
-	const span = 170 * open;
+	const span = (Math.PI * 170 * open) / 180;
+	const w = span / (n - 1);
+	const wedge = React.useMemo(() => {
+		const g = new THREE.BufferGeometry();
+		g.setAttribute('position', new THREE.Float32BufferAttribute([0, 0, 0, -1, 1, 0, 1, 1, 0], 3));
+		g.computeVertexNormals();
+		return g;
+	}, []);
 	return (
-		<svg width={W} height={H} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
-			<g transform={`translate(${cx} ${cy})`}>
-				{Array.from({length: n}).map((_, i) => {
-					const a = -90 - span / 2 + (span * i) / (n - 1);
-					const w = (span / (n - 1)) * 0.98 + 0.5;
-					const col = i % 2 ? C.verde : C.terracota;
-					return (
-						<g key={i} transform={`rotate(${a + 90})`}>
-							<path d={`M 0 0 L ${-Math.sin((w * Math.PI) / 360) * R} ${-Math.cos((w * Math.PI) / 360) * R} L ${Math.sin((w * Math.PI) / 360) * R} ${-Math.cos((w * Math.PI) / 360) * R} Z`} fill={col} stroke="#120806" strokeWidth={2} />
-							<circle cx={0} cy={-R * 0.8} r={R * 0.025} fill="#120806" opacity={0.6} />
-							<circle cx={0} cy={-R * 0.62} r={R * 0.018} fill={C.flama} />
-							<path d={`M 0 -10 L 0 ${-R}`} stroke="#3a1a0c" strokeWidth={4} />
-						</g>
-					);
-				})}
-				<path d={`M ${-R} 0 A ${R} ${R} 0 0 1 ${R} 0`} transform={`rotate(0)`} fill="none" stroke={C.flama} strokeWidth={6} opacity={open > 0.98 ? 0.8 : 0} />
-				<circle r={26} fill={C.flama} />
-				{void t}
-			</g>
-		</svg>
+		<group>
+			{Array.from({length: n}).map((_, i) => {
+				const a = -span / 2 + w * i;
+				const half = Math.tan(Math.max(0.001, w) / 2 + 0.002);
+				return (
+					<group key={i} rotation={[0, 0, a]}>
+						{/* pliegue: cada gajo se inclina alternado */}
+						<mesh geometry={wedge} scale={[half * R, R, 1]} rotation={[0, (i % 2 ? 1 : -1) * 0.18, 0]}>
+							<meshStandardMaterial color={i % 2 ? C.verde : C.terracota} side={THREE.DoubleSide} roughness={0.75} />
+						</mesh>
+						<mesh position={[0, R * 0.5, 0.02]}>
+							<boxGeometry args={[0.04, R, 0.03]} />
+							<meshStandardMaterial color="#3a1a0c" roughness={0.6} />
+						</mesh>
+						<mesh position={[0, R * 0.8, 0.04]}>
+							<sphereGeometry args={[R * 0.022, 8, 6]} />
+							<meshStandardMaterial color={C.flama} emissive={C.flama} emissiveIntensity={0.4} />
+						</mesh>
+					</group>
+				);
+			})}
+			<mesh position={[0, 0, 0.05]}>
+				<cylinderGeometry args={[0.2, 0.2, 0.12, 16]} />
+				<meshStandardMaterial color="#c8902a" metalness={0.8} roughness={0.3} />
+			</mesh>
+		</group>
 	);
 };
+const EscenaAbanico: React.FC<{open: number; tilt: number; y?: number}> = ({open, tilt, y = -3}) => (
+	<Stage3D fov={40}>
+		<Camera pos={[0, 0, 18]} look={[0, 0, 0]} />
+		<ambientLight intensity={0.35} />
+		<directionalLight position={[-3, 4, 6]} intensity={1.8} color="#ffd8a8" />
+		<directionalLight position={[3, -2, 4]} intensity={0.6} color={C.cempa} />
+		<group position={[0, y, 0]} rotation={[tilt, 0, 0]}>
+			<Abanico3D open={open} R={7} />
+		</group>
+	</Stage3D>
+);
 
 const AbreAbanico: React.FC = () => {
 	const f = useCurrentFrame();
-	const t = f / FPS + 13;
 	const open = E.out(clamp((f - 8) / 30));
 	return (
 		<AbsoluteFill style={{background: '#0a0406'}}>
 			<Light x={540} y={1100} r={900} color={C.cempa} o={0.45} />
-			<Abanico open={open} cx={540} cy={1400} R={760} t={t} />
-			<PaperTexture o={0.2} />
+			<EscenaAbanico open={open} tilt={lerp(-0.5, -0.15, open)} y={-3.4} />
+			<PaperTexture o={0.18} />
 		</AbsoluteFill>
 	);
 };
@@ -296,7 +493,7 @@ const Revelacion: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) => {
 		<AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 55%, #2a1208, #070304 70%)'}}>
 			<Light x={540} y={NUM_Y} r={1000} color={C.cempa} o={0.3 + 0.2 * num} />
 			<div style={{position: 'absolute', inset: 0, opacity: 0.85}}>
-				<Abanico open={open} cx={540} cy={1260} R={720} t={t} />
+				<EscenaAbanico open={open} tilt={-0.12} y={-2.3} />
 			</div>
 			<div style={{position: 'absolute', inset: 0, background: 'radial-gradient(ellipse 45% 30% at 50% 45%, rgba(10,4,2,0.75), transparent)', opacity: num}} />
 			<GoldNumber txt={String(dias)} o={num} blur={(1 - num) * 12} scale={lerp(0.85, 1, num)} />

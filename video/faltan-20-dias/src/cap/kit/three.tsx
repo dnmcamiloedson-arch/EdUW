@@ -1,4 +1,6 @@
-import React, {useLayoutEffect, useMemo} from 'react';
+import React, {useEffect, useLayoutEffect, useMemo, useState} from 'react';
+import {renderToStaticMarkup} from 'react-dom/server.browser';
+import {continueRender, delayRender} from 'remotion';
 import * as THREE from 'three';
 import {useThree} from '@react-three/fiber';
 import {ThreeCanvas} from '@remotion/three';
@@ -498,6 +500,92 @@ export const Pan3D: React.FC<{pos?: [number, number, number]; s?: number; rise?:
 			</instancedMesh>
 		</group>
 	);
+};
+
+// ---------- Papel picado: textura con calados (alfa) ----------
+let papelTex: THREE.CanvasTexture | null = null;
+export const getPapelTex = () => {
+	if (papelTex) return papelTex;
+	const cv = document.createElement('canvas');
+	cv.width = 200;
+	cv.height = 260;
+	const g = cv.getContext('2d')!;
+	g.fillStyle = '#fff';
+	g.beginPath();
+	g.moveTo(0, 0);
+	g.lineTo(200, 0);
+	g.lineTo(200, 230);
+	for (let k = 0; k <= 8; k++) g.lineTo(200 - k * 25, k % 2 ? 260 : 230);
+	g.closePath();
+	g.fill();
+	g.globalCompositeOperation = 'destination-out';
+	g.beginPath();
+	g.arc(100, 90, 34, 0, Math.PI * 2);
+	g.fill();
+	for (const [x, y] of [[40, 40], [160, 40], [40, 150], [160, 150]]) {
+		g.beginPath();
+		g.moveTo(x, y - 16);
+		g.lineTo(x + 12, y);
+		g.lineTo(x, y + 16);
+		g.lineTo(x - 12, y);
+		g.closePath();
+		g.fill();
+	}
+	for (let k = 0; k < 6; k++) g.fillRect(28 + k * 26, 190, 14, 14);
+	papelTex = new THREE.CanvasTexture(cv);
+	return papelTex;
+};
+const PAPEL_COLS = ['#F26D3D', '#1F5C48', '#F5C242', '#A83A25', '#D9CDB6', '#8a3a7a'];
+// Cordel de papel picado entre dos puntos, con caída y vaivén
+export const Cordel3D: React.FC<{a: [number, number, number]; b: [number, number, number]; n?: number; sag?: number; t: number; size?: number; seed?: number}> = ({a, b, n = 7, sag = 0.8, t, size = 1, seed = 0}) => (
+	<group>
+		{Array.from({length: n}).map((_, k) => {
+			const u = (k + 0.5) / n;
+			const x = a[0] + (b[0] - a[0]) * u;
+			const y = a[1] + (b[1] - a[1]) * u - Math.sin(Math.PI * u) * sag;
+			const z = a[2] + (b[2] - a[2]) * u;
+			const col = PAPEL_COLS[(k + seed) % PAPEL_COLS.length];
+			return (
+				<mesh key={k} position={[x, y - 0.65 * size, z]} rotation={[Math.sin(t * 2.2 + k + seed) * 0.3, Math.sin(t * 1.3 + k) * 0.2, 0]}>
+					<planeGeometry args={[1.0 * size, 1.3 * size]} />
+					<meshStandardMaterial map={getPapelTex()} color={col} transparent alphaTest={0.5} side={THREE.DoubleSide} roughness={0.9} emissive={col} emissiveIntensity={0.18} />
+				</mesh>
+			);
+		})}
+	</group>
+);
+
+// ---------- Textura a partir de un dibujo SVG de React (para llevar ilustraciones 2D a superficies 3D) ----------
+export const useSvgTexture = (node: React.ReactElement, w: number, h: number, key: string) => {
+	const [tex] = useState(() => {
+		const c = document.createElement('canvas');
+		c.width = w;
+		c.height = h;
+		const tx = new THREE.CanvasTexture(c);
+		tx.colorSpace = THREE.SRGBColorSpace;
+		tx.anisotropy = 4;
+		return tx;
+	});
+	const [handle] = useState(() => delayRender('textura ' + key));
+	useEffect(() => {
+		const svg = renderToStaticMarkup(
+			<svg xmlns="http://www.w3.org/2000/svg" width={w} height={h} viewBox={`0 0 ${w} ${h}`}>
+				{node}
+			</svg>,
+		);
+		const img = new Image();
+		img.onload = () => {
+			const ctx = (tex.image as HTMLCanvasElement).getContext('2d')!;
+			ctx.clearRect(0, 0, w, h);
+			ctx.drawImage(img, 0, 0);
+			tex.needsUpdate = true;
+			continueRender(handle);
+		};
+		img.onerror = () => continueRender(handle);
+		img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [key]);
+	return tex;
 };
 
 export {THREE};

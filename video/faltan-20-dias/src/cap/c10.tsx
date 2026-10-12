@@ -7,7 +7,7 @@ import {drawPetal} from '../components/Particles';
 import {Kinetic, Lockup} from './kit/type';
 import {Dip, LightLeak} from './kit/transitions';
 import {Xolo3D} from './c14';
-import {Camera, Mountain, Stage3D, THREE} from './kit/three';
+import {Camera, Mountain, Stage3D, THREE, getPapelTex} from './kit/three';
 
 // Capítulo 10 (REEL) · "El Mictlán" — para volver, primero hay que bajar los nueve niveles.
 export const C10 = {INTRO: 84, LEVEL: 40, REV: 156, HIT: 72};
@@ -88,39 +88,6 @@ const Entrada: React.FC = () => {
 // ---------- Los nueve niveles en un tiro vertical ----------
 const LV = 34; // distancia entre niveles
 const lvY = (i: number) => -i * LV;
-
-let papelTex: THREE.CanvasTexture | null = null;
-const getPapelTex = () => {
-	if (papelTex) return papelTex;
-	const cv = document.createElement('canvas');
-	cv.width = 200;
-	cv.height = 260;
-	const g = cv.getContext('2d')!;
-	g.fillStyle = '#fff';
-	g.beginPath();
-	g.moveTo(0, 0);
-	g.lineTo(200, 0);
-	g.lineTo(200, 230);
-	for (let k = 0; k <= 8; k++) g.lineTo(200 - k * 25, k % 2 ? 260 : 230);
-	g.closePath();
-	g.fill();
-	g.globalCompositeOperation = 'destination-out';
-	g.beginPath();
-	g.arc(100, 90, 34, 0, Math.PI * 2);
-	g.fill();
-	for (const [x, y] of [[40, 40], [160, 40], [40, 150], [160, 150]]) {
-		g.beginPath();
-		g.moveTo(x, y - 16);
-		g.lineTo(x + 12, y);
-		g.lineTo(x, y + 16);
-		g.lineTo(x - 12, y);
-		g.closePath();
-		g.fill();
-	}
-	for (let k = 0; k < 6; k++) g.fillRect(28 + k * 26, 190, 14, 14);
-	papelTex = new THREE.CanvasTexture(cv);
-	return papelTex;
-};
 
 // Saliente de roca de cima plana donde ocurre cada nivel
 const Plataforma: React.FC<{y: number; seed: number; color: string}> = ({y, seed, color}) => {
