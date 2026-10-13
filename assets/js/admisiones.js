@@ -148,7 +148,8 @@
     $("r-link").value = ref.link;
     $("r-wa-nota").hidden = true;
     const texto = "Te invito a conocer la Universidad Westhill. Regístrate aquí: " + ref.link;
-    $("r-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(texto);
+    // En computadora va directo a WhatsApp Web (no pide instalar la app)
+    $("r-whatsapp").href = (esCelular() ? "https://wa.me/?text=" : "https://web.whatsapp.com/send?text=") + encodeURIComponent(texto);
 
     // La tarjeta se dibuja antes de mostrarla para que el cambio de altura sea uno solo
     // Si la tarjeta falla, el código y el link se muestran igual (ya están guardados)
@@ -175,7 +176,12 @@
     });
   }
 
+  // Celular o tableta: pantalla táctil sin mouse. En computadora el menú de compartir
+  // de Windows/Mac pide la app de WhatsApp instalada, así que ahí no se usa.
+  const esCelular = () => matchMedia("(pointer: coarse)").matches && !matchMedia("(any-pointer: fine)").matches;
+
   function puedeCompartir(archivo) {
+    if (!esCelular()) return false;
     try { return !!(navigator.canShare && navigator.canShare({ files: [archivo] })); } catch (e) { return false; }
   }
 
