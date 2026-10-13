@@ -315,7 +315,9 @@
       if (nombreOk) nombreOk.textContent = nombre ? ", " + nombre : "";
       fase = "enviando";
       if (reducido()) { terminar(); return; }
-      hoja.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Fija la altura de la escena: al guardar la hoja la página no se encoge ni salta
+      escena.style.minHeight = escena.offsetHeight + "px";
+      centrar(wrap);
       hoja.classList.remove("rf-materialize");
       hoja.classList.add("is-morphing");
       wrap.style.visibility = "";
@@ -345,8 +347,10 @@
         onUpdate: (p) => {
           env.style.transform = `translateY(${-lejos * p}px) rotate(${-8 * p}deg) scale(${1 - 0.25 * p})`;
           env.style.opacity = String(Math.max(0, 1 - Math.max(0, p - 0.55) / 0.45));
+          // El festejo arranca mientras el sobre se desvanece, sin pausa en blanco
+          if (p > 0.82 && fase === "enviando") terminar();
         },
-        onRest: terminar,
+        onRest: () => { if (fase === "enviando") terminar(); wrap.style.visibility = "hidden"; },
       });
       // Pequeño "agarre" hacia abajo antes de salir (anticipa la dirección)
       vuelo.set(-0.04);
@@ -355,10 +359,18 @@
 
     function terminar() {
       fase = "enviado";
-      wrap.style.visibility = "hidden";
       hoja.setAttribute("data-stowed", "");
-      listo.hidden = false;
-      celebrar(listo);
+      celebrar(listo, () => {
+        escena.style.minHeight = "";
+        if (reducido()) wrap.style.visibility = "hidden";
+      });
+    }
+
+    // Lleva el sobre al centro de la pantalla mientras la hoja se pliega
+    function centrar(el) {
+      const r = el.getBoundingClientRect();
+      const y = window.scrollY + r.top + r.height / 2 - window.innerHeight / 2;
+      window.scrollTo({ top: Math.max(0, y), behavior: "smooth" });
     }
 
     // Firma del sobre con el nombre de quien invita
@@ -386,15 +398,23 @@
      2) El título entra letra por letra (el nombre en azul).
      3) Unos segundos después el texto se cambia por el cuadro de redes.
      Tocar el festejo lo adelanta. Con "reducir movimiento" solo hay fundidos. */
-  function celebrar(listo) {
+  function celebrar(listo, alMostrar) {
     const etapa1 = listo.querySelector("[data-celebra]");
     const etapa2 = listo.querySelector("[data-redes-final]");
     const titulo = listo.querySelector("[data-letras]");
     const nombre = (listo.querySelector("[data-nombre-registro]") || {}).textContent || "";
     const nombreFin = listo.querySelector("[data-nombre-final]");
     if (nombreFin) nombreFin.textContent = nombre;
+    // Las letras se parten ANTES de mostrar: así el título nunca aparece entero y luego parpadea
+    if (etapa1 && !reducido()) partirLetras(titulo, nombre.replace(/^,\s*/, ""));
+    listo.hidden = false;
+    if (alMostrar) alMostrar();
     listo.focus({ preventScroll: true });
-    listo.scrollIntoView({ behavior: reducido() ? "auto" : "smooth", block: "center" });
+    // Solo desplaza si el festejo no quedó a la vista
+    const r = listo.getBoundingClientRect();
+    if (r.top < 70 || r.top > window.innerHeight * 0.45) {
+      listo.scrollIntoView({ behavior: reducido() ? "auto" : "smooth", block: "center" });
+    }
     if (!etapa1 || !etapa2) return;
 
     let cambiado = false, reloj = 0;
@@ -418,7 +438,6 @@
 
     etapa1.classList.add("is-on");
     if (reducido()) { reloj = setTimeout(cambiar, 2400); return; }
-    partirLetras(titulo, nombre.replace(/^,\s*/, ""));
     confeti(listo.querySelector(".rf-check-wrap"));
     reloj = setTimeout(cambiar, 3600);
     etapa1.addEventListener("click", cambiar, { once: true });
