@@ -109,6 +109,18 @@
     pintar();
   }
 
+  /* --- Medición de clics (redes y sitio oficial) -------------------------
+     Si la página tiene Google Analytics (gtag) o Tag Manager (dataLayer),
+     cada clic se registra como evento: red_social_click / sitio_click,
+     con la red y el lugar donde se tocó. Sin ellos no hace nada. */
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest("[data-evento]");
+    if (!a) return;
+    const datos = { red: a.dataset.red || "", ubicacion: a.dataset.ubicacion || "", link_url: a.href };
+    if (typeof window.gtag === "function") window.gtag("event", a.dataset.evento, datos);
+    else if (Array.isArray(window.dataLayer)) window.dataLayer.push(Object.assign({ event: a.dataset.evento }, datos));
+  });
+
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("form[data-referidos-form]").forEach((f) => { initCarreras(f); initPromedio(f); });
   });

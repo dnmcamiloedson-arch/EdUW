@@ -713,7 +713,15 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
 /* Al bajar, la ola se recoge para no tapar el formulario */
 .rf-invite-page .rf-nav.is-scrolled::after { transform: scaleY(.38); }
 .rf-invite-page .rf-nav-link { color: rgba(255, 255, 255, .88); }
-.rf-invite-page .rf-nav-in { height: 84px; }
+.rf-invite-page .rf-nav-in { height: 84px; display: grid; grid-template-columns: 1fr auto 1fr; }
+/* Logo al centro, como en el sitio de Westhill; el enlace a la derecha */
+.rf-invite-page .rf-brand { grid-column: 2; justify-self: center; transition: opacity var(--ui) var(--ease-out), transform var(--press) var(--ease-out); }
+.rf-invite-page .rf-brand:active { transform: scale(.97); }
+.rf-invite-page .rf-nav-link { grid-column: 3; justify-self: end; }
+@media (hover: hover) and (pointer: fine) {
+  .rf-invite-page .rf-brand:hover { opacity: .88; }
+  .rf-invite-page .rf-nav-link:hover { color: #fff; }
+}
 .rf-invite-page .rf-brand img { height: 62px; }
 .rf-invite-page .rf-hero { padding-top: clamp(64px, 9vw, 120px); }
 
@@ -789,6 +797,50 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
 .rf-invite-page .rf-feature .n { color: var(--c, var(--blue)); }
 .rf-invite-page .rf-feature:nth-child(2) .n { color: var(--gold-ink); }
 
+/* Redes sociales: tarjeta azul con tres botones grandes */
+.rf-redes {
+  max-width: 1080px; margin: clamp(56px, 8vw, 96px) auto 0; padding: clamp(28px, 4vw, 44px);
+  border-radius: 28px; background: var(--blue); color: #fff;
+  display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center;
+  box-shadow: 0 30px 60px -36px rgba(19, 48, 77, .7);
+  position: relative; overflow: hidden;
+}
+.rf-redes::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(90deg, var(--green) 0 50%, var(--gold) 50%); }
+.rf-redes .k { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+.rf-redes h2 { margin-top: 6px; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.1; letter-spacing: -.025em; color: #fff; }
+.rf-redes-copy p:last-child { margin-top: 8px; color: rgba(255, 255, 255, .78); font-size: 16px; max-width: 30rem; }
+.rf-redes-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.rf-red {
+  display: flex; align-items: center; gap: 10px; padding: 12px 18px 12px 14px; border-radius: 16px;
+  background: #fff; color: var(--navy-ink); text-decoration: none;
+  transition: transform var(--press) var(--ease-out), box-shadow var(--ui) var(--ease-out);
+  box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .45);
+}
+.rf-red svg, .rf-red-mini svg { width: 26px; height: 26px; flex: none; }
+.rf-red span { display: grid; line-height: 1.15; }
+.rf-red b { font-size: 15px; font-weight: 600; }
+.rf-red small { font-size: 12px; color: var(--ink-2); }
+.rf-red--instagram { --c: #d62976; } .rf-red--tiktok { --c: #111; } .rf-red--facebook { --c: #1877f2; }
+.rf-red svg, .rf-red-mini svg { color: var(--c); }
+.rf-red:active, .rf-red-mini:active { transform: scale(.97); }
+.rf-red:focus-visible, .rf-red-mini:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+@media (hover: hover) and (pointer: fine) {
+  .rf-red:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -14px rgba(0, 0, 0, .5); }
+  .rf-red-mini:hover { transform: translateY(-2px); }
+}
+.rf-done-redes { margin-top: 26px; }
+.rf-done-redes p { font-size: 14px; color: var(--ink-2); }
+.rf-done-redes div { margin-top: 10px; display: flex; justify-content: center; gap: 12px; }
+.rf-red-mini {
+  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 0 .5px var(--glass-line), 0 10px 22px -14px rgba(19, 48, 77, .5);
+  transition: transform var(--press) var(--ease-out);
+}
+@media (max-width: 760px) {
+  .rf-redes { grid-template-columns: 1fr; margin-left: 16px; margin-right: 16px; border-radius: 22px; }
+  .rf-redes-links { display: grid; grid-template-columns: 1fr; }
+}
+
 /* Pie con la ola institucional (azul con franjas verde y dorada) */
 .rf-invite-page .rf-footer {
   max-width: none; position: relative; margin-top: clamp(80px, 10vw, 120px);
@@ -805,6 +857,7 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
   .rf-invite-page .rf-footer::before { height: 44px; }
   .rf-invite-page .rf-nav-in { height: 70px; }
   .rf-invite-page .rf-brand img { height: 48px; }
+  .rf-solo-ancho { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rf-invite-page .rf-nav::after { transition: none; }
