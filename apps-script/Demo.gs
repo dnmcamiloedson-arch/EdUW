@@ -36,12 +36,13 @@ function cargarDemo() {
   var niveles = [["Licenciatura", 45], ["Maestría", 22], ["Facultad de Medicina", 15],
     ["Especialidad", 10], ["Diplomado", 8]];
   var programas = {
-    "Licenciatura": ["Derecho", "Psicología", "Administración", "Arquitectura", "Comunicación"],
-    "Maestría": ["Educación", "Finanzas", "Derecho Corporativo", "Mercadotecnia"],
+    "Licenciatura": ["Derecho (Plan UNAM)", "Psicología", "Administración Empresarial", "Arquitectura", "Pedagogía"],
+    "Maestría": ["Administración Estratégica", "Educación Médica", "Derecho Administrativo", "Recursos Humanos"],
     "Facultad de Medicina": ["Médico Cirujano"],
-    "Especialidad": ["Ortodoncia", "Derecho Fiscal"],
-    "Diplomado": ["Gestión de proyectos", "Marketing digital"]
+    "Especialidad": ["Ciencias Penales", "Implantología Oral Integral"],
+    "Diplomado": ["Enseñanza de la Anatomía"]
   };
+  var prepas = ["Prepa Westhill", "CCH Sur", "Colegio Vista Hermosa", "Prepa UNAM 6", "Colegio Olinca", "CECyT 9"];
 
   var ahora = new Date();
   var diasAtras = function (maxDias) {
@@ -79,11 +80,11 @@ function cargarDemo() {
       var nombre = azar(nombres) + " " + azar(apellidos) + " " + azar(apellidos);
       var nivel = pesado(niveles);
       filas.push([diasAtras(28), c[0], c[1], nombre, slug(nombre) + DOMINIO_DEMO, tel(),
-        nivel, azar(programas[nivel]), ""]);
+        nivel, azar(programas[nivel]), "", azar(prepas), Math.round((7 + Math.random() * 3) * 10) / 10]);
     }
   });
   var hReg = hoja_(HOJA_REFERIDOS, COLS_REFERIDOS);
-  hReg.getRange(hReg.getLastRow() + 1, 1, filas.length, 9).setValues(filas);
+  hReg.getRange(hReg.getLastRow() + 1, 1, filas.length, 11).setValues(filas);
 
   ordenarPorFecha_(hRef);
   ordenarPorFecha_(hReg);

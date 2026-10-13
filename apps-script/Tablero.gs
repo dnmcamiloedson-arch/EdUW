@@ -17,7 +17,7 @@ var UW = { azul: "#276092", azulOscuro: "#1d4a72", dorado: "#f2c94c", verde: "#2
 function instalar() {
   configurar();
   formatearTabla_(hoja_(HOJA_REFERIDORES, COLS_REFERIDORES), [150, 90, 200, 230, 130]);
-  formatearTabla_(hoja_(HOJA_REFERIDOS, COLS_REFERIDOS), [150, 110, 180, 200, 230, 130, 130, 170, 260]);
+  formatearTabla_(hoja_(HOJA_REFERIDOS, COLS_REFERIDOS), [150, 110, 180, 200, 230, 130, 130, 220, 260, 200, 90]);
   crearTablero();
   quitarHojaVacia_();
 }
@@ -29,19 +29,19 @@ function crearTablero() {
   var t = libro.insertSheet(HOJA_TABLERO, 0);
   SEP = separador_(t);
   t.setHiddenGridlines(true);
-  t.getRange("A1:N200").setFontFamily("Arial").setFontColor(UW.texto).setVerticalAlignment("middle");
-  [24, 150, 90, 24, 150, 90, 24, 140, 180, 140, 160, 24, 110, 90].forEach(function (w, i) {
+  t.getRange("A1:Z200").setFontFamily("Arial").setFontColor(UW.texto).setVerticalAlignment("middle");
+  [24, 150, 90, 24, 150, 90, 24, 140, 180, 140, 160, 24, 240, 90, 24, 150, 90].forEach(function (w, i) {
     t.setColumnWidth(i + 1, w);
   });
 
   // Encabezado
-  t.getRange("A1:K1").merge().setValue("Referidos Westhill")
+  t.getRange("A1:Q1").merge().setValue("Referidos Westhill")
     .setBackground(UW.azul).setFontColor("#ffffff").setFontSize(20).setFontWeight("bold")
     .setHorizontalAlignment("left");
   t.setRowHeight(1, 56);
-  t.getRange("A2:K2").merge().setValue("Se actualiza solo con cada registro nuevo.")
+  t.getRange("A2:Q2").merge().setValue("Se actualiza solo con cada registro nuevo.")
     .setBackground(UW.azul).setFontColor("#dbe7f3").setFontSize(10);
-  t.getRange("A3:K3").setBackground(UW.dorado);
+  t.getRange("A3:Q3").setBackground(UW.dorado);
   t.setRowHeight(3, 4);
 
   // Indicadores (B, E, H, K)
@@ -50,32 +50,43 @@ function crearTablero() {
   indicador_(t, "E5", "Referidores", "=COUNTA(" + F + "C2:C)", UW.verde);
   indicador_(t, "H5", "Registros de hoy", "=COUNTIFS(" + R + "A2:A,\">=\"&TODAY())", UW.dorado);
   indicador_(t, "J5", "Últimos 7 días", "=COUNTIFS(" + R + "A2:A,\">=\"&(TODAY()-6))", UW.azulOscuro);
+  indicador_(t, "M5", "Promedio general", "=IFERROR(ROUND(AVERAGE(" + R + "K2:K),1),\"—\")", UW.verde);
 
   // Tablas dinámicas por fórmula (debajo de las gráficas para que crezcan sin taparse)
   titulo_(t, "B52", "Ranking de referidores");
   t.getRange("B53").setFormula(fx_(
-    "=IFERROR(QUERY(" + R + "A2:I,\"select C, count(D) where C <> '' group by C order by count(D) desc " +
+    "=IFERROR(QUERY(" + R + "A2:K,\"select C, count(D) where C <> '' group by C order by count(D) desc " +
     "label C 'Referidor', count(D) 'Invitados'\",0),\"Aún no hay registros\")"));
 
   titulo_(t, "E52", "Por nivel de estudios");
   t.getRange("E53").setFormula(fx_(
-    "=IFERROR(QUERY(" + R + "A2:I,\"select G, count(D) where G <> '' group by G order by count(D) desc " +
+    "=IFERROR(QUERY(" + R + "A2:K,\"select G, count(D) where G <> '' group by G order by count(D) desc " +
     "label G 'Nivel', count(D) 'Registros'\",0),\"Aún no hay registros\")"));
 
   titulo_(t, "H52", "Últimos registros");
   t.getRange("H53").setFormula(fx_(
-    "=IFERROR(QUERY(" + R + "A2:I,\"select A, D, G, C where D <> '' order by A desc limit 12 " +
+    "=IFERROR(QUERY(" + R + "A2:K,\"select A, D, G, C where D <> '' order by A desc limit 12 " +
     "label A 'Fecha', D 'Nombre', G 'Nivel', C 'Invitado por'\",0),\"Aún no hay registros\")"));
   t.getRange("H54:H65").setNumberFormat("dd/mm/yyyy hh:mm");
 
-  // Serie por día (alimenta la gráfica de línea)
-  titulo_(t, "M52", "Por día");
+  titulo_(t, "M52", "Carreras más pedidas");
   t.getRange("M53").setFormula(fx_(
-    "=IFERROR(QUERY(" + R + "A2:I,\"select toDate(A), count(D) where D <> '' group by toDate(A) " +
-    "order by toDate(A) label toDate(A) 'Día', count(D) 'Registros'\",0),\"—\")"));
-  t.getRange("M54:M500").setNumberFormat("dd/mm");
+    "=IFERROR(QUERY(" + R + "A2:K,\"select H, count(D) where H <> '' group by H order by count(D) desc " +
+    "label H 'Carrera', count(D) 'Registros'\",0),\"Aún no hay registros\")"));
 
-  [["B53:C53"], ["E53:F53"], ["H53:K53"], ["M53:N53"]].forEach(function (r) {
+  titulo_(t, "P52", "Promedio por nivel");
+  t.getRange("P53").setFormula(fx_(
+    "=IFERROR(QUERY(" + R + "A2:K,\"select G, avg(K) where G <> '' and K is not null group by G order by avg(K) desc " +
+    "label G 'Nivel', avg(K) 'Promedio' format avg(K) '0.0'\",0),\"Aún no hay promedios\")"));
+
+  // Serie por día (alimenta la gráfica; columnas Y:Z ocultas)
+  titulo_(t, "Y52", "Por día");
+  t.getRange("Y53").setFormula(fx_(
+    "=IFERROR(QUERY(" + R + "A2:K,\"select toDate(A), count(D) where D <> '' group by toDate(A) " +
+    "order by toDate(A) label toDate(A) 'Día', count(D) 'Registros'\",0),\"—\")"));
+  t.getRange("Y54:Y500").setNumberFormat("dd/mm");
+
+  [["B53:C53"], ["E53:F53"], ["H53:K53"], ["M53:N53"], ["P53:Q53"], ["Y53:Z53"]].forEach(function (r) {
     t.getRange(r[0]).setBackground(UW.fondo).setFontWeight("bold").setFontColor(UW.gris);
   });
 
@@ -106,7 +117,7 @@ function crearTablero() {
 
   // Columnas (no línea): con uno o pocos días se ve una barra, no un punto perdido
   t.insertChart(t.newChart().setChartType(Charts.ChartType.COLUMN)
-    .addRange(t.getRange("M53:N500")).setNumHeaders(1)
+    .addRange(t.getRange("Y53:Z500")).setNumHeaders(1)
     .setHiddenDimensionStrategy(Charts.ChartHiddenDimensionStrategy.SHOW_BOTH)
     .setPosition(base + 20, 2, 0, 0)
     .setOption("title", "Registros por día")
@@ -117,7 +128,7 @@ function crearTablero() {
     .setOption("width", 1000).setOption("height", 300).build());
 
   // La serie por día solo alimenta la gráfica: se oculta
-  t.hideColumns(12, 3);
+  t.hideColumns(25, 2);
   t.setFrozenRows(3);
   libro.setActiveSheet(t);
 }

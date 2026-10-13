@@ -27,7 +27,7 @@
           { accion: "listarReferidores", clave }
             → { ok, referidores: [{ codigo, nombre, correo, telefono, fecha, invitados }] }
           { accion: "registrarReferido", ref, nombre, email, telefono,
-            nivel, programa, mensaje }
+            nivel, carrera, prepa, promedio, mensaje }
             → { ok, referidor: { codigo, nombre } | null }
    ========================================================================== */
 
@@ -38,8 +38,9 @@ var HOJA_REFERIDORES = "Referidores";
 var HOJA_REFERIDOS = "Referidos";
 
 var COLS_REFERIDORES = ["Fecha", "Código", "Nombre", "Correo", "Teléfono"];
+// Prepa y Promedio van al final para que los registros anteriores sigan en su lugar.
 var COLS_REFERIDOS = ["Fecha", "Código referidor", "Nombre referidor",
-  "Nombre", "Correo", "Teléfono", "Nivel", "Programa", "Mensaje"];
+  "Nombre", "Correo", "Teléfono", "Nivel", "Carrera", "Mensaje", "Prepa / escuela", "Promedio"];
 
 /** Ejecutar una vez desde el editor para preparar la hoja. */
 function configurar() {
@@ -114,12 +115,15 @@ function registrarReferido_(d) {
   }
 
   var ref = buscarReferidor_(d.ref);
+  var promedio = parseFloat(String(d.promedio || "").replace(",", "."));
+  promedio = promedio >= 7 && promedio <= 10 ? Math.round(promedio * 10) / 10 : "";
   hoja_(HOJA_REFERIDOS, COLS_REFERIDOS).appendRow([
     new Date(),
     ref ? ref.codigo : texto_(d.ref),   // se guarda aunque el código no exista, para revisarlo
     ref ? ref.nombre : "",
     texto_(nombre), texto_(email), texto_(telefono),
-    texto_(d.nivel), texto_(d.programa), texto_(d.mensaje)
+    texto_(d.nivel), texto_(d.carrera || d.programa), texto_(d.mensaje),
+    texto_(d.prepa), promedio
   ]);
   return { ok: true, referidor: ref ? { codigo: ref.codigo, nombre: ref.nombre } : null };
 }
@@ -181,6 +185,10 @@ function hoja_(nombre, columnas) {
     hoja.appendRow(columnas);
     hoja.setFrozenRows(1);
     hoja.getRange(1, 1, 1, columnas.length).setFontWeight("bold");
+  } else if (columnas) {
+    // Hoja de antes: completa los encabezados nuevos sin mover los registros
+    var enc = hoja.getRange(1, 1, 1, columnas.length);
+    if (enc.getValues()[0].join("|") !== columnas.join("|")) enc.setValues([columnas]).setFontWeight("bold");
   }
   return hoja;
 }

@@ -412,7 +412,7 @@
   // ahora se materializa cuando entra en pantalla (una sola vez).
   function initReveal() {
     if (!("IntersectionObserver" in window)) return;
-    const grupos = [".rf-features .rf-feature", ".rf-codes-head", ".rf-codes-list"];
+    const grupos = [".rf-oferta-head", ".rf-oferta .rf-nivel", ".rf-features .rf-feature", ".rf-codes-head", ".rf-codes-list"];
     const io = new IntersectionObserver((entradas) => {
       entradas.forEach((e) => {
         if (!e.isIntersecting) return;

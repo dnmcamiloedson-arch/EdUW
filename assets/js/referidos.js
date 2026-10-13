@@ -117,6 +117,7 @@
       let valido = true;
       form.querySelectorAll("[required]").forEach((input) => {
         const ok = input.type === "checkbox" ? input.checked
+          : input.type === "range" ? !("vacio" in input.dataset)   // la barra cuenta solo si la movieron
           : input.type === "email" ? /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(input.value.trim())
           : input.value.trim() !== "";
         const field = input.closest(".field");
@@ -127,6 +128,8 @@
 
       const datos = Object.fromEntries(new FormData(form).entries());
       delete datos.aviso;
+      const barra = form.querySelector("input[type=range][name=promedio]");
+      if (barra && "vacio" in barra.dataset) delete datos.promedio;
       const texto = boton ? boton.textContent : "";
       if (boton) { boton.disabled = true; boton.textContent = "Enviando…"; }
 

@@ -108,11 +108,31 @@
             </div>
           </fieldset>
 
+          <!-- Carreras del nivel elegido (las pone oferta.js) -->
+          <div class="rf-carreras" data-carreras>
+            <div class="rf-carreras-in">
+              <fieldset class="rf-carreras-box">
+                <legend class="rf-pills-label" data-carreras-titulo>Elige tu carrera</legend>
+                <div class="rf-carreras-lista" data-carreras-lista></div>
+              </fieldset>
+            </div>
+          </div>
+
           <div class="rf-group" style="margin-top:14px">
-            <label class="rf-row">
-              <span class="rf-row-label">Programa (opcional)</span>
-              <input class="rf-input" name="programa" placeholder="Ej. Derecho, Psicología…">
+            <label class="rf-row field">
+              <span class="rf-row-label" data-prepa-label>¿De qué prepa vienes?</span>
+              <input class="rf-input" name="prepa" autocomplete="off" placeholder="Nombre de tu preparatoria" required>
+              <span class="rf-error-msg error-msg">Escribe de qué escuela vienes.</span>
             </label>
+            <div class="rf-row field rf-prom" data-promedio>
+              <div class="rf-prom-head">
+                <label class="rf-row-label" for="r-prom" data-promedio-label>Tu promedio</label>
+                <output class="rf-prom-val" for="r-prom" aria-live="polite">—</output>
+              </div>
+              <input class="rf-range" id="r-prom" type="range" name="promedio" min="7" max="10" step="0.1" value="8.5" required data-vacio>
+              <div class="rf-prom-scale" aria-hidden="true"><span>7</span><span>8</span><span>9</span><span>10</span></div>
+              <span class="rf-error-msg error-msg">Mueve la barra hasta tu promedio.</span>
+            </div>
             <label class="rf-row">
               <span class="rf-row-label">Mensaje (opcional)</span>
               <textarea class="rf-input" name="mensaje" rows="2" placeholder="¿Qué te gustaría saber?"></textarea>
@@ -146,11 +166,14 @@
     </div>
     </div>
 
-    <!-- Tarjetas que se desplazan de lado a lado -->
-    <div class="rf-marquee" aria-label="Oferta Westhill">
-      <ul class="rf-marquee-track"><li class="rf-chip">Licenciaturas</li><li class="rf-chip">Maestrías</li><li class="rf-chip">Especialidades</li><li class="rf-chip">Diplomados</li><li class="rf-chip">Facultad de Medicina</li><li class="rf-chip">Becas y convenios</li><li class="rf-chip">#SOMOSWESTHILL</li></ul>
-      <ul class="rf-marquee-track" aria-hidden="true"><li class="rf-chip">Licenciaturas</li><li class="rf-chip">Maestrías</li><li class="rf-chip">Especialidades</li><li class="rf-chip">Diplomados</li><li class="rf-chip">Facultad de Medicina</li><li class="rf-chip">Becas y convenios</li><li class="rf-chip">#SOMOSWESTHILL</li></ul>
-    </div>
+    <!-- Oferta: cada tarjeta abre la invitación con ese nivel ya elegido -->
+    <section class="rf-oferta" aria-labelledby="t-oferta">
+      <div class="rf-oferta-head">
+        <h2 id="t-oferta">Encuentra tu programa</h2>
+        <p>Toca un nivel y elige tu carrera directo en tu invitación.</p>
+      </div>
+      <div class="rf-oferta-grid" data-oferta></div>
+    </section>
 
     <section class="rf-features" aria-label="Qué sigue">
       <article class="rf-feature"><span class="n">01</span><h3>Atención personalizada</h3><p>Un asesor de Admisiones te acompaña de principio a fin.</p></article>
@@ -167,6 +190,7 @@
   </footer>
 
   <script src="assets/js/referidos.js"></script>
+  <script src="assets/js/oferta.js"></script>
   <script src="assets/js/referidos-ui.js"></script>
 </body>
 </html>
