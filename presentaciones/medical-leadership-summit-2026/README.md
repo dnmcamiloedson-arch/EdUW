@@ -18,19 +18,22 @@ Plantilla en PowerPoint (16:9) basada en la línea gráfica del flyer oficial de
 ## Diseños incluidos (Inicio › Nueva diapositiva)
 
 1. **Portada**: ola azul con filo dorado y logo, título en Montserrat ExtraBold, foto con resplandor celeste y banda azul inferior con la fecha entre guiones verdes.
-2. **Sección**: fondo azul, número grande en dorado y foto del campus recortada en curva con filo dorado.
-3. **Título y contenido**: encabezado con la ola pequeña y el logo, pie azul con curva dorada y número de diapositiva.
-4. **Contenido e imagen**: texto a la izquierda y un marcador de imagen a la derecha.
-5. **Solo título**: para armar composiciones libres (tarjetas, cifras, ponentes…).
-6. **Cierre**: fondo azul con la ola blanca y el logo a color.
+2. **Portada de ponencia**: tipo (PONENCIA, MESA REDONDA…), título, ponente, cargo, foto circular del ponente y día/horario en la banda azul.
+3. **Sección**: fondo azul, número grande en dorado, etiqueta (SECCIÓN / DÍA) y foto del campus recortada en curva.
+4. **Título y contenido** y 5. **Contenido e imagen**: encabezado con la ola y el logo, pie azul con curva dorada y número de diapositiva.
+6. **Solo título**: para composiciones libres (tablas, tarjetas, cifras, ponentes…).
+7. **Receso**: coffee break con hora de regreso.
+8. **Cierre**: fondo azul con la ola blanca y el logo a color.
 
-## Diapositivas de ejemplo
+## Diapositivas incluidas
 
-Portada · Agenda (5 tarjetas) · Sección · Contenido e imagen · Ejes del summit (3 tarjetas) ·
-Programa por día · Ponentes · Cifras · Mensaje clave · Cierre.
+Portada · Ceremonia de apertura (lema «Fronteras de la Medicina») · Programa día 1, 2 y 3 ·
+El summit en cifras · Ponentes · Divisor de día · Portada de ponencia · Contenido e imagen ·
+Puntos clave · Mensaje clave · Coffee break · Patrocinadores · Cierre.
 
-Los textos de las diapositivas de ejemplo (agenda, ejes, horarios, ponentes, cifras «00») son
-**de ejemplo** y deben sustituirse por la información real.
+El programa, los ponentes y las cifras salen de `Programa_Westhill.xlsx` (copiados en `PROGRAMA`
+dentro de `generar_plantilla.js`). Las diapositivas 10 a 12 y los logos de patrocinadores son
+**de ejemplo** y deben sustituirse.
 
 ## Regenerar
 
