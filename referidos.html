@@ -14,10 +14,14 @@
   <script>document.documentElement.classList.add("js");</script>
 </head>
 <body class="rf-invite-page">
+  <!-- Franjas institucionales: fondo fijo que acompaña el scroll (decorativas) -->
+  <div class="rf-ribbons" aria-hidden="true">
+    <i class="rib rib--haze"></i><i class="rib rib--green"></i><i class="rib rib--blue"></i><i class="rib rib--gold"></i>
+  </div>
   <nav class="rf-nav" aria-label="Universidad Westhill">
     <div class="rf-nav-in">
       <a class="rf-brand" href="index.html">
-        <img src="assets/img/logo-westhill.png" alt="Universidad Westhill" width="779" height="313">
+        <img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" width="779" height="313">
       </a>
       <a class="rf-nav-link" href="oferta-academica.html">Oferta académica</a>
     </div>
@@ -34,10 +38,6 @@
     </header>
 
     <div class="rf-stage">
-    <!-- Franjas institucionales que cruzan la pantalla (decorativas) -->
-    <div class="rf-ribbons" aria-hidden="true">
-      <i class="rib rib--haze"></i><i class="rib rib--green"></i><i class="rib rib--blue"></i><i class="rib rib--gold"></i>
-    </div>
     <div class="rf-scene" data-escena>
 
       <!-- El sobre (decorativo + gesto; el botón de abajo hace lo mismo) -->
@@ -165,15 +165,6 @@
       </section>
     </div>
     </div>
-
-    <!-- Oferta: cada tarjeta abre la invitación con ese nivel ya elegido -->
-    <section class="rf-oferta" aria-labelledby="t-oferta">
-      <div class="rf-oferta-head">
-        <h2 id="t-oferta">Encuentra tu programa</h2>
-        <p>Toca un nivel y elige tu carrera directo en tu invitación.</p>
-      </div>
-      <div class="rf-oferta-grid" data-oferta></div>
-    </section>
 
     <section class="rf-features" aria-label="Qué sigue">
       <article class="rf-feature"><span class="n">01</span><h3>Atención personalizada</h3><p>Un asesor de Admisiones te acompaña de principio a fin.</p></article>

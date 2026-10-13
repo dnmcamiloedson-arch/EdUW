@@ -3,7 +3,6 @@
    --------------------------------------------------------------------------
    · Catálogo de programas por nivel (tomado de uw.edu.mx; edítalo aquí).
    · Al tocar un nivel en el formulario aparecen sus carreras para elegir.
-   · Tarjetas "Encuentra tu programa": abren la invitación con ese nivel.
    · Barra de promedio (7.0 a 10) y etiqueta de "¿De qué prepa vienes?".
    ========================================================================== */
 (function () {
@@ -33,12 +32,9 @@
   };
   const PLURAL = { "Licenciatura": "licenciaturas", "Maestría": "maestrías", "Especialidad": "especialidades",
                    "Diplomado": "diplomados", "Facultad de Medicina": "programas" };
-  const TITULO = { "Licenciatura": "Licenciaturas", "Maestría": "Maestrías", "Especialidad": "Especialidades",
-                   "Diplomado": "Diplomados", "Facultad de Medicina": "Medicina" };
   const POSGRADO = ["Maestría", "Especialidad", "Diplomado"];
   const NO_SE = "Aún no lo sé";
 
-  const reducido = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const el = (tag, cls, txt) => { const n = document.createElement(tag); if (cls) n.className = cls; if (txt != null) n.textContent = txt; return n; };
 
   /* --- Carreras del nivel elegido --------------------------------------- */
@@ -117,56 +113,8 @@
     pintar();
   }
 
-  /* --- Tarjetas "Encuentra tu programa" ---------------------------------- */
-  function initTarjetas() {
-    const grid = document.querySelector("[data-oferta]");
-    const form = document.querySelector("form[data-referidos-form]");
-    if (!grid || !form) return;
-    Object.keys(CATALOGO).forEach((nivel, i) => {
-      const progs = CATALOGO[nivel];
-      const b = el("button", "rf-nivel");
-      b.type = "button";
-      b.style.setProperty("--i", i);
-      const n = el("span", "n", progs.length);
-      const t = el("span", "t", TITULO[nivel]);
-      const s = el("span", "s", progs.slice(0, 3).join(" · ") + (progs.length > 3 ? " y más" : ""));
-      const go = el("span", "go", "Elegir");
-      b.append(n, t, s, go);
-      b.setAttribute("aria-label", `${TITULO[nivel]}: ${progs.length} programas. Elegir en la invitación`);
-      b.addEventListener("click", () => irANivel(form, nivel));
-      grid.appendChild(b);
-    });
-  }
-
-  function irANivel(form, nivel) {
-    const escena = document.querySelector("[data-escena]");
-    const hoja = form.closest(".rf-letter");
-    const radio = form.querySelector(`[data-pills] input[value="${nivel}"]`);
-    const comportamiento = reducido() ? "auto" : "smooth";
-    const elegir = () => {
-      if (!radio) return;
-      radio.checked = true;
-      radio.dispatchEvent(new Event("change", { bubbles: true }));
-      const destino = form.querySelector("[data-carreras]") || radio;
-      requestAnimationFrame(() => destino.scrollIntoView({ behavior: comportamiento, block: "center" }));
-    };
-    if (hoja && hoja.hidden) { escena.scrollIntoView({ behavior: comportamiento, block: "start" }); return; }   // ya se envió
-    if (hoja && hoja.hasAttribute("data-stowed")) {
-      // Primero se abre el sobre (con su animación) y luego se marca el nivel
-      escena.scrollIntoView({ behavior: comportamiento, block: "start" });
-      const obs = new MutationObserver(() => {
-        if (!hoja.hasAttribute("data-stowed")) { obs.disconnect(); setTimeout(elegir, reducido() ? 0 : 420); }
-      });
-      obs.observe(hoja, { attributes: true, attributeFilter: ["data-stowed"] });
-      setTimeout(() => { const ab = escena.querySelector("[data-abrir]"); if (ab) ab.click(); }, reducido() ? 0 : 450);
-    } else {
-      elegir();
-    }
-  }
-
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("form[data-referidos-form]").forEach((f) => { initCarreras(f); initPromedio(f); });
-    initTarjetas();
   });
 
   window.RefOferta = { CATALOGO };
