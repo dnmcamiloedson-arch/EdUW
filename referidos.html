@@ -19,7 +19,7 @@
       <a class="rf-brand" href="https://www.uw.edu.mx/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=logo" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="logo">
         <img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" width="779" height="313">
       </a>
-      <a class="rf-nav-link" href="https://www.uw.edu.mx/licenciaturas_uw/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=barra" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="barra">Oferta<span class="rf-solo-ancho"> académica</span></a>
+      <a class="rf-nav-link" href="https://www.uw.edu.mx/licenciaturas_uw/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=barra" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="barra">Oferta académica</a>
     </div>
   </nav>
 
@@ -152,19 +152,26 @@
 
       <!-- Después de que el sobre sale volando -->
       <section class="rf-done" tabindex="-1" hidden aria-live="polite">
-        <svg class="check" viewBox="0 0 72 72" aria-hidden="true" style="--i:0"><circle cx="36" cy="36" r="36"/><path pathLength="1" d="M23 37 l9 9 l17 -19"/></svg>
-        <h2 style="--i:1">Va en camino<span data-nombre-registro></span>.</h2>
-        <p style="--i:2">Tu confirmación ya llegó a Admisiones. Te contactaremos muy pronto.</p>
-        <div class="rf-actions" style="--i:3">
-          <a class="rf-btn rf-btn--gold" href="https://www.uw.edu.mx/licenciaturas_uw/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=gracias" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="gracias">Conoce la oferta académica</a>
-        </div>
-        <div class="rf-done-redes" style="--i:4">
-          <p>Mientras te contactamos, conócenos en redes</p>
-          <div>
-          <a class="rf-red-mini rf-red--instagram" href="https://www.instagram.com/univwesthill/" target="_blank" rel="noopener" aria-label="Instagram de Universidad Westhill" data-evento="red_social_click" data-red="instagram" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="currentColor"/></svg></a>
-          <a class="rf-red-mini rf-red--tiktok" href="https://www.tiktok.com/@univwesthill" target="_blank" rel="noopener" aria-label="TikTok de Universidad Westhill" data-evento="red_social_click" data-red="tiktok" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.2 2.5c.4 2.7 2 4.3 4.6 4.5v3.4c-1.6.1-3.1-.4-4.5-1.3v6.5a5.9 5.9 0 1 1-5.9-5.9c.3 0 .6 0 .9.1v3.5a2.5 2.5 0 1 0 1.7 2.4V2.5h3.2z"/></svg></a>
-          <a class="rf-red-mini rf-red--facebook" href="https://www.facebook.com/univwesthill/" target="_blank" rel="noopener" aria-label="Facebook de Universidad Westhill" data-evento="red_social_click" data-red="facebook" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.6 21.5v-8h2.7l.4-3.2h-3.1V8.3c0-.9.3-1.6 1.6-1.6h1.7V3.8c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.4H7.5v3.2h2.8v8h3.3z"/></svg></a>
+        <!-- 1) Festejo: palomita con ondas, confeti y el texto que entra letra por letra -->
+        <div class="rf-celebra" data-celebra>
+          <div class="rf-check-wrap" aria-hidden="true">
+            <span class="rf-onda"></span><span class="rf-onda"></span><span class="rf-onda"></span>
+            <svg class="check" viewBox="0 0 72 72"><circle cx="36" cy="36" r="36"/><path pathLength="1" d="M23 37 l9 9 l17 -19"/></svg>
           </div>
+          <h2 class="rf-done-title" data-letras>¡Va en camino<span data-nombre-registro></span>!</h2>
+          <p class="rf-done-sub">Tu confirmación ya llegó a Admisiones.</p>
+        </div>
+        <!-- 2) Luego el texto se cambia por el cuadro de redes -->
+        <div class="rf-redes-final" data-redes-final hidden>
+          <p class="k"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>¡Listo<span data-nombre-final></span>!</span></p>
+          <h2 tabindex="-1">Mientras te contactamos, síguenos</h2>
+          <p class="d">Open House, becas y vida en el campus en @univwesthill.</p>
+          <div class="rf-redes-links">
+            <a class="rf-red rf-red--instagram" href="https://www.instagram.com/univwesthill/" target="_blank" rel="noopener" data-evento="red_social_click" data-red="instagram" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="currentColor"/></svg><span><b>Instagram</b><small>@univwesthill</small></span></a>
+            <a class="rf-red rf-red--tiktok" href="https://www.tiktok.com/@univwesthill" target="_blank" rel="noopener" data-evento="red_social_click" data-red="tiktok" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.2 2.5c.4 2.7 2 4.3 4.6 4.5v3.4c-1.6.1-3.1-.4-4.5-1.3v6.5a5.9 5.9 0 1 1-5.9-5.9c.3 0 .6 0 .9.1v3.5a2.5 2.5 0 1 0 1.7 2.4V2.5h3.2z"/></svg><span><b>TikTok</b><small>@univwesthill</small></span></a>
+            <a class="rf-red rf-red--facebook" href="https://www.facebook.com/univwesthill/" target="_blank" rel="noopener" data-evento="red_social_click" data-red="facebook" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.6 21.5v-8h2.7l.4-3.2h-3.1V8.3c0-.9.3-1.6 1.6-1.6h1.7V3.8c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.4H7.5v3.2h2.8v8h3.3z"/></svg><span><b>Facebook</b><small>@univwesthill</small></span></a>
+          </div>
+          <a class="rf-redes-oferta" href="https://www.uw.edu.mx/licenciaturas_uw/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=gracias" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="gracias">Conoce la oferta académica →</a>
         </div>
       </section>
     </div>
@@ -174,20 +181,6 @@
       <article class="rf-feature"><span class="n">01</span><h3>Atención personalizada</h3><p>Un asesor de Admisiones te acompaña de principio a fin.</p></article>
       <article class="rf-feature"><span class="n">02</span><h3>Planes, becas y convenios</h3><p>Toda la información para decidir con calma.</p></article>
       <article class="rf-feature"><span class="n">03</span><h3>Tu proceso de admisión</h3><p>Te guiamos en cada paso hasta tu inscripción.</p></article>
-    </section>
-
-    <!-- Redes: invita a seguir a Westhill (cada clic queda listo para medirse) -->
-    <section class="rf-redes" aria-labelledby="t-redes">
-      <div class="rf-redes-copy">
-        <p class="k">#SomosWesthill</p>
-        <h2 id="t-redes">Conoce Westhill antes de llegar</h2>
-        <p>Open House, becas, vida en el campus y fechas de admisión. Síguenos y no te pierdas nada.</p>
-      </div>
-      <div class="rf-redes-links">
-        <a class="rf-red rf-red--instagram" href="https://www.instagram.com/univwesthill/" target="_blank" rel="noopener" data-evento="red_social_click" data-red="instagram" data-ubicacion="seccion"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="currentColor"/></svg><span><b>Instagram</b><small>@univwesthill</small></span></a>
-          <a class="rf-red rf-red--tiktok" href="https://www.tiktok.com/@univwesthill" target="_blank" rel="noopener" data-evento="red_social_click" data-red="tiktok" data-ubicacion="seccion"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.2 2.5c.4 2.7 2 4.3 4.6 4.5v3.4c-1.6.1-3.1-.4-4.5-1.3v6.5a5.9 5.9 0 1 1-5.9-5.9c.3 0 .6 0 .9.1v3.5a2.5 2.5 0 1 0 1.7 2.4V2.5h3.2z"/></svg><span><b>TikTok</b><small>@univwesthill</small></span></a>
-          <a class="rf-red rf-red--facebook" href="https://www.facebook.com/univwesthill/" target="_blank" rel="noopener" data-evento="red_social_click" data-red="facebook" data-ubicacion="seccion"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.6 21.5v-8h2.7l.4-3.2h-3.1V8.3c0-.9.3-1.6 1.6-1.6h1.7V3.8c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.4H7.5v3.2h2.8v8h3.3z"/></svg><span><b>Facebook</b><small>@univwesthill</small></span></a>
-      </div>
     </section>
   </main>
 

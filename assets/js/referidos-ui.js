@@ -358,8 +358,7 @@
       wrap.style.visibility = "hidden";
       hoja.setAttribute("data-stowed", "");
       listo.hidden = false;
-      listo.classList.add("rf-materialize");
-      listo.focus({ preventScroll: true });
+      celebrar(listo);
     }
 
     // Firma del sobre con el nombre de quien invita
@@ -380,6 +379,129 @@
         }
       }).observe(aviso, { attributes: true, attributeFilter: ["hidden"] });
     }
+  }
+
+  /* --- Festejo al enviar ---------------------------------------------------
+     1) La palomita salta con ondas azul/dorado/verde y suelta confeti.
+     2) El título entra letra por letra (el nombre en azul).
+     3) Unos segundos después el texto se cambia por el cuadro de redes.
+     Tocar el festejo lo adelanta. Con "reducir movimiento" solo hay fundidos. */
+  function celebrar(listo) {
+    const etapa1 = listo.querySelector("[data-celebra]");
+    const etapa2 = listo.querySelector("[data-redes-final]");
+    const titulo = listo.querySelector("[data-letras]");
+    const nombre = (listo.querySelector("[data-nombre-registro]") || {}).textContent || "";
+    const nombreFin = listo.querySelector("[data-nombre-final]");
+    if (nombreFin) nombreFin.textContent = nombre;
+    listo.focus({ preventScroll: true });
+    listo.scrollIntoView({ behavior: reducido() ? "auto" : "smooth", block: "center" });
+    if (!etapa1 || !etapa2) return;
+
+    let cambiado = false, reloj = 0;
+    const cambiar = () => {
+      if (cambiado) return;
+      cambiado = true;
+      clearTimeout(reloj);
+      const entrar = () => {
+        etapa1.hidden = true;
+        etapa2.hidden = false;
+        etapa2.classList.add("is-in");
+        const h = etapa2.querySelector("h2");
+        if (h) h.focus({ preventScroll: true });
+      };
+      if (reducido() || !etapa1.animate) { entrar(); return; }
+      etapa1.animate(
+        [{ opacity: 1, transform: "none", filter: "blur(0)" }, { opacity: 0, transform: "translateY(-14px) scale(.95)", filter: "blur(8px)" }],
+        { duration: 300, easing: "cubic-bezier(.4, 0, 1, 1)", fill: "forwards" }
+      ).onfinish = entrar;
+    };
+
+    etapa1.classList.add("is-on");
+    if (reducido()) { reloj = setTimeout(cambiar, 2400); return; }
+    partirLetras(titulo, nombre.replace(/^,\s*/, ""));
+    confeti(listo.querySelector(".rf-check-wrap"));
+    reloj = setTimeout(cambiar, 3600);
+    etapa1.addEventListener("click", cambiar, { once: true });
+  }
+
+  // Cada letra en su <span> (por palabras, para que no se corten al saltar de línea)
+  function partirLetras(el, nombre) {
+    if (!el) return;
+    const texto = el.textContent;
+    const desde = nombre ? texto.lastIndexOf(nombre) : -1;
+    el.setAttribute("aria-label", texto);
+    el.textContent = "";
+    let i = 0;
+    texto.split(/(\s+)/).forEach((trozo) => {
+      if (/^\s+$/.test(trozo)) { el.append(" "); i += trozo.length; return; }
+      const palabra = document.createElement("span");
+      palabra.className = "rf-palabra";
+      palabra.setAttribute("aria-hidden", "true");
+      for (const ch of trozo) {
+        const l = document.createElement("span");
+        l.className = "rf-letra" + (desde >= 0 && i >= desde && i < desde + nombre.length ? " es-nombre" : "");
+        l.style.setProperty("--i", i);
+        l.textContent = ch;
+        palabra.appendChild(l);
+        i++;
+      }
+      el.appendChild(palabra);
+    });
+  }
+
+  // Confeti con física simple (gravedad + aire) en los colores de Westhill
+  function confeti(origen) {
+    if (!origen) return;
+    const cv = document.createElement("canvas");
+    cv.className = "rf-confeti";
+    cv.setAttribute("aria-hidden", "true");
+    document.body.appendChild(cv);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const W = innerWidth, H = innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    const ctx = cv.getContext("2d");
+    ctx.scale(dpr, dpr);
+    const colores = ["#276092", "#f2c94c", "#27ae60", "#1d4a72", "#fbe7a1", "#2c619b"];
+    const piezas = [];
+    const disparo = (x, y, n, angulo, abanico, fuerza) => {
+      for (let k = 0; k < n; k++) {
+        const a = (angulo + (Math.random() - .5) * abanico) * Math.PI / 180;
+        const v = fuerza * (.55 + Math.random() * .6);
+        piezas.push({
+          x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v,
+          r: Math.random() * Math.PI, vr: (Math.random() - .5) * .35,
+          w: 6 + Math.random() * 6, h: 9 + Math.random() * 8,
+          c: colores[(Math.random() * colores.length) | 0], redondo: Math.random() < .3,
+          bamboleo: Math.random() * 10,
+        });
+      }
+    };
+    const r = origen.getBoundingClientRect();
+    const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    disparo(cx, cy, 90, -90, 150, 15);                              // estallido desde la palomita
+    setTimeout(() => {                                              // cañones desde las esquinas
+      disparo(0, H * .85, 45, -62, 30, 22);
+      disparo(W, H * .85, 45, -118, 30, 22);
+    }, 220);
+
+    const inicio = performance.now();
+    (function cuadro(t) {
+      const dt = t - inicio;
+      ctx.clearRect(0, 0, W, H);
+      const alfa = dt > 2600 ? Math.max(0, 1 - (dt - 2600) / 700) : 1;
+      piezas.forEach((p) => {
+        p.vx *= .985; p.vy = p.vy * .985 + .35;
+        p.x += p.vx + Math.sin((dt / 180) + p.bamboleo) * .6; p.y += p.vy; p.r += p.vr;
+        ctx.save();
+        ctx.globalAlpha = alfa;
+        ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.fillStyle = p.c;
+        if (p.redondo) { ctx.beginPath(); ctx.arc(0, 0, p.w / 2.4, 0, Math.PI * 2); ctx.fill(); }
+        else ctx.fillRect(-p.w / 2, -p.h / 2 * Math.abs(Math.cos(p.r * 2)), p.w, p.h * Math.abs(Math.cos(p.r * 2)) + 1);
+        ctx.restore();
+      });
+      if (alfa > 0) requestAnimationFrame(cuadro); else cv.remove();
+    })(inicio);
   }
 
   /* --- admisiones.html: rodillos del código ------------------------------ */

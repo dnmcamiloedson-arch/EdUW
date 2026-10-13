@@ -706,24 +706,22 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
   -webkit-backdrop-filter: none; backdrop-filter: none;
 }
 .rf-invite-page .rf-nav::after {
-  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: clamp(44px, 6vw, 84px); margin-top: -1px; pointer-events: none;
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: clamp(22px, 2.6vw, 38px); margin-top: -1px; pointer-events: none;
   background: var(--ola-top) center top / 100% 100% no-repeat;
   transform-origin: top; transition: transform 420ms var(--ease-out);
 }
 /* Al bajar, la ola se recoge para no tapar el formulario */
 .rf-invite-page .rf-nav.is-scrolled::after { transform: scaleY(.38); }
 .rf-invite-page .rf-nav-link { color: rgba(255, 255, 255, .88); }
-.rf-invite-page .rf-nav-in { height: 84px; display: grid; grid-template-columns: 1fr auto 1fr; }
-/* Logo al centro, como en el sitio de Westhill; el enlace a la derecha */
-.rf-invite-page .rf-brand { grid-column: 2; justify-self: center; transition: opacity var(--ui) var(--ease-out), transform var(--press) var(--ease-out); }
+.rf-invite-page .rf-nav-in { height: 84px; }
+.rf-invite-page .rf-brand { transition: opacity var(--ui) var(--ease-out), transform var(--press) var(--ease-out); }
 .rf-invite-page .rf-brand:active { transform: scale(.97); }
-.rf-invite-page .rf-nav-link { grid-column: 3; justify-self: end; }
 @media (hover: hover) and (pointer: fine) {
   .rf-invite-page .rf-brand:hover { opacity: .88; }
   .rf-invite-page .rf-nav-link:hover { color: #fff; }
 }
 .rf-invite-page .rf-brand img { height: 62px; }
-.rf-invite-page .rf-hero { padding-top: clamp(64px, 9vw, 120px); }
+.rf-invite-page .rf-hero { padding-top: clamp(44px, 6vw, 84px); }
 
 .rf-invite-page main, .rf-invite-page .rf-footer { position: relative; z-index: 1; }
 
@@ -797,48 +795,83 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
 .rf-invite-page .rf-feature .n { color: var(--c, var(--blue)); }
 .rf-invite-page .rf-feature:nth-child(2) .n { color: var(--gold-ink); }
 
-/* Redes sociales: tarjeta azul con tres botones grandes */
-.rf-redes {
-  max-width: 1080px; margin: clamp(56px, 8vw, 96px) auto 0; padding: clamp(28px, 4vw, 44px);
+/* --- Gracias: festejo y luego cuadro de redes ------------------------------ */
+.rf-done { max-width: 38rem; }
+.rf-celebra { cursor: default; padding: 8px 0 12px; }
+.rf-check-wrap { position: relative; width: 96px; height: 96px; margin: 0 auto; }
+.rf-check-wrap .check { position: relative; width: 96px; height: 96px; z-index: 1; filter: drop-shadow(0 14px 24px rgba(39, 174, 96, .35)); }
+.rf-onda { position: absolute; inset: 0; border-radius: 50%; border: 3px solid var(--c, var(--green)); opacity: 0; }
+.rf-onda:nth-child(2) { --c: var(--gold); }
+.rf-onda:nth-child(3) { --c: var(--blue); }
+.rf-celebra.is-on .rf-check-wrap { animation: rf-salto 760ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.rf-celebra.is-on .check path { animation: rf-draw 420ms var(--ease-out) 360ms forwards; }
+.rf-celebra.is-on .rf-onda { animation: rf-onda 1200ms cubic-bezier(.2, .7, .3, 1) both; animation-delay: calc(220ms + var(--n, 0) * 140ms); }
+.rf-onda:nth-child(2) { --n: 1; } .rf-onda:nth-child(3) { --n: 2; }
+@keyframes rf-salto { from { transform: scale(0) rotate(-35deg); } 55% { transform: scale(1.14) rotate(4deg); } to { transform: none; } }
+@keyframes rf-onda { from { opacity: .9; transform: scale(.7); } to { opacity: 0; transform: scale(2.8); } }
+
+.rf-done .rf-done-title { margin-top: 26px; color: var(--navy-ink); font-size: clamp(2.2rem, 6vw, 3.4rem); letter-spacing: -.04em; line-height: 1.05; font-weight: 800; }
+.rf-palabra { display: inline-block; white-space: nowrap; }
+.rf-letra { display: inline-block; animation: rf-letra 640ms cubic-bezier(.2, .9, .25, 1.25) both; animation-delay: calc(520ms + var(--i) * 30ms); }
+.rf-letra.es-nombre { color: var(--blue); }
+@keyframes rf-letra { from { opacity: 0; transform: translateY(.75em) rotate(10deg) scale(.5); filter: blur(10px); } }
+.rf-done .rf-done-sub { margin-top: 12px; color: var(--ink-2); font-size: 18px; }
+.rf-celebra.is-on .rf-done-sub { animation: rf-materialize 520ms var(--ease-out) 1250ms both; }
+
+.rf-redes-final {
+  position: relative; overflow: hidden; text-align: center;
+  padding: clamp(26px, 5vw, 40px) clamp(20px, 4vw, 36px) clamp(26px, 4vw, 34px);
   border-radius: 28px; background: var(--blue); color: #fff;
-  display: grid; grid-template-columns: 1fr auto; gap: 28px; align-items: center;
-  box-shadow: 0 30px 60px -36px rgba(19, 48, 77, .7);
-  position: relative; overflow: hidden;
+  box-shadow: 0 40px 80px -40px rgba(19, 48, 77, .75);
 }
-.rf-redes::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(90deg, var(--green) 0 50%, var(--gold) 50%); }
-.rf-redes .k { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
-.rf-redes h2 { margin-top: 6px; font-size: clamp(1.5rem, 3vw, 2rem); line-height: 1.1; letter-spacing: -.025em; color: #fff; }
-.rf-redes-copy p:last-child { margin-top: 8px; color: rgba(255, 255, 255, .78); font-size: 16px; max-width: 30rem; }
+.rf-redes-final::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 6px; background: linear-gradient(90deg, var(--green) 0 50%, var(--gold) 50%); }
+.rf-redes-final .k { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 8px; border-radius: 999px; background: rgba(255, 255, 255, .12); font-size: 14px; color: #fff; }
+.rf-redes-final .k svg { width: 20px; height: 20px; padding: 3px; border-radius: 50%; background: var(--green); fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.rf-redes-final h2 { margin-top: 16px; font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.1; letter-spacing: -.03em; color: #fff; outline: none; }
+.rf-redes-final .d { margin: 8px auto 0; max-width: 28rem; color: rgba(255, 255, 255, .8); font-size: 16px; }
+.rf-redes-final .rf-redes-links { margin-top: 22px; justify-content: center; }
+.rf-redes-oferta { display: inline-block; margin-top: 20px; color: var(--gold); font-weight: 600; font-size: 15px; }
+.rf-redes-final.is-in { animation: rf-popup 640ms cubic-bezier(.34, 1.4, .64, 1) both; }
+.rf-redes-final.is-in > * { animation: rf-materialize 460ms var(--ease-out) both; }
+.rf-redes-final.is-in > :nth-child(1) { animation-delay: 140ms; }
+.rf-redes-final.is-in > :nth-child(2) { animation-delay: 200ms; }
+.rf-redes-final.is-in > :nth-child(3) { animation-delay: 260ms; }
+.rf-redes-final.is-in > :nth-child(4) { animation: none; }
+.rf-redes-final.is-in .rf-red { animation: rf-materialize 460ms var(--ease-out) both; }
+.rf-redes-final.is-in .rf-red:nth-child(1) { animation-delay: 320ms; }
+.rf-redes-final.is-in .rf-red:nth-child(2) { animation-delay: 390ms; }
+.rf-redes-final.is-in .rf-red:nth-child(3) { animation-delay: 460ms; }
+.rf-redes-final.is-in > :nth-child(5) { animation-delay: 540ms; }
+@keyframes rf-popup { from { opacity: 0; transform: translateY(36px) scale(.88); filter: blur(10px); } to { opacity: 1; transform: none; filter: blur(0); } }
+
 .rf-redes-links { display: flex; gap: 10px; flex-wrap: wrap; }
 .rf-red {
   display: flex; align-items: center; gap: 10px; padding: 12px 18px 12px 14px; border-radius: 16px;
-  background: #fff; color: var(--navy-ink); text-decoration: none;
+  background: #fff; color: var(--navy-ink); text-decoration: none; text-align: left;
   transition: transform var(--press) var(--ease-out), box-shadow var(--ui) var(--ease-out);
   box-shadow: 0 10px 24px -14px rgba(0, 0, 0, .45);
 }
-.rf-red svg, .rf-red-mini svg { width: 26px; height: 26px; flex: none; }
+.rf-red svg { width: 26px; height: 26px; flex: none; color: var(--c); }
 .rf-red span { display: grid; line-height: 1.15; }
 .rf-red b { font-size: 15px; font-weight: 600; }
 .rf-red small { font-size: 12px; color: var(--ink-2); }
 .rf-red--instagram { --c: #d62976; } .rf-red--tiktok { --c: #111; } .rf-red--facebook { --c: #1877f2; }
-.rf-red svg, .rf-red-mini svg { color: var(--c); }
-.rf-red:active, .rf-red-mini:active { transform: scale(.97); }
-.rf-red:focus-visible, .rf-red-mini:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.rf-red:active { transform: scale(.97); }
+.rf-red:focus-visible, .rf-redes-oferta:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 @media (hover: hover) and (pointer: fine) {
   .rf-red:hover { transform: translateY(-2px); box-shadow: 0 16px 30px -14px rgba(0, 0, 0, .5); }
-  .rf-red-mini:hover { transform: translateY(-2px); }
 }
-.rf-done-redes { margin-top: 26px; }
-.rf-done-redes p { font-size: 14px; color: var(--ink-2); }
-.rf-done-redes div { margin-top: 10px; display: flex; justify-content: center; gap: 12px; }
-.rf-red-mini {
-  display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%;
-  background: #fff; box-shadow: 0 0 0 .5px var(--glass-line), 0 10px 22px -14px rgba(19, 48, 77, .5);
-  transition: transform var(--press) var(--ease-out);
+@media (max-width: 560px) {
+  .rf-redes-final .rf-redes-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .rf-redes-final .rf-red { flex-direction: column; gap: 6px; padding: 14px 6px 12px; text-align: center; }
+  .rf-redes-final .rf-red small { display: none; }
 }
-@media (max-width: 760px) {
-  .rf-redes { grid-template-columns: 1fr; margin-left: 16px; margin-right: 16px; border-radius: 22px; }
-  .rf-redes-links { display: grid; grid-template-columns: 1fr; }
+.rf-confeti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 60; }
+@media (prefers-reduced-motion: reduce) {
+  .rf-celebra.is-on .rf-check-wrap, .rf-celebra.is-on .rf-onda, .rf-celebra.is-on .rf-done-sub,
+  .rf-redes-final.is-in, .rf-redes-final.is-in > *, .rf-redes-final.is-in .rf-red { animation: rf-fade 200ms linear both !important; }
+  .rf-celebra.is-on .check path { animation: none; stroke-dashoffset: 0; }
+  .rf-onda { display: none; }
 }
 
 /* Pie con la ola institucional (azul con franjas verde y dorada) */
@@ -857,7 +890,6 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
   .rf-invite-page .rf-footer::before { height: 44px; }
   .rf-invite-page .rf-nav-in { height: 70px; }
   .rf-invite-page .rf-brand img { height: 48px; }
-  .rf-solo-ancho { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .rf-invite-page .rf-nav::after { transition: none; }
