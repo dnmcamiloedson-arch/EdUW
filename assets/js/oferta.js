@@ -52,25 +52,21 @@
       const progs = CATALOGO[nivel] || [];
       caja.classList.toggle("is-open", !!nivel);
       if (!nivel) { lista.textContent = ""; return; }
-      titulo.textContent = progs.length === 1
-        ? "Elige tu programa"
-        : `${progs.length} ${PLURAL[nivel]} en Westhill. Elige una:`;
+      titulo.textContent = progs.length === 1 ? "Programa" : `Carrera · ${progs.length} ${PLURAL[nivel]}`;
       lista.textContent = "";
-      const opciones = progs.length === 1 ? progs : progs.concat(NO_SE);
-      opciones.forEach((p, i) => {
-        const lab = el("label", "rf-carrera" + (p === NO_SE ? " rf-carrera--nose" : ""));
-        lab.style.setProperty("--i", i);
-        const inp = el("input");
-        inp.type = "radio"; inp.name = "carrera"; inp.value = p;
-        if (progs.length === 1) inp.checked = true;
-        lab.append(inp, el("span", null, p));
-        lista.appendChild(lab);
+      if (progs.length > 1) {
+        const ph = el("option", null, "Toca para elegir");
+        ph.value = ""; ph.disabled = true; ph.selected = true;
+        lista.appendChild(ph);
+      }
+      (progs.length === 1 ? progs : progs.concat(NO_SE)).forEach((p) => {
+        const o = el("option", null, p); o.value = p; lista.appendChild(o);
       });
-      // Reinicia la entrada escalonada aunque se cambie de nivel a medio camino
-      lista.classList.remove("is-in"); void lista.offsetWidth; lista.classList.add("is-in");
+      lista.classList.toggle("is-vacio", progs.length > 1);
       etiquetas(form, nivel);
     }
 
+    lista.addEventListener("change", () => lista.classList.toggle("is-vacio", !lista.value));
     pills.addEventListener("change", () => {
       const m = pills.querySelector("input:checked");
       pintar(m ? m.value : "");
