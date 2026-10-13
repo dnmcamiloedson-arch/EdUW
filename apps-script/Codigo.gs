@@ -16,7 +16,8 @@
         Si la cambias: Implementar > Gestionar implementaciones > Nueva versión.
 
    Hojas:
-     · Referidores: a quienes Admisiones les generó un código (link personal).
+     · Embajadores: a quienes Admisiones les generó un código (link personal).
+                    (antes se llamaba "Referidores"; se renombra sola)
      · Referidos:   registros que llegan desde el formulario con ?ref=CODIGO.
 
    API:
@@ -34,12 +35,14 @@
 // Clave que pide admisiones.html. Cámbiala aquí (no la subas al repositorio).
 var CLAVE_ADMISIONES = "";
 
-var HOJA_REFERIDORES = "Referidores";
+var HOJA_REFERIDORES = "Embajadores";
+// Nombres anteriores de las hojas: si existen, se renombran solas sin perder datos.
+var NOMBRES_ANTERIORES = { "Embajadores": "Referidores" };
 var HOJA_REFERIDOS = "Referidos";
 
 var COLS_REFERIDORES = ["Fecha", "Código", "Nombre", "Correo", "Teléfono"];
 // Prepa y Promedio van al final para que los registros anteriores sigan en su lugar.
-var COLS_REFERIDOS = ["Fecha", "Código referidor", "Nombre referidor",
+var COLS_REFERIDOS = ["Fecha", "Código embajador", "Nombre embajador",
   "Nombre", "Correo", "Teléfono", "Nivel", "Carrera", "Mensaje", "Prepa / escuela", "Promedio"];
 
 /** Ejecutar una vez desde el editor para preparar la hoja. */
@@ -180,6 +183,8 @@ function nuevoCodigo_() {
 function hoja_(nombre, columnas) {
   var libro = SpreadsheetApp.getActiveSpreadsheet();
   var hoja = libro.getSheetByName(nombre);
+  var anterior = !hoja && NOMBRES_ANTERIORES[nombre] && libro.getSheetByName(NOMBRES_ANTERIORES[nombre]);
+  if (anterior) hoja = anterior.setName(nombre);
   if (!hoja) hoja = libro.insertSheet(nombre);
   if (columnas && hoja.getLastRow() === 0) {
     hoja.appendRow(columnas);
