@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Tienes una invitación | Universidad Westhill</title>
+  <meta name="description" content="Alguien de la comunidad Westhill te invitó. Abre tu invitación y Admisiones te acompaña a encontrar tu carrera.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Inter solo como respaldo (en Apple se usa SF); Fraunces solo en la papelería -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..600&family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/referidos.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body class="rf-invite-page">
+  <nav class="rf-nav" aria-label="Universidad Westhill">
+    <div class="rf-nav-in">
+      <a class="rf-brand" href="https://www.uw.edu.mx/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=logo" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="logo">
+        <img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" width="779" height="313">
+      </a>
+      <a class="rf-nav-link" href="https://www.uw.edu.mx/licenciaturas_uw/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=barra" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="barra">Oferta académica</a>
+    </div>
+  </nav>
+
+  <main>
+    <header class="rf-hero">
+      <p class="rf-invite" data-referidor hidden>
+        <span class="rf-avatar" data-referidor-inicial aria-hidden="true"></span>
+        <span><strong data-referidor-nombre></strong> te invitó a Westhill</span>
+      </p>
+      <h1 class="rf-title" data-in style="--i:0">Tienes una invitación a <em>Westhill.</em></h1>
+      <p class="rf-lead" data-in style="--i:1">Ábrela y confirma tu lugar. Nuestro equipo de Admisiones te acompaña desde ahí.</p>
+    </header>
+
+    <div class="rf-stage">
+    <div class="rf-scene" data-escena>
+
+      <!-- El sobre (decorativo + gesto; el botón de abajo hace lo mismo) -->
+      <div class="rf-env-wrap">
+        <div class="rf-env" data-in>
+          <div class="env-back"></div>
+          <div class="env-letter" aria-hidden="true">
+            <span class="k">Universidad Westhill</span>
+            <span class="t">R.S.V.P.</span>
+            <span class="rule"></span>
+          </div>
+          <div class="env-pocket"></div>
+          <p class="env-to" aria-hidden="true">De parte de<b data-firma>la comunidad Westhill</b></p>
+          <div class="env-stamp" aria-hidden="true"><span><img src="assets/img/edificio-westhill-blanco.png" alt=""></span></div>
+          <div class="env-flap">
+            <div class="env-flap-shape"></div>
+            <button class="env-seal" type="button" aria-label="Abrir invitación">
+              <img src="assets/img/edificio-westhill.png" alt="">
+            </button>
+          </div>
+        </div>
+        <p class="rf-hint" data-in style="--i:6">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"/></svg>
+          Desliza el sello hacia arriba
+        </p>
+        <button class="rf-open-btn" type="button" data-abrir data-in style="--i:7">o toca aquí para abrirla</button>
+      </div>
+
+      <!-- La carta: formulario R.S.V.P. -->
+      <section class="rf-letter" data-stowed aria-labelledby="t-form">
+        <header class="rf-letter-head">
+          <img class="rf-letterhead" src="assets/img/logo-westhill.png" alt="Universidad Westhill" width="779" height="313">
+          <h2 id="t-form">Confirma tu lugar</h2>
+          <p>Toma menos de un minuto.</p>
+        </header>
+
+        <!-- Sin data-validate: la validación y el envío los hace assets/js/referidos.js -->
+        <form class="rf-form" data-referidos-form novalidate>
+          <input type="hidden" name="ref">
+
+          <div class="rf-group">
+            <label class="rf-row field">
+              <span class="rf-row-label">Nombre completo</span>
+              <input class="rf-input" name="nombre" autocomplete="name" placeholder="Requerido" required>
+              <span class="rf-error-msg error-msg">Ingresa tu nombre.</span>
+            </label>
+            <label class="rf-row field">
+              <span class="rf-row-label">Correo</span>
+              <input class="rf-input" name="email" type="email" inputmode="email" autocomplete="email" placeholder="tu@correo.com" required>
+              <span class="rf-error-msg error-msg">Ingresa un correo válido.</span>
+            </label>
+            <label class="rf-row field">
+              <span class="rf-row-label">Teléfono</span>
+              <input class="rf-input" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="10 dígitos" required>
+              <span class="rf-error-msg error-msg">Ingresa tu teléfono.</span>
+            </label>
+          </div>
+          <p class="rf-footnote">Solo Admisiones usará estos datos para contactarte.</p>
+
+          <fieldset class="rf-pills-wrap">
+            <legend class="rf-pills-label">¿Qué te interesa estudiar?</legend>
+            <div class="rf-pills" data-pills>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Licenciatura"><span>Licenciatura</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Maestría"><span>Maestría</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Especialidad"><span>Especialidad</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Diplomado"><span>Diplomado</span></label>
+              <label class="rf-pill"><input type="radio" name="nivel" value="Facultad de Medicina"><span>Medicina</span></label>
+            </div>
+          </fieldset>
+
+          <!-- Carreras del nivel elegido (las pone oferta.js) -->
+          <div class="rf-carreras" data-carreras>
+            <div class="rf-carreras-in">
+              <label class="rf-group rf-row rf-select-row">
+                <span class="rf-row-label" data-carreras-titulo>Carrera</span>
+                <select class="rf-input rf-select" name="carrera" data-carreras-lista></select>
+              </label>
+            </div>
+          </div>
+
+          <div class="rf-group" style="margin-top:14px">
+            <label class="rf-row field">
+              <span class="rf-row-label" data-prepa-label>¿De qué prepa vienes?</span>
+              <input class="rf-input" name="prepa" autocomplete="off" placeholder="Nombre de tu preparatoria" required>
+              <span class="rf-error-msg error-msg">Escribe de qué escuela vienes.</span>
+            </label>
+            <div class="rf-row field rf-prom" data-promedio>
+              <div class="rf-prom-head">
+                <label class="rf-row-label" for="r-prom" data-promedio-label>Tu promedio</label>
+                <output class="rf-prom-val" for="r-prom" aria-live="polite">—</output>
+              </div>
+              <input class="rf-range" id="r-prom" type="range" name="promedio" min="7" max="10" step="0.1" value="8.5" required data-vacio>
+              <div class="rf-prom-scale" aria-hidden="true"><span>7</span><span>8</span><span>9</span><span>10</span></div>
+              <span class="rf-error-msg error-msg">Mueve la barra hasta tu promedio.</span>
+            </div>
+            <label class="rf-row">
+              <span class="rf-row-label">Mensaje (opcional)</span>
+              <textarea class="rf-input" name="mensaje" rows="2" placeholder="¿Qué te gustaría saber?"></textarea>
+            </label>
+          </div>
+
+          <div class="rf-group field" style="margin-top:14px;margin-bottom:20px">
+            <div class="rf-switch-row">
+              <label class="txt" for="r-aviso">Acepto el <a href="https://www.uw.edu.mx/wp-content/uploads/2021/10/AVISO-DE-PRIVACIDAD-INSTITUTE-Y-UNIVERSIDAD-2021.pdf" target="_blank" rel="noopener">Aviso de privacidad</a></label>
+              <input class="rf-switch" id="r-aviso" type="checkbox" role="switch" name="aviso" required>
+            </div>
+            <span class="rf-error-msg error-msg" style="padding:0 16px 10px">Activa esta opción para continuar.</span>
+          </div>
+
+          <button class="rf-btn" type="submit">Enviar confirmación</button>
+          <p class="rf-form-error form-error" role="alert" hidden></p>
+          <!-- Aviso para lectores de pantalla; lo muestra referidos.js -->
+          <p class="sr-only form-success" role="status" tabindex="-1" hidden>Recibimos tu registro. Admisiones te contactará pronto.</p>
+        </form>
+      </section>
+
+      <!-- Después de que el sobre sale volando -->
+      <section class="rf-done" tabindex="-1" hidden aria-live="polite">
+        <!-- 1) Festejo: palomita con ondas, confeti y el texto que entra letra por letra -->
+        <div class="rf-celebra" data-celebra>
+          <div class="rf-check-wrap" aria-hidden="true">
+            <span class="rf-onda"></span><span class="rf-onda"></span><span class="rf-onda"></span>
+            <svg class="check" viewBox="0 0 72 72"><circle cx="36" cy="36" r="36"/><path pathLength="1" d="M23 37 l9 9 l17 -19"/></svg>
+          </div>
+          <h2 class="rf-done-title" data-letras>¡Va en camino<span data-nombre-registro></span>!</h2>
+          <p class="rf-done-sub">Tu confirmación ya llegó a Admisiones.</p>
+        </div>
+        <!-- 2) Luego el texto se cambia por el cuadro de redes -->
+        <div class="rf-redes-final" data-redes-final hidden>
+          <p class="k"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><span>¡Listo<span data-nombre-final></span>!</span></p>
+          <h2 tabindex="-1">Conoce Westhill antes de tu primer día</h2>
+          <p class="d">Cómo es un día real en el campus y todo lo que pasa después de clases. Síguenos y entérate antes que nadie de cada Experiencia Westhill.</p>
+          <div class="rf-redes-links">
+            <a class="rf-red rf-red--instagram" href="https://www.instagram.com/univwesthill/" target="_blank" rel="noopener" data-evento="red_social_click" data-red="instagram" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.3" cy="6.7" r="1.3" fill="currentColor"/></svg><span><b>Instagram</b><small>Así se vive el campus</small></span></a>
+            <a class="rf-red rf-red--tiktok" href="https://www.tiktok.com/@univwesthill" target="_blank" rel="noopener" data-evento="red_social_click" data-red="tiktok" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.2 2.5c.4 2.7 2 4.3 4.6 4.5v3.4c-1.6.1-3.1-.4-4.5-1.3v6.5a5.9 5.9 0 1 1-5.9-5.9c.3 0 .6 0 .9.1v3.5a2.5 2.5 0 1 0 1.7 2.4V2.5h3.2z"/></svg><span><b>TikTok</b><small>Un día real en Westhill</small></span></a>
+            <a class="rf-red rf-red--facebook" href="https://www.facebook.com/univwesthill/" target="_blank" rel="noopener" data-evento="red_social_click" data-red="facebook" data-ubicacion="gracias"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M13.6 21.5v-8h2.7l.4-3.2h-3.1V8.3c0-.9.3-1.6 1.6-1.6h1.7V3.8c-.3 0-1.3-.1-2.5-.1-2.5 0-4.1 1.5-4.1 4.2v2.4H7.5v3.2h2.8v8h3.3z"/></svg><span><b>Facebook</b><small>Eventos y anuncios</small></span></a>
+          </div>
+          <a class="rf-redes-oferta" href="https://www.uw.edu.mx/licenciaturas_uw/?utm_source=invitacion&amp;utm_medium=referidos&amp;utm_campaign=embajadores&amp;utm_content=gracias" target="_blank" rel="noopener" data-evento="sitio_click" data-ubicacion="gracias">Encuentra tu carrera →</a>
+        </div>
+      </section>
+    </div>
+    </div>
+
+    <section class="rf-features" aria-label="Qué sigue">
+      <article class="rf-feature"><span class="n">01</span><h3>Atención personalizada</h3><p>Un asesor de Admisiones te acompaña de principio a fin.</p></article>
+      <article class="rf-feature"><span class="n">02</span><h3>Planes, becas y convenios</h3><p>Toda la información para decidir con calma.</p></article>
+      <article class="rf-feature"><span class="n">03</span><h3>Tu proceso de admisión</h3><p>Te guiamos en cada paso hasta tu inscripción.</p></article>
+    </section>
+  </main>
+
+  <footer class="rf-footer">
+    <span>© 2026 Universidad Westhill</span>
+    <a href="tel:+525588517010">(55) 8851 7010</a>
+    <a href="mailto:admisiones@uw.edu.mx">admisiones@uw.edu.mx</a>
+    <i>Vestigia Nulla Retrorsum</i>
+  </footer>
+
+  <script src="assets/js/referidos.js"></script>
+  <script src="assets/js/oferta.js"></script>
+  <script src="assets/js/referidos-ui.js"></script>
+</body>
+</html>
