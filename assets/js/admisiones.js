@@ -146,6 +146,7 @@
     RefUI.rodillos(reels, cod);
 
     $("r-link").value = ref.link;
+    $("r-wa-nota").hidden = true;
     const texto = "Te invito a conocer la Universidad Westhill. Regístrate aquí: " + ref.link;
     $("r-whatsapp").href = "https://wa.me/?text=" + encodeURIComponent(texto);
 
@@ -205,6 +206,36 @@
       title: "Invitación Universidad Westhill",
       text: "Te invito a conocer la Universidad Westhill. Regístrate aquí: " + actual.link,
     }).catch(() => {});
+  });
+
+  /* WhatsApp: la tarjeta va junto con el link.
+     En celular se abre el menú de compartir con la imagen y el texto (elige WhatsApp).
+     En computadora se copia la tarjeta y se abre WhatsApp con el link: solo hay que pegarla. */
+  const nota = $("r-wa-nota");
+  let tNota;
+  function avisar(texto) {
+    nota.textContent = texto;
+    nota.hidden = false;
+    clearTimeout(tNota);
+    tNota = setTimeout(() => { nota.hidden = true; }, 9000);
+  }
+  $("r-whatsapp").addEventListener("click", (e) => {
+    if (!actual || !actual.archivo) return;               // sin tarjeta: solo el link
+    const texto = "Te invito a conocer la Universidad Westhill. Regístrate aquí: " + actual.link;
+    if (puedeCompartir(actual.archivo)) {
+      e.preventDefault();
+      navigator.share({ files: [actual.archivo], text: texto }).catch(() => {});
+      return;
+    }
+    if (navigator.clipboard && window.ClipboardItem) {
+      try {
+        navigator.clipboard.write([new ClipboardItem({ "image/png": actual.archivo })])
+          .then(() => avisar("Tarjeta copiada. En el chat de WhatsApp pégala con Ctrl+V (⌘+V en Mac) y envíala junto con el link."))
+          .catch(() => avisar("Descarga la tarjeta y adjúntala en el chat de WhatsApp."));
+      } catch (err) { avisar("Descarga la tarjeta y adjúntala en el chat de WhatsApp."); }
+    } else {
+      avisar("Descarga la tarjeta y adjúntala en el chat de WhatsApp.");
+    }
   });
 
   const copiar = $("r-copiar");

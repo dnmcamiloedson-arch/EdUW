@@ -612,6 +612,8 @@ button.rf-nav-link { padding: 8px 4px; font: inherit; font-size: 14px; color: va
 .rf-card-preview:active { transform: scale(.98); }
 .rf-card-preview img { display: block; width: 100%; height: auto; }
 .rf-share-full { grid-column: 1 / -1; }
+.rf-wa-nota { margin-top: 10px; padding: 10px 14px; border-radius: 12px; background: rgba(39, 174, 96, .12); color: #1e7a45; font-size: 14px; line-height: 1.35; text-align: center; }
+.rf-wa-nota:not([hidden]) { animation: rf-materialize 320ms var(--ease-out) both; }
 .rf-share #r-compartir[hidden] + .rf-share-full { grid-column: auto; }
 
 /* Lista de códigos */
