@@ -2,3 +2,7 @@
 media/
 out/
 node_modules/
+remotion/public/photos/
+remotion/public/proxies
+remotion/public/seg/
+remotion/public/music/

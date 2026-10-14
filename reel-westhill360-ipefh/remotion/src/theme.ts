@@ -53,7 +53,7 @@ export const loadFonts = () => {
   Promise.all(
     FONT_FILES.map(([family, file, weight, style]) => {
       const face = new FontFace(family, `url(${staticFile(`fonts/${file}`)})`, {weight, style});
-      document.fonts.add(face);
+      (document.fonts as unknown as {add: (f: FontFace) => void}).add(face);
       return face.load();
     }),
   ).then(() => continueRender(handle));
