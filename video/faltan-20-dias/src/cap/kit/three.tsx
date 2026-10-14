@@ -8,13 +8,13 @@ import {H, W, hash} from '../../lib/util';
 
 // ---------- Escenario 3D (diorama de papel con volumen real) ----------
 // Lienzo transparente: el cielo y los textos siguen dibujándose en 2D detrás y delante.
-export const Stage3D: React.FC<{children: React.ReactNode; fov?: number; style?: React.CSSProperties}> = ({children, fov = 40, style}) => (
+export const Stage3D: React.FC<{children: React.ReactNode; fov?: number; style?: React.CSSProperties; near?: number; far?: number}> = ({children, fov = 40, style, near = 0.1, far = 4000}) => (
 	<ThreeCanvas
 		width={W}
 		height={H}
 		style={{position: 'absolute', inset: 0, ...style}}
 		gl={{alpha: true, antialias: true, preserveDrawingBuffer: true}}
-		camera={{fov, near: 0.1, far: 4000, position: [0, 10, 60]}}
+		camera={{fov, near, far, position: [0, 10, 60]}}
 		shadows
 		onCreated={({gl}) => {
 			gl.setClearColor(0x000000, 0);

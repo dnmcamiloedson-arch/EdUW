@@ -68,38 +68,263 @@ def cap16(bus):
     return c + fr(REV)
 
 
-# ---------------------------------------------------------------- 15 · Los volcanes
+# ---------------------------------------------------------------- 15 · El barco en el muro (San Juan de Ulúa)
+def olas(dur, seed=0, period=5.5):
+    """Oleaje: rumor grave que crece con cada ola y espuma que rompe."""
+    n = int(dur * SR)
+    base = sfx.hp(sfx.lp(sfx.pink(n, seed), 700), 90)
+    wash = sfx.bp(sfx.pink(n, seed + 1), 900, 5000)
+    r = np.random.default_rng(seed + 2)
+    eb = np.zeros(n)
+    ew = np.zeros(n)
+    tt = r.uniform(0, 1.2)
+    while tt < dur:
+        P = period * r.uniform(0.75, 1.25)
+        i0 = int(tt * SR)
+        k = np.arange(min(int(P * 1.6 * SR), n - i0)) / SR
+        crest = P * 0.55
+        eb[i0 : i0 + len(k)] += np.clip(k / crest, 0, 1) ** 2 * np.exp(-np.clip(k - crest, 0, None) / (P * 0.28)) * r.uniform(0.6, 1.0)
+        ew[i0 : i0 + len(k)] += (k > crest) * np.exp(-np.clip(k - crest, 0, None) / (P * 0.14)) * r.uniform(0.5, 1.0)
+        tt += P
+    out = base * (0.35 + 0.65 * eb) + wash * ew * 0.5
+    return out / (np.max(np.abs(out)) + 1e-9)
+
+
+def gota(seed=0):
+    n = int(0.18 * SR)
+    t = np.arange(n) / SR
+    f0 = np.random.default_rng(seed).uniform(900, 1300)
+    ph = 2 * np.pi * np.cumsum(f0 * (1 + 1.8 * np.clip(t / 0.03, 0, 1))) / SR
+    return np.sin(ph) * np.exp(-t / 0.025) * np.minimum(1, t / 0.001)
+
+
+def carbon(dur, seed=0):
+    """Carbón sobre cal: grano áspero en trazos cortos con levantadas de mano."""
+    n = int(dur * SR)
+    r = np.random.default_rng(seed)
+    grit = sfx.bp(sfx.noise(n, seed), 1800, 7500)
+    gran = np.abs(sfx.smooth_noise(n, 45.0, seed + 1))
+    low = sfx.bp(sfx.noise(n, seed + 2), 300, 1200) * 0.3
+    e = np.zeros(n)
+    tt = 0.0
+    while tt < dur:
+        L = r.uniform(0.12, 0.55)
+        i0 = int(tt * SR)
+        i1 = min(n, int((tt + L) * SR))
+        k = np.arange(i1 - i0) / SR
+        e[i0:i1] = np.sin(np.pi * k / L) ** 0.6 * r.uniform(0.6, 1.0)
+        tt += L + r.uniform(0.03, 0.12)
+    out = (grit * (0.4 + 0.6 * gran / (np.max(gran) + 1e-9)) + low) * e
+    return out / (np.max(np.abs(out)) + 1e-9)
+
+
+def bota(seed=0):
+    n = int(0.25 * SR)
+    t = np.arange(n) / SR
+    heel = sfx.thump(180, 90, 0.25, 0.05) * 0.8
+    click = sfx.bp(sfx.noise(n, seed), 1500, 6000) * np.exp(-t / 0.008) * 0.6
+    scuff = sfx.bp(sfx.noise(n, seed + 1), 600, 3000) * np.exp(-np.clip(t - 0.04, 0, None) / 0.05) * (t > 0.03) * 0.25
+    return heel + click + scuff
+
+
+def llaves(dur, seed=0):
+    n = int(dur * SR)
+    out = np.zeros(n)
+    r = np.random.default_rng(seed)
+    m = int(0.08 * SR)
+    k = np.arange(m) / SR
+    for _ in range(int(dur * 28)):
+        at = int(r.uniform(0, dur - 0.09) * SR)
+        f = r.uniform(3200, 7000)
+        out[at : at + m] += sum(a * np.sin(2 * np.pi * f * rr * k) * np.exp(-k / tau) for rr, a, tau in [(1, 1, 0.02), (1.47, 0.6, 0.012), (2.09, 0.4, 0.008)]) * r.uniform(0.2, 1.0)
+    return out * np.sin(np.pi * np.linspace(0, 1, n)) ** 0.5
+
+
+def crujido(dur, seed=0):
+    """Madera del casco que cruje (stick-slip grave)."""
+    n = int(dur * SR)
+    out = np.zeros(n)
+    rng = np.random.default_rng(seed)
+    tt = 0.0
+    while tt < dur - 0.02:
+        out[int(tt * SR)] += rng.uniform(0.5, 1.0)
+        tt += 1 / (30 + 60 * np.sin(np.pi * tt / dur)) * rng.uniform(0.85, 1.15)
+    k = np.arange(int(0.05 * SR)) / SR
+    ping = np.sin(2 * np.pi * 190 * k) * np.exp(-k / 0.012) + 0.6 * np.sin(2 * np.pi * 430 * k) * np.exp(-k / 0.007) + 0.3 * np.sin(2 * np.pi * 1020 * k) * np.exp(-k / 0.004)
+    out = np.convolve(out, ping)[:n]
+    return sfx.bp(out, 120, 1600) * np.sin(np.pi * np.linspace(0, 1, n)) ** 0.7
+
+
+def flap(dur, seed=0):
+    """Velas que se hinchan y flamean."""
+    n = int(dur * SR)
+    t = np.arange(n) / SR
+    nz = sfx.bp(sfx.pink(n, seed), 150, 2200)
+    ph = 2 * np.pi * np.cumsum(5.5 + 2 * np.sin(2 * np.pi * 0.7 * t)) / SR
+    return nz * (0.25 + np.clip(np.sin(ph), 0, None) ** 3) * np.sin(np.pi * np.linspace(0, 1, n)) ** 0.5
+
+
+def gaviota(seed=0, calls=2):
+    r = np.random.default_rng(seed)
+    parts = []
+    for _ in range(calls):
+        d = r.uniform(0.28, 0.4)
+        k = np.arange(int(d * SR)) / SR
+        u = k / d
+        f = (1500 - 650 * u + 250 * np.sin(np.pi * u)) * r.uniform(0.92, 1.08)
+        ph = 2 * np.pi * np.cumsum(f) / SR
+        sig = sum(np.sin(h * ph) / h**1.2 for h in range(1, 7))
+        parts.append(sfx.bp(sig, 900, 5000) * np.sin(np.pi * u) ** 0.6 * (1 + 0.3 * np.sin(2 * np.pi * 28 * k)))
+        parts.append(np.zeros(int(r.uniform(0.08, 0.16) * SR)))
+    return np.concatenate(parts)
+
+
+# habanera en Re menor, 74 bpm, compás de 2/4: bajo "dum — da dum dum"
+HAB_BEAT = 60 / 74
+HAB_BAR = 2 * HAB_BEAT
+HAB_BASS = {'Dm': (38, 45, 41, 50), 'A7': (45, 40, 49, 45), 'Gm': (43, 50, 46, 43), 'Bb': (46, 53, 50, 46)}
+HAB_CHORD = {'Dm': [50, 57, 62, 65], 'A7': [45, 52, 55, 61], 'Gm': [43, 50, 55, 58], 'Bb': [46, 53, 58, 62]}
+# tema (compás, tiempo, nota, duración en tiempos) sobre Dm | A7 | A7 | Dm
+HAB_TEMA = [
+    (0, 0, 69, 0.75), (0, 0.75, 70, 0.25), (0, 1, 69, 0.5), (0, 1.5, 67, 0.5),
+    (1, 0, 65, 0.75), (1, 0.75, 67, 0.25), (1, 1, 64, 1.0),
+    (2, 0, 73, 0.75), (2, 0.75, 74, 0.25), (2, 1, 76, 0.5), (2, 1.5, 73, 0.5),
+    (3, 0, 74, 1.5), (3, 1.5, 69, 0.5),
+]
+
+
+def habanera(bus, t0, chords, gain=0.3, strum_gain=0.0, seed=0):
+    for b, ch in enumerate(chords):
+        tb = t0 + b * HAB_BAR
+        for k, (bt, d) in enumerate([(0, 0.75), (0.75, 0.25), (1, 0.5), (1.5, 0.5)]):
+            m = HAB_BASS[ch][k]
+            bus.place(M.pluck(midi(m), d * HAB_BEAT + 0.35, bright=0.35, decay=0.997, vel=(1.0, 0.7, 0.85, 0.75)[k], seed=seed + b * 4 + k), tb + bt * HAB_BEAT, gain, -0.12, wet=0.45)
+        if strum_gain:
+            bus.place(M.strum(HAB_CHORD[ch], HAB_BEAT * 0.9, bright=0.45, vel=0.7, seed=seed + 50 + b), tb + HAB_BEAT, strum_gain, 0.18, wet=0.5)
+
+
+def tema(bus, t0, bars, gain=0.18, inst='flute', pan=0.05, wet=0.9, seed=0, fade_from=None):
+    for k, (b, bt, m, d) in enumerate(HAB_TEMA):
+        if b not in bars:
+            continue
+        tt = t0 + (b - bars[0]) * HAB_BAR + bt * HAB_BEAT
+        g = gain * (1.0 if fade_from is None or tt < fade_from else max(0.0, 1 - (tt - fade_from) / 1.2))
+        if g <= 0:
+            continue
+        if inst == 'flute':
+            sig = M.flute(midi(m), d * HAB_BEAT * 0.98, 0.9, seed=seed + k)
+        elif inst == 'harp':
+            sig = M.pluck(midi(m + 12), d * HAB_BEAT + 1.2, bright=0.8, decay=0.998, vel=0.9, seed=seed + k)
+        else:
+            sig = M.musicbox(midi(m + 12), d * HAB_BEAT + 1.0, 0.8)
+        bus.place(sig, tt, g, pan, wet=wet)
+
+
 def cap15(bus):
-    S1, S2, S3, REV, HIT = 126, 96, 84, 126, 62
-    a, b, c = fr(S1), fr(S1 + S2), fr(S1 + S2 + S3)
-    hit = c + fr(HIT)
-    bed(bus, 0, drone=0.09, wind=0.45, seed=15)
-    # caracol que abre la noche
-    bus.place(M.caracol(midi(45), 2.6, seed=1), 0.25, 0.32, -0.2, wet=1.0)
-    bus.place(M.caracol(midi(52), 2.0, seed=2), a + 0.1, 0.24, 0.2, wet=1.0)
-    # coro grave: Am → F → Dm → E
-    for (tt, notes, d) in [(0.2, [45, 52, 57, 60], a), (a, [41, 48, 53, 57], fr(S2)), (b, [38, 50, 53, 57], fr(S3) * 0.6), (b + fr(S3) * 0.6, [40, 52, 56, 59], fr(S3) * 0.4 + 0.3)]:
-        bus.place2(np.stack([M.choir(notes, d + 0.4, 'o', seed=int(tt * 7))] * 2), tt, 0.14, wet=0.9)
-    # huéhuetl lento, como pasos de guardia
-    for k in range(int((c) / 1.0)):
-        bus.place(M.huehuetl(0.75, 0.85, seed=k), 0.6 + k * 1.0, 0.5, wet=0.25)
-    # brasas del cráter
-    bus.place(sfx.fire(fr(S2) + 0.4, 151) * 0.5, a, 0.16, 0.1)
-    # estrellas que titilan (cajita musical, La menor pentatónica)
-    sc = M.scale(69, 'penta_m')
-    for k in range(10):
-        bus.place(M.musicbox(midi(sc(k % 7 + 2)), 1.4, 0.7), b + 0.3 + k * 0.24, 0.1, -0.5 + (k % 5) * 0.25, wet=1.2)
-    # las estrellas viajan al número: arpegio ascendente
-    for k in range(14):
-        bus.place(M.musicbox(midi(sc(k + 3)), 1.6, 0.8), c + 0.1 + k * fr(HIT) / 15, 0.12, -0.6 + k * 0.09, wet=1.0)
-    bus.place(sfx.air(150, fr(HIT) + 0.3, (400, 1200), (1200, 6000)), c, 0.08, wet=0.6)
-    # la constelación se completa: golpe + La mayor (picardía)
-    bus.place(M.huehuetl(1.3, 0.8, seed=77), hit, 0.95, wet=0.3)
-    bus.place(sfx.boom(15), hit, 0.85, wet=0.35)
-    bus.place2(np.stack([M.choir([45, 57, 61, 64, 69], fr(REV - HIT) + 0.6, 'a', seed=15, attack=0.15)] * 2), hit, 0.18, wet=0.9)
-    for k, m in enumerate([69, 73, 76, 81]):
-        bus.place(M.musicbox(midi(m), 2.0), hit + 0.05 + k * 0.06, 0.16, -0.3 + k * 0.2, wet=1.0)
-    return c + fr(REV)
+    S1, S2, S3, S4, S5, REV, HIT = 120, 96, 225, 165, 135, 150, 74
+    T3, T4, T5 = S2, S2 + S3, S2 + S3 + S4
+    cl = lambda f: fr(S1 + f)  # noqa: E731  (frames locales de la celda)
+    rev = cl(T5 + S5)
+    hit = rev + fr(HIT)
+    ext = cl(T4 + 104)  # el muro se abre al mar
+    bed(bus, 0, drone=0.08, wind=0.3, seed=15)
+    # --- S1 · el mar frente a Ulúa, la campana del fuerte y una guitarra lejana ---
+    sea = olas(rev + fr(REV) + 0.5, 151)
+    sea2 = olas(rev + fr(REV) + 0.5, 152, period=6.4)
+    n = len(sea)
+    t = np.arange(n) / SR
+    open_ = np.clip((t - ext) / 1.2, 0, 1)
+    inside = (t >= fr(S1) - 0.3) & (t < ext + 1.2)
+    lvl = np.where(t < fr(S1), np.clip(t / 1.0, 0, 1), np.where(inside, 0.35 + 0.65 * open_, 1.0))
+    muff = sfx.lp(sea, 450)
+    mix_sea = np.where(t < fr(S1) - 0.3, sea, muff * (1 - open_) + sea * open_)
+    mix_sea2 = np.where(t < fr(S1) - 0.3, sea2, sfx.lp(sea2, 450) * (1 - open_) + sea2 * open_)
+    fade_rev = (1 - np.clip((t - (rev - 0.6)) / 0.6, 0, 1) * 0.7) * (1 - np.clip((t - (rev + fr(REV) - 1.0)) / 1.2, 0, 1))
+    bus.place(mix_sea * lvl * fade_rev, 0, 0.3, -0.35)
+    bus.place(mix_sea2 * lvl * fade_rev, 0, 0.26, 0.35)
+    for tt in (0.55, 2.85):
+        bus.place(sfx.bell(196.0, 4.0), tt, 0.07, 0.3, wet=1.0)
+        bus.reverb_only(sfx.bell(196.0, 4.0), tt, 0.1, 0.3)
+    for k, (tt, m) in enumerate([(1.0, 50), (1.28, 57), (1.56, 62), (1.84, 64), (2.12, 65), (2.62, 69), (3.2, 62)]):
+        bus.place(M.pluck(midi(m), 3.0, bright=0.5, decay=0.998, vel=0.85, seed=150 + k), tt, 0.15, -0.15 + 0.05 * k, wet=0.7)
+    bus.place2(np.stack([M.choir([50, 57, 62, 65], fr(S1) + 0.6, 'u', seed=15, attack=1.4)] * 2), 0.3, 0.05, wet=0.9)
+    # --- S2 · la celda: gotas, la vela y la habanera que entra con el bajo ---
+    bus.place(sfx.fire(ext - fr(S1) + 1.0, 153) * np.linspace(1, 0.4, int((ext - fr(S1) + 1.0) * SR)), fr(S1), 0.045, -0.2)
+    for k, tt in enumerate([cl(14), cl(66), cl(160), cl(250)]):
+        bus.place(gota(k), tt, 0.09, (-0.4, 0.3, -0.2, 0.4)[k], wet=1.4)
+    t0 = cl(13)
+    habanera(bus, t0, ['Dm', 'A7', 'Dm', 'A7', 'A7'], gain=0.26, seed=200)
+    # el carbón: lo toma del piso y sube al muro
+    bus.place(sfx.wood(1700), cl(40), 0.12, 0.1, wet=0.6)
+    bus.place(sfx.air(155, fr(52) + 0.2, (500, 1400), (1400, 5200)), cl(40), 0.05, 0.0, wet=0.8)
+    # --- S3 · dibuja el barco (el carbón rasga mientras suena el tema) ---
+    d0, d1 = cl(T3 + 6), cl(T3 + 150)
+    bus.place(carbon(d1 - d0, 157), d0, 0.2, -0.05, wet=0.35)
+    tema(bus, t0 + 2 * HAB_BAR, [0, 1, 2], gain=0.17, seed=210, fade_from=cl(T3 + 120))
+    # el guardia: pasos, llaves y una cuerda grave que tensa
+    for k, tt in enumerate([cl(T3 + 102), cl(T3 + 114), cl(T3 + 126), cl(T3 + 137)]):
+        bus.place(bota(160 + k), tt, 0.16 + 0.05 * k, 0.55, wet=0.5)
+    bus.place(llaves(0.7, 161), cl(T3 + 134), 0.05, 0.6, wet=0.6)
+    tens = sfx.strings([midi(38), midi(45)], cl(T3 + 190) - cl(T3 + 136), lambda u: np.minimum(1, u * 2.5) * (0.7 + 0.3 * u), 300, 700, release=0.25, seed=162)
+    bus.place2(tens, cl(T3 + 136), 0.09, wet=0.7)
+    # "—Que navegue.": glissando de arpa y coro que se abre
+    qn = cl(T3 + 190)
+    for k, m in enumerate([62, 64, 65, 67, 69, 70, 73, 74, 76, 77, 79, 81, 82, 85, 86]):
+        bus.place(M.pluck(midi(m), 2.4, bright=0.8, decay=0.998, vel=0.8, seed=170 + k), qn + k * 0.036, 0.1, -0.5 + k * 0.07, wet=1.0)
+    bus.place2(np.stack([M.choir([50, 57, 62, 65, 69], 2.8, 'a', seed=171, attack=0.5)] * 2), qn + 0.05, 0.11, wet=1.0)
+    bus.reverb_only(sfx.bell(1174.66, 2.4), qn + 0.5, 0.05)
+    # el guardia se va; ella suelta el carbón
+    for k, tt in enumerate([cl(T4 + 8), cl(T4 + 20), cl(T4 + 32), cl(T4 + 44)]):
+        bus.place(bota(180 + k), tt, 0.2 - 0.04 * k, 0.6 + 0.1 * k, wet=0.6)
+    bus.place(sfx.wood(1900), cl(T4 + 54), 0.1, -0.3, wet=0.5)
+    bus.place(sfx.wood(2300), cl(T4 + 58), 0.04, -0.3, wet=0.5)
+    t1 = cl(T4 + 26)
+    habanera(bus, t1, ['Dm', 'Bb', 'A7'], gain=0.2, seed=230)
+    # --- S4 · el dibujo cobra vida: destellos, madera que cruje, velas, cuerdas ---
+    alive = cl(T4 + 70)
+    sc = M.scale(62, 'penta_m')
+    for k in range(12):
+        bus.place(M.musicbox(midi(sc(k % 8 + 3)), 1.4, 0.7), alive + k * 0.1, 0.06, -0.5 + 0.09 * k, wet=1.2)
+    bus.place(olas(2.4, 158, period=1.6) * 0.6, alive + 0.1, 0.1, 0.0)
+    bus.place(crujido(0.9, 163), alive + 0.3, 0.1, -0.2, wet=0.5)
+    bus.place(crujido(0.7, 164), alive + 1.25, 0.08, 0.25, wet=0.5)
+    bus.place(flap(1.5, 165), alive + 0.55, 0.07, 0.15, wet=0.4)
+    swell = sfx.strings([midi(50), midi(53), midi(57), midi(62)], ext + 2.4 - cl(T4 + 95), lambda u: np.minimum(1, u * 1.6) ** 1.5 * (1 - np.clip((u - 0.8) / 0.2, 0, 1)), 500, 1600, release=0.3, seed=166)
+    bus.place2(swell, cl(T4 + 95), 0.1, wet=0.8)
+    # el muro arde y se abre: brasas, chispas y soplo
+    burn0, burn1 = cl(T4 + 112), cl(T4 + 165)
+    ln = burn1 - burn0 + 0.8
+    kk = np.arange(int(ln * SR)) / SR
+    bus.place(sfx.fire(ln, 167) * np.clip(kk / 0.4, 0, 1) * np.clip((ln - kk) / 0.9, 0, 1), burn0, 0.24, -0.1, wet=0.3)
+    bus.place(whoosh(burn1 - burn0, 250, 5000, seed=168), burn0, 0.14, 0.1, wet=0.6)
+    bus.place(sfx.thump(120, 60, 0.9, 0.18), burn0, 0.25, wet=0.4)
+    for k in range(9):
+        bus.place(sfx.strike(170 + k), burn0 + 0.15 + k * 0.17, 0.05, -0.4 + 0.1 * k, wet=0.5)
+    # --- S5 · zarpa: la habanera completa con arpa, flauta y coro ---
+    t2 = t1 + 3 * HAB_BAR  # sigue en el mismo pulso que la habanera de S4
+    habanera(bus, t2, ['Dm', 'A7', 'A7', 'Dm'], gain=0.28, strum_gain=0.09, seed=240)
+    tema(bus, t2, [0, 1, 2], gain=0.17, seed=250, fade_from=rev - 1.2)
+    tema(bus, t2, [0, 1, 2], gain=0.07, inst='harp', pan=-0.25, wet=1.1, seed=260, fade_from=rev - 1.2)
+    bus.place2(np.stack([M.choir([50, 57, 62, 65], rev - t2 + 0.4, 'a', seed=172, attack=0.8)] * 2), t2, 0.07, wet=1.0)
+    bus.place(crujido(1.0, 173), t2 + 0.6, 0.07, 0.3, wet=0.5)
+    bus.place(flap(2.0, 174), t2 + 1.8, 0.05, -0.2, wet=0.4)
+    # --- REV · amanecer: gaviotas, cajita con el tema y el número que se enciende ---
+    bus.place(gaviota(181, 2), rev + 0.4, 0.06, -0.4, wet=1.0)
+    bus.place(gaviota(182, 3), rev + 1.25, 0.045, 0.5, wet=1.1)
+    bus.place(gaviota(183, 1), hit + 0.7, 0.04, -0.2, wet=1.2)
+    tema(bus, rev + 0.45, [0], gain=0.1, inst='box', pan=0.0, wet=1.3, seed=270)
+    ig = hit - fr(26)
+    ln = hit - ig + 0.9
+    kk = np.arange(int(ln * SR)) / SR
+    bus.place(sfx.fire(ln, 184) * np.clip(kk / (hit - ig), 0, 1) ** 1.5 * np.exp(-np.clip(kk - (hit - ig), 0, None) / 0.3), ig, 0.2, 0.0, wet=0.4)
+    bus.place(sfx.ignite(185), ig + 0.05, 0.25, wet=0.4)
+    bus.place(sfx.boom(15), hit, 0.8, wet=0.35)
+    bus.place(M.strum([50, 57, 62, 66, 69, 74], 2.6, bright=0.6, vel=0.9, seed=186), hit, 0.28, 0.1, wet=0.6)
+    for k, m in enumerate([62, 66, 69, 74, 78]):
+        bus.place(M.pluck(midi(m + 12), 2.2, bright=0.8, decay=0.998, vel=0.8, seed=190 + k), hit + 0.08 + k * 0.07, 0.11, -0.4 + 0.2 * k, wet=1.0)
+    bus.place2(np.stack([M.choir([50, 57, 62, 66, 69], fr(REV - HIT) + 0.6, 'a', seed=187, attack=0.2)] * 2), hit, 0.16, wet=0.9)
+    bus.reverb_only(sfx.bell(1174.66, 2.6), hit + 0.05, 0.1)
+    return rev + fr(REV)
 
 
 # ---------------------------------------------------------------- 14 · Xólotl
@@ -905,7 +1130,7 @@ SCORES = {16: cap16, 15: cap15, 14: cap14, 13: cap13, 12: cap12, 11: cap11, 10: 
 
 def build(dias):
     # duración: capítulo + outro
-    lens = {16: 120 + 108 + 72 + 120, 15: 126 + 96 + 84 + 126, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132, 3: 72 + 54 * 8 + 66 + 150, 2: 114 + 108 + 72 + 132, 1: 96 + 210 + 96 + 186}
+    lens = {16: 120 + 108 + 72 + 120, 15: 120 + 96 + 225 + 165 + 135 + 150, 14: 126 + 96 + 72 + 126, 13: 126 + 96 + 78 + 126, 12: 126 + 108 + 66 + 126, 11: 126 + 96 + 72 + 126, 10: 84 + 40 * 9 + 156, 9: 108 + 108 + 78 + 132, 8: 108 + 108 + 78 + 126, 7: 108 + 126 + 150 + 66 + 156, 6: 84 + 216 + 132, 5: 108 + 120 + 72 + 126, 4: 120 + 108 + 72 + 132, 3: 72 + 54 * 8 + 66 + 150, 2: 114 + 108 + 72 + 132, 1: 96 + 210 + 96 + 186}
     total = lens[dias] + OUTRO
     bus = Bus(total / FPS)
     out_at = SCORES[dias](bus)

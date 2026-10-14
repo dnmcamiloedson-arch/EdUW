@@ -74,12 +74,14 @@ Los MP4 de la serie no se guardan en git porque pesan demasiado.
 
 Los escenarios son 3D reales, hechos con three.js mediante `@remotion/three`: la pirámide, los volcanes, el xolo, los oyameles, el alebrije, el pan de muerto, el altar, etc. Las piezas comunes están en `src/cap/kit/three.tsx`: cámara, montañas facetadas, pirámide escalonada, magueyes, cempasúchil, pan de muerto, papel picado y proyección de 3D a pantalla. Los textos, las llamas y los brillos se dibujan en 2D encima, alineados con la proyección de cada objeto.
 
+El día 15 va más allá: las llamas, los halos, el mar nocturno, la luna, las estrellas, el haz de la ventana y el polvo también son objetos 3D (`src/cap/kit/fx3d.tsx`), así que la profundidad los ordena sola. El dibujo al carbón es una textura viva sobre el muro de la celda. Con la cámara frontal, 1 dm del muro mide 100 px en pantalla. Por eso el barco real, mar adentro, coincide exactamente con el dibujo cuando el muro arde, y el número al carbón coincide con el número dorado.
+
 Cada día es un capítulo con su propia leyenda, sus escenas, su forma de revelar el número y su música. El código está en `src/cap/` (composición `Capitulo`). El kit compartido está en `src/cap/kit/`: tipografía cinética, paisajes, transiciones y utilería.
 
 | Día | Capítulo | Revelación del número | Música |
 |---|---|---|---|
 | 16 | El sol hecho flor (Xóchitl y Huitzilin) | el vuelo del colibrí lo descubre | flauta, re dórico |
-| 15 | Los volcanes | una constelación de antorchas | caracol, coro, caja musical |
+| 15 | El barco en el muro (San Juan de Ulúa, Veracruz) · 30 s | el número dibujado al carbón se enciende al amanecer | habanera en re menor: guitarra, flauta, arpa, coro y mar |
 | 14 | Xólotl | las almas se posan en el río | río, teponaztli, marimba |
 | 13 | Las monarcas | las mariposas forman el número | arpa, sol mayor |
 | 12 | Callejón del Beso | las ventanas de las fachadas se encienden | trío de bolero |
