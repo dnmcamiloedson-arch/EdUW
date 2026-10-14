@@ -522,7 +522,7 @@ export const SECTIONS: Section[] = [
     name: 'biblioteca',
     shade: true,
     overlay: <SectionLabel num="06" name="Biblioteca" />,
-    items: [S('IMG_0566_luz', 0.5, 2.5, 'zoom'), P('grupo_bloques', 1.5, 'flash')],
+    items: [S('IMG_0566_luz_fuerte', 0.5, 2.5, 'zoom'), P('grupo_bloques', 1.5, 'flash')],
   },
   {
     name: 'break',
