@@ -54,10 +54,15 @@ node generar_plantilla.js
 | `Certificados_Medical_Leadership_Summit_2026.pdf` | Los mismos certificados listos para imprimir (fuentes incrustadas, fondo a 300 ppp). |
 | `generar_certificado.js` | Genera los certificados. Si existe `participantes.txt` (un nombre por renglón) crea además `Certificados_participantes.pptx` con un certificado y folio por persona. |
 
-Detalles del diseño: ola azul con filo dorado y logo (igual que la presentación) arriba a la izquierda
-y abajo a la derecha; en las otras dos esquinas, un adorno ligero en diagonal con las olas. Edificio
-del logo y roseta muy tenues de fondo, textura de papel, sello dorado con listones y folio. Los nombres
-de los firmantes («Nombre y firma») deben completarse.
+Detalles del diseño: banda azul superior con el logo y el título del evento, banda inferior con
+fecha, folio y #SOMOSWESTHILL, ambas con filo dorado curvo. Edificio del logo y roseta muy tenues de
+fondo, textura de papel y sello dorado con listones. Los nombres de los firmantes («Nombre y firma»)
+deben completarse.
 
-El adorno de las esquinas se elige con la variable `ESQUINAS` (ver `opciones_esquinas_certificado.jpg`):
-`ondas` (predeterminado), `puntos` o `arcos`, por ejemplo `ESQUINAS=arcos node generar_certificado.js`.
+Variantes (ver `opciones_logo_certificado.jpg` y `opciones_esquinas_certificado.jpg`):
+
+- `MARCO`: `banda` (predeterminado), `centrado` (logo a color con marco fino), `panel` (panel azul
+  lateral) u `ola` (olas en esquinas opuestas, como el flyer).
+- `ESQUINAS` (para `ola`, `centrado` y `panel`): `ondas`, `puntos` o `arcos`.
+
+Ejemplo: `MARCO=panel ESQUINAS=arcos node generar_certificado.js`.

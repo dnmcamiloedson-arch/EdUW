@@ -24,7 +24,16 @@ const W = 11, H = 8.5, P = 300;
 //   ondas  = ondas suaves translúcidas con filo dorado (eco de las olas del logo)
 //   puntos = trama de puntos que se desvanece + arco dorado
 //   arcos  = arcos concéntricos dorados y azules
-const ESQUINAS = process.env.ESQUINAS || "ondas"; // carta horizontal, arte a 300 ppp
+const ESQUINAS = process.env.ESQUINAS || "ondas";
+// Zona del logo y de #SOMOSWESTHILL:
+//   ola      = olas en esquinas opuestas (como el flyer)
+//   banda    = banda azul superior con logo y título del evento + banda inferior con fecha
+//   centrado = logo a color centrado, marco fino dorado y azul
+//   panel    = panel azul lateral con logo, título del evento y fechas
+const MARCO = process.env.MARCO || "banda";
+const LAY = MARCO === "panel"
+  ? { cx: 6.75, tw: 7.3, sig: [4.35, 9.15], sigW: 2.2, body: 6.9, rule: 5.4 }
+  : { cx: W / 2, tw: 8.6, sig: [3.0, 8.0], sigW: 2.7, body: 7.9, rule: 6.2 }; // carta horizontal, arte a 300 ppp
 const X = (v) => Math.round(v * P);
 
 // ---------- datos ----------
@@ -110,8 +119,36 @@ async function background() {
   const bldBlue = await sharp({ create: { width: 1546, height: 432, channels: 3, background: "#266294" } }).joinChannel(bldAlpha).png().toBuffer();
   const bw = X(6.2), bh = Math.round((bw * 432) / 1546);
   const watermark = [
-    rosette(1650, 1300, 96, 36, 52, 6.4, 5200), rosette(1650, 1300, 80, 30, 46, 6.6, 4400), rosette(1650, 1300, 70, 21, 30, 5.2, 4200),
+    rosette(X(LAY.cx), 1300, 96, 36, 52, 6.4, 5200), rosette(X(LAY.cx), 1300, 80, 30, 46, 6.6, 4400), rosette(X(LAY.cx), 1300, 70, 21, 30, 5.2, 4200),
   ].map((d, i) => `<path d="${d}" fill="none" stroke="#2F6FAE" stroke-opacity="${[0.05, 0.04, 0.045][i]}" stroke-width="2"/>`).join("");
+  const shine = (d) => `<path d="${d}" fill="#FFFFFF" fill-opacity="0.07"/>`;
+  function marco() {
+    if (MARCO === "banda") {
+      const top = `M0,0 H${w} V${X(1.1)} C${X(8.2)},${X(1.5)} ${X(3.4)},${X(0.98)} 0,${X(1.36)} Z`;
+      const bot = `M0,${X(8.14)} C${X(3)},${X(7.98)} ${X(7.5)},${X(8.24)} ${w},${X(8.04)} V${h} H0 Z`;
+      return `<path d="${top}" fill="url(#wb)"/>${shine(`M0,0 H${w} V${X(0.55)} C${X(7.5)},${X(0.85)} ${X(3.6)},${X(0.45)} 0,${X(0.8)} Z`)}
+        <path d="M0,${X(1.46)} C${X(3.4)},${X(1.08)} ${X(8.2)},${X(1.6)} ${w},${X(1.2)}" fill="none" stroke="url(#gold)" stroke-width="9"/>
+        ${dots(X(4.3), X(0.32), 12, 3, 30, 4.5, "#FFFFFF", 0.22)}
+        <path d="M0,${X(8.04)} C${X(3)},${X(7.88)} ${X(7.5)},${X(8.14)} ${w},${X(7.94)}" fill="none" stroke="url(#gold)" stroke-width="7"/>
+        <path d="${bot}" fill="url(#wb)"/>`;
+    }
+    if (MARCO === "centrado") {
+      const o = X(0.32), i = X(0.42), dia = (x, y) => `<rect x="${x - 16}" y="${y - 16}" width="32" height="32" transform="rotate(45 ${x} ${y})" fill="#E8B530"/>`;
+      return `${cornerArt(0, 0, 1, 1, "c1")}${cornerArt(w, 0, -1, 1, "c2")}${cornerArt(0, h, 1, -1, "c3")}${cornerArt(w, h, -1, -1, "c4")}
+        <rect x="${o}" y="${o}" width="${w - 2 * o}" height="${h - 2 * o}" fill="none" stroke="url(#gold)" stroke-width="6"/>
+        <rect x="${i}" y="${i}" width="${w - 2 * i}" height="${h - 2 * i}" fill="none" stroke="#266294" stroke-opacity="0.8" stroke-width="2"/>
+        ${dia(o, o)}${dia(w - o, o)}${dia(o, h - o)}${dia(w - o, h - o)}`;
+    }
+    if (MARCO === "panel") {
+      const edge = `C${X(2.35)},${X(2.6)} ${X(3.05)},${X(5.6)} ${X(2.5)},${h}`;
+      return `${cornerArt(w, 0, -1, 1, "p1")}${cornerArt(w, h, -1, -1, "p2")}
+        <path d="M0,0 H${X(2.85)} ${edge} H0 Z" fill="url(#wb)"/>${shine(`M0,0 H${X(2.4)} C${X(1.9)},${X(2.2)} ${X(2.3)},${X(4.4)} ${X(1.6)},${h} H0 Z`)}
+        <path d="M${X(2.97)},0 C${X(2.47)},${X(2.6)} ${X(3.17)},${X(5.6)} ${X(2.62)},${h}" fill="none" stroke="url(#gold)" stroke-width="9"/>
+        ${dots(X(0.35), X(5.6), 6, 5, 32, 4.5, "#FFFFFF", 0.22)}
+        <rect x="${X(1.35) - X(0.3)}" y="${X(4.33)}" width="${X(0.6)}" height="${X(0.05)}" fill="#2DB34A"/>`;
+    }
+    return `${cornerArt(w, 0, -1, 1, "tr")}${cornerArt(0, h, 1, -1, "bl")}${wave(1.15)}<g transform="translate(${w},${h}) scale(-1,-1)">${wave(0.78)}</g>`;
+  }
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">
   <defs>
     <linearGradient id="wb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2F7CC0"/><stop offset="1" stop-color="#174A86"/></linearGradient>
@@ -123,16 +160,12 @@ async function background() {
   </defs>
   <rect width="100%" height="100%" fill="#FFFFFF"/>
   <rect width="100%" height="100%" filter="url(#paper)"/>
-  <ellipse cx="${w / 2}" cy="${h * 0.52}" rx="${w * 0.45}" ry="${h * 0.42}" fill="url(#glow)"/>
+  <ellipse cx="${X(LAY.cx)}" cy="${h * 0.52}" rx="${w * 0.45}" ry="${h * 0.42}" fill="url(#glow)"/>
   <g clip-path="url(#inner)">${watermark}
-    <image x="${(w - bw) / 2}" y="${X(4.05) - bh / 2}" width="${bw}" height="${bh}" opacity="0.045" xlink:href="data:image/png;base64,${bldBlue.toString("base64")}"/>
-    ${dots(290, 930, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}${dots(2905, 1450, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}
+    <image x="${X(LAY.cx) - bw / 2}" y="${X(4.05) - bh / 2}" width="${bw}" height="${bh}" opacity="0.045" xlink:href="data:image/png;base64,${bldBlue.toString("base64")}"/>
+    ${MARCO === "panel" ? "" : dots(290, 930, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}${dots(MARCO === "panel" ? 3060 : 2905, 1450, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}
   </g>
-  <!-- esquinas libres (arriba a la derecha y abajo a la izquierda), en diagonal con las olas -->
-  ${cornerArt(w, 0, -1, 1, "tr")}${cornerArt(0, h, 1, -1, "bl")}
-  <!-- olas -->
-  ${wave(1.15)}
-  <g transform="translate(${w},${h}) scale(-1,-1)">${wave(0.78)}</g>
+  ${marco()}
 </svg>`;
   return sharp(Buffer.from(svg)).png({ compressionLevel: 9 }).toBuffer();
 }
@@ -224,6 +257,42 @@ async function fixPackage(file) {
   const LOGO_W = "image/png;base64," + fs.readFileSync(img("logo_westhill_blanco.png")).toString("base64");
   const LR = 757 / 1878;
 
+  const LOGO_C = "image/png;base64," + fs.readFileSync(img("logo_westhill_color.png")).toString("base64");
+  const tx = (text, o) => ({ text: { text, options: { margin: 0, valign: "middle", fontFace: F.reg, ...o } } });
+  function masterObjects() {
+    const sealObj = { image: { data: SEAL, x: LAY.cx - 1.05, y: 5.68, w: 2.1, h: 2.1 } };
+    const lockup = (x, y, w, color, align = "right", big = 17, small = 15) => [
+      tx("WESTHILL", { x, y, w, h: 0.3, fontSize: small, color, align, charSpacing: 2 }),
+      tx("MEDICAL LEADERSHIP", { x, y: y + 0.26, w, h: 0.32, fontFace: F.xb, fontSize: big, color, align }),
+      tx("SUMMIT 2026", { x, y: y + 0.56, w, h: 0.3, fontSize: small, color, align }),
+    ];
+    if (MARCO === "banda") return [
+      { image: { data: LOGO_W, x: 0.5, y: 0.17, w: 2.2, h: 2.2 * LR } }, sealObj,
+      ...lockup(6.6, 0.12, 3.9, "FFFFFF", "right", 16, 13),
+      tx("21, 22 y 23 de octubre de 2026  ·  Facultad de Medicina", { x: 3, y: 8.2, w: 5, h: 0.24, fontFace: F.semi, fontSize: 9.5, color: "FFFFFF", align: "center", charSpacing: 1 }),
+      tx("#SOMOSWESTHILL", { x: 8.3, y: 8.2, w: 2.2, h: 0.24, fontFace: F.xb, fontSize: 10, color: HEX.gold, align: "right", charSpacing: 1.5 }),
+    ];
+    if (MARCO === "centrado") return [
+      { image: { data: LOGO_C, x: W / 2 - 1.3, y: 0.5, w: 2.6, h: 2.6 * 313 / 779 } }, sealObj,
+      tx("#SOMOSWESTHILL", { x: 8.0, y: 7.75, w: 2.35, h: 0.24, fontFace: F.xb, fontSize: 10, color: HEX.blue, align: "right", charSpacing: 1.5 }),
+    ];
+    if (MARCO === "panel") return [
+      { image: { data: LOGO_W, x: 0.2, y: 0.5, w: 2.3, h: 2.3 * LR } }, sealObj,
+      tx("WESTHILL", { x: 0.1, y: 2.8, w: 2.5, h: 0.3, fontSize: 13, color: "FFFFFF", align: "center", charSpacing: 2 }),
+      tx("MEDICAL\nLEADERSHIP", { x: 0.1, y: 3.1, w: 2.5, h: 0.72, fontFace: F.xb, fontSize: 19, color: "FFFFFF", align: "center", lineSpacingMultiple: 0.95 }),
+      tx("SUMMIT 2026", { x: 0.1, y: 3.86, w: 2.5, h: 0.3, fontSize: 13, color: "FFFFFF", align: "center" }),
+      tx("21, 22 y 23 de octubre\nde 2026", { x: 0.1, y: 4.5, w: 2.5, h: 0.5, fontFace: F.semi, fontSize: 11, color: "FFFFFF", align: "center" }),
+      tx("Facultad de Medicina", { x: 0.1, y: 5.0, w: 2.5, h: 0.26, fontFace: F.med, fontSize: 10, color: HEX.sky, align: "center" }),
+      tx("#SOMOSWESTHILL", { x: 0.1, y: 7.95, w: 2.4, h: 0.24, fontFace: F.xb, fontSize: 10, color: HEX.gold, align: "center", charSpacing: 1.5 }),
+    ];
+    return [
+      { image: { data: LOGO_W, x: 0.46, y: 0.36, w: 2.45, h: 2.45 * LR } }, sealObj,
+      ...lockup(6.05, 0.86, 3.5, HEX.blue),
+      { rect: { x: 9.0, y: 1.8, w: 0.55, h: 0.05, fill: { color: HEX.green }, line: { type: "none" } } },
+      tx("#SOMOSWESTHILL", { x: 8.55, y: 7.98, w: 2.2, h: 0.26, fontFace: F.xb, fontSize: 10, color: "FFFFFF", charSpacing: 1.5, align: "right" }),
+    ];
+  }
+
   function newDeck(title) {
     const pres = new pptxgen();
     pres.defineLayout({ name: "CARTA", width: W, height: H });
@@ -235,15 +304,7 @@ async function fixPackage(file) {
     pres.defineSlideMaster({
       title: "Certificado",
       background: { data: BG },
-      objects: [
-        { image: { data: LOGO_W, x: 0.46, y: 0.36, w: 2.45, h: 2.45 * LR } },
-        { image: { data: SEAL, x: W / 2 - 1.05, y: 5.68, w: 2.1, h: 2.1 } },
-        { text: { text: "WESTHILL", options: { x: 6.05, y: 0.86, w: 3.5, h: 0.3, fontFace: F.reg, fontSize: 15, color: HEX.blue, align: "right", charSpacing: 2, margin: 0 } } },
-        { text: { text: "MEDICAL LEADERSHIP", options: { x: 6.05, y: 1.12, w: 3.5, h: 0.32, fontFace: F.xb, fontSize: 17, color: HEX.blue, align: "right", margin: 0 } } },
-        { text: { text: "SUMMIT 2026", options: { x: 6.05, y: 1.42, w: 3.5, h: 0.3, fontFace: F.reg, fontSize: 15, color: HEX.blue, align: "right", margin: 0 } } },
-        { rect: { x: 9.0, y: 1.8, w: 0.55, h: 0.05, fill: { color: HEX.green }, line: { type: "none" } } },
-        { text: { text: "#SOMOSWESTHILL", options: { x: 8.55, y: 7.98, w: 2.2, h: 0.26, fontFace: F.xb, fontSize: 10, color: "FFFFFF", charSpacing: 1.5, align: "right", margin: 0 } } },
-      ],
+      objects: masterObjects(),
     });
     return pres;
   }
@@ -251,27 +312,34 @@ async function fixPackage(file) {
 
   function certificate(pres, { titulo, sub, otorga, nombre, cuerpo, folio }) {
     const s = pres.addSlide({ masterName: "Certificado" });
-    t(s, "FACULTAD DE MEDICINA", { x: 3.5, y: 1.68, w: 4, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.muted, charSpacing: 3 });
-    t(s, titulo, { x: 1.5, y: 1.9, w: 8, h: 0.85, fontFace: F.xb, fontSize: titulo.length > 11 ? 42 : 50, color: HEX.blue, charSpacing: titulo.length > 11 ? 4 : 8 });
-    s.addShape("rect", { x: 2.55, y: 2.96, w: 1.0, h: 0.06, fill: { color: HEX.green }, line: { type: "none" } });
-    s.addShape("rect", { x: W - 2.55 - 1.0, y: 2.96, w: 1.0, h: 0.06, fill: { color: HEX.green }, line: { type: "none" } });
-    t(s, sub, { x: 3.6, y: 2.8, w: 3.8, h: 0.36, fontFace: F.xb, fontSize: 15, color: HEX.navy, charSpacing: 5 });
-    t(s, otorga, { x: 2, y: 3.32, w: 7, h: 0.3, fontFace: F.med, fontSize: 12.5, color: HEX.muted });
-    const fsz = Math.min(38, Math.floor((38 * 26) / Math.max(26, nombre.length)));
-    t(s, nombre, { x: 1.2, y: 3.62, w: 8.6, h: 0.78, fontFace: F.xb, fontSize: fsz, color: HEX.navy });
-    s.addShape("line", { x: 2.4, y: 4.47, w: 6.2, h: 0, line: { color: HEX.gold, width: 1.75 } });
-    s.addShape("ellipse", { x: W / 2 - 0.06, y: 4.41, w: 0.12, h: 0.12, fill: { color: HEX.gold }, line: { type: "none" } });
-    t(s, cuerpo, { x: 1.55, y: 4.6, w: 7.9, h: 0.98, fontSize: 11.5, color: "2B3A4E", lineSpacingMultiple: 1.12, valign: "top" });
-    t(s, LUGAR_FECHA, { x: 2.5, y: 5.6, w: 6, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.blue });
+    const { cx, tw } = LAY, at = (w) => cx - w / 2;
+    const kicker = MARCO === "centrado" ? "WESTHILL MEDICAL LEADERSHIP SUMMIT 2026  ·  FACULTAD DE MEDICINA" : "FACULTAD DE MEDICINA";
+    t(s, kicker, { x: at(8.4), y: 1.68, w: 8.4, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.muted, charSpacing: MARCO === "centrado" ? 2 : 3 });
+    const long = titulo.length > 11, panel = MARCO === "panel";
+    t(s, titulo, { x: at(tw), y: 1.9, w: tw, h: 0.85, fontFace: F.xb, fontSize: long ? (panel ? 38 : 42) : 50, color: HEX.blue, charSpacing: long ? (panel ? 3 : 4) : panel ? 5 : 8 });
+    s.addShape("rect", { x: cx - 2.95, y: 2.96, w: 1.0, h: 0.06, fill: { color: HEX.green }, line: { type: "none" } });
+    s.addShape("rect", { x: cx + 1.95, y: 2.96, w: 1.0, h: 0.06, fill: { color: HEX.green }, line: { type: "none" } });
+    t(s, sub, { x: at(3.8), y: 2.8, w: 3.8, h: 0.36, fontFace: F.xb, fontSize: 15, color: HEX.navy, charSpacing: 5 });
+    t(s, otorga, { x: at(7), y: 3.32, w: 7, h: 0.3, fontFace: F.med, fontSize: 12.5, color: HEX.muted });
+    const k = tw / 8.6, fsz = Math.min(38, Math.floor((38 * 26 * k) / Math.max(26 * k, nombre.length)));
+    t(s, nombre, { x: at(tw), y: 3.62, w: tw, h: 0.78, fontFace: F.xb, fontSize: fsz, color: HEX.navy });
+    s.addShape("line", { x: at(LAY.rule), y: 4.47, w: LAY.rule, h: 0, line: { color: HEX.gold, width: 1.75 } });
+    s.addShape("ellipse", { x: cx - 0.06, y: 4.41, w: 0.12, h: 0.12, fill: { color: HEX.gold }, line: { type: "none" } });
+    t(s, cuerpo, { x: at(LAY.body), y: 4.6, w: LAY.body, h: 0.98, fontSize: 11.5, color: "2B3A4E", lineSpacingMultiple: 1.12, valign: "top" });
+    t(s, LUGAR_FECHA, { x: at(6), y: 5.6, w: 6, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.blue });
     for (const [i, [n, cargo]] of FIRMAS.entries()) {
-      const cx = i ? 8.0 : 3.0;
-      s.addShape("line", { x: cx - 1.35, y: 6.78, w: 2.7, h: 0, line: { color: HEX.navy, width: 1 } });
-      t(s, n, { x: cx - 1.6, y: 6.84, w: 3.2, h: 0.26, fontFace: F.xb, fontSize: 11, color: HEX.navy });
-      t(s, cargo, { x: cx - 1.7, y: 7.09, w: 3.4, h: 0.24, fontFace: F.med, fontSize: 9, color: HEX.muted });
+      const sx = LAY.sig[i], sw = LAY.sigW;
+      s.addShape("line", { x: sx - sw / 2, y: 6.78, w: sw, h: 0, line: { color: HEX.navy, width: 1 } });
+      t(s, n, { x: sx - 1.6, y: 6.84, w: 3.2, h: 0.26, fontFace: F.xb, fontSize: 11, color: HEX.navy });
+      t(s, cargo, { x: sx - 1.7, y: 7.09, w: 3.4, h: 0.24, fontFace: F.med, fontSize: panel ? 8.5 : 9, color: HEX.muted });
     }
-    t(s, `Folio: ${folio}`, { x: W / 2 - 1.5, y: 8.06, w: 3, h: 0.2, fontFace: F.semi, fontSize: 8, color: "8A99AB", charSpacing: 1 });
+    const fol = MARCO === "banda" ? { x: 0.5, y: 8.2, w: 2.5, h: 0.24, color: HEX.sky, align: "left" }
+      : MARCO === "centrado" ? { x: 0.65, y: 7.75, w: 2.6, h: 0.24, color: "8A99AB", align: "left" }
+      : { x: cx - 1.5, y: 8.06, w: 3, h: 0.2, color: "8A99AB" };
+    t(s, `Folio: ${folio}`, { ...fol, fontFace: F.semi, fontSize: 8, charSpacing: 1 });
     return s;
   }
+
   const bold = (txt) => ({ text: txt, options: { fontFace: F.xb, color: HEX.navy } });
   const reg = (txt) => ({ text: txt });
   const cuerpoParticipante = [reg("Por su asistencia y participación en el "), bold(EVENTO), reg(` «${LEMA}», ${CUANDO}.`)];
