@@ -105,37 +105,73 @@ const Logos: React.FC = () => {
   );
 };
 
-/** Anillo 360° que se dibuja alrededor del número */
-const Ring360: React.FC<{start: number}> = ({start}) => {
+/** Emblema 360°: número centrado + anillo amarillo que se dibuja y da la vuelta completa */
+const EMB_X = 540; // centro horizontal (pantalla)
+const EMB_Y = 1365; // centro vertical (pantalla)
+const Emblem360: React.FC<{start: number}> = ({start: s}) => {
   const f = useCurrentFrame();
-  const R = 205;
+  const S = 560; // lienzo SVG
+  const c = S / 2;
+  const R = 215;
   const circ = 2 * Math.PI * R;
-  const draw = tw(f, [start, start + 22], [0, 0.92], ease.inOut);
-  const rot = tw(f, [start, start + 60], [-140, 40], ease.out);
-  const end = -Math.PI / 2 + draw * 2 * Math.PI;
-  const ax = 260 + R * Math.cos(end);
-  const ay = 260 + R * Math.sin(end);
-  const ang = (end * 180) / Math.PI + 90;
-  if (draw <= 0.01) return null;
+  // anillo amarillo: se dibuja mientras gira 360° completos
+  const p = tw(f, [s + 2, s + 28], [0, 1], ease.inOut);
+  const spin = tw(f, [s + 2, s + 50], [-200, 160], ease.inOut);
+  const arc = 0.84 * p;
+  const phi = arc * 2 * Math.PI;
+  const ex = c + R * Math.cos(phi);
+  const ey = c + R * Math.sin(phi);
+  const track = tw(f, [s, s + 14], [0, 1], ease.out);
+  const num = tw(f, [s + 4, s + 20], [0, 1], ease.back);
+  if (f < s) return null;
+  const box: React.CSSProperties = {position: 'absolute', left: EMB_X - c, top: EMB_Y - c, width: S, height: S};
   return (
-    <svg width={520} height={520} style={{position: 'absolute', left: 280, top: 1080, transform: `rotate(${rot}deg)`}}>
-      <circle
-        cx={260}
-        cy={260}
-        r={R}
-        fill="none"
-        stroke={C.amarillo}
-        strokeWidth={10}
-        strokeLinecap="round"
-        strokeDasharray={`${circ * draw} ${circ}`}
-        transform="rotate(-90 260 260)"
-      />
-      {draw > 0.05 && (
-        <polygon points="-22,-6 22,-6 0,28" fill={C.amarillo} transform={`translate(${ax} ${ay}) rotate(${ang - 90})`} />
-      )}
-    </svg>
+    <>
+      <svg width={S} height={S} style={box}>
+        {/* pista tenue + anillo punteado exterior que gira en sentido contrario */}
+        <circle cx={c} cy={c} r={R} fill="none" stroke="rgba(255,255,255,0.18)" strokeWidth={6} transform={`translate(${c} ${c}) scale(${0.6 + 0.4 * track}) translate(${-c} ${-c})`} opacity={track} />
+        <circle
+          cx={c}
+          cy={c}
+          r={R + 30}
+          fill="none"
+          stroke="rgba(255,255,255,0.5)"
+          strokeWidth={3}
+          strokeDasharray="2 14"
+          strokeLinecap="round"
+          opacity={tw(f, [s + 6, s + 18], [0, 1])}
+          transform={`rotate(${-f * 1.4} ${c} ${c})`}
+        />
+      </svg>
+      <svg width={S} height={S} style={{...box, filter: 'drop-shadow(0 0 16px rgba(242,194,48,0.55))'}}>
+        {p > 0.01 && (
+          <g transform={`rotate(${spin - 90} ${c} ${c})`}>
+            <circle cx={c} cy={c} r={R} fill="none" stroke={C.amarillo} strokeWidth={12} strokeLinecap="round" strokeDasharray={`${circ * arc} ${circ}`} />
+            <polygon points="-8,-20 26,0 -8,20" fill={C.amarillo} transform={`translate(${ex} ${ey}) rotate(${(phi * 180) / Math.PI + 90})`} />
+          </g>
+        )}
+      </svg>
+      {/* número perfectamente centrado en el anillo (el ° va aparte para no descentrarlo) */}
+      <div
+        style={{
+          ...box,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          opacity: tw(f, [s + 4, s + 10], [0, 1]),
+          transform: `scale(${0.5 + 0.5 * num})`,
+          filter: `blur(${tw(f, [s + 4, s + 16], [10, 0])}px)`,
+        }}
+      >
+        <div style={{position: 'relative', fontFamily: F.display, fontSize: 165, lineHeight: 1, color: C.amarillo, transform: `translateY(${NUM_DY}px)`}}>
+          360
+          <span style={{position: 'absolute', left: '100%', top: '0.02em', marginLeft: 4, fontSize: "0.4em"}}>°</span>
+        </div>
+      </div>
+    </>
   );
 };
+const NUM_DY = 0;
 
 /** Escena B: "Bienvenidos a la Experiencia Westhill 360" */
 const Welcome: React.FC = () => {
@@ -192,23 +228,7 @@ const Welcome: React.FC = () => {
             );
           })}
         </div>
-        <div
-          style={{
-            position: 'absolute',
-            top: 1175,
-            width: '100%',
-            textAlign: 'center',
-            fontFamily: F.display,
-            fontSize: 230,
-            color: C.amarillo,
-            lineHeight: 1,
-            transform: `scale(${tw(f, [112, 128], [0.4, 1], ease.back)})`,
-            opacity: tw(f, [112, 118], [0, 1]),
-          }}
-        >
-          360°
-        </div>
-        <Ring360 start={116} />
+<Emblem360 start={112} />
         <div style={{position: 'absolute', top: 1640, width: '100%', textAlign: 'center'}}>
           <Highlight start={132} dur={12} color={C.blanco} pad="0.12em 0.45em">
             <span
