@@ -1,55 +1,14 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, Sequence, staticFile, useCurrentFrame} from 'remotion';
-import {BarSweep, CircleWipe, CleanBg, Flash, Grain, Highlight, MaskReveal, WordsIn} from './components';
+import {CircleWipe, CleanBg, Flash, Grain, Highlight, MaskReveal, WordsIn} from './components';
 import {Intro, INTRO_FRAMES} from './Intro';
-import {Banner, BehindShot, PhotoShot, PlacePill, SectionLabel, Sfx, Shade, VideoShot} from './shots';
+import {Banner, BehindShot, PhotoShot, SectionLabel, Sfx, Shade, VideoShot} from './shots';
 import {C, F, ease, tw} from './theme';
 
 // ---------------------------------------------------------------------------
 // Tarjetas de título (fondo limpio / azul, como la referencia)
 // ---------------------------------------------------------------------------
-const TalleresCard: React.FC = () => {
-  const f = useCurrentFrame();
-  const items = ['Arquitectura', 'Administración', 'Medicina', 'Cirujano Dentista'];
-  return (
-    <AbsoluteFill>
-      <CleanBg />
-      <div style={{position: 'absolute', top: 560, width: '100%'}}>
-        <WordsIn text="Talleres por" start={2} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 84, color: C.marino, letterSpacing: -2}} />
-      </div>
-      <MaskReveal start={8} style={{position: 'absolute', top: 650, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 150, color: C.azul}}>licenciatura</span>
-      </MaskReveal>
-      <div style={{position: 'absolute', top: 900, left: 0, right: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18}}>
-        {items.map((t, i) => {
-          const s = 16 + i * 5;
-          return (
-            <div
-              key={t}
-              style={{
-                fontFamily: F.sans,
-                fontWeight: 800,
-                fontSize: 50,
-                color: C.blanco,
-                background: C.azul,
-                padding: '8px 30px 12px',
-                borderRadius: 8,
-                transform: `translateX(${tw(f, [s, s + 12], [i % 2 ? 900 : -900, 0])}px)`,
-              }}
-            >
-              {t}
-            </div>
-          );
-        })}
-      </div>
-      {[16, 21, 26, 31].map((s) => (
-        <Sfx key={s} at={s} name="click_suave" volume={0.6} />
-      ))}
-    </AbsoluteFill>
-  );
-};
-
-const TitleCard: React.FC<{small: string; big: string; color?: string; bg?: 'clean' | 'blue'}> = ({small, big, bg = 'blue'}) => {
+export const TitleCard: React.FC<{small: string; big: string; color?: string; bg?: 'clean' | 'blue'}> = ({small, big, bg = 'blue'}) => {
   const blue = bg === 'blue';
   return (
     <AbsoluteFill>
@@ -113,7 +72,7 @@ const LlegadaText: React.FC = () => {
 // ---------------------------------------------------------------------------
 // Cornhole
 // ---------------------------------------------------------------------------
-export const CornholeText: React.FC = () => {
+export const CornholeText: React.FC<{estreno?: boolean}> = ({estreno = true}) => {
   const f = useCurrentFrame();
   const letters = 'CORNHOLE'.split('');
   return (
@@ -135,7 +94,7 @@ export const CornholeText: React.FC = () => {
           </span>
         ))}
       </div>
-      <div
+      {estreno && <div
         style={{
           position: 'absolute',
           top: 330,
@@ -148,8 +107,8 @@ export const CornholeText: React.FC = () => {
         <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 52, background: C.amarillo, color: C.marino, padding: '6px 26px 10px', borderRadius: 8}}>
           #ESTRENO
         </span>
-      </div>
-      <Sfx at={22} name="pop" />
+      </div>}
+      {estreno && <Sfx at={22} name="pop" />}
     </AbsoluteFill>
   );
 };
@@ -176,7 +135,7 @@ export const ReglasCard: React.FC = () => {
     <AbsoluteFill>
       <CleanBg />
       <div style={{position: 'absolute', top: 360, width: '100%'}}>
-        <WordsIn text="La dinámica" start={1} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 64, color: C.marino}} />
+        <WordsIn text="El reto" start={1} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 64, color: C.marino}} />
       </div>
       <div style={{position: 'absolute', top: 470, width: '100%', display: 'flex', justifyContent: 'center', gap: 34}}>
         <Bag color={C.azul} start={6} />
@@ -185,11 +144,11 @@ export const ReglasCard: React.FC = () => {
       </div>
       <div style={{position: 'absolute', top: 640, width: '100%', textAlign: 'center'}}>
         <Highlight start={20} color={C.azul} pad="0.05em 0.35em">
-          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 92, color: C.blanco}}>3 tiros seguidos</span>
+          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 92, color: C.blanco}}>Atina 3 seguidos</span>
         </Highlight>
       </div>
       <div style={{position: 'absolute', top: 790, width: '100%', textAlign: 'center', fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 96, color: C.azul, opacity: tw(f, [28, 34], [0, 1])}}>
-        = un termo
+        y gana un termo
       </div>
       {/* termo con círculo azul detrás (estilo referencia) */}
       <div
@@ -330,34 +289,25 @@ export const GanadoresRibbon: React.FC = () => {
 };
 
 // ---------------------------------------------------------------------------
-// Cierre: foto grupal frente a WESTHILL con "GRACIAS" detrás del grupo
+// Cierre: recorrido por la foto grupal frente a WESTHILL con "GRACIAS" detrás del
+// grupo → círculo azul → tarjeta final limpia con logos (espejo de la intro)
 // ---------------------------------------------------------------------------
+export const CIERRE_FRAMES = 210;
+
 const Cierre: React.FC = () => {
   const f = useCurrentFrame();
   const PW = 2576, PH = 1450;
-  // Fase A: llena la altura y recorre el grupo; Fase B: se aleja hasta verse completa
   const sA = 1920 / PH;
-  const sB = 1080 / PW;
-  const k = tw(f, [118, 150], [0, 1], ease.inOut);
-  const s = sA + (sB - sA) * k;
-  const panA = tw(f, [0, 118], [0, -(PW * sA - 1080)], (t) => ease.inOut(t));
-  const xB = 0;
-  const yA = 0, yB = 520;
-  const x = panA + (xB - panA) * k;
-  const y = yA + (yB - yA) * k;
-  const layer: React.CSSProperties = {position: 'absolute', left: 0, top: 0, width: PW, height: PH, transformOrigin: '0 0', transform: `translate(${x}px, ${y}px) scale(${s})`};
-  const textO = tw(f, [8, 16], [0, 1]) * tw(f, [108, 120], [1, 0]);
+  const x = tw(f, [0, 125], [0, -(PW * sA - 1080)], ease.inOut);
+  const zoom = tw(f, [0, 125], [1, 1.06], (t) => t);
+  const layer: React.CSSProperties = {position: 'absolute', left: 0, top: 0, width: PW, height: PH, transformOrigin: '0 0', transform: `translate(${x}px, 0px) scale(${sA * zoom})`};
   return (
     <AbsoluteFill style={{background: C.marino, overflow: 'hidden'}}>
-      {/* fondo desenfocado para la fase B */}
-      <AbsoluteFill style={{opacity: k}}>
-        <Img src={staticFile('seg/final/bg_0000.jpg')} style={{width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(36px) brightness(0.55)', transform: 'scale(1.2)'}} />
-      </AbsoluteFill>
       <div style={layer}>
         <Img src={staticFile('seg/final/bg_0000.jpg')} style={{width: PW, height: PH}} />
       </div>
       {/* GRACIAS detrás del grupo */}
-      <div style={{position: 'absolute', top: 690, width: '100%', textAlign: 'center', opacity: textO}}>
+      <div style={{position: 'absolute', top: 690, width: '100%', textAlign: 'center'}}>
         <div style={{overflow: 'hidden'}}>
           <div
             style={{
@@ -375,84 +325,101 @@ const Cierre: React.FC = () => {
         </div>
       </div>
       <div style={layer}>
-        <Img src={staticFile('seg/final/fg_0000.png')} style={{width: PW, height: PH, opacity: 1 - k}} />
+        <Img src={staticFile('seg/final/fg_0000.png')} style={{width: PW, height: PH}} />
       </div>
-      {/* marco de foto fase B */}
-      <div
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: yB,
-          width: 1080,
-          height: PH * sB,
-          boxShadow: `0 0 0 ${10 * k}px ${C.blanco}, 0 30px 80px rgba(0,0,0,${0.5 * k})`,
-          opacity: k,
-          pointerEvents: 'none',
-        }}
-      />
-      {/* textos fase B */}
-      <Sequence from={140} layout="none">
-        <CierreTextos />
+      <CircleWipe start={108} dur={16} color={C.azul} x={540} y={1100} />
+      <Sequence from={120} layout="none">
+        <EndCard />
       </Sequence>
       <Flash at={0} dur={10} />
       <Sfx at={0} name="shutter" />
-      <Sfx at={116} name="whoosh_largo" volume={0.7} />
+      <Sfx at={104} name="whoosh_largo" volume={0.7} />
     </AbsoluteFill>
   );
 };
 
-const CierreTextos: React.FC = () => {
+/** Tarjeta final: logos en blanco sobre azul, gracias y hashtag */
+export const EndCard: React.FC<{line1?: string; line2?: string}> = ({line1 = 'Gracias por visitarnos', line2 = '¡Nos vemos pronto!'}) => {
   const f = useCurrentFrame();
+  const lineP = tw(f, [12, 26], [0, 1], ease.inOut);
   return (
     <AbsoluteFill>
-      <div style={{position: 'absolute', top: 250, width: '100%'}}>
-        <WordsIn text="¡Gracias por visitarnos!" start={0} stagger={3} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 64, color: C.blanco}} />
-      </div>
-      <MaskReveal start={6} style={{position: 'absolute', top: 330, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 112, color: C.blanco}}>IPEFH Aeropuerto</span>
-      </MaskReveal>
-      <div style={{position: 'absolute', top: 1200, width: '100%', textAlign: 'center'}}>
-        <Highlight start={14} color={C.amarillo} pad="0.1em 0.4em">
-          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 52, color: C.marino, opacity: tw(f, [18, 24], [0, 1])}}>Te esperamos en Westhill</span>
-        </Highlight>
-      </div>
+      <AbsoluteFill style={{background: C.azul}}>
+        <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 40%, rgba(61,139,212,0.85) 0%, rgba(39,99,154,0) 60%, rgba(10,25,50,0.55) 100%)'}} />
+      </AbsoluteFill>
       <div
         style={{
           position: 'absolute',
-          top: 1330,
-          left: 0,
-          right: 0,
+          left: 190,
+          top: 470,
+          width: 700,
+          clipPath: `inset(0 0 ${tw(f, [2, 20], [100, 0], ease.inOut)}% 0)`,
+          transform: `translateY(${tw(f, [2, 24], [50, 0])}px)`,
+          filter: `blur(${tw(f, [2, 18], [12, 0])}px)`,
+        }}
+      >
+        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
+      </div>
+      <div style={{position: 'absolute', top: 805, left: 240, width: 600, height: 3, background: 'rgba(255,255,255,0.8)', transform: `scaleX(${lineP})`}} />
+      <div
+        style={{
+          position: 'absolute',
+          top: 770,
+          left: 505,
+          width: 70,
+          height: 70,
+          borderRadius: 35,
+          background: C.azul,
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          gap: 40,
-          opacity: tw(f, [22, 32], [0, 1]),
-          transform: `translateY(${tw(f, [22, 36], [40, 0])}px)`,
+          fontFamily: F.sans,
+          fontWeight: 500,
+          fontSize: 60,
+          color: C.blanco,
+          transform: `scale(${tw(f, [18, 28], [0, 1], ease.back)})`,
         }}
       >
-        <Img src={staticFile('logos/logo_westhill_transparente_texto_blanco.png')} style={{width: 470}} />
-        <span style={{fontFamily: F.sans, fontWeight: 500, fontSize: 70, color: C.blanco}}>×</span>
-        <Img src={staticFile('logos/logo_ipefh_transparente_contorno_blanco.png')} style={{width: 270}} />
+        ×
       </div>
       <div
         style={{
           position: 'absolute',
-          top: 1560,
+          left: 365,
+          top: 880,
+          width: 350,
+          opacity: tw(f, [20, 28], [0, 1]),
+          transform: `translateY(${tw(f, [20, 38], [60, 0])}px)`,
+          filter: `blur(${tw(f, [20, 34], [10, 0])}px)`,
+        }}
+      >
+        <Img src={staticFile('logos/logo_ipefh_transparente_contorno_blanco.png')} style={{width: '100%'}} />
+      </div>
+      <div style={{position: 'absolute', top: 1180, width: '100%'}}>
+        <WordsIn text={line1} start={30} stagger={3} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 58, color: C.blanco}} />
+      </div>
+      <MaskReveal start={38} style={{position: 'absolute', top: 1255, width: '100%', textAlign: 'center'}}>
+        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 112, color: C.blanco}}>{line2}</span>
+      </MaskReveal>
+      <div
+        style={{
+          position: 'absolute',
+          top: 1470,
           width: '100%',
           textAlign: 'center',
           fontFamily: F.sans,
           fontWeight: 800,
-          fontSize: 40,
-          letterSpacing: 6,
-          color: 'rgba(255,255,255,0.85)',
-          opacity: tw(f, [36, 46], [0, 1]),
+          fontSize: 38,
+          letterSpacing: 8,
+          color: C.amarillo,
+          opacity: tw(f, [50, 60], [0, 1]),
         }}
       >
         #SOMOSWESTHILL
       </div>
-      <Sfx at={0} name="click_suave" volume={0.6} />
-      <Sfx at={14} name="click" volume={0.6} />
-      <Sfx at={22} name="ding" volume={0.5} />
+      <Sfx at={18} name="pop" volume={0.6} />
+      <Sfx at={38} name="click_suave" volume={0.6} />
+      <Sfx at={50} name="ding" volume={0.45} />
     </AbsoluteFill>
   );
 };
@@ -487,47 +454,39 @@ export const SECTIONS: Section[] = [
       },
     ],
   },
-  {name: 'talleres', items: [{dur: 60, el: <TalleresCard />}]},
+  // Talleres: sin nombrar carreras (hubo alumnos en más licenciaturas de las que salen en video)
+  {name: 'talleres', items: [{dur: 45, el: <TitleCard small="Vivieron un día en su" big="futura carrera" bg="clean" />}]},
   {
-    name: 'arquitectura',
-    shade: true,
-    overlay: <SectionLabel num="01" name="Arquitectura" sub="Taller de la licenciatura" />,
-    items: [S('IMG_0513', 1.0, 1.5, 'whipL'), P('taller_maestro', 1.0), S('IMG_0515', 2.2, 1.5, 'zoom')],
-  },
-  {
-    name: 'administracion',
-    shade: true,
-    overlay: <SectionLabel num="02" name="Administración" sub="Dirección Empresarial y Mercadotecnia" />,
-    items: [S('IMG_0522', 3.0, 1.5, 'whipR'), P('taller_maestra_mesa', 1.0), S('IMG_0521', 0.3, 1.5, 'zoom')],
-  },
-  {
-    name: 'medicina',
-    shade: true,
-    overlay: <SectionLabel num="03" name="Medicina" sub="Práctica de RCP" />,
-    items: [S('IMG_0541', 0.5, 1.2, 'whipL'), S('IMG_0526', 1.0, 1.0, 'zoom'), P('medicina_rcp2', 0.8), S('IMG_0540', 0.5, 1.0, 'whipR')],
-  },
-  {
-    name: 'dentista',
-    shade: true,
-    overlay: <SectionLabel num="04" name="Cirujano Dentista" sub="Laboratorio dental" />,
-    items: [S('IMG_0543', 2.5, 1.8, 'whipL'), P('dentista', 1.2)],
+    name: 'talleres-montaje',
+    items: [
+      S('IMG_0513', 1.0, 1.4, 'whipL'),
+      P('taller_maestro', 0.9),
+      S('IMG_0522', 3.0, 1.3, 'whipR'),
+      P('taller_maestra_mesa', 0.9),
+      S('IMG_0541', 0.5, 1.2, 'zoom'),
+      S('IMG_0526', 1.0, 1.0, 'whipL'),
+      P('medicina_rcp2', 0.8),
+      S('IMG_0543', 2.5, 1.5, 'whipR'),
+      P('dentista', 0.9),
+      S('IMG_0515', 2.2, 1.2, 'zoom'),
+    ],
   },
   {
     name: 'conferencia',
     shade: true,
-    overlay: <SectionLabel num="05" name="Conferencia" />,
+    overlay: <SectionLabel name="Conferencia" />,
     items: [S('IMG_0558', 2.0, 1.5, 'zoom'), S('IMG_0548', 0.5, 1.2, 'whipL'), S('IMG_0553', 3.0, 1.3, 'whipR')],
   },
   {
     name: 'biblioteca',
     shade: true,
-    overlay: <SectionLabel num="06" name="Biblioteca" />,
+    overlay: <SectionLabel name="Biblioteca" />,
     items: [S('IMG_0566_luz_fuerte', 0.5, 2.5, 'zoom'), P('grupo_bloques', 1.5, 'flash')],
   },
   {
     name: 'break',
     shade: true,
-    overlay: <SectionLabel num="07" name="Break" sub="Refrigerio al aire libre" />,
+    overlay: <SectionLabel name="Break" sub="Refrigerio al aire libre" />,
     items: [S('IMG_0581', 0.2, 1.5, 'whipL'), P('termos', 1.5, 'zoom', '50% 45%')],
   },
   {
@@ -555,19 +514,19 @@ export const SECTIONS: Section[] = [
   {
     name: 'recorrido',
     items: [
-      {...S('IMG_0619', 1.0, 2.0, 'zoom'), overlay: <PlacePill text="Alberca" />},
-      {...S('IMG_0622', 0.0, 1.5, 'whipL'), overlay: <PlacePill text="Gimnasio" />},
-      {...S('IMG_0629', 0.0, 2.0, 'whipR'), overlay: <PlacePill text="Voleibol" />},
-      {...S('IMG_0645', 1.0, 1.5, 'zoom'), overlay: <PlacePill text="Quirófano" />},
-      {...S('IMG_0647', 2.5, 2.0, 'whipL'), overlay: <PlacePill text="Lab. de Anatomía" />},
+      S('IMG_0619', 1.0, 2.0, 'zoom'),
+      S('IMG_0622', 0.0, 1.5, 'whipL'),
+      S('IMG_0629', 0.0, 2.0, 'whipR'),
+      S('IMG_0645', 1.0, 1.5, 'zoom'),
+      S('IMG_0647', 2.5, 2.0, 'whipL'),
     ],
   },
-  {name: 'cierre', items: [{dur: 240, el: <Cierre />}]},
+  {name: 'cierre', items: [{dur: CIERRE_FRAMES, el: <Cierre />}]},
 ];
 
 export const sectionDur = (s: Section) => s.items.reduce((a, b) => a + b.dur, 0);
 export const REEL_FRAMES = INTRO_FRAMES + SECTIONS.reduce((a, s) => a + sectionDur(s), 0);
-const BANNER_END = REEL_FRAMES - 240;
+const BANNER_END = REEL_FRAMES - CIERRE_FRAMES;
 
 /** Reproduce una lista de secciones una tras otra */
 export const SectionsPlayer: React.FC<{sections: Section[]}> = ({sections}) => {

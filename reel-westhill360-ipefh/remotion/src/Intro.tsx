@@ -49,7 +49,7 @@ const Logos: React.FC = () => {
             filter: `blur(${tw(f, [4, 24], [14, 0])}px)`,
           }}
         >
-          <Img src={staticFile('logos/logo_westhill_transparente.png')} style={{width: '100%'}} />
+          <Img src={staticFile('logos/logo_westhill_sin_blanco.png')} style={{width: '100%'}} />
         </div>
         {/* línea + × */}
         <div

@@ -2,9 +2,9 @@
 
 Estructura alineada al montaje (1 compás = 2 s):
   0–6 s   intro: pads filtrados + riser → DROP en 6 s (fin de la intro animada)
-  6–62 s  groove completo (bombo 4/4, clap, hats, bajo, acordes con sidechain, arpegio)
-          con un mini-break de 1 compás en 40–42 s (tarjeta de la dinámica del cornhole)
-  62–72 s cierre: pads + arpegio suave, golpe final
+  6–58 s  groove completo (bombo 4/4, clap, hats, bajo, acordes con sidechain, arpegio)
+          con un mini-break de 1 compás en 36–38 s (tarjeta de la dinámica del cornhole)
+  58–72 s cierre: pads + arpegio suave, golpe final
 Uso: python3 generar_musica.py <salida.wav> [duracion_seg]
 """
 import sys, wave
@@ -115,8 +115,8 @@ def crash():
 PROG = [(57, [57, 60, 64, 69]), (53, [53, 57, 60, 65]), (48, [55, 60, 64, 67]), (55, [55, 59, 62, 67])]
 BAR = 4 * BEAT
 n_bars = int(np.ceil(DUR / BAR))
-DROP, END_GROOVE = 6.0, 62.0
-BREAK = (40.0, 42.0)
+DROP, END_GROOVE = 6.0, 58.0
+BREAK = (36.0, 38.0)
 
 sidechain = np.ones(N)
 

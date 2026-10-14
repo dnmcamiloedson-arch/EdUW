@@ -5,6 +5,9 @@ import {C, F, ease, tw} from './theme';
 
 export type Enter = 'zoom' | 'whipL' | 'whipR' | 'flash' | 'up' | 'none';
 
+/** Modo "natural": entradas suaves (sin barridos, flashes ni whooshes); el fundido lo hace el reproductor */
+export const SoftCtx = React.createContext(false);
+
 export const Sfx: React.FC<{at: number; name: string; volume?: number}> = ({at, name, volume = 1}) => (
   <Sequence from={at} layout="none">
     <Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
@@ -12,8 +15,10 @@ export const Sfx: React.FC<{at: number; name: string; volume?: number}> = ({at, 
 );
 
 /** Movimiento de entrada estilo "transición en tendencia" + leve push-in continuo */
-const useEnter = (enter: Enter, dur: number, push = 0.08) => {
+const useEnter = (enterIn: Enter, dur: number, push = 0.08) => {
   const f = useCurrentFrame();
+  const soft = React.useContext(SoftCtx);
+  const enter: Enter = soft ? 'none' : enterIn;
   let scale = 1 + push * (f / dur);
   let x = 0, y = 0, blur = 0, rot = 0;
   if (enter === 'zoom') {
@@ -41,14 +46,15 @@ export const VideoShot: React.FC<{src: string; from: number; dur: number; enter?
   push,
   sfx = true,
 }) => {
+  const soft = React.useContext(SoftCtx);
   const st = useEnter(enter, dur, push);
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
       <AbsoluteFill style={st}>
         <OffthreadVideo src={staticFile(`proxies/${src}.mp4`)} startFrom={Math.round(from * 30)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
-      {enter === 'flash' && <Flash at={0} dur={9} />}
-      {sfx && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.55} />}
+      {!soft && enter === 'flash' && <Flash at={0} dur={9} />}
+      {!soft && sfx && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.55} />}
     </AbsoluteFill>
   );
 };
@@ -62,14 +68,15 @@ export const PhotoShot: React.FC<{src: string; dur: number; enter?: Enter; origi
   push = 0.1,
   sfx = true,
 }) => {
+  const soft = React.useContext(SoftCtx);
   const st = useEnter(enter, dur, push);
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
       <AbsoluteFill style={{...st, transformOrigin: origin}}>
         <Img src={staticFile(`photos/${src}.jpg`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
-      {enter === 'flash' && <Flash at={0} dur={9} />}
-      {sfx && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.6} />}
+      {!soft && enter === 'flash' && <Flash at={0} dur={9} />}
+      {!soft && sfx && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.6} />}
     </AbsoluteFill>
   );
 };
@@ -85,6 +92,7 @@ export const BehindShot: React.FC<{seg: string; frames: number; dur: number; chi
   const f = useCurrentFrame();
   const i = Math.min(frames - 1, f);
   const n = String(i).padStart(4, '0');
+  const soft = React.useContext(SoftCtx);
   const st = useEnter(enter, dur, 0.06);
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
@@ -95,7 +103,7 @@ export const BehindShot: React.FC<{seg: string; frames: number; dur: number; chi
       <AbsoluteFill style={st}>
         <Img src={staticFile(`seg/${seg}/fg_${n}.png`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
-      {ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.55} />}
+      {!soft && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.55} />}
     </AbsoluteFill>
   );
 };
@@ -108,11 +116,11 @@ export const Shade: React.FC<{from?: number; strength?: number}> = ({from = 45, 
 );
 
 /** Etiqueta de sección: número outline gigante + cinta con nombre + subtítulo */
-export const SectionLabel: React.FC<{num: string; name: string; sub?: string; top?: number}> = ({num, name, sub, top = 1120}) => {
+export const SectionLabel: React.FC<{num?: string; name: string; sub?: string; top?: number}> = ({num, name, sub, top = 1120}) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{pointerEvents: 'none'}}>
-      <div
+      {num && <div
         style={{
           position: 'absolute',
           left: 64,
@@ -127,7 +135,7 @@ export const SectionLabel: React.FC<{num: string; name: string; sub?: string; to
         }}
       >
         {num}
-      </div>
+      </div>}
       <div style={{position: 'absolute', left: 0, top: top + 205, overflow: 'hidden', paddingRight: 40}}>
         <div
           style={{
