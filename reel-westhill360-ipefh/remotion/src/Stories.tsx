@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {CleanBg, Grain, MaskReveal, WordsIn} from './components';
-import {CornholeText, Counter, GanadoresRibbon, Logrado, pickSections, ReglasCard, Section, WinnerPhoto} from './Reel';
+import {CornholeText, Counter, GanadoresRibbon, Logrado, MUSIC, pickSections, ReglasCard, Section, WinnerPhoto} from './Reel';
 import {Banner, BehindShot, Sfx, Shade, SoftCtx, VideoShot} from './shots';
 import {C, F, ease, tw} from './theme';
 
@@ -94,8 +94,8 @@ const StoryFrame: React.FC<{title: string; dur: number; banner?: boolean; childr
     )}
     <Grain opacity={0.05} />
     <Audio
-      src={staticFile('music/beat_westhill360.wav')}
-      startFrom={150}
+      src={staticFile(MUSIC.src)}
+      startFrom={MUSIC.dropAt - OPENER}
       volume={(f) => interpolate(f, [0, 10, dur - 30, dur], [0, 0.6, 0.6, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
     />
   </AbsoluteFill>

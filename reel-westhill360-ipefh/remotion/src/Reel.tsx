@@ -475,7 +475,8 @@ export const SECTIONS: Section[] = [
     name: 'conferencia',
     shade: true,
     overlay: <SectionLabel name="Conferencia" />,
-    items: [S('IMG_0558', 2.0, 1.5, 'zoom'), S('IMG_0548', 0.5, 1.2, 'whipL'), S('IMG_0553', 3.0, 1.3, 'whipR')],
+    // el 2º corte cae justo en el regreso del beat de la canción (≈23.55 s del reel)
+    items: [S('IMG_0558', 2.0, 58 / 30, 'zoom'), S('IMG_0548', 0.5, 1.2, 'whipL'), S('IMG_0553', 3.0, 26 / 30, 'whipR')],
   },
   {
     name: 'biblioteca',
@@ -523,6 +524,9 @@ export const SECTIONS: Section[] = [
   },
   {name: 'cierre', items: [{dur: CIERRE_FRAMES, el: <Cierre />}]},
 ];
+
+/** Canción elegida por el cliente: el "drop" (7.825 s) cae justo al terminar la intro */
+export const MUSIC = {src: 'music/cancion_referencia.wav', dropAt: Math.round(7.825 * 30)};
 
 export const sectionDur = (s: Section) => s.items.reduce((a, b) => a + b.dur, 0);
 export const REEL_FRAMES = INTRO_FRAMES + SECTIONS.reduce((a, s) => a + sectionDur(s), 0);
@@ -574,6 +578,12 @@ export const Reel: React.FC<{music?: boolean}> = ({music = true}) => (
       <Banner />
     </Sequence>
     <Grain opacity={0.05} />
-    {music && <Audio src={staticFile('music/beat_westhill360.wav')} volume={(f) => interpolate(f, [REEL_FRAMES - 45, REEL_FRAMES], [0.62, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})} />}
+    {music && (
+      <Audio
+        src={staticFile(MUSIC.src)}
+        startFrom={MUSIC.dropAt - INTRO_FRAMES}
+        volume={(f) => interpolate(f, [REEL_FRAMES - 75, REEL_FRAMES], [0.6, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+      />
+    )}
   </AbsoluteFill>
 );
