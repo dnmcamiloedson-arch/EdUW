@@ -1,0 +1,4 @@
+# Material de video pesado: se trabaja localmente, no se versiona
+media/
+out/
+node_modules/
