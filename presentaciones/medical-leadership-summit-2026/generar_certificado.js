@@ -1,7 +1,7 @@
 // Certificados "Westhill Medical Leadership Summit 2026" (tamaño carta horizontal, 11 × 8.5 in).
 // Misma línea visual del flyer y de la plantilla de diapositivas: ola azul con filo dorado y logo,
-// guiones verdes, Montserrat. Detalle de impresión a 300 ppp: esquineros dorados en L en las
-// esquinas libres (en diagonal con las olas), roseta de fondo, textura de papel y sello dorado con listones.
+// guiones verdes, Montserrat. Detalle de impresión a 300 ppp: adorno en las esquinas libres (en
+// diagonal con las olas, ver ESQUINAS), edificio y roseta de fondo, textura de papel y sello dorado.
 //
 // Genera:
 //   Certificados_Medical_Leadership_Summit_2026.pptx  plantilla de participante y de ponente
@@ -19,7 +19,12 @@ const DIR = __dirname;
 const img = (f) => path.join(DIR, "img", f);
 const HEX = { blue: "266294", royal: "0F62AE", deep: "0A4A92", navy: "0E2A47", gold: "F2C94C", goldDark: "B8861B", green: "2DB34A", muted: "5B6B7D", sky: "CFE6FB" };
 const F = { reg: "Montserrat", med: "Montserrat Medium", semi: "Montserrat SemiBold", xb: "Montserrat ExtraBold" };
-const W = 11, H = 8.5, P = 300; // carta horizontal, arte a 300 ppp
+const W = 11, H = 8.5, P = 300;
+// Adorno de las esquinas libres (arriba a la derecha y abajo a la izquierda):
+//   ondas  = ondas suaves translúcidas con filo dorado (eco de las olas del logo)
+//   puntos = trama de puntos que se desvanece + arco dorado
+//   arcos  = arcos concéntricos dorados y azules
+const ESQUINAS = process.env.ESQUINAS || "ondas"; // carta horizontal, arte a 300 ppp
 const X = (v) => Math.round(v * P);
 
 // ---------- datos ----------
@@ -73,28 +78,41 @@ function wave(k, fill = "url(#wb)") {
 
 async function background() {
   const w = X(W), h = X(H), tl = X(0.42);
-  // Esquinero: doble línea en L (dorada y azul fina) que se desvanece hacia las puntas,
-  // con un rombo dorado en el vértice. (x, y) es el vértice; sx/sy orientan los brazos.
-  const bracket = (x, y, sx, sy, id) => {
-    const LH = X(2.7), LV = X(1.95), d = X(0.13), lh = LH * 0.72, lv = LV * 0.72;
-    return `<g transform="translate(${x},${y}) scale(${sx},${sy})">
-      <defs>
-        <linearGradient id="${id}h" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${LH}" y2="0"><stop offset="0" stop-color="#E8B530"/><stop offset="0.65" stop-color="#E8B530"/><stop offset="1" stop-color="#E8B530" stop-opacity="0"/></linearGradient>
-        <linearGradient id="${id}v" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${LV}"><stop offset="0" stop-color="#E8B530"/><stop offset="0.65" stop-color="#E8B530"/><stop offset="1" stop-color="#E8B530" stop-opacity="0"/></linearGradient>
-        <linearGradient id="${id}bh" gradientUnits="userSpaceOnUse" x1="${d}" y1="0" x2="${d + lh}" y2="0"><stop offset="0" stop-color="#266294"/><stop offset="1" stop-color="#266294" stop-opacity="0"/></linearGradient>
-        <linearGradient id="${id}bv" gradientUnits="userSpaceOnUse" x1="0" y1="${d}" x2="0" y2="${d + lv}"><stop offset="0" stop-color="#266294"/><stop offset="1" stop-color="#266294" stop-opacity="0"/></linearGradient>
-      </defs>
-      <rect x="-3" y="-3" width="${LH + 3}" height="6" fill="url(#${id}h)"/>
-      <rect x="-3" y="-3" width="6" height="${LV + 3}" fill="url(#${id}v)"/>
-      <rect x="${d}" y="${d - 1}" width="${lh}" height="2.2" fill="url(#${id}bh)"/>
-      <rect x="${d - 1}" y="${d}" width="2.2" height="${lv}" fill="url(#${id}bv)"/>
-      <rect x="${d - 11}" y="${d - 11}" width="22" height="22" transform="rotate(45 ${d} ${d})" fill="#E8B530"/>
-    </g>`;
+  // Adorno de esquina en coordenadas locales: vértice en (0,0), brazos hacia +x y +y.
+  const cornerArt = (x, y, sx, sy, id) => {
+    let g = "";
+    if (ESQUINAS === "ondas") {
+      g = `<path d="M0,0 H760 C540,110 290,300 0,410 Z" fill="#2F7CC0" fill-opacity="0.07"/>
+        <path d="M0,0 H600 C430,90 230,250 0,330 Z" fill="#2F7CC0" fill-opacity="0.10"/>
+        <path d="M0,0 H430 C300,70 160,180 0,240 Z" fill="url(#${id}f)"/>
+        <path d="M660,0 C470,105 250,280 0,370" fill="none" stroke="url(#gold)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M800,0 C570,130 300,340 0,450" fill="none" stroke="#266294" stroke-opacity="0.45" stroke-width="2.2"/>
+        <circle cx="430" cy="128" r="9" fill="#2DB34A"/>`;
+    } else if (ESQUINAS === "puntos") {
+      for (let i = 0; i < 26; i++) for (let j = 0; j < 16; j++) {
+        const px = 26 + i * 30, py = 26 + j * 30, d = Math.hypot(px / 780, py / 470);
+        const r = 7.5 * (1 - d);
+        if (r > 0.9) g += `<circle cx="${px}" cy="${py}" r="${f1(r)}" fill="#2F6FAE" fill-opacity="${f1(0.18 + 0.5 * (1 - d))}"/>`;
+      }
+      g += `<path d="M720,0 C520,60 220,260 0,440" fill="none" stroke="url(#gold)" stroke-width="6" stroke-linecap="round"/>
+        <path d="M820,0 C590,80 260,300 0,500" fill="none" stroke="#266294" stroke-opacity="0.4" stroke-width="2"/>`;
+    } else {
+      g = `<path d="M0,0 H250 A250,250 0 0 1 0,250 Z" fill="#2F7CC0" fill-opacity="0.08"/>` +
+        [[290, "#266294", 2, 0.55], [330, "url(#gold)", 6, 1], [370, "#266294", 2, 0.55], [410, "url(#gold)", 2.4, 0.7]]
+          .map(([r, c, sw, o]) => `<path d="M${r},0 A${r},${r} 0 0 1 0,${r}" fill="none" stroke="${c}" stroke-opacity="${o}" stroke-width="${sw}"/>`).join("") +
+        `<circle cx="${f1(330 * Math.cos(Math.PI / 4))}" cy="${f1(330 * Math.sin(Math.PI / 4))}" r="11" fill="#E8B530"/><circle cx="${f1(410 * Math.cos(Math.PI / 4))}" cy="${f1(410 * Math.sin(Math.PI / 4))}" r="7" fill="#2DB34A"/>`;
+    }
+    return `<g transform="translate(${x},${y}) scale(${sx},${sy})"><defs><linearGradient id="${id}f" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2F7CC0" stop-opacity="0.22"/><stop offset="1" stop-color="#2F7CC0" stop-opacity="0.05"/></linearGradient></defs>${g}</g>`;
   };
+  // Marca de agua: el edificio del logo en azul muy tenue detrás del nombre.
+  const bld = await sharp(img("logo_westhill_blanco.png")).extract({ left: 163, top: 0, width: 1546, height: 432 }).toBuffer();
+  const bldAlpha = await sharp(bld).extractChannel(3).toBuffer();
+  const bldBlue = await sharp({ create: { width: 1546, height: 432, channels: 3, background: "#266294" } }).joinChannel(bldAlpha).png().toBuffer();
+  const bw = X(6.2), bh = Math.round((bw * 432) / 1546);
   const watermark = [
     rosette(1650, 1300, 96, 36, 52, 6.4, 5200), rosette(1650, 1300, 80, 30, 46, 6.6, 4400), rosette(1650, 1300, 70, 21, 30, 5.2, 4200),
-  ].map((d, i) => `<path d="${d}" fill="none" stroke="#2F6FAE" stroke-opacity="${[0.07, 0.055, 0.06][i]}" stroke-width="2"/>`).join("");
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
+  ].map((d, i) => `<path d="${d}" fill="none" stroke="#2F6FAE" stroke-opacity="${[0.05, 0.04, 0.045][i]}" stroke-width="2"/>`).join("");
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${w}" height="${h}">
   <defs>
     <linearGradient id="wb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2F7CC0"/><stop offset="1" stop-color="#174A86"/></linearGradient>
     <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F7DC7A"/><stop offset="0.5" stop-color="#E8B530"/><stop offset="1" stop-color="#C9961F"/></linearGradient>
@@ -107,12 +125,11 @@ async function background() {
   <rect width="100%" height="100%" filter="url(#paper)"/>
   <ellipse cx="${w / 2}" cy="${h * 0.52}" rx="${w * 0.45}" ry="${h * 0.42}" fill="url(#glow)"/>
   <g clip-path="url(#inner)">${watermark}
-    ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${2500 + i * 44},${tl} C${2780 + i * 34},${300 + i * 30} ${3000},${180 + i * 44} ${w},${560 + i * 40}" fill="none" stroke="#C9D6E4" stroke-opacity="0.5" stroke-width="2.4"/>`).join("")}
-    ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${tl},${1700 + i * 44} C${300 + i * 30},${1980 + i * 34} ${180 + i * 44},${2200} ${700 + i * 40},${h}" fill="none" stroke="#C9D6E4" stroke-opacity="0.45" stroke-width="2.4"/>`).join("")}
+    <image x="${(w - bw) / 2}" y="${X(4.05) - bh / 2}" width="${bw}" height="${bh}" opacity="0.045" xlink:href="data:image/png;base64,${bldBlue.toString("base64")}"/>
     ${dots(290, 930, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}${dots(2905, 1450, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}
   </g>
-  <!-- esquineros en L (arriba a la derecha y abajo a la izquierda), en diagonal con las olas -->
-  ${bracket(w - X(0.42), X(0.42), -1, 1, "tr")}${bracket(X(0.42), h - X(0.42), 1, -1, "bl")}
+  <!-- esquinas libres (arriba a la derecha y abajo a la izquierda), en diagonal con las olas -->
+  ${cornerArt(w, 0, -1, 1, "tr")}${cornerArt(0, h, 1, -1, "bl")}
   <!-- olas -->
   ${wave(1.15)}
   <g transform="translate(${w},${h}) scale(-1,-1)">${wave(0.78)}</g>
@@ -221,10 +238,10 @@ async function fixPackage(file) {
       objects: [
         { image: { data: LOGO_W, x: 0.46, y: 0.36, w: 2.45, h: 2.45 * LR } },
         { image: { data: SEAL, x: W / 2 - 1.05, y: 5.68, w: 2.1, h: 2.1 } },
-        { text: { text: "WESTHILL", options: { x: 6.55, y: 0.86, w: 3.5, h: 0.3, fontFace: F.reg, fontSize: 15, color: HEX.blue, align: "right", charSpacing: 2, margin: 0 } } },
-        { text: { text: "MEDICAL LEADERSHIP", options: { x: 6.55, y: 1.12, w: 3.5, h: 0.32, fontFace: F.xb, fontSize: 17, color: HEX.blue, align: "right", margin: 0 } } },
-        { text: { text: "SUMMIT 2026", options: { x: 6.55, y: 1.42, w: 3.5, h: 0.3, fontFace: F.reg, fontSize: 15, color: HEX.blue, align: "right", margin: 0 } } },
-        { rect: { x: 9.5, y: 1.8, w: 0.55, h: 0.05, fill: { color: HEX.green }, line: { type: "none" } } },
+        { text: { text: "WESTHILL", options: { x: 6.05, y: 0.86, w: 3.5, h: 0.3, fontFace: F.reg, fontSize: 15, color: HEX.blue, align: "right", charSpacing: 2, margin: 0 } } },
+        { text: { text: "MEDICAL LEADERSHIP", options: { x: 6.05, y: 1.12, w: 3.5, h: 0.32, fontFace: F.xb, fontSize: 17, color: HEX.blue, align: "right", margin: 0 } } },
+        { text: { text: "SUMMIT 2026", options: { x: 6.05, y: 1.42, w: 3.5, h: 0.3, fontFace: F.reg, fontSize: 15, color: HEX.blue, align: "right", margin: 0 } } },
+        { rect: { x: 9.0, y: 1.8, w: 0.55, h: 0.05, fill: { color: HEX.green }, line: { type: "none" } } },
         { text: { text: "#SOMOSWESTHILL", options: { x: 8.55, y: 7.98, w: 2.2, h: 0.26, fontFace: F.xb, fontSize: 10, color: "FFFFFF", charSpacing: 1.5, align: "right", margin: 0 } } },
       ],
     });
@@ -252,7 +269,7 @@ async function fixPackage(file) {
       t(s, n, { x: cx - 1.6, y: 6.84, w: 3.2, h: 0.26, fontFace: F.xb, fontSize: 11, color: HEX.navy });
       t(s, cargo, { x: cx - 1.7, y: 7.09, w: 3.4, h: 0.24, fontFace: F.med, fontSize: 9, color: HEX.muted });
     }
-    t(s, `Folio: ${folio}`, { x: 0.95, y: 7.48, w: 2.6, h: 0.2, fontFace: F.semi, fontSize: 8, color: "8A99AB", align: "left", charSpacing: 1 });
+    t(s, `Folio: ${folio}`, { x: W / 2 - 1.5, y: 8.06, w: 3, h: 0.2, fontFace: F.semi, fontSize: 8, color: "8A99AB", charSpacing: 1 });
     return s;
   }
   const bold = (txt) => ({ text: txt, options: { fontFace: F.xb, color: HEX.navy } });
@@ -269,7 +286,7 @@ async function fixPackage(file) {
   certificate(pres, { ...PART, nombre: "Nombre del Participante", cuerpo: cuerpoParticipante, folio: "WMLS-2026-P000" });
   certificate(pres, { ...PON, nombre: "Nombre del Ponente", cuerpo: cuerpoPonente("Título de la ponencia"), folio: "WMLS-2026-R000" });
   PONENTES.forEach(([n, p], i) => certificate(pres, { ...PON, nombre: n, cuerpo: cuerpoPonente(p), folio: `WMLS-2026-R${String(i + 1).padStart(3, "0")}` }));
-  let out = path.join(DIR, "Certificados_Medical_Leadership_Summit_2026.pptx");
+  let out = process.env.OUT || path.join(DIR, "Certificados_Medical_Leadership_Summit_2026.pptx");
   await pres.writeFile({ fileName: out });
   await fixPackage(out);
   console.log("Listo:", out);

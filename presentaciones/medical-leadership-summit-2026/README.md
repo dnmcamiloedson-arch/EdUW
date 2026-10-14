@@ -55,5 +55,9 @@ node generar_plantilla.js
 | `generar_certificado.js` | Genera los certificados. Si existe `participantes.txt` (un nombre por renglón) crea además `Certificados_participantes.pptx` con un certificado y folio por persona. |
 
 Detalles del diseño: ola azul con filo dorado y logo (igual que la presentación) arriba a la izquierda
-y abajo a la derecha; en las otras dos esquinas, esquineros en L de doble línea (dorada y azul) que se
-desvanecen, con un rombo dorado. Roseta tenue de fondo, textura de papel, sello dorado con listones y folio. Los nombres de los firmantes («Nombre y firma») deben completarse.
+y abajo a la derecha; en las otras dos esquinas, un adorno ligero en diagonal con las olas. Edificio
+del logo y roseta muy tenues de fondo, textura de papel, sello dorado con listones y folio. Los nombres
+de los firmantes («Nombre y firma») deben completarse.
+
+El adorno de las esquinas se elige con la variable `ESQUINAS` (ver `opciones_esquinas_certificado.jpg`):
+`ondas` (predeterminado), `puntos` o `arcos`, por ejemplo `ESQUINAS=arcos node generar_certificado.js`.
