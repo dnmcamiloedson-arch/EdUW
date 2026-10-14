@@ -124,13 +124,43 @@ async function background() {
   const shine = (d) => `<path d="${d}" fill="#FFFFFF" fill-opacity="0.07"/>`;
   function marco() {
     if (MARCO === "banda") {
+      // Curvas base: borde inferior de la banda superior y borde superior de la inferior.
+      const tC = (dy = 0) => `C${X(3.4)},${X(0.98 + dy)} ${X(8.2)},${X(1.5 + dy)} ${w},${X(1.1 + dy)}`; // de izquierda a derecha
       const top = `M0,0 H${w} V${X(1.1)} C${X(8.2)},${X(1.5)} ${X(3.4)},${X(0.98)} 0,${X(1.36)} Z`;
-      const bot = `M0,${X(8.14)} C${X(3)},${X(7.98)} ${X(7.5)},${X(8.24)} ${w},${X(8.04)} V${h} H0 Z`;
-      return `<path d="${top}" fill="url(#wb)"/>${shine(`M0,0 H${w} V${X(0.55)} C${X(7.5)},${X(0.85)} ${X(3.6)},${X(0.45)} 0,${X(0.8)} Z`)}
-        <path d="M0,${X(1.46)} C${X(3.4)},${X(1.08)} ${X(8.2)},${X(1.6)} ${w},${X(1.2)}" fill="none" stroke="url(#gold)" stroke-width="9"/>
-        ${dots(X(4.3), X(0.32), 12, 3, 30, 4.5, "#FFFFFF", 0.22)}
-        <path d="M0,${X(8.04)} C${X(3)},${X(7.88)} ${X(7.5)},${X(8.14)} ${w},${X(7.94)}" fill="none" stroke="url(#gold)" stroke-width="7"/>
-        <path d="${bot}" fill="url(#wb)"/>`;
+      const bC = (dy = 0) => `C${X(3)},${X(7.98 + dy)} ${X(7.5)},${X(8.24 + dy)} ${w},${X(8.04 + dy)}`;
+      const bot = `M0,${X(8.14)} ${bC()} V${h} H0 Z`;
+      const side = (x, dir) => {
+        const y0 = X(1.78), y1 = X(7.78), x2 = x + dir * X(0.07);
+        const dia = (cx, cy, r) => `<rect x="${cx - r}" y="${cy - r}" width="${2 * r}" height="${2 * r}" transform="rotate(45 ${cx} ${cy})" fill="#E8B530"/>`;
+        return `<line x1="${x}" y1="${y0}" x2="${x}" y2="${y1}" stroke="#E8B530" stroke-width="3.2"/>
+          <line x1="${x2}" y1="${y0 + X(0.12)}" x2="${x2}" y2="${y1 - X(0.12)}" stroke="#266294" stroke-opacity="0.55" stroke-width="1.6"/>
+          ${dia(x, y0, 11)}${dia(x, y1, 11)}${dia(x, (y0 + y1) / 2, 8)}`;
+      };
+      return `
+        <clipPath id="bandTop"><path d="${top}"/></clipPath>
+        <clipPath id="bandBot"><path d="${bot}"/></clipPath>
+        <radialGradient id="bandGlow" cx="0.5" cy="0" r="0.75"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.22"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></radialGradient>
+        <linearGradient id="bandH" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#123F78"/><stop offset="0.5" stop-color="#2470B8"/><stop offset="1" stop-color="#123F78"/></linearGradient>
+        <!-- banda superior -->
+        <g clip-path="url(#bandTop)">
+          <rect width="${w}" height="${X(1.6)}" fill="url(#bandH)"/>
+          <rect width="${w}" height="${X(1.6)}" fill="url(#bandGlow)"/>
+          <image x="${w / 2 - X(2.7)}" y="${X(0.12)}" width="${X(5.4)}" height="${Math.round((X(5.4) * 432) / 1546)}" opacity="0.08" xlink:href="data:image/png;base64,${bld.toString("base64")}"/>
+          <path d="M0,${X(1.36)} ${tC()} V${X(0.84)} C${X(8.2)},${X(1.24)} ${X(3.4)},${X(0.72)} 0,${X(1.1)} Z" fill="#FFFFFF" fill-opacity="0.07"/>
+          ${dots(X(3.55), X(0.28), 5, 3, 30, 4.5, "#FFFFFF", 0.25)}${dots(X(7.0), X(0.28), 5, 3, 30, 4.5, "#FFFFFF", 0.25)}
+        </g>
+        <path d="M0,${X(1.46)} ${tC(0.1)}" fill="none" stroke="url(#gold)" stroke-width="9"/>
+        <path d="M0,${X(1.53)} ${tC(0.17)}" fill="none" stroke="#E8B530" stroke-opacity="0.6" stroke-width="2.4"/>
+        <!-- banda inferior -->
+        <path d="M0,${X(7.98)} ${bC(-0.16)}" fill="none" stroke="#E8B530" stroke-opacity="0.6" stroke-width="2.4"/>
+        <path d="M0,${X(8.05)} ${bC(-0.09)}" fill="none" stroke="url(#gold)" stroke-width="8"/>
+        <g clip-path="url(#bandBot)">
+          <rect y="${X(7.9)}" width="${w}" height="${X(0.6)}" fill="url(#bandH)"/>
+          <path d="M0,${X(8.14)} ${bC()} V${X(8.3)} C${X(7.5)},${X(8.5)} ${X(3)},${X(8.24)} 0,${X(8.4)} Z" fill="#FFFFFF" fill-opacity="0.07"/>
+          <rect y="${h - X(0.06)}" width="${w}" height="${X(0.06)}" fill="#0B2E5C"/>
+        </g>
+        <!-- filetes laterales -->
+        ${side(X(0.38), 1)}${side(w - X(0.38), -1)}`;
     }
     if (MARCO === "centrado") {
       const o = X(0.32), i = X(0.42), dia = (x, y) => `<rect x="${x - 16}" y="${y - 16}" width="32" height="32" transform="rotate(45 ${x} ${y})" fill="#E8B530"/>`;
@@ -186,6 +216,25 @@ function arcText(txt, cx, cy, r, size, top) {
     out += `<text x="${f1(x)}" y="${f1(y)}" transform="rotate(${f1(rot)} ${f1(x)} ${f1(y)})" text-anchor="middle" font-family="Montserrat" font-weight="800" font-size="${size}" fill="#0E2A47">${ch}</text>`;
   }
   return out;
+}
+
+// Adornos dorados: filete que se desvanece con rombo (a los lados del subtítulo) y divisor del nombre.
+async function ornaments(ruleW) {
+  const png = async (svg) => "image/png;base64," + (await sharp(Buffer.from(svg)).png().toBuffer()).toString("base64");
+  const side = (flip) => `<svg xmlns="http://www.w3.org/2000/svg" width="450" height="60"><defs>
+      <linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E8B530" stop-opacity="0"/><stop offset="1" stop-color="#E8B530"/></linearGradient></defs>
+      <g transform="${flip ? "translate(450,0) scale(-1,1)" : ""}">
+      <rect x="0" y="28" width="392" height="4" fill="url(#l)"/><rect x="250" y="35" width="142" height="1.6" fill="#2DB34A"/>
+      <rect x="404" y="20" width="20" height="20" transform="rotate(45 414 30)" fill="#E8B530"/><circle cx="440" cy="30" r="4.5" fill="#E8B530"/></g></svg>`;
+  const W2 = Math.round(ruleW * 300), c = W2 / 2;
+  const name = `<svg xmlns="http://www.w3.org/2000/svg" width="${W2}" height="66"><defs>
+      <linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#E8B530" stop-opacity="0"/><stop offset="0.45" stop-color="#E8B530"/><stop offset="1" stop-color="#E8B530"/></linearGradient>
+      <linearGradient id="r" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#E8B530" stop-opacity="0"/><stop offset="0.45" stop-color="#E8B530"/><stop offset="1" stop-color="#E8B530"/></linearGradient></defs>
+      <rect x="0" y="31" width="${c - 46}" height="3.5" fill="url(#l)"/><rect x="${c + 46}" y="31" width="${c - 46}" height="3.5" fill="url(#r)"/>
+      <rect x="${c - 14}" y="${33 - 14}" width="28" height="28" transform="rotate(45 ${c} 33)" fill="#E8B530"/>
+      <rect x="${c - 7}" y="${33 - 7}" width="14" height="14" transform="rotate(45 ${c} 33)" fill="#FFFFFF"/>
+      <circle cx="${c - 34}" cy="33" r="5" fill="#E8B530"/><circle cx="${c + 34}" cy="33" r="5" fill="#E8B530"/></svg>`;
+  return { left: await png(side(false)), right: await png(side(true)), name: await png(name) };
 }
 
 async function seal() {
@@ -254,6 +303,7 @@ async function fixPackage(file) {
 (async () => {
   const BG = "image/png;base64," + (await background()).toString("base64");
   const SEAL = await seal();
+  const ORN = await ornaments(LAY.rule);
   const LOGO_W = "image/png;base64," + fs.readFileSync(img("logo_westhill_blanco.png")).toString("base64");
   const LR = 757 / 1878;
 
@@ -267,7 +317,8 @@ async function fixPackage(file) {
       tx("SUMMIT 2026", { x, y: y + 0.56, w, h: 0.3, fontSize: small, color, align }),
     ];
     if (MARCO === "banda") return [
-      { image: { data: LOGO_W, x: 0.5, y: 0.17, w: 2.2, h: 2.2 * LR } }, sealObj,
+      { image: { data: LOGO_W, x: 0.55, y: 0.18, w: 2.2, h: 2.2 * LR } }, sealObj,
+      { text: { text: "FACULTAD DE MEDICINA", options: { shape: "roundRect", rectRadius: 0.2, x: W / 2 - 1.65, y: 1.13, w: 3.3, h: 0.4, fill: { color: "FFFFFF" }, line: { color: HEX.gold, width: 1.75 }, shadow: { type: "outer", color: HEX.navy, opacity: 0.18, blur: 6, offset: 2, angle: 90 }, fontFace: F.xb, fontSize: 10.5, color: HEX.blue, align: "center", valign: "middle", charSpacing: 3, margin: 0 } } },
       ...lockup(6.6, 0.12, 3.9, "FFFFFF", "right", 16, 13),
       tx("21, 22 y 23 de octubre de 2026  ·  Facultad de Medicina", { x: 3, y: 8.2, w: 5, h: 0.24, fontFace: F.semi, fontSize: 9.5, color: "FFFFFF", align: "center", charSpacing: 1 }),
       tx("#SOMOSWESTHILL", { x: 8.3, y: 8.2, w: 2.2, h: 0.24, fontFace: F.xb, fontSize: 10, color: HEX.gold, align: "right", charSpacing: 1.5 }),
@@ -314,17 +365,16 @@ async function fixPackage(file) {
     const s = pres.addSlide({ masterName: "Certificado" });
     const { cx, tw } = LAY, at = (w) => cx - w / 2;
     const kicker = MARCO === "centrado" ? "WESTHILL MEDICAL LEADERSHIP SUMMIT 2026  ·  FACULTAD DE MEDICINA" : "FACULTAD DE MEDICINA";
-    t(s, kicker, { x: at(8.4), y: 1.68, w: 8.4, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.muted, charSpacing: MARCO === "centrado" ? 2 : 3 });
+    if (MARCO !== "banda") t(s, kicker, { x: at(8.4), y: 1.68, w: 8.4, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.muted, charSpacing: MARCO === "centrado" ? 2 : 3 });
     const long = titulo.length > 11, panel = MARCO === "panel";
     t(s, titulo, { x: at(tw), y: 1.9, w: tw, h: 0.85, fontFace: F.xb, fontSize: long ? (panel ? 38 : 42) : 50, color: HEX.blue, charSpacing: long ? (panel ? 3 : 4) : panel ? 5 : 8 });
-    s.addShape("rect", { x: cx - 2.95, y: 2.96, w: 1.0, h: 0.06, fill: { color: HEX.green }, line: { type: "none" } });
-    s.addShape("rect", { x: cx + 1.95, y: 2.96, w: 1.0, h: 0.06, fill: { color: HEX.green }, line: { type: "none" } });
+    s.addImage({ data: ORN.left, x: cx - 1.95 - 1.5, y: 2.89, w: 1.5, h: 0.2 });
+    s.addImage({ data: ORN.right, x: cx + 1.95, y: 2.89, w: 1.5, h: 0.2 });
     t(s, sub, { x: at(3.8), y: 2.8, w: 3.8, h: 0.36, fontFace: F.xb, fontSize: 15, color: HEX.navy, charSpacing: 5 });
     t(s, otorga, { x: at(7), y: 3.32, w: 7, h: 0.3, fontFace: F.med, fontSize: 12.5, color: HEX.muted });
     const k = tw / 8.6, fsz = Math.min(38, Math.floor((38 * 26 * k) / Math.max(26 * k, nombre.length)));
     t(s, nombre, { x: at(tw), y: 3.62, w: tw, h: 0.78, fontFace: F.xb, fontSize: fsz, color: HEX.navy });
-    s.addShape("line", { x: at(LAY.rule), y: 4.47, w: LAY.rule, h: 0, line: { color: HEX.gold, width: 1.75 } });
-    s.addShape("ellipse", { x: cx - 0.06, y: 4.41, w: 0.12, h: 0.12, fill: { color: HEX.gold }, line: { type: "none" } });
+    s.addImage({ data: ORN.name, x: at(LAY.rule), y: 4.36, w: LAY.rule, h: 0.22 });
     t(s, cuerpo, { x: at(LAY.body), y: 4.6, w: LAY.body, h: 0.98, fontSize: 11.5, color: "2B3A4E", lineSpacingMultiple: 1.12, valign: "top" });
     t(s, LUGAR_FECHA, { x: at(6), y: 5.6, w: 6, h: 0.26, fontFace: F.semi, fontSize: 10.5, color: HEX.blue });
     for (const [i, [n, cargo]] of FIRMAS.entries()) {

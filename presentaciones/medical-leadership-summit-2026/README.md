@@ -54,9 +54,11 @@ node generar_plantilla.js
 | `Certificados_Medical_Leadership_Summit_2026.pdf` | Los mismos certificados listos para imprimir (fuentes incrustadas, fondo a 300 ppp). |
 | `generar_certificado.js` | Genera los certificados. Si existe `participantes.txt` (un nombre por renglón) crea además `Certificados_participantes.pptx` con un certificado y folio por persona. |
 
-Detalles del diseño: banda azul superior con el logo y el título del evento, banda inferior con
-fecha, folio y #SOMOSWESTHILL, ambas con filo dorado curvo. Edificio del logo y roseta muy tenues de
-fondo, textura de papel y sello dorado con listones. Los nombres de los firmantes («Nombre y firma»)
+Detalles del diseño: banda azul superior con el logo, el título del evento y el edificio en
+transparencia; insignia «Facultad de Medicina» montada sobre el filo dorado doble; banda inferior con
+folio, fecha y #SOMOSWESTHILL; filetes laterales dorado y azul con rombos; adornos dorados junto al
+subtítulo y bajo el nombre. Edificio del logo y roseta muy tenues de fondo, textura de papel y sello
+dorado con listones. Los nombres de los firmantes («Nombre y firma»)
 deben completarse.
 
 Variantes (ver `opciones_logo_certificado.jpg` y `opciones_esquinas_certificado.jpg`):
