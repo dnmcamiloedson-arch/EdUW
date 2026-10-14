@@ -54,6 +54,6 @@ node generar_plantilla.js
 | `Certificados_Medical_Leadership_Summit_2026.pdf` | Los mismos certificados listos para imprimir (fuentes incrustadas, fondo a 300 ppp). |
 | `generar_certificado.js` | Genera los certificados. Si existe `participantes.txt` (un nombre por renglón) crea además `Certificados_participantes.pptx` con un certificado y folio por persona. |
 
-Detalles del diseño: ola azul con filo dorado y logo (igual que la presentación), marco de seguridad
-tipo guilloche con esquineros, filete dorado, roseta de fondo, textura de papel, sello dorado con
-listones y folio. Los nombres de los firmantes («Nombre y firma») deben completarse.
+Detalles del diseño: ola azul con filo dorado y logo (igual que la presentación) arriba a la izquierda
+y abajo a la derecha; en las otras dos esquinas, esquineros en L de doble línea (dorada y azul) que se
+desvanecen, con un rombo dorado. Roseta tenue de fondo, textura de papel, sello dorado con listones y folio. Los nombres de los firmantes («Nombre y firma») deben completarse.

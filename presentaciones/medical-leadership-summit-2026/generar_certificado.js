@@ -1,7 +1,7 @@
 // Certificados "Westhill Medical Leadership Summit 2026" (tamaño carta horizontal, 11 × 8.5 in).
 // Misma línea visual del flyer y de la plantilla de diapositivas: ola azul con filo dorado y logo,
-// guiones verdes, Montserrat. Detalle de impresión a 300 ppp: marco de seguridad tipo guilloche,
-// esquineros, roseta de fondo y sello dorado con listones.
+// guiones verdes, Montserrat. Detalle de impresión a 300 ppp: esquineros dorados en L en las
+// esquinas libres (en diagonal con las olas), roseta de fondo, textura de papel y sello dorado con listones.
 //
 // Genera:
 //   Certificados_Medical_Leadership_Summit_2026.pptx  plantilla de participante y de ponente
@@ -56,21 +56,6 @@ function rosette(cx, cy, R, r, d, scale, steps = 2400) {
   return s + "Z";
 }
 function gcd(a, b) { return b ? gcd(b, a % b) : a; }
-// Banda guilloche recta: ondas entrelazadas desfasadas.
-function band(len, w, horizontal, ox, oy) {
-  let s = "";
-  const fam = [[64, w * 0.36, 6], [96, w * 0.42, 4]];
-  for (const [lambda, amp, n] of fam) for (let k = 0; k < n; k++) {
-    let p = "";
-    for (let u = 0; u <= len; u += 4) {
-      const v = w / 2 + amp * Math.sin((2 * Math.PI * u) / lambda + (k * 2 * Math.PI) / n);
-      const [x, y] = horizontal ? [ox + u, oy + v] : [ox + v, oy + u];
-      p += (u ? "L" : "M") + f1(x) + "," + f1(y);
-    }
-    s += `<path d="${p}"/>`;
-  }
-  return s;
-}
 const dots = (x0, y0, cols, rows, gap, r, color, op) => {
   let s = "";
   for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) s += `<circle cx="${x0 + i * gap}" cy="${y0 + j * gap}" r="${r}" fill="${color}" opacity="${op}"/>`;
@@ -87,8 +72,25 @@ function wave(k, fill = "url(#wb)") {
 }
 
 async function background() {
-  const w = X(W), h = X(H), o = X(0.32), b0 = X(0.4), b1 = X(0.6), gl = X(0.66), tl = X(0.72), bw = b1 - b0;
-  const corner = (x, y) => `<rect x="${x}" y="${y}" width="${bw}" height="${bw}" fill="#0E2A47"/><path d="${rosette(x + bw / 2, y + bw / 2, 7, 3, 2.6, 5.4, 900)}" fill="none" stroke="#F2C94C" stroke-width="1.6"/>`;
+  const w = X(W), h = X(H), tl = X(0.42);
+  // Esquinero: doble línea en L (dorada y azul fina) que se desvanece hacia las puntas,
+  // con un rombo dorado en el vértice. (x, y) es el vértice; sx/sy orientan los brazos.
+  const bracket = (x, y, sx, sy, id) => {
+    const LH = X(2.7), LV = X(1.95), d = X(0.13), lh = LH * 0.72, lv = LV * 0.72;
+    return `<g transform="translate(${x},${y}) scale(${sx},${sy})">
+      <defs>
+        <linearGradient id="${id}h" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${LH}" y2="0"><stop offset="0" stop-color="#E8B530"/><stop offset="0.65" stop-color="#E8B530"/><stop offset="1" stop-color="#E8B530" stop-opacity="0"/></linearGradient>
+        <linearGradient id="${id}v" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${LV}"><stop offset="0" stop-color="#E8B530"/><stop offset="0.65" stop-color="#E8B530"/><stop offset="1" stop-color="#E8B530" stop-opacity="0"/></linearGradient>
+        <linearGradient id="${id}bh" gradientUnits="userSpaceOnUse" x1="${d}" y1="0" x2="${d + lh}" y2="0"><stop offset="0" stop-color="#266294"/><stop offset="1" stop-color="#266294" stop-opacity="0"/></linearGradient>
+        <linearGradient id="${id}bv" gradientUnits="userSpaceOnUse" x1="0" y1="${d}" x2="0" y2="${d + lv}"><stop offset="0" stop-color="#266294"/><stop offset="1" stop-color="#266294" stop-opacity="0"/></linearGradient>
+      </defs>
+      <rect x="-3" y="-3" width="${LH + 3}" height="6" fill="url(#${id}h)"/>
+      <rect x="-3" y="-3" width="6" height="${LV + 3}" fill="url(#${id}v)"/>
+      <rect x="${d}" y="${d - 1}" width="${lh}" height="2.2" fill="url(#${id}bh)"/>
+      <rect x="${d - 1}" y="${d}" width="2.2" height="${lv}" fill="url(#${id}bv)"/>
+      <rect x="${d - 11}" y="${d - 11}" width="22" height="22" transform="rotate(45 ${d} ${d})" fill="#E8B530"/>
+    </g>`;
+  };
   const watermark = [
     rosette(1650, 1300, 96, 36, 52, 6.4, 5200), rosette(1650, 1300, 80, 30, 46, 6.6, 4400), rosette(1650, 1300, 70, 21, 30, 5.2, 4200),
   ].map((d, i) => `<path d="${d}" fill="none" stroke="#2F6FAE" stroke-opacity="${[0.07, 0.055, 0.06][i]}" stroke-width="2"/>`).join("");
@@ -109,19 +111,9 @@ async function background() {
     ${[0, 1, 2, 3, 4, 5].map((i) => `<path d="M${tl},${1700 + i * 44} C${300 + i * 30},${1980 + i * 34} ${180 + i * 44},${2200} ${700 + i * 40},${h}" fill="none" stroke="#C9D6E4" stroke-opacity="0.45" stroke-width="2.4"/>`).join("")}
     ${dots(290, 930, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}${dots(2905, 1450, 4, 6, 34, 5.5, "#3A7BC0", 0.4)}
   </g>
-  <!-- marco de seguridad -->
-  <rect x="${o}" y="${o}" width="${w - 2 * o}" height="${h - 2 * o}" fill="none" stroke="#0E2A47" stroke-width="5"/>
-  <path d="M${b0},${b0} H${w - b0} V${h - b0} H${b0} Z M${b1},${b1} V${h - b1} H${w - b1} V${b1} Z" fill="#EEF4FB" fill-rule="evenodd"/>
-  <g fill="none" stroke="#2F6FAE" stroke-opacity="0.6" stroke-width="1.4">
-    ${band(w - 2 * b1, bw, true, b1, b0)}${band(w - 2 * b1, bw, true, b1, h - b1)}
-    ${band(h - 2 * b1, bw, false, b0, b1)}${band(h - 2 * b1, bw, false, w - b1, b1)}
-  </g>
-  <rect x="${b0}" y="${b0}" width="${w - 2 * b0}" height="${h - 2 * b0}" fill="none" stroke="#266294" stroke-width="2"/>
-  <rect x="${b1}" y="${b1}" width="${w - 2 * b1}" height="${h - 2 * b1}" fill="none" stroke="#266294" stroke-width="2"/>
-  ${corner(b0, b0)}${corner(w - b1, b0)}${corner(b0, h - b1)}${corner(w - b1, h - b1)}
-  <rect x="${gl}" y="${gl}" width="${w - 2 * gl}" height="${h - 2 * gl}" fill="none" stroke="url(#gold)" stroke-width="5"/>
-  <rect x="${tl}" y="${tl}" width="${w - 2 * tl}" height="${h - 2 * tl}" fill="none" stroke="#266294" stroke-opacity="0.7" stroke-width="1.6"/>
-  <!-- curva dorada inferior y olas -->
+  <!-- esquineros en L (arriba a la derecha y abajo a la izquierda), en diagonal con las olas -->
+  ${bracket(w - X(0.42), X(0.42), -1, 1, "tr")}${bracket(X(0.42), h - X(0.42), 1, -1, "bl")}
+  <!-- olas -->
   ${wave(1.15)}
   <g transform="translate(${w},${h}) scale(-1,-1)">${wave(0.78)}</g>
 </svg>`;
