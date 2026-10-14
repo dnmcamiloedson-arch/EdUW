@@ -41,3 +41,19 @@ dentro de `generar_plantilla.js`). Las diapositivas 10 a 12 y los logos de patro
 npm install pptxgenjs react react-dom react-icons sharp jszip
 node generar_plantilla.js
 ```
+
+---
+
+# Certificados
+
+![Vista previa del certificado](vista_previa_certificado.jpg)
+
+| Archivo | Para qué sirve |
+|---|---|
+| `Certificados_Medical_Leadership_Summit_2026.pptx` | Carta horizontal (11 × 8.5 in), editable. Diapositiva 1: certificado de participación; 2: reconocimiento a ponente; 3 a 11: reconocimientos ya llenados para los ponentes del programa. |
+| `Certificados_Medical_Leadership_Summit_2026.pdf` | Los mismos certificados listos para imprimir (fuentes incrustadas, fondo a 300 ppp). |
+| `generar_certificado.js` | Genera los certificados. Si existe `participantes.txt` (un nombre por renglón) crea además `Certificados_participantes.pptx` con un certificado y folio por persona. |
+
+Detalles del diseño: ola azul con filo dorado y logo (igual que la presentación), marco de seguridad
+tipo guilloche con esquineros, filete dorado, roseta de fondo, textura de papel, sello dorado con
+listones y folio. Los nombres de los firmantes («Nombre y firma») deben completarse.
