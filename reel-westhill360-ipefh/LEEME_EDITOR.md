@@ -18,6 +18,10 @@ cd EdUW/reel-westhill360-ipefh/remotion
 npm install
 ```
 
+Si `git clone` te pide usuario/contraseña, inicia sesión con tu cuenta de GitHub. Otra opción:
+en GitHub abre el repo, cambia a la rama `claude/youthful-edison-vl613q`, botón **Code → Download ZIP**,
+descomprímelo y en la terminal entra a la carpeta `reel-westhill360-ipefh/remotion` para correr `npm install`.
+
 ## 3. Pon los videos y fotos
 
 Los videos, fotos, recortes y música no viven en GitHub (pesan mucho). Vienen en los
