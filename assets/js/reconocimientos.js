@@ -27,12 +27,18 @@
 
   const normalizar = (c) => String(c || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
 
+  // Opciones: linkPara(codigo) arma el link del estudiante de otra forma
+  // (por ejemplo, la versión de prueba usa https://…/#CODIGO)
+  const CONFIG = { linkPara: null };
+
+  // ?c=ABCD2345 (normal) o #ABCD2345
   function codigoDesdeURL() {
     const p = new URLSearchParams(location.search);
-    return normalizar(p.get("c") || p.get("codigo"));
+    return normalizar(p.get("c") || p.get("codigo") || location.hash.slice(1));
   }
 
   function link(codigo) {
+    if (CONFIG.linkPara) return CONFIG.linkPara(normalizar(codigo));
     const url = new URL(PAGINA, location.href);
     url.search = "";
     url.hash = "";
@@ -170,7 +176,7 @@
   }
 
   window.Reconocimientos = {
-    codigoDesdeURL, link, obtener, crear, listar, catalogo, guardarPrepa, borrarPrepa, guardarTextos,
+    CONFIG, codigoDesdeURL, link, obtener, crear, listar, catalogo, guardarPrepa, borrarPrepa, guardarTextos,
     clavePrepa, prepararLogo, fechaLarga, leerEstudiantes,
   };
 })();
