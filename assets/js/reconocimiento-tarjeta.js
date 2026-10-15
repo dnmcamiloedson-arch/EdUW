@@ -165,106 +165,256 @@
 
   const fechaLarga = (v) => (window.Reconocimientos ? Reconocimientos.fechaLarga(v) : String(v || ""));
 
-  /* --- El reconocimiento ---------------------------------------------------- */
+  /* --- El reconocimiento -----------------------------------------------------
+     Como un diploma impreso: marco azul Westhill, papel con fondo de
+     seguridad (guilloché) y el edificio de marca de agua, título dorado,
+     nombre en cursiva y un sello dorado con texto en círculo. */
+  const M = 44;                                     // margen azul alrededor del papel
+
+  function marco(ctx, edificio) {
+    // Marco azul con luz arriba
+    let g = ctx.createLinearGradient(0, 0, W * 0.35, H);
+    g.addColorStop(0, "#235683"); g.addColorStop(0.6, C.navy); g.addColorStop(1, "#163a5a");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Papel
+    ctx.save();
+    redondeado(ctx, M, M, W - 2 * M, H - 2 * M, 14);
+    g = ctx.createLinearGradient(0, M, 0, H - M);
+    g.addColorStop(0, "#fdfaf3"); g.addColorStop(1, "#f3ecdc");
+    ctx.fillStyle = g; ctx.fill();
+    ctx.clip();
+    g = ctx.createRadialGradient(W / 2, M, 0, W / 2, M, W * 0.75);
+    g.addColorStop(0, "rgba(251, 231, 161, .35)"); g.addColorStop(1, "rgba(251, 231, 161, 0)");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    guilloche(ctx);
+    // Marca de agua: el edificio, muy tenue, detrás del nombre
+    if (edificio) {
+      ctx.globalAlpha = 0.032;
+      const ew = 860, eh = ew * edificio.height / edificio.width;
+      ctx.drawImage(edificio, (W - ew) / 2, 760 - eh / 2, ew, eh);
+      ctx.globalAlpha = 1;
+    }
+    ctx.restore();
+    // Filetes dorados dobles con esquinas
+    const a = M + 20, b = M + 30;
+    ctx.strokeStyle = "rgba(201, 154, 30, .85)"; ctx.lineWidth = 2.5;
+    ctx.strokeRect(a, a, W - 2 * a, H - 2 * a);
+    ctx.strokeStyle = "rgba(201, 154, 30, .45)"; ctx.lineWidth = 1;
+    ctx.strokeRect(b, b, W - 2 * b, H - 2 * b);
+    [[a, a, 1, 1], [W - a, a, -1, 1], [a, H - a, 1, -1], [W - a, H - a, -1, -1]].forEach(([x, y, sx, sy]) => esquina(ctx, x, y, sx, sy));
+  }
+
+  // Fondo de seguridad: ondas finas entrelazadas, como en los documentos oficiales
+  function guilloche(ctx) {
+    ctx.save();
+    ctx.strokeStyle = "rgba(168, 129, 26, .075)";
+    ctx.lineWidth = 1;
+    for (let k = 0; k < 64; k++) {
+      const y0 = M + k * 20;
+      ctx.beginPath();
+      for (let x = M; x <= W - M; x += 6) {
+        const y = y0 + 14 * Math.sin(x / 46 + k * 0.55) + 6 * Math.sin(x / 13 - k * 0.3);
+        x === M ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // Esquina: cuadro dorado en el filete y una escuadra con rombo hacia adentro
+  function esquina(ctx, x, y, sx, sy) {
+    ctx.save();
+    ctx.translate(x, y); ctx.scale(sx, sy);
+    ctx.fillStyle = "#c99a1e"; ctx.strokeStyle = "rgba(201, 154, 30, .85)"; ctx.lineWidth = 1.5;
+    ctx.fillRect(-7, -7, 14, 14);
+    ctx.fillStyle = "#fdfaf3";
+    ctx.beginPath(); ctx.moveTo(0, -4); ctx.lineTo(4, 0); ctx.lineTo(0, 4); ctx.lineTo(-4, 0); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(30, 22); ctx.lineTo(96, 22); ctx.moveTo(22, 30); ctx.lineTo(22, 96); ctx.stroke();
+    ctx.fillStyle = "#c99a1e";
+    ctx.beginPath(); ctx.moveTo(22, 15); ctx.lineTo(29, 22); ctx.lineTo(22, 29); ctx.lineTo(15, 22); ctx.closePath(); ctx.fill();
+    [[102, 22], [22, 102]].forEach(([px, py]) => { ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill(); });
+    ctx.restore();
+  }
+
+  // Texto en dorado "de hoja": degradado oscuro-claro-oscuro
+  function oro(ctx, y0, y1) {
+    const g = ctx.createLinearGradient(0, y0, 0, y1);
+    g.addColorStop(0, "#9a7414"); g.addColorStop(0.45, "#c99a1e"); g.addColorStop(0.55, "#b8891a"); g.addColorStop(1, "#7d5f0e");
+    return g;
+  }
+
+  // Sello: roseta dorada dentada, disco azul con el edificio y texto en círculo
+  function sello(ctx, cx, cy, r, edificioBlanco) {
+    ctx.save();
+    // Cintas
+    [[-1, C.azul], [1, C.navy]].forEach(([lado, color]) => {
+      ctx.save();
+      ctx.translate(cx + lado * r * 0.3, cy + r * 0.45);
+      ctx.rotate(lado * 0.28);
+      ctx.fillStyle = color;
+      const w = r * 0.5, h = r * 0.92;
+      ctx.beginPath();
+      ctx.moveTo(-w / 2, 0); ctx.lineTo(w / 2, 0); ctx.lineTo(w / 2, h); ctx.lineTo(0, h - w * 0.4); ctx.lineTo(-w / 2, h); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "rgba(242, 201, 76, .55)"; ctx.fillRect(-w / 2 + 5, 0, 2, h - 12); ctx.fillRect(w / 2 - 7, 0, 2, h - 12);
+      ctx.restore();
+    });
+    // Roseta dentada
+    ctx.shadowColor = "rgba(19, 48, 77, .35)"; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+    ctx.beginPath();
+    const dientes = 40;
+    for (let i = 0; i <= dientes * 2; i++) {
+      const ang = (i / (dientes * 2)) * Math.PI * 2;
+      const rr = i % 2 ? r * 0.93 : r;
+      ctx.lineTo(cx + Math.cos(ang) * rr, cy + Math.sin(ang) * rr);
+    }
+    let g = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.45, r * 0.1, cx, cy, r);
+    g.addColorStop(0, "#fff0b8"); g.addColorStop(0.45, C.dorado); g.addColorStop(0.85, "#d4a52a"); g.addColorStop(1, "#a8811a");
+    ctx.fillStyle = g; ctx.fill();
+    ctx.restore();
+    // Aro y disco azul
+    ctx.strokeStyle = "rgba(125, 95, 14, .55)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.84, 0, Math.PI * 2); ctx.stroke();
+    g = ctx.createLinearGradient(cx, cy - r * 0.6, cx, cy + r * 0.6);
+    g.addColorStop(0, C.azul); g.addColorStop(1, C.navy);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "rgba(251, 231, 161, .8)"; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(cx, cy, r * 0.55, 0, Math.PI * 2); ctx.stroke();
+    if (edificioBlanco) {
+      const iw = r * 0.78, ih = iw * edificioBlanco.height / edificioBlanco.width;
+      ctx.drawImage(edificioBlanco, cx - iw / 2, cy - ih / 2 - r * 0.06, iw, ih);
+    }
+    ctx.fillStyle = C.doradoPalido;
+    ctx.font = `600 ${Math.round(r * 0.11)}px ${SANS}`;
+    espaciado(ctx, "2026", cx, cy + r * 0.32, r * 0.03);
+    // Texto en círculo sobre el aro dorado
+    circular(ctx, "UNIVERSIDAD WESTHILL", cx, cy, r * 0.72, -Math.PI / 2, `700 ${Math.round(r * 0.12)}px ${SANS}`, "#5c450a", r * 0.022);
+    circular(ctx, "VESTIGIA NULLA RETRORSUM", cx, cy, r * 0.72, Math.PI / 2, `600 ${Math.round(r * 0.095)}px ${SANS}`, "#5c450a", r * 0.012, true);
+  }
+
+  // Escribe el texto centrado en `centro` (radianes) siguiendo el círculo
+  function circular(ctx, texto, cx, cy, radio, centro, fuente, color, sep, abajo) {
+    ctx.save();
+    ctx.font = fuente; ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    const anchos = [...texto].map((ch) => ctx.measureText(ch).width + sep);
+    const total = anchos.reduce((s, w) => s + w, 0) - sep;
+    let ang = centro + (abajo ? 1 : -1) * (total / radio) / 2;
+    [...texto].forEach((ch, i) => {
+      const paso = anchos[i] / radio;
+      const a = ang + (abajo ? -1 : 1) * paso / 2;
+      ctx.save();
+      ctx.translate(cx + Math.cos(a) * radio, cy + Math.sin(a) * radio);
+      ctx.rotate(a + (abajo ? -Math.PI / 2 : Math.PI / 2));
+      ctx.fillText(ch, 0, 0);
+      ctx.restore();
+      ang += (abajo ? -1 : 1) * paso;
+    });
+    ctx.restore();
+  }
+
   async function diploma(d) {
     await cargarFuentes();
-    const [logo, edificio, prepaLogo] = await Promise.all([
-      imagen("logo-westhill.png"), imagen("edificio-westhill.png"), imagen(d.logo),
+    const [logo, edificio, edificioBlanco, prepaLogo] = await Promise.all([
+      imagen("logo-westhill.png"), imagen("edificio-westhill.png"), imagen("edificio-westhill-blanco.png"), imagen(d.logo),
     ]);
     const cv = document.createElement("canvas");
     cv.width = W; cv.height = H;
     const ctx = cv.getContext("2d");
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    papel(ctx);
+    marco(ctx, edificio);
 
     // Encabezado: Westhill · filete dorado · logo de la prepa
-    const cabY = 170;
+    const cabY = 190;
     if (prepaLogo) {
-      const lw = 262, lh = logo ? lw * logo.height / logo.width : 0;
-      const caja = { w: 230, h: 116 };
+      const lw = 250, lh = logo ? lw * logo.height / logo.width : 0;
+      const caja = { w: 220, h: 112 };
       const k = Math.min(caja.w / prepaLogo.width, caja.h / prepaLogo.height);
       const pw = prepaLogo.width * k;
-      const sep = 60, total = lw + sep + pw;
+      const sep = 64, total = lw + sep + pw;
       const x0 = (W - total) / 2;
       if (logo) ctx.drawImage(logo, x0, cabY - lh / 2, lw, lh);
-      ctx.strokeStyle = "rgba(201, 154, 30, .6)"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(x0 + lw + sep / 2, cabY - 52); ctx.lineTo(x0 + lw + sep / 2, cabY + 52); ctx.stroke();
+      ctx.fillStyle = "#c99a1e";
+      ctx.fillRect(x0 + lw + sep / 2 - 1, cabY - 46, 2, 92);
+      ctx.beginPath(); ctx.arc(x0 + lw + sep / 2, cabY, 4, 0, Math.PI * 2); ctx.fill();
       encajar(ctx, prepaLogo, x0 + lw + sep, cabY - caja.h / 2, pw, caja.h);
     } else if (logo) {
-      const lw = 300, lh = lw * logo.height / logo.width;
+      const lw = 290, lh = lw * logo.height / logo.width;
       ctx.drawImage(logo, (W - lw) / 2, cabY - lh / 2, lw, lh);
     }
 
     ctx.fillStyle = C.doradoTinta;
-    ctx.font = `600 21px ${SANS}`;
-    espaciado(ctx, "LA UNIVERSIDAD WESTHILL OTORGA EL PRESENTE", W / 2, 306, 4.5);
+    ctx.font = `600 20px ${SANS}`;
+    espaciado(ctx, "LA UNIVERSIDAD WESTHILL OTORGA EL PRESENTE", W / 2, 312, 5);
 
-    ctx.fillStyle = C.navy;
-    ctx.font = `500 112px ${SERIF}`;
+    ctx.fillStyle = oro(ctx, 350, 450);
+    ctx.font = `500 128px ${SERIF}`;
     ctx.fillText("Reconocimiento", W / 2, 400);
 
     ctx.fillStyle = C.gris;
-    ctx.font = `400 28px ${SANS}`;
-    ctx.fillText("a", W / 2, 484);
+    ctx.font = `italic 400 30px ${SERIF}`;
+    ctx.fillText("a", W / 2, 482);
 
     const nombre = (d.nombre || "").trim() || "Nombre del estudiante";
     ctx.fillStyle = (d.nombre || "").trim() ? C.tinta : "rgba(19, 48, 77, .3)";
-    ajustar(ctx, nombre, 500, 88, SERIF, 860, 40);
-    ctx.fillText(nombre, W / 2, 566);
+    ajustar(ctx, nombre, "italic 500", 96, SERIF, 840, 44);
+    ctx.fillText(nombre, W / 2, 560);
 
-    // Filete con rombo
-    ctx.strokeStyle = "rgba(201, 154, 30, .75)"; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(300, 640); ctx.lineTo(518, 640); ctx.moveTo(562, 640); ctx.lineTo(780, 640); ctx.stroke();
-    ctx.fillStyle = C.dorado;
-    ctx.beginPath(); ctx.moveTo(540, 630); ctx.lineTo(550, 640); ctx.lineTo(540, 650); ctx.lineTo(530, 640); ctx.closePath(); ctx.fill();
+    // Filete con rombo y dos puntos
+    ctx.strokeStyle = "rgba(201, 154, 30, .8)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(310, 632); ctx.lineTo(512, 632); ctx.moveTo(568, 632); ctx.lineTo(770, 632); ctx.stroke();
+    ctx.fillStyle = "#c99a1e";
+    ctx.beginPath(); ctx.moveTo(540, 620); ctx.lineTo(552, 632); ctx.lineTo(540, 644); ctx.lineTo(528, 632); ctx.closePath(); ctx.fill();
+    [[300, 632], [780, 632]].forEach(([x, y]) => { ctx.beginPath(); ctx.arc(x, y, 3.5, 0, Math.PI * 2); ctx.fill(); });
 
     ctx.fillStyle = C.gris;
     ctx.font = `400 28px ${SANS}`;
-    ctx.fillText("por su participación en", W / 2, 706);
+    ctx.fillText("por su participación en", W / 2, 694);
 
-    let y = 756;
+    let y = 742;
     ctx.fillStyle = C.navy;
     ctx.font = `600 36px ${SANS}`;
-    renglones(ctx, d.motivo || TEXTOS.motivo, 820, 2).forEach((l) => { ctx.fillText(l, W / 2, y); y += 46; });
-
+    renglones(ctx, d.motivo || TEXTOS.motivo, 800, 2).forEach((l) => { ctx.fillText(l, W / 2, y); y += 46; });
     if (d.prepa) {
       ctx.fillStyle = C.azul;
-      ctx.font = `500 29px ${SANS}`;
-      renglones(ctx, d.prepa, 820, 1).forEach((l) => ctx.fillText(l, W / 2, y + 2));
+      ctx.font = `500 28px ${SANS}`;
+      renglones(ctx, d.prepa, 800, 1).forEach((l) => ctx.fillText(l, W / 2, y + 2));
       y += 42;
     }
-
     if (d.mensaje) {
-      y += 44;
+      y += 34;
       ctx.fillStyle = "rgba(29, 29, 31, .72)";
-      ctx.font = `italic 400 31px ${SERIF}`;
-      renglones(ctx, d.mensaje, 780, 3).forEach((l) => { ctx.fillText(l, W / 2, y); y += 44; });
+      ctx.font = `italic 400 30px ${SERIF}`;
+      renglones(ctx, d.mensaje, 760, 3).forEach((l) => { ctx.fillText(l, W / 2, y); y += 43; });
     }
 
-    // Pie: fecha · medalla · firma
-    const pieY = 1148;
-    ctx.strokeStyle = "rgba(29, 29, 31, .28)"; ctx.lineWidth = 1.5;
-    [255, 825].forEach((x) => { ctx.beginPath(); ctx.moveTo(x - 130, pieY + 26); ctx.lineTo(x + 130, pieY + 26); ctx.stroke(); });
+    // Pie: fecha · sello · firma
+    const pieY = 1132;
+    ctx.strokeStyle = "rgba(19, 48, 77, .35)"; ctx.lineWidth = 1.5;
+    [262, 818].forEach((x) => { ctx.beginPath(); ctx.moveTo(x - 128, pieY + 24); ctx.lineTo(x + 128, pieY + 24); ctx.stroke(); });
     ctx.fillStyle = C.tinta;
     const fecha = fechaLarga(d.fechaVisita);
-    ajustar(ctx, fecha, 500, 25, SANS, 270, 16);
-    ctx.fillText(fecha, 255, pieY);
+    ajustar(ctx, fecha, 500, 25, SANS, 260, 16);
+    ctx.fillText(fecha, 262, pieY);
     const firma = d.firma || TEXTOS.firma;
-    ajustar(ctx, firma, "italic 400", 31, SERIF, 280, 18);
-    ctx.fillText(firma, 825, pieY - 2);
+    ajustar(ctx, firma, "italic 500", 32, SERIF, 270, 18);
+    ctx.fillText(firma, 818, pieY - 2);
     ctx.fillStyle = C.gris3;
-    ctx.font = `600 17px ${SANS}`;
-    espaciado(ctx, "FECHA", 255, pieY + 56, 3);
-    espaciado(ctx, "ADMISIONES · WESTHILL", 825, pieY + 56, 3);
+    ctx.font = `600 16px ${SANS}`;
+    espaciado(ctx, "FECHA DE LA VISITA", 262, pieY + 52, 3);
+    espaciado(ctx, "ADMISIONES · WESTHILL", 818, pieY + 52, 3);
 
-    medalla(ctx, W / 2, pieY - 10, 84, edificio);
+    sello(ctx, W / 2, pieY - 4, 104, edificioBlanco);
 
     if (d.codigo) {
       ctx.fillStyle = C.gris3;
-      ctx.font = `500 16px ui-monospace, "SF Mono", Menlo, monospace`;
-      espaciado(ctx, "FOLIO " + d.codigo, 255, pieY + 90, 2.5);
+      ctx.font = `500 15px ui-monospace, "SF Mono", Menlo, monospace`;
+      espaciado(ctx, "FOLIO " + d.codigo, 262, pieY + 82, 2.5);
     }
+    // En el marco azul, abajo
+    ctx.fillStyle = "rgba(251, 231, 161, .75)";
+    ctx.font = `600 14px ${SANS}`;
+    espaciado(ctx, "UNIVERSIDAD WESTHILL  ·  UW.EDU.MX", W / 2, H - M / 2, 4);
     return cv;
   }
 
