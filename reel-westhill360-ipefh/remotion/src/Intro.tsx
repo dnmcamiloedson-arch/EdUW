@@ -1,13 +1,13 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {BarSweep, CleanBg, Flash, Grain, Highlight, MaskReveal, WordsIn} from './components';
-import {C, F, ease, tw} from './theme';
+import {C, F, ease, sfxFile, tw} from './theme';
 
 export const INTRO_FRAMES = 180;
 
 const Sfx: React.FC<{at: number; name: string; volume?: number}> = ({at, name, volume = 1}) => (
   <Sequence from={at} layout="none">
-    <Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
+    <Audio src={staticFile(sfxFile(name))} volume={volume} />
   </Sequence>
 );
 
@@ -258,16 +258,18 @@ export const Intro: React.FC = () => {
       <BarSweep start={66} dur={20} color={C.azul} />
       <Flash at={177} dur={8} />
       <Grain />
-      <Sfx at={2} name="whoosh" volume={0.7} />
-      <Sfx at={30} name="pop" volume={0.8} />
+      <Sfx at={0} name="charge" volume={0.55} />
+      <Sfx at={4} name="flicker" volume={0.7} />
+      <Sfx at={30} name="taps" volume={0.7} />
       <Sfx at={64} name="swipe" />
-      <Sfx at={82} name="click_suave" volume={0.7} />
+      <Sfx at={82} name="flicker" volume={0.6} />
       <Sfx at={90} name="whoosh" volume={0.5} />
-      <Sfx at={99} name="impact" volume={0.9} />
-      <Sfx at={113} name="pop" />
+      <Sfx at={99} name="impact" volume={0.7} />
+      <Sfx at={113} name="digital" volume={0.8} />
       <Sfx at={132} name="click" />
       <Sfx at={140} name="riser" volume={0.6} />
       <Sfx at={158} name="whoosh_largo" />
+      <Sfx at={174} name="flash" volume={0.8} />
     </AbsoluteFill>
   );
 };

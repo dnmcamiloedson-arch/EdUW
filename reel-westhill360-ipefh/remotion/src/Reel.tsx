@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, Sequence, staticFile, useCurrentFrame} from 'remotion';
-import {CircleWipe, CleanBg, Flash, Grain, Highlight, MaskReveal, WordsIn} from './components';
+import {BlurIn, CircleWipe, CleanBg, Doodle, Flash, Grain, Highlight, MaskReveal, ScriptWord, WordsIn} from './components';
 import {Intro, INTRO_FRAMES} from './Intro';
 import {Banner, BehindShot, PhotoShot, SectionLabel, Sfx, Shade, VideoShot} from './shots';
 import {C, F, SAFE_X, ease, safeSize, tw} from './theme';
@@ -22,52 +22,43 @@ export const TitleCard: React.FC<{small: string; big: string; color?: string; bg
       <div style={{position: 'absolute', top: 740, width: '100%'}}>
         <WordsIn text={small} start={1} stagger={2} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 70, color: blue ? C.blanco : C.marino}} />
       </div>
-      <MaskReveal start={5} dur={14} style={{position: 'absolute', top: 830, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: safeSize(big, 150, 0.5), color: blue ? C.blanco : C.azul}}>{big}</span>
-      </MaskReveal>
+      <div style={{position: 'absolute', top: 815, width: '100%', textAlign: 'center'}}>
+        <ScriptWord text={big} start={6} size={Math.min(170, safeSize(big, 170, 0.42))} color={blue ? C.amarillo : C.azul} neon={blue} tilt={-5} dur={16} />
+      </div>
+      <div style={{position: 'absolute', top: 1035, left: 0, right: 0, display: 'flex', justifyContent: 'center'}}>
+        <Doodle kind="underline" start={20} width={380} color={blue ? C.blanco : C.amarillo} />
+      </div>
+      <Sfx at={1} name="whoosh" volume={0.5} />
+      <Sfx at={6} name="flicker" volume={0.55} />
     </AbsoluteFill>
   );
 };
 
 // ---------------------------------------------------------------------------
-// Llegada: "¡LLEGÓ IPEFH!" detrás de las personas
+// Llegada: toma exterior frente al edificio WESTHILL, texto sobre el pasto
+// (sin texto detrás de las personas)
 // ---------------------------------------------------------------------------
-const LlegadaText: React.FC = () => {
-  const f = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{alignItems: 'center'}}>
-      <div style={{position: 'absolute', top: 300, textAlign: 'center', width: '100%'}}>
-        <div style={{overflow: 'hidden'}}>
-          <div
-            style={{
-              fontFamily: F.display,
-              fontSize: 220,
-              lineHeight: 1,
-              color: C.azul,
-              transform: `translateY(${tw(f, [4, 18], [100, 0])}%)`,
-            }}
-          >
-            ¡LLEGÓ
-          </div>
-        </div>
-        <div
-          style={{
-            fontFamily: F.display,
-            fontSize: 270,
-            lineHeight: 0.95,
-            color: C.amarillo,
-            WebkitTextStroke: `6px ${C.marino}`,
-            transform: `scale(${tw(f, [10, 24], [0.6, 1], ease.back)})`,
-            opacity: tw(f, [10, 15], [0, 1]),
-          }}
-        >
-          IPEFH!
-        </div>
-      </div>
-      <Sfx at={10} name="impact" volume={0.6} />
-    </AbsoluteFill>
-  );
-};
+const LlegadaText: React.FC = () => (
+  <AbsoluteFill>
+    <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(10,20,40,0) 52%, rgba(10,20,40,0.55) 100%)'}} />
+    <div style={{position: 'absolute', top: 1170, left: 0, right: 0, textAlign: 'center'}}>
+      <BlurIn start={6} from="left" dist={300}>
+        <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 128, color: C.blanco, letterSpacing: -3, textShadow: '0 6px 30px rgba(0,0,0,0.45)'}}>
+          ¡Llegó IPEFH!
+        </span>
+      </BlurIn>
+    </div>
+    <div style={{position: 'absolute', top: 1305, left: 0, right: 0, textAlign: 'center'}}>
+      <ScriptWord text="Plantel Aeropuerto" start={14} size={118} neon tilt={-5} dur={18} />
+    </div>
+    <div style={{position: 'absolute', top: 1470, left: 330}}>
+      <Doodle kind="underline" start={28} width={430} />
+    </div>
+    <Sfx at={6} name="whoosh" volume={0.7} />
+    <Sfx at={14} name="flicker" volume={0.6} />
+    <Sfx at={28} name="taps" volume={0.45} />
+  </AbsoluteFill>
+);
 
 // ---------------------------------------------------------------------------
 // Cornhole
@@ -147,8 +138,11 @@ export const ReglasCard: React.FC = () => {
           <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 80, color: C.blanco}}>Atina 3 seguidos</span>
         </Highlight>
       </div>
-      <div style={{position: 'absolute', top: 790, width: '100%', textAlign: 'center', fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 96, color: C.azul, opacity: tw(f, [28, 34], [0, 1])}}>
-        y gana un termo
+      <div style={{position: 'absolute', top: 770, width: '100%', textAlign: 'center'}}>
+        <ScriptWord text="y gana un termo" start={26} size={112} color={C.azul} tilt={-4} />
+      </div>
+      <div style={{position: 'absolute', top: 1010, left: 690}}>
+        <Doodle kind="arrow" start={44} width={200} color={C.amarillo} style={{transform: 'scaleX(-1) rotate(20deg)'}} />
       </div>
       {/* termo con círculo azul detrás (estilo referencia) */}
       <div
@@ -221,26 +215,20 @@ export const Counter: React.FC<{n: number}> = ({n}) => {
 export const Logrado: React.FC = () => {
   const f = useCurrentFrame();
   return (
-    <AbsoluteFill style={{justifyContent: 'center', alignItems: 'center'}}>
-      <div
-        style={{
-          fontFamily: F.display,
-          fontSize: 175,
-          lineHeight: 0.95,
-          textAlign: 'center',
-          color: C.amarillo,
-          WebkitTextStroke: `5px ${C.marino}`,
-          transform: `scale(${tw(f, [2, 12], [2.2, 1], ease.out)}) rotate(-5deg)`,
-          opacity: tw(f, [2, 6], [0, 1]),
-          textShadow: '0 10px 40px rgba(0,0,0,0.35)',
-          marginTop: -300,
-        }}
-      >
-        ¡LO
-        <br />
-        LOGRARON!
+    <AbsoluteFill>
+      <div style={{position: 'absolute', top: 470, left: 0, right: 0, textAlign: 'center', transform: `scale(${tw(f, [2, 12], [1.6, 1], ease.out)})`}}>
+        <BlurIn start={2} from="down" dist={160} dur={9}>
+          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 120, color: C.blanco, letterSpacing: -3, textShadow: '0 6px 30px rgba(0,0,0,0.45)'}}>¡Lo</span>
+        </BlurIn>
       </div>
-      <Sfx at={2} name="impact" volume={0.8} />
+      <div style={{position: 'absolute', top: 570, left: 0, right: 0, textAlign: 'center'}}>
+        <ScriptWord text="lograron!" start={7} size={190} neon tilt={-7} dur={12} />
+      </div>
+      <div style={{position: 'absolute', top: 545, left: 820}}>
+        <Doodle kind="spark" start={18} width={120} />
+      </div>
+      <Sfx at={2} name="impact" volume={0.6} />
+      <Sfx at={7} name="flicker" volume={0.6} />
       <Sfx at={4} name="ding" volume={0.6} />
     </AbsoluteFill>
   );
@@ -272,7 +260,7 @@ export const WinnerPhoto: React.FC<{src: string; tilt: number; dur: number}> = (
         </div>
       </div>
       <Flash at={1} dur={8} />
-      <Sfx at={0} name="shutter" volume={0.9} />
+      <Sfx at={0} name="shutter_clicks" volume={0.9} />
     </AbsoluteFill>
   );
 };
@@ -398,9 +386,10 @@ export const EndCard: React.FC<{line1?: string; line2?: string}> = ({line1 = 'Gr
       <div style={{position: 'absolute', top: 1180, width: '100%'}}>
         <WordsIn text={line1} start={30} stagger={3} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 58, color: C.blanco}} />
       </div>
-      <MaskReveal start={38} style={{position: 'absolute', top: 1255, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: safeSize(line2, 100, 0.48), color: C.blanco}}>{line2}</span>
-      </MaskReveal>
+      <div style={{position: 'absolute', top: 1240, width: '100%', textAlign: 'center'}}>
+        <ScriptWord text={line2} start={38} size={safeSize(line2, 120, 0.4)} neon tilt={-5} dur={16} />
+      </div>
+      <Sfx at={38} name="flicker" volume={0.55} />
       <div
         style={{
           position: 'absolute',
@@ -444,14 +433,9 @@ export const SECTIONS: Section[] = [
   {
     name: 'llegada',
     items: [
-      {
-        dur: 90,
-        el: (
-          <BehindShot seg="llegada" frames={90} dur={90}>
-            <LlegadaText />
-          </BehindShot>
-        ),
-      },
+      // misma duración total que antes (90 cuadros) para no mover la sincronía con la música
+      {dur: 62, el: <VideoShot src="IMG_0574" from={0.1} dur={62} enter="zoom" push={0.1} />, overlay: <LlegadaText />},
+      S('IMG_0509', 1.2, 28 / 30, 'whipL'),
     ],
   },
   // Talleres: sin nombrar carreras (hubo alumnos en más licenciaturas de las que salen en video)
@@ -474,21 +458,21 @@ export const SECTIONS: Section[] = [
   {
     name: 'conferencia',
     shade: true,
-    overlay: <SectionLabel name="Conferencia" />,
+    overlay: <SectionLabel name="Conferencia" sub="en el auditorio" />,
     // el 2º corte cae justo en el regreso del beat de la canción (≈23.55 s del reel)
-    items: [S('IMG_0558', 2.0, 58 / 30, 'zoom'), S('IMG_0548', 0.5, 1.2, 'whipL'), S('IMG_0553', 3.0, 26 / 30, 'whipR')],
+    items: [S('IMG_0558', 2.0, 58 / 30, 'card'), S('IMG_0548', 0.5, 1.2, 'whipL'), S('IMG_0553', 3.0, 26 / 30, 'whipR')],
   },
   {
     name: 'biblioteca',
     shade: true,
-    overlay: <SectionLabel name="Biblioteca" />,
-    items: [S('IMG_0566_luz_fuerte', 0.5, 2.5, 'zoom'), P('grupo_bloques', 1.5, 'flash')],
+    overlay: <SectionLabel name="Biblioteca" sub="Westhill" />,
+    items: [S('IMG_0566_luz_fuerte', 0.5, 2.5, 'card'), P('grupo_bloques', 1.5, 'flash')],
   },
   {
     name: 'break',
     shade: true,
-    overlay: <SectionLabel name="Break" sub="Refrigerio al aire libre" />,
-    items: [S('IMG_0581', 0.2, 1.5, 'whipL'), P('termos', 1.5, 'zoom', '50% 45%')],
+    overlay: <SectionLabel name="Break" sub="al aire libre" />,
+    items: [S('IMG_0581', 0.2, 1.5, 'card'), P('termos', 1.5, 'zoom', '50% 45%')],
   },
   {
     name: 'cornhole',
@@ -515,7 +499,7 @@ export const SECTIONS: Section[] = [
   {
     name: 'recorrido',
     items: [
-      S('IMG_0619', 1.0, 2.0, 'zoom'),
+      S('IMG_0619', 1.0, 2.0, 'card'),
       S('IMG_0622', 0.0, 1.5, 'whipL'),
       S('IMG_0629', 0.0, 2.0, 'whipR'),
       S('IMG_0645', 1.0, 1.5, 'zoom'),

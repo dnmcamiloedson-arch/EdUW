@@ -192,3 +192,145 @@ export const Flash: React.FC<{at: number; dur?: number; color?: string}> = ({at,
   const o = f < at ? tw(f, [at - 3, at], [0, 1], ease.in) : tw(f, [at, at + dur], [1, 0], ease.out);
   return <AbsoluteFill style={{background: color, opacity: o, pointerEvents: 'none'}} />;
 };
+
+// ---------------------------------------------------------------------------
+// Estilo de la referencia: palabra escrita a mano con neón, texto con estela de
+// movimiento (motion blur), trazos dibujados y subtítulo con palabra clave
+// ---------------------------------------------------------------------------
+const NEON = (c: string, k = 1) =>
+  `0 0 ${6 * k}px ${c}, 0 0 ${18 * k}px ${c}cc, 0 0 ${42 * k}px ${c}88, 0 4px 18px rgba(0,0,0,0.35)`;
+
+/** Palabra en letra manuscrita que "se escribe" de izquierda a derecha; opcional brillo neón */
+export const ScriptWord: React.FC<{
+  text: string;
+  start: number;
+  size?: number;
+  color?: string;
+  neon?: boolean;
+  tilt?: number;
+  dur?: number;
+  style?: React.CSSProperties;
+}> = ({text, start, size = 120, color = C.amarillo, neon = false, tilt = -6, dur = 16, style}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [start, start + dur], [0, 1], ease.inOut);
+  // parpadeo corto del neón al encender
+  const flick = neon ? (f - start < dur + 6 && [3, 5, 9].includes(f - start - dur) ? 0.35 : 1) : 1;
+  return (
+    <span
+      style={{
+        display: 'inline-block',
+        fontFamily: F.script,
+        fontSize: size,
+        lineHeight: 1.25,
+        color,
+        padding: '0.1em 0.25em 0.2em 0.1em',
+        transform: `rotate(${tilt}deg) translateY(${tw(f, [start, start + dur], [12, 0])}px)`,
+        clipPath: `inset(-20% ${(1 - p) * 100}% -20% -10%)`,
+        textShadow: neon ? NEON(color, 1) : '0 4px 18px rgba(0,0,0,0.35)',
+        opacity: flick,
+        whiteSpace: 'nowrap',
+        ...style,
+      }}
+    >
+      {text}
+    </span>
+  );
+};
+
+/** Texto que entra rápido con estela de movimiento (motion blur direccional simulado) */
+export const BlurIn: React.FC<{
+  children: React.ReactNode;
+  start: number;
+  from?: 'left' | 'right' | 'down';
+  dist?: number;
+  dur?: number;
+  style?: React.CSSProperties;
+}> = ({children, start, from = 'left', dist = 260, dur = 10, style}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [start, start + dur], [0, 1], ease.out);
+  const sx = from === 'left' ? -1 : from === 'right' ? 1 : 0;
+  const sy = from === 'down' ? 1 : 0;
+  const off = (1 - p) * dist;
+  const speed = Math.max(0, tw(f, [start, start + dur], [1, 0], ease.out));
+  const copies = 6;
+  if (f < start) return null;
+  return (
+    <div style={{position: 'relative', ...style}}>
+      {Array.from({length: copies}).map((_, i) => {
+        const k = i / copies;
+        const trail = speed * 90 * k;
+        return (
+          <div
+            key={i}
+            aria-hidden={i > 0}
+            style={{
+              position: i === 0 ? 'relative' : 'absolute',
+              inset: i === 0 ? undefined : 0,
+              transform: `translate(${sx * (off + trail)}px, ${sy * (off + trail)}px)`,
+              opacity: i === 0 ? tw(f, [start, start + 3], [0, 1]) : speed * 0.28 * (1 - k),
+              filter: i === 0 ? `blur(${speed * 6}px)` : `blur(${2 + 8 * k}px)`,
+            }}
+          >
+            {children}
+          </div>
+        );
+      })}
+    </div>
+  );
+};
+
+/** Trazo dibujado (subrayado curvo, flecha o círculo) que se anima como plumón */
+export const Doodle: React.FC<{
+  kind: 'underline' | 'arrow' | 'circle' | 'spark';
+  start: number;
+  dur?: number;
+  color?: string;
+  width?: number;
+  style?: React.CSSProperties;
+}> = ({kind, start, dur = 14, color = C.amarillo, width = 420, style}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [start, start + dur], [0, 1], ease.inOut);
+  const paths: Record<string, {d: string[]; vb: string}> = {
+    underline: {d: ['M10 40 C 120 10, 260 10, 410 30'], vb: '0 0 420 60'},
+    arrow: {d: ['M10 80 C 90 20, 200 10, 300 40', 'M270 18 L 302 42 L 268 62'], vb: '0 0 320 100'},
+    circle: {d: ['M210 12 C 340 10, 410 60, 395 110 C 380 170, 60 175, 25 115 C -5 60, 90 15, 230 25'], vb: '0 0 420 180'},
+    spark: {d: ['M40 10 L 50 45', 'M10 40 L 45 55', 'M80 20 L 62 50'], vb: '0 0 100 70'},
+  };
+  const {d, vb} = paths[kind];
+  const [, , vw, vh] = vb.split(' ').map(Number);
+  return (
+    <svg width={width} height={(width * vh) / vw} viewBox={vb} style={{overflow: 'visible', filter: `drop-shadow(0 0 6px ${color}aa)`, ...style}}>
+      {d.map((pd, i) => {
+        const seg = 1 / d.length;
+        const q = Math.min(1, Math.max(0, (p - i * seg) / seg));
+        return (
+          <path key={i} d={pd} fill="none" stroke={color} strokeWidth={6} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - q} />
+        );
+      })}
+    </svg>
+  );
+};
+
+/** Subtítulo inferior: texto en blanco con una palabra clave manuscrita en amarillo */
+export const Caption: React.FC<{text: string; keyword: string; start?: number; top?: number}> = ({text, keyword, start = 4, top = 1380}) => {
+  const f = useCurrentFrame();
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        top,
+        left: 0,
+        right: 0,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'baseline',
+        gap: 14,
+        opacity: tw(f, [start, start + 6], [0, 1]),
+        transform: `translateY(${tw(f, [start, start + 10], [24, 0])}px)`,
+      }}
+    >
+      <span style={{fontFamily: F.sans, fontWeight: 800, fontSize: 54, color: C.blanco, textShadow: '0 3px 16px rgba(0,0,0,0.6)'}}>{text}</span>
+      <ScriptWord text={keyword} start={start + 4} size={92} tilt={-4} dur={12} />
+    </div>
+  );
+};

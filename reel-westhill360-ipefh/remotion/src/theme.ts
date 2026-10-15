@@ -11,6 +11,28 @@ export const SAFE_W = W - 2 * SAFE_X;
 /** Tamaño de fuente que hace caber `text` en el ancho seguro (avg = ancho medio de letra en em) */
 export const safeSize = (text: string, max: number, avg: number) => Math.min(max, Math.floor(SAFE_W / (text.length * avg)));
 
+/** Efectos de sonido: nombres de uso → archivo. Los ref_* salen del video de referencia de sonidos. */
+export const SFX_MAP: Record<string, string> = {
+  whoosh: 'ref_swoosh_short',
+  whoosh_largo: 'ref_swoosh',
+  swipe: 'ref_swoosh_short',
+  zoom: 'ref_flicker_v2',
+  pop: 'ref_tap',
+  click: 'ref_click',
+  click_suave: 'ref_tap',
+  shutter: 'ref_shutter',
+  shutter_clicks: 'ref_shutter_clicks',
+  flash: 'ref_flash_flicker',
+  flicker: 'ref_flicker',
+  digital: 'ref_digital',
+  charge: 'ref_charge_taps',
+  riser: 'ref_charge_swoosh',
+  taps: 'ref_tap_x4',
+  impact: 'impact',
+  ding: 'ding',
+};
+export const sfxFile = (name: string) => `sfx/${SFX_MAP[name] ?? name}.wav`;
+
 export const C = {
   azul: '#27639A', // azul Westhill
   azulClaro: '#3D8BD4',
@@ -24,6 +46,7 @@ export const F = {
   sans: 'Montserrat',
   serif: 'Playfair Display',
   display: 'Anton',
+  script: 'Yellowtail', // acento escrito a mano (estilo de la referencia)
 };
 
 // Curvas tipo After Effects
@@ -50,6 +73,7 @@ const FONT_FILES: [string, string, string, string][] = [
   [F.serif, 'playfair-display-latin-600-italic.woff2', '600', 'italic'],
   [F.serif, 'playfair-display-latin-700-italic.woff2', '700', 'italic'],
   [F.display, 'anton-latin-400-normal.woff2', '400', 'normal'],
+  [F.script, 'yellowtail-latin-400-normal.woff2', '400', 'normal'],
 ];
 
 let loaded = false;

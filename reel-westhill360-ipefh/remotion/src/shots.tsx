@@ -1,16 +1,16 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
-import {Flash} from './components';
-import {C, F, SAFE_X, ease, tw} from './theme';
+import {Flash, ScriptWord} from './components';
+import {C, F, SAFE_X, ease, sfxFile, tw} from './theme';
 
-export type Enter = 'zoom' | 'whipL' | 'whipR' | 'flash' | 'up' | 'none';
+export type Enter = 'zoom' | 'whipL' | 'whipR' | 'flash' | 'up' | 'card' | 'none';
 
 /** Modo "natural": entradas suaves (sin barridos, flashes ni whooshes); el fundido lo hace el reproductor */
 export const SoftCtx = React.createContext(false);
 
 export const Sfx: React.FC<{at: number; name: string; volume?: number}> = ({at, name, volume = 1}) => (
   <Sequence from={at} layout="none">
-    <Audio src={staticFile(`sfx/${name}.wav`)} volume={volume} />
+    <Audio src={staticFile(sfxFile(name))} volume={volume} />
   </Sequence>
 );
 
@@ -33,10 +33,31 @@ const useEnter = (enterIn: Enter, dur: number, push = 0.08) => {
     y = tw(f, [0, 9], [60, 0], ease.out);
     blur = tw(f, [0, 7], [16, 0]);
   }
-  return {transform: `translate(${x}%, ${y}%) scale(${scale}) rotate(${rot}deg)`, filter: blur > 0.1 ? `blur(${blur}px)` : undefined};
+  let radius = 0;
+  let shadow: string | undefined;
+  if (enter === 'card') {
+    // la toma llega como tarjeta redondeada sobre fondo cálido y se expande (estilo referencia)
+    const k = tw(f, [0, 14], [0, 1], ease.inOut);
+    scale *= 0.8 + 0.2 * k;
+    y = (1 - k) * 9;
+    rot = (1 - k) * -3;
+    radius = (1 - k) * 80;
+    blur = tw(f, [0, 5], [10, 0]);
+    shadow = k < 1 ? `0 40px 90px rgba(60,40,20,${0.45 * (1 - k)})` : undefined;
+  }
+  return {
+    transform: `translate(${x}%, ${y}%) scale(${scale}) rotate(${rot}deg)`,
+    filter: blur > 0.1 ? `blur(${blur}px)` : undefined,
+    borderRadius: radius,
+    boxShadow: shadow,
+    overflow: 'hidden' as const,
+  };
 };
 
-const ENTER_SFX: Record<Enter, string | null> = {zoom: 'whoosh', whipL: 'swipe', whipR: 'swipe', flash: 'shutter', up: 'whoosh', none: null};
+/** Fondo detrás de la toma: cálido para la entrada tipo tarjeta, negro en las demás */
+const BACK = (enter: Enter) => (enter === 'card' ? 'radial-gradient(ellipse at 50% 40%, #F6EFE7 0%, #E6D8C8 100%)' : '#000');
+
+const ENTER_SFX: Record<Enter, string | null> = {zoom: 'zoom', whipL: 'swipe', whipR: 'swipe', flash: 'flash', up: 'whoosh', card: 'whoosh', none: null};
 
 export const VideoShot: React.FC<{src: string; from: number; dur: number; enter?: Enter; push?: number; sfx?: boolean}> = ({
   src,
@@ -49,7 +70,7 @@ export const VideoShot: React.FC<{src: string; from: number; dur: number; enter?
   const soft = React.useContext(SoftCtx);
   const st = useEnter(enter, dur, push);
   return (
-    <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
+    <AbsoluteFill style={{overflow: 'hidden', background: soft ? '#000' : BACK(enter)}}>
       <AbsoluteFill style={st}>
         <OffthreadVideo src={staticFile(`proxies/${src}.mp4`)} startFrom={Math.round(from * 30)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
@@ -71,7 +92,7 @@ export const PhotoShot: React.FC<{src: string; dur: number; enter?: Enter; origi
   const soft = React.useContext(SoftCtx);
   const st = useEnter(enter, dur, push);
   return (
-    <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
+    <AbsoluteFill style={{overflow: 'hidden', background: soft ? '#000' : BACK(enter)}}>
       <AbsoluteFill style={{...st, transformOrigin: origin}}>
         <Img src={staticFile(`photos/${src}.jpg`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
@@ -161,26 +182,12 @@ export const SectionLabel: React.FC<{num?: string; name: string; sub?: string; t
         </div>
       </div>
       {sub && (
-        <div
-          style={{
-            position: 'absolute',
-            left: SAFE_X,
-            top: top + 330,
-            maxWidth: 820,
-            fontFamily: F.serif,
-            fontStyle: 'italic',
-            fontWeight: 600,
-            fontSize: 46,
-            color: C.blanco,
-            textShadow: '0 2px 18px rgba(0,0,0,0.55)',
-            opacity: tw(f, [14, 24], [0, 1]),
-            transform: `translateY(${tw(f, [14, 26], [20, 0])}px)`,
-          }}
-        >
-          {sub}
+        <div style={{position: 'absolute', left: SAFE_X - 10, top: top + 315}}>
+          <ScriptWord text={sub} start={14} size={sub.length > 16 ? 70 : 84} neon tilt={-5} />
         </div>
       )}
       <Sfx at={4} name="click" volume={0.6} />
+      {sub && <Sfx at={14} name="flicker" volume={0.5} />}
     </AbsoluteFill>
   );
 };
