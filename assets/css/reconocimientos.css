@@ -11,12 +11,22 @@
 
 /* ==========================================================================
    EL SOBRE CON MOÑO (reconocimiento.html)
+   Hecho primero para el celular: ahí el sobre es vertical y llena la
+   pantalla; en computadora es horizontal. Las medidas del sobre salen de
+   variables, así el listón, el moño y la solapa siempre coinciden.
    ========================================================================== */
-/* Héroe más compacto: el sobre y la instrucción caben en la primera pantalla */
+/* Héroe compacto: el sobre y la instrucción caben en la primera pantalla */
 .rc-page .rf-hero { padding-top: clamp(36px, 4.5vw, 64px); }
 .rc-page .rf-title { font-size: clamp(2.3rem, 5.6vw, 4.1rem); }
 .rc-page .rf-lead { margin-top: 14px; }
 .rc-page .rf-hero.is-error { display: none; }
+/* Al abrir, el título se pliega hacia arriba y el sobre queda al centro */
+.rc-page .rf-hero.is-plegado {
+  height: 0 !important; padding-top: 0; overflow: hidden; opacity: 0; transform: translateY(-12px);
+  transition: height 460ms var(--ease-out), padding 460ms var(--ease-out), opacity 220ms var(--ease-out), transform 460ms var(--ease-out);
+}
+/* El aura y el sobre que cae no deben ensanchar la página (sin crear scroll propio) */
+.rc-page main { overflow-x: clip; }
 .rc-scene {
   position: relative; max-width: 640px; margin: 0 auto;
   padding: clamp(32px, 4vw, 48px) 16px 0;
@@ -27,14 +37,28 @@
 .rc-env-wrap { display: grid; justify-items: center; }
 
 .rc-env {
-  --a: 4.4cqi;                                 /* ancho del listón */
+  --a: 4.4cqi;            /* ancho del listón */
+  --solapa: 60%;          /* alto de la solapa = donde va el nudo */
+  --v: 54%;               /* fondo de la "V" de la bolsa */
+  --mono: 36cqi;          /* ancho del moño */
+  --subida: .62;          /* cuánto sube la carta (fracción del alto) */
   position: relative; width: min(520px, 100%); aspect-ratio: 1.58;
   container-type: inline-size;
   perspective: 1400px;
   will-change: transform, opacity;
+  touch-action: none;     /* todo el sobre se puede jalar */
+  cursor: grab; -webkit-tap-highlight-color: transparent; user-select: none; -webkit-user-select: none;
 }
+.rc-env:active { cursor: grabbing; }
+.rc-env.is-open { cursor: default; }
 .rc-env-back, .rc-env-pocket, .rc-env-flap-shape { position: absolute; border-radius: 16px; }
-.rc-env-back { inset: 0; background: linear-gradient(170deg, #0c2442, #081a33); box-shadow: var(--shadow-lg); }
+/* Forro: azul con rayas doradas finas (se ve al abrir) */
+.rc-env-back, .rc-env-flap.is-behind .rc-env-flap-shape {
+  background:
+    repeating-linear-gradient(135deg, rgba(242, 201, 76, .26) 0 1.5px, transparent 1.5px 11px),
+    linear-gradient(170deg, #1d4a72, #0f2c52);
+}
+.rc-env-back { inset: 0; box-shadow: var(--shadow-lg); }
 .rc-env-letter {
   position: absolute; left: 5%; right: 5%; top: 6%; height: 88%; z-index: 1;
   border-radius: 10px;
@@ -49,7 +73,7 @@
 .rc-env-pocket {
   inset: 0; z-index: 2;
   background: linear-gradient(165deg, #133661 0%, #0d2848 55%, #0a1f3b 100%);
-  clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(0 0, 50% var(--v), 100% 0, 100% 100%, 0 100%);
 }
 .rc-env-pocket::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit;
@@ -58,7 +82,7 @@
     linear-gradient(to top left,  transparent calc(50% - .5px), rgba(255, 255, 255, .06) 50%, transparent calc(50% + .5px));
 }
 .rc-env-to {
-  position: absolute; z-index: 3; left: 7%; bottom: 8%; max-width: 38%;
+  position: absolute; z-index: 3; left: 7%; bottom: 8%; max-width: 36%;
   font-size: 12px; color: rgba(255, 255, 255, .55); letter-spacing: .02em; line-height: 1.4;
 }
 .rc-env-to b {
@@ -75,10 +99,7 @@
           mask: radial-gradient(circle at 5px 5px, transparent 3px, #000 3.4px) -5px -5px / 10px 10px, linear-gradient(#000, #000) 5px 5px / calc(100% - 10px) calc(100% - 10px) no-repeat;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35));
 }
-.rc-env-stamp span {
-  display: grid; place-items: center; width: 100%; height: 100%; padding: 12%;
-  border: 1px solid rgba(168, 129, 26, .45);
-}
+.rc-env-stamp span { display: grid; place-items: center; width: 100%; height: 100%; padding: 12%; border: 1px solid rgba(168, 129, 26, .45); }
 .rc-env-stamp img { width: 100%; height: 100%; object-fit: contain; }
 .rc-env-stamp.is-westhill span { border: 0; background: linear-gradient(160deg, var(--navy-3), var(--navy)); }
 .rc-env-stamp.is-westhill { background: var(--gold-pale); }
@@ -86,7 +107,7 @@
 @keyframes rc-stamp-in { from { opacity: 0; transform: scale(.8); filter: blur(4px); } }
 
 .rc-env-flap {
-  position: absolute; left: 0; right: 0; top: 0; height: 60%; z-index: 4;
+  position: absolute; left: 0; right: 0; top: 0; height: var(--solapa); z-index: 4;
   transform-origin: 50% 0; transform-style: preserve-3d; will-change: transform;
 }
 .rc-env-flap.is-behind { z-index: 0; }
@@ -100,22 +121,21 @@
 .rc-liston { position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: 16px; overflow: hidden; }
 .rc-liston span { position: absolute; will-change: transform, opacity; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
 .rc-liston .v { left: calc(50% - var(--a) / 2); width: var(--a); background: linear-gradient(90deg, #c99a1e, #f8dc7a 35%, var(--gold) 55%, #b58d1f); }
-.rc-liston .h { top: calc(60% - var(--a) / 2); height: var(--a); background: linear-gradient(180deg, #c99a1e, #f8dc7a 35%, var(--gold) 55%, #b58d1f); }
-.rc-liston .arriba { top: 0; height: 60%; }
-.rc-liston .abajo { top: 60%; bottom: 0; }
+.rc-liston .h { top: calc(var(--solapa) - var(--a) / 2); height: var(--a); background: linear-gradient(180deg, #c99a1e, #f8dc7a 35%, var(--gold) 55%, #b58d1f); }
+.rc-liston .arriba { top: 0; height: var(--solapa); }
+.rc-liston .abajo { top: var(--solapa); bottom: 0; transform-origin: bottom; }
 .rc-liston .izq { left: 0; width: 50%; }
 .rc-liston .der { left: 50%; right: 0; }
 
-/* El moño: es el "asa" del gesto. El nudo queda justo en el cruce del listón */
+/* El moño: el nudo queda justo en el cruce del listón (35% del alto del SVG) */
 .rc-mono {
   position: absolute; z-index: 6;
-  width: 36cqi; aspect-ratio: 240 / 200;
-  left: calc(50% - 18cqi); top: calc(60% - 10.5cqi);
-  padding: 0; border: 0; background: none; cursor: grab;
+  width: var(--mono); aspect-ratio: 240 / 200;
+  left: calc(50% - var(--mono) / 2); top: calc(var(--solapa) - var(--mono) * .2917);
+  padding: 0; border: 0; background: none; cursor: inherit;
   touch-action: none; -webkit-tap-highlight-color: transparent;
 }
-.rc-mono svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .4)); }
-.rc-mono:active { cursor: grabbing; }
+.rc-mono svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .4)); transition: filter 200ms var(--ease-out); }
 .rc-mono:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; border-radius: 24px; }
 /* Halo que invita a jalar (late 3 veces y se queda) */
 .rc-mono::before {
@@ -125,51 +145,87 @@
 }
 .rc-env.is-open .rc-mono::before { animation: none; }
 .rc-env.is-open .rc-mono { pointer-events: none; }
+/* Ya se jaló lo suficiente: el moño brilla y la instrucción dice "¡Suéltalo!" */
+.rc-scene.is-listo .rc-mono svg { filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .4)) drop-shadow(0 0 14px rgba(251, 231, 161, .95)); }
 
 .rc-hint { margin-top: 26px; display: inline-flex; align-items: center; gap: 10px; font-size: 15px; color: var(--on-stage-2); }
 .rc-hint svg { width: 18px; height: 18px; stroke: var(--gold-ink); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
 .js .rc-hint svg { animation: rc-jala 1.6s var(--ease-out) 1.8s 3; }
 @keyframes rc-jala { 0%, 100% { transform: none; } 40% { transform: translateY(5px); } }
+.rc-hint .t-suelta { display: none; color: var(--gold-ink); font-weight: 700; }
+.rc-scene.is-listo .rc-hint .t-jala { display: none; }
+.rc-scene.is-listo .rc-hint .t-suelta { display: inline; animation: rf-msg 180ms var(--ease-out) both; }
 .rc-scene.is-open .rc-hint, .rc-scene.is-open [data-abrir] { visibility: hidden; }
+/* Mientras se abre, el escenario ocupa la pantalla (el pie no se asoma) */
+.rc-scene.is-open { min-height: calc(100svh - 90px); }
 
 /* --- El reconocimiento ---------------------------------------------------- */
-.rc-result { display: grid; justify-items: center; text-align: center; outline: none; }
+.rc-result { position: relative; z-index: 1; display: grid; justify-items: center; text-align: center; outline: none; }
 .rc-felicidades {
   color: var(--navy-ink); font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -.04em; line-height: 1.05; font-weight: 800;
   outline: none;
 }
 .rc-felicidades-sub { margin-top: 10px; color: var(--on-stage-2); font-size: 17px; }
+.rc-diploma-wrap { position: relative; isolation: isolate; margin-top: 26px; width: min(560px, 100%); }
 .rc-diploma {
-  position: relative; margin: 26px 0 0; width: min(560px, 100%);
+  position: relative; z-index: 1; margin: 0; width: 100%;
   aspect-ratio: 1080 / 1350; perspective: 1100px;
   transform-origin: 0 0; will-change: transform;
-  border-radius: 14px;
+  border-radius: 14px; outline: none; cursor: zoom-in;
   background: linear-gradient(180deg, var(--paper), var(--paper-2));
   box-shadow: 0 0 0 .5px rgba(60, 50, 30, .14), 0 60px 110px -50px rgba(19, 48, 77, .55), 0 18px 36px -22px rgba(19, 48, 77, .3);
 }
+.rc-diploma:focus-visible { box-shadow: 0 0 0 3px var(--gold), 0 60px 110px -50px rgba(19, 48, 77, .55); }
 .rc-diploma img {
   display: block; width: 100%; height: 100%; border-radius: inherit;
-  transform-style: preserve-3d; touch-action: pan-y; user-select: none; -webkit-user-drag: none; cursor: grab;
+  transform-style: preserve-3d; touch-action: pan-y; user-select: none; -webkit-user-drag: none;
 }
-.rc-diploma.is-morphing img { opacity: 0; }
-.rc-diploma.is-shown img { animation: rc-revela 620ms var(--ease-out) both; }
-@keyframes rc-revela { from { opacity: 0; filter: blur(12px) saturate(.6); transform: scale(.985); } }
 /* Brillo que cruza una sola vez, como luz sobre papel satinado */
 .rc-diploma::after {
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
-  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .55) 48%, rgba(251, 231, 161, .35) 52%, transparent 65%) -120% 0 / 250% 100% no-repeat;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .6) 48%, rgba(251, 231, 161, .4) 52%, transparent 65%) -120% 0 / 250% 100% no-repeat;
 }
-.rc-diploma.is-shown::after { animation: rc-brillo 1400ms var(--ease-out) 380ms both; }
+.is-shown .rc-diploma::after { animation: rc-brillo 1400ms var(--ease-out) 200ms both; }
 @keyframes rc-brillo { 0% { opacity: 1; background-position: -120% 0; } 100% { opacity: 1; background-position: 220% 0; } }
 
-.rc-acciones { margin-top: 22px; width: min(560px, 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Aura detrás del reconocimiento: resplandor dorado y rayos que giran una vez y se van */
+.rc-aura { position: absolute; z-index: 0; inset: -16% -30%; pointer-events: none; opacity: 0; }
+.rc-aura::before, .rc-aura::after { content: ""; position: absolute; inset: 0; border-radius: 50%; }
+.rc-aura::before { background: radial-gradient(closest-side, rgba(242, 201, 76, .55), rgba(242, 201, 76, .18) 55%, rgba(242, 201, 76, 0)); }
+.rc-aura::after {
+  background: repeating-conic-gradient(from 0deg, rgba(251, 231, 161, 0) 0deg 8deg, rgba(251, 231, 161, .7) 9deg 11deg, rgba(251, 231, 161, 0) 12deg 20deg);
+  -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 72%); mask: radial-gradient(closest-side, #000 20%, transparent 72%);
+}
+.rc-diploma-wrap.is-shown .rc-aura { animation: rc-aura 2600ms var(--ease-out) both; }
+.rc-diploma-wrap.is-shown .rc-aura::after { animation: rc-rayos 2600ms var(--ease-out) both; }
+@keyframes rc-aura { 0% { opacity: 0; transform: scale(.55); } 25% { opacity: 1; transform: scale(1.04); } 100% { opacity: .55; transform: scale(1); } }
+@keyframes rc-rayos { 0% { opacity: 0; transform: rotate(-20deg); } 30% { opacity: 1; } 100% { opacity: 0; transform: rotate(35deg); } }
+
+.rc-ver { margin-top: 12px; font-size: 13px; color: var(--on-stage-3); }
+.rc-acciones { margin-top: 18px; width: min(560px, 100%); display: grid; grid-template-columns: 1fr auto; gap: 10px; }
 .rc-acciones.is-single { grid-template-columns: 1fr; }
+.rc-compartir { width: auto; padding: 0 20px; }
 .rc-guardar { margin-top: 12px; font-size: 14px; color: var(--on-stage-3); }
 .rc-result .rf-redes-final { margin-top: clamp(40px, 7vw, 64px); width: min(560px, 100%); }
 /* Lo de alrededor guarda su lugar (sin saltos) y aparece cuando el reconocimiento ya llegó */
 .rc-result > .is-later { visibility: hidden; }
 .rc-result.is-done > .is-later { visibility: visible; }
-.rc-result.is-done > .is-later:not(.rf-redes-final):not(.rc-felicidades) { animation: rf-materialize 460ms var(--ease-out) both; animation-delay: calc(400ms + var(--i, 0) * 90ms); }
+.rc-result.is-done > .is-later:not(.rf-redes-final):not(.rc-felicidades) { animation: rf-materialize 460ms var(--ease-out) both; animation-delay: calc(500ms + var(--i, 0) * 90ms); }
+
+/* El reconocimiento en grande */
+.rc-visor {
+  width: 100vw; height: 100dvh; max-width: none; max-height: none; margin: 0; border: 0;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  background: rgba(10, 26, 46, .94); color: #fff;
+  display: grid; grid-template-rows: minmax(0, 1fr) auto; justify-items: center; align-items: center; gap: 16px;
+}
+.rc-visor:not([open]) { display: none; }
+.rc-visor::backdrop { background: transparent; }
+.rc-visor img { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 10px; box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .7); touch-action: pinch-zoom; }
+.rc-visor[open] img { animation: rc-visor-in 320ms var(--ease-out) both; }
+@keyframes rc-visor-in { from { opacity: 0; transform: scale(.94); filter: blur(6px); } }
+.rc-visor-barra { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: min(420px, 100%); }
+.rc-visor-cerrar { background: rgba(255, 255, 255, .14); color: #fff; box-shadow: none; }
 
 /* Sin reconocimiento (link mal copiado) */
 .rc-error { max-width: 440px; margin: 0 auto; padding: clamp(36px, 6vw, 60px) 20px 0; text-align: center; }
@@ -183,14 +239,47 @@
 
 /* En computadora el reconocimiento y el botón de descargar caben juntos en pantalla */
 @media (min-width: 861px) {
-  .rc-diploma, .rc-acciones, .rc-result .rf-redes-final { width: min(500px, 100%, calc((100svh - 290px) * .8)); }
-  .rc-diploma { min-width: 380px; }
-  .rc-acciones, .rc-result .rf-redes-final { min-width: 380px; }
+  .rc-diploma-wrap, .rc-acciones, .rc-result .rf-redes-final { width: min(500px, 100%, calc((100svh - 290px) * .8)); min-width: 380px; }
 }
+@media (hover: hover) and (pointer: fine) { .rc-ver { display: none; } }
+
+/* --- Celular: el sobre vertical llena la pantalla -------------------------- */
 @media (max-width: 560px) {
-  .rc-scene { padding-top: 30px; }
-  .rc-acciones { grid-template-columns: 1fr; }
-  .rc-env-to { font-size: 11px; }
+  .rc-page .rf-hero { padding-top: 22px; }
+  .rc-page .rf-invite { margin-bottom: 12px; }
+  .rc-page .rf-title { font-size: clamp(1.7rem, 7.6vw, 2.1rem); line-height: 1.06; }
+  .rc-page .rf-lead { display: none; }   /* la instrucción va pegada al sobre */
+  .rc-scene { padding-top: 20px; }
+  .rc-env {
+    --a: 6.5cqi; --solapa: 40%; --v: 36%; --mono: 56cqi; --subida: .4;
+    aspect-ratio: .72;
+    width: clamp(262px, calc((100svh - 300px) * .72), 360px); max-width: 100%;
+  }
+  .rc-env-letter { padding-top: 14%; }
+  .rc-env-to { font-size: 12px; max-width: 38%; }
+  .rc-env-to b { font-size: 8.4cqi; }
+  .rc-env-stamp { width: 25cqi; }
+  /* La instrucción va arriba del sobre: siempre se ve sin bajar */
+  .rc-env-wrap .rc-hint { order: -1; margin: 0 0 14px; font-size: 16px; }
+  .rc-open-btn { margin-top: 12px; }
+  .rc-felicidades { font-size: 2.1rem; }
+  .rc-felicidades-sub { font-size: 16px; margin-top: 6px; }
+  .rc-diploma-wrap { margin-top: 18px; }
+  .rc-diploma { border-radius: 10px; }
+  /* Guardar siempre a la mano del pulgar */
+  .rc-acciones {
+    position: sticky; z-index: 5; bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    margin-top: 14px;
+  }
+  .rc-acciones .rf-btn { box-shadow: 0 14px 30px -12px rgba(19, 48, 77, .55); }
+  .rc-compartir .txt { display: none; }
+  .rc-compartir { padding: 0 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rc-diploma-wrap.is-shown .rc-aura, .rc-diploma-wrap.is-shown .rc-aura::after, .is-shown .rc-diploma::after,
+  .rc-visor[open] img { animation: rf-fade 200ms linear both !important; }
+  .rc-aura::after { display: none; }
 }
 
 /* ==========================================================================
@@ -365,10 +454,9 @@
 /* --- Accesibilidad --------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   .rc-mono::before, .js .rc-hint svg, .rc-cargando { animation: none; }
-  .rc-diploma.is-shown img, .rc-diploma.is-shown::after, .rc-result.is-done > .is-later:not(.rf-redes-final),
+  .rc-result.is-done > .is-later:not(.rf-redes-final),
   .rc-tab.is-entering, .rc-envio.is-new, .rc-logo.is-pop, .rc-drop.has-logo .rc-drop-img,
   .rc-env-stamp.is-new img, .rc-sugerencias:not([hidden]) { animation: rf-fade 200ms linear both !important; }
-  .rc-diploma.is-shown::after { display: none; }
   .rc-wa:active, .rc-drop:active { transform: none; }
   .rc-barra i { transition: none; }
 }

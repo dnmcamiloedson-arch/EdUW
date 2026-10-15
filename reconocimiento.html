@@ -10,6 +10,9 @@
   <meta property="og:description" content="Gracias por visitarnos. Ábrelo y descárgalo.">
   <meta property="og:type" content="website">
   <meta name="robots" content="noindex, nofollow">
+  <!-- Los datos vienen del Apps Script: abrir la conexión desde el inicio -->
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <!-- Inter solo como respaldo (en Apple se usa SF); Fraunces solo en la papelería -->
@@ -83,7 +86,7 @@
         </div>
         <p class="rc-hint" data-in style="--i:4">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
-          Jala el moño hacia abajo
+          <span class="t-jala">Jala el moño hacia abajo</span><span class="t-suelta">¡Suéltalo!</span>
         </p>
         <button class="rf-open-btn" type="button" data-abrir data-in style="--i:5">o toca aquí para abrirlo</button>
       </div>
@@ -92,17 +95,21 @@
       <section class="rc-result" data-rc-resultado tabindex="-1" hidden aria-live="polite">
         <h2 class="rc-felicidades is-later" data-rc-felicidades tabindex="-1" style="--i:0">¡Felicidades<span data-rc-nombre-titulo></span>!</h2>
         <p class="rc-felicidades-sub is-later" style="--i:1">Este reconocimiento es tuyo. Guárdalo.</p>
-        <figure class="rc-diploma" data-rc-diploma>
-          <img data-rc-imagen alt="" width="1080" height="1350">
-        </figure>
+        <div class="rc-diploma-wrap" data-rc-marco>
+          <div class="rc-aura" aria-hidden="true"></div>
+          <figure class="rc-diploma" data-rc-diploma tabindex="0" role="button" aria-label="Ver el reconocimiento en grande">
+            <img data-rc-imagen alt="" width="1080" height="1350">
+          </figure>
+        </div>
+        <p class="rc-ver is-later" style="--i:2">Tócalo para verlo en grande</p>
         <div class="rc-acciones is-later" data-rc-acciones style="--i:2">
           <button class="rf-btn rf-btn--gold" type="button" data-rc-descargar>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
-            Descargar reconocimiento
+            <span data-rc-descargar-txt>Descargar reconocimiento</span>
           </button>
-          <button class="rf-btn" type="button" data-rc-compartir hidden>
+          <button class="rf-btn rc-compartir" type="button" data-rc-compartir aria-label="Compartir" hidden>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
-            Compartir
+            <span class="txt">Compartir</span>
           </button>
         </div>
         <p class="rc-guardar is-later" style="--i:3">Súbelo a tus historias y etiquétanos: @univwesthill</p>
@@ -121,6 +128,15 @@
         </div>
       </section>
     </div>
+
+    <!-- El reconocimiento en grande (al tocarlo) -->
+    <dialog class="rc-visor" data-rc-visor aria-label="Tu reconocimiento">
+      <img data-rc-visor-img alt="">
+      <div class="rc-visor-barra">
+        <button class="rf-btn rf-btn--gold" type="button" data-rc-visor-guardar>Guardar</button>
+        <button class="rf-btn rf-btn--glass rc-visor-cerrar" type="button" data-rc-cerrar>Cerrar</button>
+      </div>
+    </dialog>
 
     <!-- Link mal copiado o reconocimiento que no existe -->
     <section class="rc-error" data-rc-error hidden>
