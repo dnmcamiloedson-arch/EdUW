@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Admisiones · Reconocimientos | Universidad Westhill</title>
+  <meta name="description" content="Panel de Admisiones: crea los reconocimientos de cada visita y mándalos por WhatsApp.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Inter solo como respaldo (en Apple se usa SF); Fraunces solo en la papelería -->
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..600;1,9..144,400..500&family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/referidos.css">
+  <link rel="stylesheet" href="assets/css/reconocimientos.css">
+  <script>document.documentElement.classList.add("js");</script>
+</head>
+<body class="rf-invite-page">
+  <nav class="rf-nav" aria-label="Universidad Westhill">
+    <div class="rf-nav-in">
+      <a class="rf-brand" href="https://www.uw.edu.mx/?utm_source=admisiones&amp;utm_content=logo" target="_blank" rel="noopener">
+        <img src="assets/img/logo-westhill-blanco.png" alt="Universidad Westhill" width="779" height="313">
+      </a>
+      <div class="rc-nav-links">
+        <a class="rf-nav-link rc-otro-panel" href="admisiones.html" id="otro-panel" hidden>Códigos de invitación</a>
+        <button class="rf-nav-link" type="button" id="salir" hidden>Salir</button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="rf-hero">
+      <p class="rf-eyebrow" data-in style="--i:0">Admisiones</p>
+      <h1 class="rf-title" data-in style="--i:1">Reconocimientos <em>Westhill.</em></h1>
+      <p class="rf-lead" data-in style="--i:2">Elige la prepa, pega la lista y mándalos por WhatsApp. Sin imprimir nada.</p>
+    </header>
+
+    <!-- Acceso: solo con la clave de Admisiones -->
+    <section class="rf-gate" id="acceso" data-in style="--i:3" aria-labelledby="t-acceso">
+      <form class="rf-panel" id="form-clave" novalidate>
+        <header class="rf-panel-head">
+          <h2 id="t-acceso">Entrar</h2>
+          <p>Escribe la clave de Admisiones.</p>
+        </header>
+        <div class="rf-group">
+          <label class="rf-row rf-field">
+            <span class="rf-row-label">Clave</span>
+            <input class="rf-input" id="clave" type="password" autocomplete="current-password" placeholder="Requerida" required>
+            <span class="rf-error-msg">Escribe la clave.</span>
+          </label>
+        </div>
+        <button class="rf-btn" type="submit">Entrar</button>
+        <p class="rf-form-error" role="alert" hidden></p>
+      </form>
+    </section>
+
+    <div id="admin" hidden>
+      <!-- Pestañas -->
+      <div class="rc-tabs">
+        <div class="rf-pills" data-pills role="radiogroup" aria-label="Sección">
+          <label class="rf-pill"><input type="radio" name="tab" value="rec" checked><span>Reconocimientos</span></label>
+          <label class="rf-pill"><input type="radio" name="tab" value="prepas"><span>Prepas <i class="n" id="n-prepas">0</i></span></label>
+        </div>
+      </div>
+
+      <!-- ===================== RECONOCIMIENTOS ===================== -->
+      <div class="rc-tab" id="tab-rec">
+        <div class="rf-forge rc-forge">
+          <!-- Vista previa en vivo: es exactamente la imagen que se manda -->
+          <div class="rc-preview">
+            <div class="rc-preview-card" id="vista-card">
+              <canvas id="vista" width="1080" height="1350" role="img" aria-label="Vista previa"></canvas>
+            </div>
+            <fieldset class="rf-pills-wrap">
+              <legend class="sr-only">Qué ver</legend>
+              <div class="rf-pills" data-pills>
+                <label class="rf-pill"><input type="radio" name="vista" value="sobre" checked><span>Sobre</span></label>
+                <label class="rf-pill"><input type="radio" name="vista" value="diploma"><span>Reconocimiento</span></label>
+              </div>
+            </fieldset>
+            <p class="rc-preview-hint" id="vista-hint">El sobre es la imagen que llega por WhatsApp.</p>
+          </div>
+
+          <section class="rf-panel" id="panel-rec" aria-labelledby="t-grupo">
+            <form id="form-rec" novalidate>
+              <header class="rf-panel-head">
+                <h2 id="t-grupo">Nuevo grupo</h2>
+                <p>Un reconocimiento por estudiante, cada uno con su link.</p>
+              </header>
+
+              <p class="rc-panel-sec">La visita</p>
+              <div class="rf-group" style="overflow:visible">
+                <div class="rf-row rf-field rc-prepa-row">
+                  <span class="rc-logo is-vacio" id="p-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg></span>
+                  <label class="rf-row-label" for="prepa">Prepa o escuela</label>
+                  <div class="rc-combo">
+                    <input class="rf-input" id="prepa" autocomplete="off" maxlength="80" placeholder="Escribe o elige: EPO 23, IPEFH…" required
+                           role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sugerencias">
+                    <ul class="rc-sugerencias" id="sugerencias" role="listbox" aria-label="Prepas guardadas" hidden></ul>
+                  </div>
+                  <span class="rf-error-msg">Escribe la prepa.</span>
+                  <span class="rc-prepa-estado" id="p-estado" aria-live="polite"></span>
+                </div>
+                <label class="rf-row">
+                  <span class="rf-row-label">Fecha de la visita</span>
+                  <input class="rf-input" id="fecha" type="date">
+                </label>
+              </div>
+
+              <p class="rc-panel-sec">Textos <span id="textos-accion"></span></p>
+              <div class="rf-group">
+                <label class="rf-row">
+                  <span class="rf-row-label">Por su participación en…</span>
+                  <input class="rf-input" id="motivo" maxlength="90" placeholder="su visita a la Universidad Westhill">
+                </label>
+                <label class="rf-row">
+                  <span class="rf-row-label">Mensaje</span>
+                  <textarea class="rf-input" id="mensaje" rows="3" maxlength="200" placeholder="Unas palabras para los estudiantes"></textarea>
+                </label>
+                <label class="rf-row">
+                  <span class="rf-row-label">Firma</span>
+                  <input class="rf-input" id="firma" maxlength="60" placeholder="Equipo de Admisiones">
+                </label>
+              </div>
+
+              <p class="rc-panel-sec">Estudiantes</p>
+              <div class="rf-group">
+                <label class="rf-row rf-field">
+                  <span class="rf-row-label">Uno por renglón · nombre y teléfono (opcional)</span>
+                  <textarea class="rf-input rc-alumnos" id="alumnos" rows="5" placeholder="Ana López, 55 1234 5678&#10;Carlos Méndez&#10;…" required></textarea>
+                  <span class="rf-error-msg">Agrega al menos un nombre.</span>
+                </label>
+              </div>
+              <p class="rc-conteo">
+                <span><b id="c-total">0</b> estudiantes</span>
+                <span class="is-wa"><b id="c-wa">0</b> con WhatsApp</span>
+                <span>Puedes pegar desde Excel.</span>
+              </p>
+              <button class="rf-btn" type="submit" id="crear">Crear reconocimientos</button>
+              <p class="rf-form-error" role="alert" hidden></p>
+            </form>
+
+            <!-- Resultado: a quién mandar cada uno -->
+            <div id="res" hidden aria-live="polite">
+              <header class="rf-panel-head" style="--i:0">
+                <h2 id="res-titulo" tabindex="-1">Listos</h2>
+                <p id="res-sub">Toca un nombre para ver su tarjeta. Al mandarlo queda marcado.</p>
+              </header>
+              <div class="rc-progreso" style="--i:1"><span id="res-prog">0 de 0 enviados</span><span class="rc-barra"><i id="res-barra"></i></span></div>
+              <ul class="rc-envios" id="envios" style="--i:2"></ul>
+              <div class="rf-share" id="res-share" style="--i:3">
+                <button class="rf-btn rf-btn--gold rf-btn--sm" type="button" id="r-descargar">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 19h14"/></svg>
+                  <span>Descargar tarjeta</span>
+                </button>
+                <button class="rf-btn rf-btn--sm" type="button" id="r-compartir" hidden>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+                  Compartir
+                </button>
+              </div>
+              <p class="rf-wa-nota" id="wa-nota" role="status" hidden></p>
+              <p class="rf-again" style="--i:4"><button class="rf-text-btn" type="button" id="otro-grupo">Crear otro grupo</button></p>
+            </div>
+          </section>
+        </div>
+
+        <!-- Historial -->
+        <section class="rf-codes rc-hist" aria-labelledby="t-hist">
+          <header class="rf-codes-head">
+            <div>
+              <h2 id="t-hist">Todos los reconocimientos</h2>
+              <p class="rf-codes-stats"><span id="s-total">0</span> reconocimientos · <span id="s-abiertos">0</span> abiertos</p>
+            </div>
+            <div class="rf-codes-tools">
+              <label class="rf-search">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+                <input type="search" id="buscar" placeholder="Buscar nombre, prepa o folio" aria-label="Buscar">
+              </label>
+              <button class="rf-icon-btn" type="button" id="recargar" aria-label="Actualizar lista">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v5h-5"/></svg>
+              </button>
+            </div>
+          </header>
+          <ul class="rf-codes-list" id="hist" aria-live="polite"></ul>
+          <p class="rf-codes-empty" id="hist-vacio" hidden>Aún no hay reconocimientos.</p>
+        </section>
+      </div>
+
+      <!-- ===================== PREPAS ===================== -->
+      <div class="rc-tab" id="tab-prepas" hidden>
+        <div class="rc-prepas">
+          <form class="rf-panel" id="form-prepa" novalidate>
+            <header class="rf-panel-head">
+              <h2 id="t-prepa">Nueva prepa</h2>
+              <p>Sube su logo una vez. Después sale solo en cada sobre y reconocimiento.</p>
+            </header>
+            <label class="rc-drop" id="drop">
+              <input type="file" id="np-logo" accept="image/png,image/jpeg,image/webp" aria-label="Logo de la prepa">
+              <span class="rc-drop-img" id="np-preview"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg></span>
+              <b id="np-drop-t">Sube el logo</b>
+              <small>Arrástralo aquí, pégalo (Ctrl+V) o tócalo para elegirlo</small>
+            </label>
+            <div class="rf-group">
+              <label class="rf-row rf-field">
+                <span class="rf-row-label">Nombre de la prepa</span>
+                <input class="rf-input" id="np-nombre" maxlength="80" autocomplete="off" placeholder="Ej. EPO 23" required>
+                <span class="rf-error-msg">Escribe el nombre.</span>
+              </label>
+            </div>
+            <p class="rf-footnote">Así como lo escribas aparecerá en los reconocimientos.</p>
+            <button class="rf-btn" type="submit">Guardar prepa</button>
+            <p class="rf-again"><button class="rf-text-btn" type="button" id="np-cancelar" hidden>Cancelar</button></p>
+            <p class="rf-form-error" role="alert" hidden></p>
+          </form>
+
+          <section aria-labelledby="t-prepas">
+            <header class="rf-codes-head">
+              <div>
+                <h2 id="t-prepas">Prepas</h2>
+                <p class="rf-codes-stats"><span id="s-prepas">0</span> con convenio o visita</p>
+              </div>
+            </header>
+            <ul class="rf-codes-list rc-prepa-list" id="lista-prepas"></ul>
+            <p class="rf-codes-empty" id="prepas-vacio" hidden>Aún no hay prepas. Sube la primera con su logo.</p>
+          </section>
+        </div>
+      </div>
+    </div>
+    <input type="file" id="logo-rapido" accept="image/png,image/jpeg,image/webp" hidden>
+  </main>
+
+  <footer class="rf-footer">
+    <span>© 2026 Universidad Westhill</span>
+    <a href="tel:+525588517010">(55) 8851 7010</a>
+    <a href="mailto:admisiones@uw.edu.mx">admisiones@uw.edu.mx</a>
+    <i>Vestigia Nulla Retrorsum</i>
+  </footer>
+
+  <script src="assets/js/referidos.js"></script>
+  <script src="assets/js/referidos-ui.js"></script>
+  <script src="assets/js/reconocimientos.js"></script>
+  <script src="assets/js/tarjeta-imgs.js"></script>
+  <script src="assets/js/reconocimiento-imgs.js"></script>
+  <script src="assets/js/reconocimiento-tarjeta.js"></script>
+  <script src="assets/js/admisiones-reconocimientos.js"></script>
+</body>
+</html>

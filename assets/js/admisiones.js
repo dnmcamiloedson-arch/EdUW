@@ -56,6 +56,7 @@
       admin.hidden = false;
       admin.classList.add("rf-materialize");     // el panel se materializa en el lugar de la clave
       $("salir").hidden = false;
+      $("ir-reconocimientos").hidden = false;
       pintarLista(r.referidores);
       RefUI.initTilt($("r-pase"));
       RefUI.initTilt($("r-tarjeta"));

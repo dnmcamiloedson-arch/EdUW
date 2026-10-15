@@ -19,6 +19,7 @@
      · Embajadores: a quienes Admisiones les generó un código (link personal).
                     (antes se llamaba "Referidores"; se renombra sola)
      · Referidos:   registros que llegan desde el formulario con ?ref=CODIGO.
+     · Reconocimientos y Prepas: los de cada visita (ver Reconocimientos.gs).
 
    API:
      GET  ?accion=referidor&codigo=ABC123  → { ok, referidor: { codigo, nombre } }
@@ -54,6 +55,7 @@ function configurar() {
 function doGet(e) {
   var p = (e && e.parameter) || {};
   try {
+    if (p.accion === "reconocimiento") return json_(verReconocimiento_(p.codigo));   // Reconocimientos.gs
     if (p.accion === "referidor") {
       var r = buscarReferidor_(p.codigo);
       if (!r) return json_({ ok: false, error: "Código no encontrado." });
@@ -86,6 +88,12 @@ function doPost(e) {
     if (datos.accion === "registrarReferido") return json_(registrarReferido_(datos));
     if (datos.accion === "crearReferidor") return json_(crearReferidor_(datos));
     if (datos.accion === "listarReferidores") return json_(listarReferidores_());
+    if (datos.accion === "crearReconocimientos") return json_(crearReconocimientos_(datos));   // Reconocimientos.gs
+    if (datos.accion === "listarReconocimientos") return json_(listarReconocimientos_());
+    if (datos.accion === "catalogoReconocimientos") return json_(catalogoReconocimientos_());
+    if (datos.accion === "guardarPrepa") return json_(guardarPrepa_(datos));
+    if (datos.accion === "borrarPrepa") return json_(borrarPrepa_(datos));
+    if (datos.accion === "guardarTextos") return json_(guardarTextos_(datos));
     return json_({ ok: false, error: "Acción desconocida." });
   } catch (err) {
     return json_({ ok: false, error: String(err && err.message || err) });

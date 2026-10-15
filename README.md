@@ -157,3 +157,26 @@ Luego abre <http://localhost:8000>.
 ---
 
 *"Vestigia Nulla Retrorsum" — Nunca retrocedas sobre tus huellas.*
+
+---
+
+## 🎓 Reconocimientos digitales (visitas de prepas)
+
+Para no imprimir: cada estudiante que visita Westhill recibe por WhatsApp un
+**sobre amarrado con un moño dorado**. Lo abre jalando el moño, ve su
+reconocimiento y lo descarga.
+
+| Página | Para quién | Qué hace |
+|---|---|---|
+| `admisiones-reconocimientos.html` | Admisiones (con clave) | Pestaña **Reconocimientos**: prepa, fecha, textos y lista de estudiantes (se puede pegar de Excel: nombre y teléfono). Vista previa en vivo, un botón de WhatsApp por estudiante y lista de quién ya lo abrió. Pestaña **Prepas**: el logo de cada escuela. |
+| `reconocimiento.html?c=CODIGO` | Estudiante | Sobre con moño → reconocimiento → Descargar / Compartir → redes. |
+
+- El diseño es fijo; solo cambian los **textos** y el **logo de la prepa**.
+  Al escribir o elegir la prepa (EPO 23, IPEFH…) su logo sale solo en el sobre
+  (como estampilla) y en el reconocimiento (junto al de Westhill).
+- Los logos se reducen en el navegador y se guardan dentro de la hoja
+  (hoja **Prepas**), sin Drive ni permisos.
+- "Guardar como textos fijos" deja el motivo, mensaje y firma para todos los grupos.
+- Backend: `apps-script/Reconocimientos.gs` (mismo proyecto que `Codigo.gs`).
+  Después de pegarlo: Guardar → ejecutar `instalar` → Implementar →
+  Gestionar implementaciones → lápiz → **Nueva versión**.

@@ -1,0 +1,377 @@
+/* ==========================================================================
+   Universidad Westhill — Reconocimientos digitales
+   Se carga DESPUÉS de referidos.css (usa sus colores, botones, papel y olas).
+   --------------------------------------------------------------------------
+     · reconocimiento.html: el sobre llega amarrado con un listón dorado.
+       Se jala el moño hacia abajo (o se toca) y el listón se suelta, la
+       solapa se abre y la carta sale convertida en el reconocimiento.
+     · admisiones-reconocimientos.html: pestañas Reconocimientos / Prepas,
+       vista previa en vivo y logo de la prepa automático.
+   ========================================================================== */
+
+/* ==========================================================================
+   EL SOBRE CON MOÑO (reconocimiento.html)
+   ========================================================================== */
+/* Héroe más compacto: el sobre y la instrucción caben en la primera pantalla */
+.rc-page .rf-hero { padding-top: clamp(36px, 4.5vw, 64px); }
+.rc-page .rf-title { font-size: clamp(2.3rem, 5.6vw, 4.1rem); }
+.rc-page .rf-lead { margin-top: 14px; }
+.rc-page .rf-hero.is-error { display: none; }
+.rc-scene {
+  position: relative; max-width: 640px; margin: 0 auto;
+  padding: clamp(32px, 4vw, 48px) 16px 0;
+  display: grid; grid-template-columns: minmax(0, 1fr); justify-items: center;
+}
+/* Sobre y reconocimiento comparten la celda: no se empujan */
+.rc-scene > * { grid-area: 1 / 1; align-self: start; min-width: 0; width: 100%; }
+.rc-env-wrap { display: grid; justify-items: center; }
+
+.rc-env {
+  --a: 4.4cqi;                                 /* ancho del listón */
+  position: relative; width: min(520px, 100%); aspect-ratio: 1.58;
+  container-type: inline-size;
+  perspective: 1400px;
+  will-change: transform, opacity;
+}
+.rc-env-back, .rc-env-pocket, .rc-env-flap-shape { position: absolute; border-radius: 16px; }
+.rc-env-back { inset: 0; background: linear-gradient(170deg, #0c2442, #081a33); box-shadow: var(--shadow-lg); }
+.rc-env-letter {
+  position: absolute; left: 5%; right: 5%; top: 6%; height: 88%; z-index: 1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--paper), var(--paper-2));
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .7) inset, 0 10px 30px -14px rgba(0, 0, 0, .5);
+  display: grid; align-content: start; justify-items: center; padding-top: 8%;
+  color: var(--navy); text-align: center; will-change: transform;
+}
+.rc-env-letter .k { font-size: 11px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--gold-600); }
+.rc-env-letter .t { margin-top: 6px; font-family: var(--font-paper); font-size: clamp(1.3rem, 4vw, 1.9rem); font-weight: 500; letter-spacing: -.01em; }
+.rc-env-letter .rule { width: 36px; height: 1px; background: var(--gold); margin-top: 10px; }
+.rc-env-pocket {
+  inset: 0; z-index: 2;
+  background: linear-gradient(165deg, #133661 0%, #0d2848 55%, #0a1f3b 100%);
+  clip-path: polygon(0 0, 50% 54%, 100% 0, 100% 100%, 0 100%);
+}
+.rc-env-pocket::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit;
+  background:
+    linear-gradient(to top right, transparent calc(50% - .5px), rgba(255, 255, 255, .06) 50%, transparent calc(50% + .5px)),
+    linear-gradient(to top left,  transparent calc(50% - .5px), rgba(255, 255, 255, .06) 50%, transparent calc(50% + .5px));
+}
+.rc-env-to {
+  position: absolute; z-index: 3; left: 7%; bottom: 8%; max-width: 38%;
+  font-size: 12px; color: rgba(255, 255, 255, .55); letter-spacing: .02em; line-height: 1.4;
+}
+.rc-env-to b {
+  display: block; font-family: var(--font-paper); font-weight: 500; font-size: clamp(1.05rem, 4.2cqi, 1.5rem);
+  color: var(--gold-pale); letter-spacing: -.005em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* Estampilla: el logo de la prepa sobre papel blanco con borde dentado */
+.rc-env-stamp {
+  position: absolute; z-index: 3; right: 6%; bottom: 7%;
+  width: 17cqi; aspect-ratio: .875;
+  padding: 5px; transform: rotate(4deg);
+  background: #fff;
+  -webkit-mask: radial-gradient(circle at 5px 5px, transparent 3px, #000 3.4px) -5px -5px / 10px 10px, linear-gradient(#000, #000) 5px 5px / calc(100% - 10px) calc(100% - 10px) no-repeat;
+          mask: radial-gradient(circle at 5px 5px, transparent 3px, #000 3.4px) -5px -5px / 10px 10px, linear-gradient(#000, #000) 5px 5px / calc(100% - 10px) calc(100% - 10px) no-repeat;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .35));
+}
+.rc-env-stamp span {
+  display: grid; place-items: center; width: 100%; height: 100%; padding: 12%;
+  border: 1px solid rgba(168, 129, 26, .45);
+}
+.rc-env-stamp img { width: 100%; height: 100%; object-fit: contain; }
+.rc-env-stamp.is-westhill span { border: 0; background: linear-gradient(160deg, var(--navy-3), var(--navy)); }
+.rc-env-stamp.is-westhill { background: var(--gold-pale); }
+.rc-env-stamp.is-new img { animation: rc-stamp-in 420ms var(--ease-out) both; }
+@keyframes rc-stamp-in { from { opacity: 0; transform: scale(.8); filter: blur(4px); } }
+
+.rc-env-flap {
+  position: absolute; left: 0; right: 0; top: 0; height: 60%; z-index: 4;
+  transform-origin: 50% 0; transform-style: preserve-3d; will-change: transform;
+}
+.rc-env-flap.is-behind { z-index: 0; }
+.rc-env-flap-shape {
+  inset: 0; border-radius: 16px 16px 0 0;
+  background: linear-gradient(180deg, #17406f 0%, #0f2c52 100%);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+/* Listón dorado: cuatro tramos que salen del nudo (se sueltan cada uno a su lado) */
+.rc-liston { position: absolute; inset: 0; z-index: 5; pointer-events: none; border-radius: 16px; overflow: hidden; }
+.rc-liston span { position: absolute; will-change: transform, opacity; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.rc-liston .v { left: calc(50% - var(--a) / 2); width: var(--a); background: linear-gradient(90deg, #c99a1e, #f8dc7a 35%, var(--gold) 55%, #b58d1f); }
+.rc-liston .h { top: calc(60% - var(--a) / 2); height: var(--a); background: linear-gradient(180deg, #c99a1e, #f8dc7a 35%, var(--gold) 55%, #b58d1f); }
+.rc-liston .arriba { top: 0; height: 60%; }
+.rc-liston .abajo { top: 60%; bottom: 0; }
+.rc-liston .izq { left: 0; width: 50%; }
+.rc-liston .der { left: 50%; right: 0; }
+
+/* El moño: es el "asa" del gesto. El nudo queda justo en el cruce del listón */
+.rc-mono {
+  position: absolute; z-index: 6;
+  width: 36cqi; aspect-ratio: 240 / 200;
+  left: calc(50% - 18cqi); top: calc(60% - 10.5cqi);
+  padding: 0; border: 0; background: none; cursor: grab;
+  touch-action: none; -webkit-tap-highlight-color: transparent;
+}
+.rc-mono svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 6px 10px rgba(0, 0, 0, .4)); }
+.rc-mono:active { cursor: grabbing; }
+.rc-mono:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; border-radius: 24px; }
+/* Halo que invita a jalar (late 3 veces y se queda) */
+.rc-mono::before {
+  content: ""; position: absolute; left: 50%; top: 35%; width: 26%; aspect-ratio: 1; translate: -50% -50%;
+  border-radius: 50%; box-shadow: 0 0 0 2px rgba(251, 231, 161, .8); opacity: 0;
+  animation: rf-halo 1.6s var(--ease-out) 1.6s 3;
+}
+.rc-env.is-open .rc-mono::before { animation: none; }
+.rc-env.is-open .rc-mono { pointer-events: none; }
+
+.rc-hint { margin-top: 26px; display: inline-flex; align-items: center; gap: 10px; font-size: 15px; color: var(--on-stage-2); }
+.rc-hint svg { width: 18px; height: 18px; stroke: var(--gold-ink); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.js .rc-hint svg { animation: rc-jala 1.6s var(--ease-out) 1.8s 3; }
+@keyframes rc-jala { 0%, 100% { transform: none; } 40% { transform: translateY(5px); } }
+.rc-scene.is-open .rc-hint, .rc-scene.is-open [data-abrir] { visibility: hidden; }
+
+/* --- El reconocimiento ---------------------------------------------------- */
+.rc-result { display: grid; justify-items: center; text-align: center; outline: none; }
+.rc-felicidades {
+  color: var(--navy-ink); font-size: clamp(2rem, 6vw, 3rem); letter-spacing: -.04em; line-height: 1.05; font-weight: 800;
+  outline: none;
+}
+.rc-felicidades-sub { margin-top: 10px; color: var(--on-stage-2); font-size: 17px; }
+.rc-diploma {
+  position: relative; margin: 26px 0 0; width: min(560px, 100%);
+  aspect-ratio: 1080 / 1350; perspective: 1100px;
+  transform-origin: 0 0; will-change: transform;
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--paper), var(--paper-2));
+  box-shadow: 0 0 0 .5px rgba(60, 50, 30, .14), 0 60px 110px -50px rgba(19, 48, 77, .55), 0 18px 36px -22px rgba(19, 48, 77, .3);
+}
+.rc-diploma img {
+  display: block; width: 100%; height: 100%; border-radius: inherit;
+  transform-style: preserve-3d; touch-action: pan-y; user-select: none; -webkit-user-drag: none; cursor: grab;
+}
+.rc-diploma.is-morphing img { opacity: 0; }
+.rc-diploma.is-shown img { animation: rc-revela 620ms var(--ease-out) both; }
+@keyframes rc-revela { from { opacity: 0; filter: blur(12px) saturate(.6); transform: scale(.985); } }
+/* Brillo que cruza una sola vez, como luz sobre papel satinado */
+.rc-diploma::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, .55) 48%, rgba(251, 231, 161, .35) 52%, transparent 65%) -120% 0 / 250% 100% no-repeat;
+}
+.rc-diploma.is-shown::after { animation: rc-brillo 1400ms var(--ease-out) 380ms both; }
+@keyframes rc-brillo { 0% { opacity: 1; background-position: -120% 0; } 100% { opacity: 1; background-position: 220% 0; } }
+
+.rc-acciones { margin-top: 22px; width: min(560px, 100%); display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.rc-acciones.is-single { grid-template-columns: 1fr; }
+.rc-guardar { margin-top: 12px; font-size: 14px; color: var(--on-stage-3); }
+.rc-result .rf-redes-final { margin-top: clamp(40px, 7vw, 64px); width: min(560px, 100%); }
+/* Lo de alrededor guarda su lugar (sin saltos) y aparece cuando el reconocimiento ya llegó */
+.rc-result > .is-later { visibility: hidden; }
+.rc-result.is-done > .is-later { visibility: visible; }
+.rc-result.is-done > .is-later:not(.rf-redes-final):not(.rc-felicidades) { animation: rf-materialize 460ms var(--ease-out) both; animation-delay: calc(400ms + var(--i, 0) * 90ms); }
+
+/* Sin reconocimiento (link mal copiado) */
+.rc-error { max-width: 440px; margin: 0 auto; padding: clamp(36px, 6vw, 60px) 20px 0; text-align: center; }
+.rc-error .rf-panel { text-align: center; }
+.rc-error .rf-panel-head p { margin-top: 10px; }
+.rc-error .rf-btn { margin-top: 6px; }
+
+/* Cargando: el nombre del sobre parpadea suave hasta que llega */
+.rc-cargando { display: inline-block; width: 7.5em; max-width: 100%; height: .9em; border-radius: 6px; background: rgba(251, 231, 161, .22); animation: rc-pulso 1.2s ease-in-out infinite; }
+@keyframes rc-pulso { 50% { opacity: .45; } }
+
+/* En computadora el reconocimiento y el botón de descargar caben juntos en pantalla */
+@media (min-width: 861px) {
+  .rc-diploma, .rc-acciones, .rc-result .rf-redes-final { width: min(500px, 100%, calc((100svh - 290px) * .8)); }
+  .rc-diploma { min-width: 380px; }
+  .rc-acciones, .rc-result .rf-redes-final { min-width: 380px; }
+}
+@media (max-width: 560px) {
+  .rc-scene { padding-top: 30px; }
+  .rc-acciones { grid-template-columns: 1fr; }
+  .rc-env-to { font-size: 11px; }
+}
+
+/* ==========================================================================
+   PANEL DE ADMISIONES (admisiones-reconocimientos.html)
+   ========================================================================== */
+.rc-nav-links { display: flex; align-items: center; gap: 18px; }
+.rf-invite-page button.rf-nav-link { color: rgba(255, 255, 255, .88); background: none; border: 0; cursor: pointer; }
+
+/* Pestañas: control segmentado con la selección que se desliza */
+.rc-tabs { display: flex; justify-content: center; padding: 28px 20px 0; }
+.rc-tabs .rf-pills { padding: 4px; border-radius: 999px; background: var(--glass); box-shadow: 0 0 0 .5px var(--glass-line) inset; gap: 0; }
+.rc-tabs .rf-pill span, .rc-tabs .rf-pills-active span { height: 40px; padding: 0 22px; font-size: 15px; font-weight: 600; background: none; box-shadow: none; gap: 8px; }
+.rc-tabs .rf-pills-active { inset: 4px; gap: 0; }
+.rc-tabs .rf-pills-active span { background: var(--navy); }
+.rc-tabs .rf-pill .n, .rc-tabs .rf-pills-active .n {
+  font-style: normal; display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 6px; border-radius: 99px;
+  background: rgba(39, 96, 146, .12); color: var(--navy); font-size: 12px; font-variant-numeric: tabular-nums;
+}
+.rc-tabs .rf-pills-active .n { background: rgba(255, 255, 255, .18); color: #fff; }
+.rc-tab[hidden] { display: none; }
+.rc-tab.is-entering { animation: rf-materialize 320ms var(--ease-out) both; }
+
+/* Vista previa: la imagen que se manda, se redibuja mientras se escribe */
+.rc-preview { display: grid; justify-items: center; gap: 14px; position: sticky; top: 112px; align-self: start; }
+.rc-preview-card {
+  width: min(400px, 100%); aspect-ratio: 1080 / 1350; perspective: 1000px;
+  border-radius: 16px; background: linear-gradient(180deg, var(--paper), var(--paper-2));
+  box-shadow: 0 0 0 .5px rgba(60, 50, 30, .14), 0 50px 90px -48px rgba(19, 48, 77, .55), 0 18px 36px -22px rgba(19, 48, 77, .3);
+}
+.rc-preview-card canvas, .rc-preview-card img { display: block; width: 100%; height: 100%; border-radius: inherit; transform-style: preserve-3d; touch-action: pan-y; user-select: none; -webkit-user-drag: none; cursor: grab; transition: opacity 160ms var(--ease-out); }
+
+.rc-preview .rf-pills-wrap { margin: 0; }
+.rc-preview .rf-pills { justify-content: center; }
+.rc-preview-hint { font-size: 13px; color: var(--on-stage-3); text-align: center; }
+
+.rc-forge { align-items: start; }
+.rc-panel-sec { margin: 22px 0 8px; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--ink-2); display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.rc-panel-sec:first-of-type { margin-top: 0; }
+.rc-panel-sec .rf-text-btn { padding: 0; font-size: 13px; font-weight: 600; }
+.rc-panel-sec .rc-guardado { color: var(--green); font-weight: 600; }
+.rf-row input[type="date"].rf-input { min-height: 1.4em; }
+
+/* Prepa: campo con su logo a la izquierda y sugerencias al escribir */
+.rc-prepa-row { display: grid; grid-template-columns: 46px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding-top: 8px; padding-bottom: 8px; }
+.rc-prepa-row .rf-row-label { grid-column: 2; }
+.rc-prepa-row .rc-combo { grid-column: 2; }
+.rc-prepa-row .rf-error-msg { grid-column: 2; }
+.rc-logo {
+  grid-row: 1 / span 3; grid-column: 1;
+  display: grid; place-items: center; width: 46px; height: 46px; border-radius: 12px; overflow: hidden;
+  background: #fff; box-shadow: 0 0 0 .5px var(--sep), 0 4px 10px -6px rgba(19, 48, 77, .35);
+  font: 700 12px/1 var(--font); color: var(--navy); letter-spacing: -.01em; text-align: center;
+}
+.rc-logo img { width: 84%; height: 84%; object-fit: contain; }
+.rc-logo.is-vacio { background: rgba(39, 96, 146, .07); color: var(--ink-3); box-shadow: 0 0 0 1px rgba(39, 96, 146, .18) inset; }
+.rc-logo.is-vacio svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.rc-logo.is-pop { animation: rc-pop 460ms cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes rc-pop { from { transform: scale(.6); opacity: 0; } }
+.rc-prepa-estado { grid-row: 1 / span 3; grid-column: 3; font-size: 12px; font-weight: 600; color: var(--green); white-space: nowrap; }
+.rc-prepa-estado.is-nueva { color: var(--gold-ink); }
+.rc-prepa-estado button { background: none; border: 0; padding: 6px 0; color: var(--blue); font: inherit; cursor: pointer; }
+.rc-prepa-estado button:active { opacity: .5; }
+
+.rc-combo { position: relative; }
+.rc-sugerencias {
+  position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 6px);
+  margin: 0; padding: 6px; list-style: none; border-radius: 14px;
+  background: #fff; box-shadow: 0 0 0 .5px rgba(19, 48, 77, .14), 0 24px 50px -20px rgba(19, 48, 77, .4);
+  transform-origin: top center; max-height: 286px; overflow: auto;
+}
+.rc-sugerencias:not([hidden]) { animation: rc-menu 160ms var(--ease-out) both; }
+@keyframes rc-menu { from { opacity: 0; transform: scale(.97) translateY(-4px); } }
+.rc-sugerencias li {
+  display: grid; grid-template-columns: 34px 1fr; align-items: center; gap: 10px;
+  padding: 7px 10px; border-radius: 10px; cursor: pointer; font-size: 15px; color: var(--ink);
+}
+.rc-sugerencias li .rc-logo { width: 34px; height: 34px; border-radius: 9px; grid-row: auto; font-size: 10px; }
+.rc-sugerencias li[aria-selected="true"] { background: rgba(39, 96, 146, .08); }
+.rc-sugerencias li mark { background: none; color: var(--blue); font-weight: 600; }
+
+.rc-alumnos { min-height: 7.2em; font-size: 16px; line-height: 1.5; }
+.rc-conteo { display: flex; flex-wrap: wrap; gap: 6px 14px; padding: 4px 16px 0; margin-bottom: 16px; font-size: 13px; color: var(--ink-2); }
+.rc-conteo b { color: var(--navy); font-variant-numeric: tabular-nums; }
+.rc-conteo .is-wa b { color: #1e7a45; }
+
+/* Resultado: lista de envíos del grupo */
+.rc-progreso { display: flex; align-items: center; gap: 12px; margin: 0 0 14px; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.rc-barra { flex: 1; height: 6px; border-radius: 99px; background: rgba(39, 96, 146, .1); overflow: hidden; }
+.rc-barra i { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--green); transition: width 420ms var(--ease-out); }
+.rc-envios { list-style: none; margin: 0 0 12px; padding: 0; border-radius: 14px; background: rgba(255, 255, 255, .75); box-shadow: 0 0 0 .5px var(--sep); max-height: 420px; overflow: auto; }
+.rc-envio { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 9px 10px 9px 12px; }
+.rc-envio + .rc-envio { box-shadow: 0 -.5px 0 var(--sep); }
+.rc-envio .rf-avatar { width: 32px; height: 32px; font-size: 13px; }
+.rc-envio .quien { display: grid; min-width: 0; text-align: left; background: none; border: 0; padding: 4px 0; cursor: pointer; border-radius: 8px; }
+.rc-envio .quien b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rc-envio .quien small { font-size: 12px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.rc-envio .quien:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.rc-envio.is-actual { background: rgba(242, 201, 76, .14); }
+.rc-envio .rf-copy { height: 36px; padding: 0 11px; background: rgba(39, 96, 146, .1); color: var(--navy); }
+.rc-envio .rf-copy.is-copied { background: var(--green); color: #fff; }
+.rc-wa {
+  display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 13px; border-radius: 10px;
+  background: #1fa855; color: #fff; font-size: 14px; font-weight: 600; white-space: nowrap;
+  transition: transform var(--press) var(--ease-out), background-color var(--ui) var(--ease-out);
+}
+.rc-wa svg { width: 16px; height: 16px; }
+.rc-wa:active { transform: scale(.95); }
+.rc-wa:focus-visible { outline: 3px solid rgba(31, 168, 85, .45); outline-offset: 2px; }
+.rc-wa.is-sent { background: rgba(31, 168, 85, .12); color: #1e7a45; }
+.rc-envio.is-new { animation: rf-materialize 380ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 30ms); }
+
+/* Historial: reutiliza .rf-codes-list; el estado va en lugar del contador */
+.rc-estado {
+  justify-self: end; display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 99px;
+  font-size: 13px; font-weight: 600; white-space: nowrap; background: rgba(29, 29, 31, .05); color: var(--on-stage-3);
+}
+.rc-estado.is-abierto { background: rgba(39, 174, 96, .12); color: #1e7a45; }
+.rc-estado.is-enviado { background: rgba(39, 96, 146, .08); color: var(--navy); }
+.rc-hist .rf-code-row { grid-template-columns: 36px minmax(0, 1fr) auto 116px auto; }
+
+/* --- Pestaña Prepas -------------------------------------------------------- */
+.rc-prepas { max-width: 1120px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) 20px 0; display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: clamp(24px, 4vw, 48px); align-items: start; }
+.rc-drop {
+  position: relative; display: grid; justify-items: center; gap: 8px; padding: 22px 16px; margin-bottom: 14px;
+  border-radius: 16px; background: rgba(255, 255, 255, .7); text-align: center; cursor: pointer;
+  box-shadow: 0 0 0 1.5px rgba(39, 96, 146, .22) inset;
+  background-image: linear-gradient(90deg, rgba(39, 96, 146, .35) 50%, transparent 50%), linear-gradient(90deg, rgba(39, 96, 146, .35) 50%, transparent 50%), linear-gradient(0deg, rgba(39, 96, 146, .35) 50%, transparent 50%), linear-gradient(0deg, rgba(39, 96, 146, .35) 50%, transparent 50%);
+  background-repeat: repeat-x, repeat-x, repeat-y, repeat-y; background-size: 12px 1.5px, 12px 1.5px, 1.5px 12px, 1.5px 12px; background-position: 0 0, 0 100%, 0 0, 100% 0;
+  box-shadow: none;
+  transition: background-color var(--ui) var(--ease-out), transform var(--press) var(--ease-out);
+}
+.rc-drop:active { transform: scale(.99); }
+.rc-drop.is-over { background-color: rgba(242, 201, 76, .16); }
+.rc-drop input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.rc-drop:focus-within { outline: 3px solid rgba(39, 96, 146, .4); outline-offset: 2px; }
+.rc-drop-img { display: grid; place-items: center; width: 96px; height: 96px; border-radius: 18px; background: #fff; box-shadow: 0 0 0 .5px var(--sep), 0 10px 22px -14px rgba(19, 48, 77, .45); }
+.rc-drop-img img { width: 82%; height: 82%; object-fit: contain; }
+.rc-drop-img svg { width: 34px; height: 34px; fill: none; stroke: var(--blue); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.rc-drop b { font-size: 15px; color: var(--navy); }
+.rc-drop small { font-size: 13px; color: var(--ink-2); }
+.rc-drop.has-logo .rc-drop-img { animation: rc-pop 460ms cubic-bezier(.34, 1.56, .64, 1); }
+
+.rc-prepa-list .rf-code-row { grid-template-columns: 52px minmax(0, 1fr) auto auto; }
+.rc-prepa-list .rc-logo { width: 52px; height: 52px; grid-row: auto; font-size: 13px; }
+.rc-prepa-list .who b { white-space: normal; }
+.rc-prepa-list .rf-icon-btn { width: 38px; height: 38px; color: var(--danger); background: rgba(215, 0, 21, .06); box-shadow: none; }
+.rc-prepa-list .rf-icon-btn svg { width: 17px; height: 17px; }
+.rc-prepa-list .is-editando { background: rgba(242, 201, 76, .14); }
+
+@media (max-width: 860px) {
+  .rc-preview { position: static; }
+  .rc-preview-card { width: min(300px, 78%); }
+  .rc-prepas { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .rc-hist .rf-code-row { grid-template-columns: 36px minmax(0, 1fr) auto; grid-template-areas: "av who count" "av code btn"; }
+  .rc-envio { gap: 8px; padding-left: 10px; }
+  .rc-prepa-list .rf-code-row { grid-template-columns: 52px minmax(0, 1fr) auto; grid-template-areas: "lg who del" "lg btn del"; }
+  .rc-prepa-list .rc-logo { grid-area: lg; align-self: start; }
+  .rc-prepa-list .rf-row-btn { justify-self: start; }
+  .rc-prepa-list .rf-icon-btn { grid-area: del; }
+  .rc-tabs .rf-pill span, .rc-tabs .rf-pills-active span { padding: 0 16px; }
+}
+@media (max-width: 420px) { .rc-nav-links .rc-otro-panel { display: none; } }
+
+@media (hover: hover) and (pointer: fine) {
+  .rc-wa:hover:not(.is-sent) { filter: brightness(1.08); }
+  .rc-sugerencias li:hover { background: rgba(39, 96, 146, .06); }
+  .rc-drop:hover { background-color: rgba(39, 96, 146, .04); }
+}
+
+/* --- Accesibilidad --------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .rc-mono::before, .js .rc-hint svg, .rc-cargando { animation: none; }
+  .rc-diploma.is-shown img, .rc-diploma.is-shown::after, .rc-result.is-done > .is-later:not(.rf-redes-final),
+  .rc-tab.is-entering, .rc-envio.is-new, .rc-logo.is-pop, .rc-drop.has-logo .rc-drop-img,
+  .rc-env-stamp.is-new img, .rc-sugerencias:not([hidden]) { animation: rf-fade 200ms linear both !important; }
+  .rc-diploma.is-shown::after { display: none; }
+  .rc-wa:active, .rc-drop:active { transform: none; }
+  .rc-barra i { transition: none; }
+}
+@media (prefers-contrast: more) {
+  .rc-preview-hint, .rc-guardar { color: var(--on-stage-2); }
+}

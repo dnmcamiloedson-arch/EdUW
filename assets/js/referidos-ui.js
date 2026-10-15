@@ -13,6 +13,8 @@
      RefUI.initTilt(el)        inclinación 3D que sigue al puntero
      RefUI.reducido()          true si la persona pidió menos movimiento
      RefUI.contar(el, n)       el número de `el` corre hasta n con un resorte
+     RefUI.confeti(el)         confeti Westhill que sale de `el`
+     RefUI.partirLetras(el, n) parte el título en letras (el nombre `n` en azul)
    ========================================================================== */
 (function () {
   "use strict";
@@ -587,5 +589,5 @@
     initSobre();
   });
 
-  window.RefUI = { Spring, morph, initTilt, rodillos, reducido, contar };
+  window.RefUI = { Spring, morph, initTilt, rodillos, reducido, contar, confeti, partirLetras, initPills, proyectar, goma };
 })();

@@ -20,6 +20,7 @@ function instalar() {
   var reg = hoja_(HOJA_REFERIDOS, COLS_REFERIDOS);
   formatearTabla_(reg, [140, 120, 180, 200, 230, 120, 130, 240, 260, 220, 90]);
   pulirRegistros_(reg);
+  formatearReconocimientos_();   // Reconocimientos.gs
   crearTablero();
   quitarHojaVacia_();
 }
