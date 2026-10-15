@@ -193,7 +193,7 @@ const Welcome: React.FC = () => {
           />
         </div>
         <MaskReveal start={90} dur={18} style={{position: 'absolute', top: 625, width: '100%', textAlign: 'center'}}>
-          <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 176, color: C.blanco, lineHeight: 1.05}}>
+          <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 150, color: C.blanco, lineHeight: 1.05}}>
             Experiencia
           </span>
         </MaskReveal>
@@ -215,7 +215,7 @@ const Welcome: React.FC = () => {
                 key={i}
                 style={{
                   fontFamily: F.display,
-                  fontSize: 262,
+                  fontSize: 215,
                   lineHeight: 1.12,
                   color: C.blanco,
                   display: 'inline-block',
@@ -235,7 +235,7 @@ const Welcome: React.FC = () => {
               style={{
                 fontFamily: F.sans,
                 fontWeight: 800,
-                fontSize: 50,
+                fontSize: 44,
                 color: C.azul,
                 letterSpacing: 1,
                 opacity: tw(f, [138, 146], [0, 1]),

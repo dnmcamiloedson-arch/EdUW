@@ -3,7 +3,7 @@ import {AbsoluteFill, Audio, Img, interpolate, Sequence, staticFile, useCurrentF
 import {CircleWipe, CleanBg, Flash, Grain, Highlight, MaskReveal, WordsIn} from './components';
 import {Intro, INTRO_FRAMES} from './Intro';
 import {Banner, BehindShot, PhotoShot, SectionLabel, Sfx, Shade, VideoShot} from './shots';
-import {C, F, ease, tw} from './theme';
+import {C, F, SAFE_X, ease, safeSize, tw} from './theme';
 
 // ---------------------------------------------------------------------------
 // Tarjetas de título (fondo limpio / azul, como la referencia)
@@ -23,7 +23,7 @@ export const TitleCard: React.FC<{small: string; big: string; color?: string; bg
         <WordsIn text={small} start={1} stagger={2} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 70, color: blue ? C.blanco : C.marino}} />
       </div>
       <MaskReveal start={5} dur={14} style={{position: 'absolute', top: 830, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 160, color: blue ? C.blanco : C.azul}}>{big}</span>
+        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: safeSize(big, 150, 0.5), color: blue ? C.blanco : C.azul}}>{big}</span>
       </MaskReveal>
     </AbsoluteFill>
   );
@@ -41,7 +41,7 @@ const LlegadaText: React.FC = () => {
           <div
             style={{
               fontFamily: F.display,
-              fontSize: 250,
+              fontSize: 220,
               lineHeight: 1,
               color: C.azul,
               transform: `translateY(${tw(f, [4, 18], [100, 0])}%)`,
@@ -53,7 +53,7 @@ const LlegadaText: React.FC = () => {
         <div
           style={{
             fontFamily: F.display,
-            fontSize: 330,
+            fontSize: 270,
             lineHeight: 0.95,
             color: C.amarillo,
             WebkitTextStroke: `6px ${C.marino}`,
@@ -83,7 +83,7 @@ export const CornholeText: React.FC<{estreno?: boolean}> = ({estreno = true}) =>
             key={i}
             style={{
               fontFamily: F.display,
-              fontSize: 250,
+              fontSize: 210,
               lineHeight: 1,
               color: C.marino,
               display: 'inline-block',
@@ -144,7 +144,7 @@ export const ReglasCard: React.FC = () => {
       </div>
       <div style={{position: 'absolute', top: 640, width: '100%', textAlign: 'center'}}>
         <Highlight start={20} color={C.azul} pad="0.05em 0.35em">
-          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 92, color: C.blanco}}>Atina 3 seguidos</span>
+          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 80, color: C.blanco}}>Atina 3 seguidos</span>
         </Highlight>
       </div>
       <div style={{position: 'absolute', top: 790, width: '100%', textAlign: 'center', fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 96, color: C.azul, opacity: tw(f, [28, 34], [0, 1])}}>
@@ -186,7 +186,7 @@ export const ReglasCard: React.FC = () => {
 export const Counter: React.FC<{n: number}> = ({n}) => {
   const f = useCurrentFrame();
   return (
-    <div style={{position: 'absolute', left: 64, top: 1240, display: 'flex', alignItems: 'center', gap: 18}}>
+    <div style={{position: 'absolute', left: SAFE_X, top: 1240, display: 'flex', alignItems: 'center', gap: 18}}>
       <span style={{fontFamily: F.display, fontSize: 110, color: C.blanco, textShadow: '0 4px 24px rgba(0,0,0,0.45)'}}>TIRO</span>
       {[1, 2, 3].map((i) => {
         const on = i <= n;
@@ -225,7 +225,7 @@ export const Logrado: React.FC = () => {
       <div
         style={{
           fontFamily: F.display,
-          fontSize: 210,
+          fontSize: 175,
           lineHeight: 0.95,
           textAlign: 'center',
           color: C.amarillo,
@@ -312,7 +312,7 @@ const Cierre: React.FC = () => {
           <div
             style={{
               fontFamily: F.display,
-              fontSize: 300,
+              fontSize: 230,
               lineHeight: 1.05,
               color: C.blanco,
               textShadow: '0 10px 40px rgba(20,35,60,0.4)',
@@ -399,7 +399,7 @@ export const EndCard: React.FC<{line1?: string; line2?: string}> = ({line1 = 'Gr
         <WordsIn text={line1} start={30} stagger={3} style={{fontFamily: F.sans, fontWeight: 800, fontSize: 58, color: C.blanco}} />
       </div>
       <MaskReveal start={38} style={{position: 'absolute', top: 1255, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 112, color: C.blanco}}>{line2}</span>
+        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: safeSize(line2, 100, 0.48), color: C.blanco}}>{line2}</span>
       </MaskReveal>
       <div
         style={{
@@ -526,7 +526,14 @@ export const SECTIONS: Section[] = [
 ];
 
 /** Canción elegida por el cliente: el "drop" (7.825 s) cae justo al terminar la intro */
-export const MUSIC = {src: 'music/cancion_referencia.wav', dropAt: Math.round(7.825 * 30)};
+export type Musica = 'cancion' | 'original' | 'ninguna';
+/** Pistas: 'cancion' = la del cliente (Instagram la silencia por derechos); 'original' = pista propia
+ *  libre de derechos (su drop ya cae en el segundo 6); 'ninguna' = solo efectos, para poner música en Instagram */
+export const MUSICAS: Record<Exclude<Musica, 'ninguna'>, {src: string; dropAt: number}> = {
+  cancion: {src: 'music/cancion_referencia.wav', dropAt: Math.round(7.825 * 30)},
+  original: {src: 'music/beat_westhill360.wav', dropAt: 180},
+};
+export const MUSIC = MUSICAS.cancion;
 
 export const sectionDur = (s: Section) => s.items.reduce((a, b) => a + b.dur, 0);
 export const REEL_FRAMES = INTRO_FRAMES + SECTIONS.reduce((a, s) => a + sectionDur(s), 0);
@@ -566,7 +573,7 @@ export const SectionsPlayer: React.FC<{sections: Section[]}> = ({sections}) => {
 export const sectionsDur = (names: string[]) => names.reduce((a, n) => a + sectionDur(SECTIONS.find((s) => s.name === n)!), 0);
 export const pickSections = (names: string[]) => names.map((n) => SECTIONS.find((s) => s.name === n)!);
 
-export const Reel: React.FC<{music?: boolean}> = ({music = true}) => (
+export const Reel: React.FC<{music?: Musica}> = ({music = 'original'}) => (
   <AbsoluteFill style={{background: '#000'}}>
     <Sequence durationInFrames={INTRO_FRAMES + 8}>
       <Intro />
@@ -578,10 +585,10 @@ export const Reel: React.FC<{music?: boolean}> = ({music = true}) => (
       <Banner />
     </Sequence>
     <Grain opacity={0.05} />
-    {music && (
+    {music !== 'ninguna' && (
       <Audio
-        src={staticFile(MUSIC.src)}
-        startFrom={MUSIC.dropAt - INTRO_FRAMES}
+        src={staticFile(MUSICAS[music].src)}
+        startFrom={MUSICAS[music].dropAt - INTRO_FRAMES}
         volume={(f) => interpolate(f, [REEL_FRAMES - 75, REEL_FRAMES], [0.6, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
       />
     )}

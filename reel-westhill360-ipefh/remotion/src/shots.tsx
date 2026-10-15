@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Flash} from './components';
-import {C, F, ease, tw} from './theme';
+import {C, F, SAFE_X, ease, tw} from './theme';
 
 export type Enter = 'zoom' | 'whipL' | 'whipR' | 'flash' | 'up' | 'none';
 
@@ -123,7 +123,7 @@ export const SectionLabel: React.FC<{num?: string; name: string; sub?: string; t
       {num && <div
         style={{
           position: 'absolute',
-          left: 64,
+          left: SAFE_X,
           top,
           fontFamily: F.display,
           fontSize: 210,
@@ -140,7 +140,7 @@ export const SectionLabel: React.FC<{num?: string; name: string; sub?: string; t
         <div
           style={{
             background: C.azul,
-            padding: '14px 44px 18px 64px',
+            padding: `14px 44px 18px ${SAFE_X}px`,
             transform: `translateX(${tw(f, [4, 18], [-105, 0])}%)`,
             boxShadow: '0 12px 40px rgba(0,0,0,0.25)',
           }}
@@ -164,7 +164,7 @@ export const SectionLabel: React.FC<{num?: string; name: string; sub?: string; t
         <div
           style={{
             position: 'absolute',
-            left: 66,
+            left: SAFE_X,
             top: top + 330,
             maxWidth: 820,
             fontFamily: F.serif,
@@ -191,7 +191,7 @@ export const PlacePill: React.FC<{text: string; top?: number}> = ({text, top = 1
   const w = tw(f, [2, 14], [0, 1], ease.inOut);
   const pulse = 1 + 0.25 * Math.sin(f / 4);
   return (
-    <div style={{position: 'absolute', left: 64, top, display: 'flex', alignItems: 'center'}}>
+    <div style={{position: 'absolute', left: SAFE_X, top, display: 'flex', alignItems: 'center'}}>
       <div
         style={{
           width: 64,
@@ -230,17 +230,19 @@ export const PlacePill: React.FC<{text: string; top?: number}> = ({text, top = 1
   );
 };
 
-/** Banderín UW fijo arriba a la derecha (entra deslizando desde arriba) */
+/** Banderín UW fijo arriba a la derecha, dentro de la zona segura (entra deslizando desde arriba) */
 export const Banner: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <div
       style={{
         position: 'absolute',
-        right: 56,
-        top: 0,
-        width: 176,
-        transform: `translateY(${tw(f, [0, 16], [-110, 0], ease.back)}%)`,
+        // debajo de la barra de estado y dentro de la zona segura de Instagram
+        right: SAFE_X,
+        top: 150,
+        width: 150,
+        opacity: tw(f, [0, 8], [0, 1]),
+        transform: `translateY(${tw(f, [0, 16], [-60, 0], ease.back)}px)`,
         filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.35))',
       }}
     >

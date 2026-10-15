@@ -1,9 +1,9 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {CleanBg, Grain, MaskReveal, WordsIn} from './components';
-import {CornholeText, Counter, GanadoresRibbon, Logrado, MUSIC, pickSections, ReglasCard, Section, WinnerPhoto} from './Reel';
+import {CornholeText, Counter, GanadoresRibbon, Logrado, Musica, MUSICAS, pickSections, ReglasCard, Section, WinnerPhoto} from './Reel';
 import {Banner, BehindShot, Sfx, Shade, SoftCtx, VideoShot} from './shots';
-import {C, F, ease, tw} from './theme';
+import {C, F, ease, safeSize, tw} from './theme';
 
 export const OPENER = 45;
 const XFADE = 10; // cuadros de fundido entre tomas (transición "natural")
@@ -73,13 +73,13 @@ const Opener: React.FC<{title: string}> = ({title}) => {
         IPEFH
       </div>
       <MaskReveal start={12} style={{position: 'absolute', top: 960, width: '100%', textAlign: 'center'}}>
-        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 92, color: C.azul}}>{title}</span>
+        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: safeSize(title, 92, 0.48), color: C.azul}}>{title}</span>
       </MaskReveal>
     </AbsoluteFill>
   );
 };
 
-const StoryFrame: React.FC<{title: string; dur: number; banner?: boolean; children: React.ReactNode}> = ({title, dur, banner = true, children}) => (
+const StoryFrame: React.FC<{title: string; dur: number; banner?: boolean; music?: Musica; children: React.ReactNode}> = ({title, dur, banner = true, music = 'original', children}) => (
   <AbsoluteFill style={{background: '#000'}}>
     <Sequence durationInFrames={OPENER + XFADE}>
       <Opener title={title} />
@@ -93,11 +93,13 @@ const StoryFrame: React.FC<{title: string; dur: number; banner?: boolean; childr
       </Sequence>
     )}
     <Grain opacity={0.05} />
-    <Audio
-      src={staticFile(MUSIC.src)}
-      startFrom={MUSIC.dropAt - OPENER}
-      volume={(f) => interpolate(f, [0, 10, dur - 30, dur], [0, 0.6, 0.6, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
-    />
+    {music !== 'ninguna' && (
+      <Audio
+        src={staticFile(MUSICAS[music].src)}
+        startFrom={MUSICAS[music].dropAt - OPENER}
+        volume={(f) => interpolate(f, [0, 10, dur - 30, dur], [0, 0.6, 0.6, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+      />
+    )}
   </AbsoluteFill>
 );
 

@@ -4,6 +4,13 @@ export const FPS = 30;
 export const W = 1080;
 export const H = 1920;
 
+// Zona segura de Instagram: en pantallas altas (iPhone) el reel se agranda para llenar la
+// pantalla y recorta ~5% por lado; arriba queda la barra de estado. Todo texto vive dentro.
+export const SAFE_X = 96;
+export const SAFE_W = W - 2 * SAFE_X;
+/** Tamaño de fuente que hace caber `text` en el ancho seguro (avg = ancho medio de letra en em) */
+export const safeSize = (text: string, max: number, avg: number) => Math.min(max, Math.floor(SAFE_W / (text.length * avg)));
+
 export const C = {
   azul: '#27639A', // azul Westhill
   azulClaro: '#3D8BD4',
