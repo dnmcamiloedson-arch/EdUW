@@ -4,6 +4,8 @@ import {TOTAL, Teaser, teaserSchemaDefaults} from './Teaser';
 import {fontsReady} from './lib/fonts';
 import {Countdown, CountdownProps, countdownLength} from './countdown/Countdown';
 import {CapProps, Capitulo, capLength} from './cap/Capitulo';
+import {LAB_LEN, Laboratorio} from './leyendas/Laboratorio';
+import {LAB2_LEN, Laboratorio2} from './leyendas/Laboratorio2';
 
 const h = delayRender('fuentes');
 fontsReady.then(() => continueRender(h));
@@ -35,5 +37,8 @@ export const Root: React.FC = () => (
 			defaultProps={{dias: 16, fecha: '28 · 10'} as CapProps}
 			calculateMetadata={({props}) => ({durationInFrames: capLength(props.dias)})}
 		/>
+		{/* Laboratorio del motor 2D de la serie de leyendas */}
+		<Composition id="Laboratorio" component={Laboratorio} durationInFrames={LAB_LEN} fps={30} width={1080} height={1920} />
+		<Composition id="Laboratorio2" component={Laboratorio2} durationInFrames={LAB2_LEN} fps={30} width={1080} height={1920} />
 	</>
 );
