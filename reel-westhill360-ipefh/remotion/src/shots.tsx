@@ -97,11 +97,11 @@ export const BehindShot: React.FC<{seg: string; frames: number; dur: number; chi
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
       <AbsoluteFill style={st}>
-        <Img src={staticFile(`seg/${seg}/bg_${n}.jpg`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+        <Img src={staticFile(`seg/${seg}/bg_${n}.webp`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
       {children}
       <AbsoluteFill style={st}>
-        <Img src={staticFile(`seg/${seg}/fg_${n}.png`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+        <Img src={staticFile(`seg/${seg}/fg_${n}.webp`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
       {!soft && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.55} />}
     </AbsoluteFill>

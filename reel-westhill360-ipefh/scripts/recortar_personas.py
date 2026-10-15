@@ -2,7 +2,7 @@
 y genera el recorte de personas (PNG con alfa) para poner texto DETRÁS de la gente.
 
 Uso: python3 recortar_personas.py <proxy.mp4> <inicio_seg> <duracion_seg> <carpeta_salida> [--photo]
-Salida: <carpeta>/bg_0000.jpg (cuadro completo) y <carpeta>/fg_0000.png (solo personas).
+Salida: <carpeta>/bg_0000.webp (cuadro completo) y <carpeta>/fg_0000.webp (solo personas, con alfa).
 """
 import os, subprocess, sys
 import numpy as np
@@ -30,5 +30,7 @@ for f in frames:
     prev = m
     mask = Image.fromarray(np.clip((m - 20) * 1.15, 0, 255).astype(np.uint8)).filter(ImageFilter.GaussianBlur(1.2))
     rgba = im.copy(); rgba.putalpha(mask)
-    rgba.save(f'{out}/fg_{f[3:7]}.png', compress_level=3)
+    rgba.save(f'{out}/fg_{f[3:7]}.webp', 'WEBP', quality=88)
+    im.save(f'{out}/bg_{f[3:7]}.webp', 'WEBP', quality=88)
+    os.remove(f'{out}/{f}')
 print(len(frames), 'cuadros en', out)

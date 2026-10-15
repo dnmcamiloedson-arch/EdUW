@@ -304,7 +304,7 @@ const Cierre: React.FC = () => {
   return (
     <AbsoluteFill style={{background: C.marino, overflow: 'hidden'}}>
       <div style={layer}>
-        <Img src={staticFile('seg/final/bg_0000.jpg')} style={{width: PW, height: PH}} />
+        <Img src={staticFile('seg/final/bg_0000.webp')} style={{width: PW, height: PH}} />
       </div>
       {/* GRACIAS detrás del grupo */}
       <div style={{position: 'absolute', top: 690, width: '100%', textAlign: 'center'}}>
@@ -325,7 +325,7 @@ const Cierre: React.FC = () => {
         </div>
       </div>
       <div style={layer}>
-        <Img src={staticFile('seg/final/fg_0000.png')} style={{width: PW, height: PH}} />
+        <Img src={staticFile('seg/final/fg_0000.webp')} style={{width: PW, height: PH}} />
       </div>
       <CircleWipe start={108} dur={16} color={C.azul} x={540} y={1100} />
       <Sequence from={120} layout="none">
@@ -530,8 +530,8 @@ export type Musica = 'cancion' | 'original' | 'ninguna';
 /** Pistas: 'cancion' = la del cliente (Instagram la silencia por derechos); 'original' = pista propia
  *  libre de derechos (su drop ya cae en el segundo 6); 'ninguna' = solo efectos, para poner música en Instagram */
 export const MUSICAS: Record<Exclude<Musica, 'ninguna'>, {src: string; dropAt: number}> = {
-  cancion: {src: 'music/cancion_referencia.wav', dropAt: Math.round(7.825 * 30)},
-  original: {src: 'music/beat_westhill360.wav', dropAt: 180},
+  cancion: {src: 'music/cancion_referencia.mp3', dropAt: Math.round(7.825 * 30)},
+  original: {src: 'music/beat_westhill360.mp3', dropAt: 180},
 };
 export const MUSIC = MUSICAS.cancion;
 
