@@ -38,18 +38,18 @@ export const TitleCard: React.FC<{small: string; big: string; color?: string; bg
 // Llegada: toma exterior frente al edificio WESTHILL, texto sobre el pasto
 // (sin texto detrás de las personas)
 // ---------------------------------------------------------------------------
-const LlegadaText: React.FC = () => (
+export const LlegadaText: React.FC<{title?: string; script?: string}> = ({title = '¡Llegó IPEFH!', script = 'Plantel Aeropuerto'}) => (
   <AbsoluteFill>
     <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(10,20,40,0) 52%, rgba(10,20,40,0.55) 100%)'}} />
     <div style={{position: 'absolute', top: 1170, left: 0, right: 0, textAlign: 'center'}}>
       <BlurIn start={6} from="left" dist={300}>
         <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 128, color: C.blanco, letterSpacing: -3, textShadow: '0 6px 30px rgba(0,0,0,0.45)'}}>
-          ¡Llegó IPEFH!
+          {title}
         </span>
       </BlurIn>
     </div>
     <div style={{position: 'absolute', top: 1305, left: 0, right: 0, textAlign: 'center'}}>
-      <ScriptWord text="Plantel Aeropuerto" start={14} size={118} neon tilt={-5} dur={18} />
+      <ScriptWord text={script} start={14} size={safeSize(script, 118, 0.42)} neon tilt={-5} dur={18} />
     </div>
     <div style={{position: 'absolute', top: 1470, left: 330}}>
       <Doodle kind="underline" start={28} width={430} />
@@ -63,12 +63,12 @@ const LlegadaText: React.FC = () => (
 // ---------------------------------------------------------------------------
 // Cornhole
 // ---------------------------------------------------------------------------
-export const CornholeText: React.FC<{estreno?: boolean}> = ({estreno = true}) => {
+export const CornholeText: React.FC<{estreno?: boolean; top?: number}> = ({estreno = true, top = 420}) => {
   const f = useCurrentFrame();
   const letters = 'CORNHOLE'.split('');
   return (
     <AbsoluteFill>
-      <div style={{position: 'absolute', top: 420, width: '100%', display: 'flex', justifyContent: 'center'}}>
+      <div style={{position: 'absolute', top, width: '100%', display: 'flex', justifyContent: 'center'}}>
         {letters.map((l, i) => (
           <span
             key={i}
@@ -235,7 +235,7 @@ export const Logrado: React.FC = () => {
 };
 
 /** Foto de ganadores tipo polaroid */
-export const WinnerPhoto: React.FC<{src: string; tilt: number; dur: number}> = ({src, tilt, dur}) => {
+export const WinnerPhoto: React.FC<{src: string; tilt: number; dur: number; name?: string}> = ({src, tilt, dur, name}) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill>
@@ -255,9 +255,15 @@ export const WinnerPhoto: React.FC<{src: string; tilt: number; dur: number}> = (
         }}
       >
         <Img src={staticFile(`photos/${src}.jpg`)} style={{width: '100%', height: 1180, objectFit: 'cover', display: 'block'}} />
-        <div style={{position: 'absolute', bottom: 34, left: 0, right: 0, textAlign: 'center', fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 56, color: C.azul}}>
-          ¡Termo Westhill!
-        </div>
+        {name ? (
+          <div style={{position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center'}}>
+            <ScriptWord text={name} start={6} size={104} color={C.azul} tilt={-4} dur={12} />
+          </div>
+        ) : (
+          <div style={{position: 'absolute', bottom: 34, left: 0, right: 0, textAlign: 'center', fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 56, color: C.azul}}>
+            ¡Termo Westhill!
+          </div>
+        )}
       </div>
       <Flash at={1} dur={8} />
       <Sfx at={0} name="shutter_clicks" volume={0.9} />
@@ -282,9 +288,9 @@ export const GanadoresRibbon: React.FC = () => {
 // ---------------------------------------------------------------------------
 export const CIERRE_FRAMES = 210;
 
-const Cierre: React.FC = () => {
+export const Cierre: React.FC<{seg?: string; pw?: number; ph?: number}> = ({seg = 'final', pw = 2576, ph = 1450}) => {
   const f = useCurrentFrame();
-  const PW = 2576, PH = 1450;
+  const PW = pw, PH = ph;
   const sA = 1920 / PH;
   const x = tw(f, [0, 125], [0, -(PW * sA - 1080)], ease.inOut);
   const zoom = tw(f, [0, 125], [1, 1.06], (t) => t);
@@ -292,7 +298,7 @@ const Cierre: React.FC = () => {
   return (
     <AbsoluteFill style={{background: C.marino, overflow: 'hidden'}}>
       <div style={layer}>
-        <Img src={staticFile('seg/final/bg_0000.webp')} style={{width: PW, height: PH}} />
+        <Img src={staticFile(`seg/${seg}/bg_0000.webp`)} style={{width: PW, height: PH}} />
       </div>
       {/* GRACIAS detrás del grupo */}
       <div style={{position: 'absolute', top: 690, width: '100%', textAlign: 'center'}}>
@@ -313,7 +319,7 @@ const Cierre: React.FC = () => {
         </div>
       </div>
       <div style={layer}>
-        <Img src={staticFile('seg/final/fg_0000.webp')} style={{width: PW, height: PH}} />
+        <Img src={staticFile(`seg/${seg}/fg_0000.webp`)} style={{width: PW, height: PH}} />
       </div>
       <CircleWipe start={108} dur={16} color={C.azul} x={540} y={1100} />
       <Sequence from={120} layout="none">
@@ -416,13 +422,13 @@ export const EndCard: React.FC<{line1?: string; line2?: string}> = ({line1 = 'Gr
 // ---------------------------------------------------------------------------
 // Línea de tiempo (30 fps)
 // ---------------------------------------------------------------------------
-type Item = {dur: number; el: React.ReactNode; overlay?: React.ReactNode};
+export type Item = {dur: number; el: React.ReactNode; overlay?: React.ReactNode};
 
-const S = (src: string, from: number, sec: number, enter: Parameters<typeof VideoShot>[0]['enter'] = 'zoom'): Item => {
+export const S = (src: string, from: number, sec: number, enter: Parameters<typeof VideoShot>[0]['enter'] = 'zoom'): Item => {
   const dur = Math.round(sec * 30);
   return {dur, el: <VideoShot src={src} from={from} dur={dur} enter={enter} />};
 };
-const P = (src: string, sec: number, enter: Parameters<typeof PhotoShot>[0]['enter'] = 'flash', origin?: string): Item => {
+export const P = (src: string, sec: number, enter: Parameters<typeof PhotoShot>[0]['enter'] = 'flash', origin?: string): Item => {
   const dur = Math.round(sec * 30);
   return {dur, el: <PhotoShot src={src} dur={dur} enter={enter} origin={origin} />};
 };

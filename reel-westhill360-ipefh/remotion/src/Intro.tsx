@@ -174,7 +174,7 @@ const Emblem360: React.FC<{start: number}> = ({start: s}) => {
 const NUM_DY = 0;
 
 /** Escena B: "Bienvenidos a la Experiencia Westhill 360" */
-const Welcome: React.FC = () => {
+const Welcome: React.FC<{subtitle: string}> = ({subtitle}) => {
   const f = useCurrentFrame();
   const exitS = tw(f, [156, 178], [1, 2.6], ease.in);
   const exitB = tw(f, [160, 178], [0, 22], ease.in);
@@ -241,7 +241,7 @@ const Welcome: React.FC = () => {
                 opacity: tw(f, [138, 146], [0, 1]),
               }}
             >
-              IPEFH · PLANTEL AEROPUERTO
+              {subtitle}
             </span>
           </Highlight>
         </div>
@@ -250,11 +250,11 @@ const Welcome: React.FC = () => {
   );
 };
 
-export const Intro: React.FC = () => {
+export const Intro: React.FC<{subtitle?: string}> = ({subtitle = 'IPEFH · PLANTEL AEROPUERTO'}) => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{background: C.fondo}}>
-      {f < 76 ? <Logos /> : <Welcome />}
+      {f < 76 ? <Logos /> : <Welcome subtitle={subtitle} />}
       <BarSweep start={66} dur={20} color={C.azul} />
       <Flash at={177} dur={8} />
       <Grain />
