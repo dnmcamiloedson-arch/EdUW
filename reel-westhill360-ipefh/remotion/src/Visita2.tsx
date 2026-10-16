@@ -136,7 +136,37 @@ export const startOf = (name: string) => {
 
 const MUSIC_V2 = {src: 'music/beat_visita2.mp3', dropAt: 180};
 
-export const ReelVisita2: React.FC<{music?: Musica}> = ({music = 'original'}) => {
+/**
+ * "Música de fondo alegre" (sin copyright), elegida por el cliente. Se arma con dos tramos de la
+ * canción para que sus dos "drops" caigan en cortes del montaje:
+ *  - Tramo A: el drop 1 (33.565 s de la canción) cae justo al terminar la intro (reel 6 s).
+ *  - Tramo B: el drop 2 (102.445 s) entra en seco al empezar el gimnasio; su respiro (~116–119 s)
+ *    cae en la tarjeta del reto del cornhole y su final (~134 s) en la tarjeta de cierre.
+ */
+const FONDO = 'music/fondo_alegre.mp3';
+const DROP1 = 33.565;
+const DROP2 = 102.445;
+const FondoAlegre: React.FC = () => {
+  const cut = Math.round(startOf('gimnasio') * 30); // inicio del gimnasio
+  const fade = (fr: number, total: number) =>
+    interpolate(fr, [total - 75, total], [0.6, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'});
+  return (
+    <>
+      <Sequence durationInFrames={cut + 3}>
+        <Audio
+          src={staticFile(FONDO)}
+          startFrom={Math.round((DROP1 - INTRO_FRAMES / 30) * 30)}
+          volume={(fr) => 0.6 * interpolate(fr, [cut - 1, cut + 3], [1, 0], {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'})}
+        />
+      </Sequence>
+      <Sequence from={cut}>
+        <Audio src={staticFile(FONDO)} startFrom={Math.round(DROP2 * 30)} volume={(fr) => fade(fr + cut, REEL2_FRAMES)} />
+      </Sequence>
+    </>
+  );
+};
+
+export const ReelVisita2: React.FC<{music?: Musica | 'fondo'}> = ({music = 'fondo'}) => {
   const track = music === 'original' ? MUSIC_V2 : music === 'cancion' ? MUSICAS.cancion : null;
   return (
     <AbsoluteFill style={{background: '#000'}}>
@@ -150,6 +180,7 @@ export const ReelVisita2: React.FC<{music?: Musica}> = ({music = 'original'}) =>
         <Banner />
       </Sequence>
       <Grain opacity={0.05} />
+      {music === 'fondo' && <FondoAlegre />}
       {track && (
         <Audio
           src={staticFile(track.src)}

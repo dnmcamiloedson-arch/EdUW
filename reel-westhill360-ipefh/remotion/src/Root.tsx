@@ -13,7 +13,8 @@ export const Root: React.FC = () => (
     <Composition id="Reel" component={Reel} durationInFrames={REEL_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'original' as const}} />
     <Composition id="ReelSinMusica" component={Reel} durationInFrames={REEL_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'ninguna' as const}} />
     <Composition id="ReelCancion" component={Reel} durationInFrames={REEL_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'cancion' as const}} />
-    <Composition id="Visita2" component={ReelVisita2} durationInFrames={REEL2_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'original' as const}} />
+    <Composition id="Visita2" component={ReelVisita2} durationInFrames={REEL2_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'fondo' as const}} />
+    <Composition id="Visita2MusicaOriginal" component={ReelVisita2} durationInFrames={REEL2_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'original' as const}} />
     <Composition id="Visita2SinMusica" component={ReelVisita2} durationInFrames={REEL2_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: 'ninguna' as const}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
