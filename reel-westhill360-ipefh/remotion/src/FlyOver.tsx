@@ -69,7 +69,8 @@ const Chain: React.FC<{shots: Shot[]}> = ({shots}) => {
         t += s.dur;
         const from = i === 0 ? 0 : st - XF;
         return (
-          <Sequence key={i} from={from} durationInFrames={s.dur + (i === 0 ? 0 : XF)}>
+          // + XF al final: la toma sigue visible mientras la siguiente (o la escena siguiente) se funde encima
+          <Sequence key={i} from={from} durationInFrames={s.dur + (i === 0 ? 0 : XF) + XF}>
             <Fade first={i === 0}>{s.el}</Fade>
           </Sequence>
         );
