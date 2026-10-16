@@ -9,3 +9,4 @@ Tratamientos finales aprobados por el jurado (síntesis del mejor de tres tratam
 | 6 | [Lo que vio el espejo](dia6.md) | 49 s |
 | 4 | [Gaveta 4](dia4.md) | 48.5 s |
 | 2 | [Búscala en el agua](dia2.md) | 48.5 s |
+| 1 | [Falta uno](dia1.md) | 58.5 s |
