@@ -97,7 +97,8 @@ export const PhotoShot: React.FC<{src: string; dur: number; enter?: Enter; origi
         <Img src={staticFile(`photos/${src}.jpg`)} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
       {!soft && enter === 'flash' && <Flash at={0} dur={9} />}
-      {!soft && sfx && ENTER_SFX[enter] && <Sfx at={0} name={ENTER_SFX[enter]!} volume={0.6} />}
+      {/* fotos: sonido de cámara (obturador) */}
+      {!soft && sfx && ENTER_SFX[enter] && <Sfx at={0} name={enter === 'flash' ? 'shutter' : ENTER_SFX[enter]!} volume={0.7} />}
     </AbsoluteFill>
   );
 };

@@ -50,8 +50,11 @@ export const SECTIONS_V2: Section[] = [
     name: 'charlas-montaje',
     items: [
       S(v('0850'), 1.0, 1.2, 'whipL'),
-      S(v('0899'), 1.0, 1.2, 'zoom'),
-      S(v('0884'), 2.0, 1.1, 'whipR'),
+      // Derecho (maestra en la sala de juicios orales) y Psicología (maestro) con más tiempo en pantalla
+      S(v('0899'), 1.0, 1.8, 'zoom'),
+      S(v('0907'), 2.0, 1.4, 'whipR'),
+      S(v('0884'), 2.0, 1.6, 'whipL'),
+      S(v('0894'), 1.0, 1.3, 'zoom'),
       S(v('0873'), 1.5, 1.1, 'whipL'),
       S(v('1022'), 3.0, 1.2, 'zoom'),
       P(f('charla_auditorio'), 0.9),
