@@ -191,6 +191,7 @@ export const groundPOV = () =>
 			const [x, y] = proj(u, v);
 			if (x < GX0 - 40 || x > GX0 + GW + 40 || y < GY0 - 40 || y > GY0 + GH + 40) continue;
 			const s = sAt(v);
+			if (s < 0.08) continue; // más allá del horizonte de la proyección
 			const inStone = Math.hypot(u / 640, v / 570) < 1;
 			if (inStone) continue;
 			if (hash(i, 33) < 0.72) {

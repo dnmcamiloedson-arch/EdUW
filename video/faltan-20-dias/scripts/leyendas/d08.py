@@ -1,4 +1,4 @@
-"""Partitura y diseño sonoro del día 8 · Los Chaneques (en producción)."""
+"""Partitura y diseño sonoro del día 8 · El listón rojo · Los Chaneques (en producción: score provisional)."""
 import numpy as np
 
 import leyendas_sfx as L  # noqa: F401
@@ -7,7 +7,7 @@ import sfx  # noqa: F401
 from sfx import SR, midi  # noqa: F401
 
 FPS = 30
-LEN = 1200  # frames del episodio (igual que EP08_LEN en src/leyendas/d08_chaneques.tsx)
+LEN = 1335  # frames del episodio (igual que EP08_LEN en src/leyendas/d08_chaneques.tsx)
 STANDARD_OUTRO = True  # el día 0 trae su propio outro
 
 
