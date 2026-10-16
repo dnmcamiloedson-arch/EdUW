@@ -43,6 +43,7 @@ uniform float uExposure, uContrast, uSat, uBloom, uThr, uHal, uCA, uVig, uGrain,
 uniform vec3 uShadows, uHighlights, uInk;
 varying vec2 vUv;
 float hash(vec2 p) { p = fract(p * vec2(443.897, 441.423)); p += dot(p, p.yx + 19.19); return fract((p.x + p.y) * p.x); }
+float vnoise(vec2 p) { vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f); return mix(mix(hash(i), hash(i + vec2(1.0, 0.0)), f.x), mix(hash(i + vec2(0.0, 1.0)), hash(i + vec2(1.0, 1.0)), f.x), f.y); }
 void main() {
 	vec2 uv = vUv;
 	// fallas: bandas horizontales desplazadas
@@ -69,17 +70,25 @@ void main() {
 	c = mix(vec3(l), c, uSat);
 	if (uMono > 0.0) c = mix(c, vec3(0.55, 1.0, 0.6) * (l * 1.25), uMono);
 	if (uHatch > 0.0) {
+		// achurado de grabado: líneas que engruesan en la sombra, con dirección que deriva suave por el cuadro,
+		// cortes irregulares de buril y contra-achurado solo en las sombras profundas
 		vec2 p = vUv * uRes;
-		float wob = sin(p.y * 0.031 + p.x * 0.007) * 0.9 + sin(p.x * 0.017) * 0.6;
-		float a1 = (p.x * cos(uHatchAngle) + p.y * sin(uHatchAngle) + wob) / uHatchScale;
-		float a2 = (p.x * cos(uHatchAngle + 1.15) + p.y * sin(uHatchAngle + 1.15) - wob) / (uHatchScale * 1.1);
-		float q1 = abs(fract(a1) - 0.5) * 2.0;
-		float q2 = abs(fract(a2) - 0.5) * 2.0;
 		float lh = clamp(l, 0.0, 1.0);
-		float th1 = clamp((0.62 - lh) * 1.5, 0.0, 1.0) * 0.6;
-		float th2 = clamp((0.34 - lh) * 2.2, 0.0, 1.0) * 0.55;
-		float ink = (1.0 - smoothstep(th1 - 0.07, th1 + 0.07, q1)) * step(0.001, th1) * 0.6 + (1.0 - smoothstep(th2 - 0.07, th2 + 0.07, q2)) * step(0.001, th2) * 0.6;
-		c = mix(c, uInk, clamp(ink, 0.0, 1.0) * uHatch);
+		float drift = (vnoise(p * 0.0016) - 0.5) * 0.7;
+		float a1 = uHatchAngle + drift;
+		float wob = (vnoise(p * 0.02) - 0.5) * 0.35;
+		float c1 = dot(p, vec2(cos(a1), sin(a1))) / uHatchScale + wob;
+		float d1 = abs(fract(c1) - 0.5) * 2.0;
+		float brk = 0.8 + 0.4 * vnoise(p * vec2(0.09, 0.012) + 7.0);
+		float w1 = clamp((0.72 - lh) * 1.25, 0.0, 0.92) * brk;
+		float aa = 1.6 / uHatchScale;
+		float ink = (1.0 - smoothstep(w1 - aa, w1 + aa, d1)) * step(0.02, w1);
+		float a2 = a1 + 1.05;
+		float c2 = dot(p, vec2(cos(a2), sin(a2))) / (uHatchScale * 1.15) - wob;
+		float d2 = abs(fract(c2) - 0.5) * 2.0;
+		float w2 = clamp((0.36 - lh) * 1.6, 0.0, 0.8) * brk;
+		ink = max(ink, (1.0 - smoothstep(w2 - aa, w2 + aa, d2)) * step(0.02, w2));
+		c = mix(c, uInk, ink * uHatch * 0.85);
 	}
 	if (uScan > 0.0) c *= 1.0 - uScan * 0.18 * (0.5 + 0.5 * sin(vUv.y * uRes.y * 1.5708));
 	float v = smoothstep(1.15, 0.25, length(d * vec2(1.0, 0.82)) * 1.35);
@@ -170,7 +179,7 @@ const Quad: React.FC<{src: HTMLCanvasElement; t: number; o: PostOpts}> = ({src, 
 	u.uScan.value = o.scan ?? 0;
 	u.uMono.value = o.mono ?? 0;
 	u.uHatch.value = o.hatch ?? 0;
-	u.uHatchScale.value = o.hatchScale ?? 7;
+	u.uHatchScale.value = o.hatchScale ?? 5;
 	u.uHatchAngle.value = o.hatchAngle ?? 0.9;
 	(u.uInk.value as THREE.Vector3).set(...(o.hatchInk ?? [0.03, 0.02, 0.01]));
 	(u.uShadows.value as THREE.Vector3).set(...(o.shadows ?? [0, 0.012, 0.02]));
