@@ -3,11 +3,11 @@
 import {C, clamp} from '../../lib/util';
 import {glow, type Ctx} from '../kit/paint';
 import type {PostOpts} from '../kit/post';
-import {resetLayers, inLayer} from './layer';
+import {resetLayers} from './layer';
 import {applyLight, lightMap, type Caster, type MaskLayer} from './light';
 import {drawAlley, drawBuckets, drawDust, drawSet} from './set';
 import {drawBlackBand, drawShutter} from './shutter';
-import {bulbI, bulbPos, camAt, focusZ, shutterEdge, shutterT, worldT, type CamT, type V3} from './world';
+import {WALL_BASE, WALL_SX0, bulbI, bulbPos, camAt, focusZ, shutterEdge, shutterT, worldT, type CamT, type V3} from './world';
 import {BEATS} from './beats';
 
 export type Actor = {z: number; draw: (g: Ctx, fr: Frame) => void};
@@ -47,9 +47,6 @@ export const POST_BASE: PostOpts = {
 	ca: 1,
 };
 
-// dibujante de actores: capa offscreen con tinte de luz + DOF
-export const drawer = (g: Ctx) => (box: [number, number, number, number], blur: number, shade: {color: string; a: number}, fn: (q: Ctx) => void) => inLayer(g, box, {blur, shade}, fn);
-
 export const paintFrame = (g: Ctx, f: number, t: number): PostOpts => {
 	resetLayers();
 	const fr: Frame = {
@@ -80,7 +77,14 @@ export const paintFrame = (g: Ctx, f: number, t: number): PostOpts => {
 		applyLight(g, lightMap(fr.L, fr.I, fr.casters, fr.masks));
 		// calor del foco sobre la esquina alta del muro
 		glow(g, 300 + (fr.L[0] + 0.7) * 600, 430, 620, C.flama, 0.1 * fr.I, 0.1);
+		// brillos dentro de las sombras: solo donde hay pared o calle (el callejón no recibe sombras del foco)
+		g.save();
+		g.beginPath();
+		g.rect(WALL_SX0, -200, 1600, 2400);
+		g.rect(-400, WALL_BASE, 2000, 1200);
+		g.clip();
 		for (const e of fr.glows) glow(g, e.x, e.y, e.r, e.color, e.a, e.core);
+		g.restore();
 		fr.actors.sort((a, b) => b.z - a.z).forEach((a) => a.draw(g, fr));
 		if (fr.buckets) drawBuckets(g, t, fr.I);
 		drawDust(g, t, fr.I, 430);

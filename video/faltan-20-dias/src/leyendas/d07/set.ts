@@ -23,10 +23,10 @@ const paintWall = (g: Ctx) => {
 	const yb = WALL_BASE;
 	const ww = SET_X0 + SET_W - x0;
 	// cal: base clara con manchas
-	g.fillStyle = '#EED6AE';
+	g.fillStyle = '#E9D5B4';
 	g.fillRect(x0, yTop, ww, yb - yTop);
-	const mott = tinted(noiseTile({seed: 71, size: 256, period: 4, oct: 5, contrast: 1.8}), '#C9A57A', 'd07mott');
-	drawTiled(g, mott, {x: x0, y: yTop, w: ww, h: yb - yTop, scale: 1.6, alpha: 0.35});
+	const mott = tinted(noiseTile({seed: 71, size: 256, period: 4, oct: 5, contrast: 1.8}), '#B89470', 'd07mott');
+	drawTiled(g, mott, {x: x0, y: yTop, w: ww, h: yb - yTop, scale: 1.6, alpha: 0.3});
 	const fine = tinted(noiseTile({seed: 72, size: 256, period: 8, oct: 4, contrast: 2.2}), '#8E6A48', 'd07fine');
 	drawTiled(g, fine, {x: x0, y: yTop, w: ww, h: yb - yTop, scale: 0.7, alpha: 0.16});
 	// adobe asomando donde se cayó la cal (máscara de ruido con umbral)
@@ -43,9 +43,8 @@ const paintWall = (g: Ctx) => {
 			b.fillStyle = css(mixRGB(C.terracota, '#5E2616', 0.15 + hash(k, 3) * 0.45));
 			b.fillRect(c * bw + ox + 3, r * bh + 3, bw - 6, bh - 6);
 		}
-	const pm = noiseTile({seed: 73, size: 256, period: 3, oct: 5, contrast: 6, bias: -0.32});
-	b.globalCompositeOperation = 'destination-in';
-	drawTiled(b, pm, {w: brick.width, h: brick.height, scale: 2.2});
+	const pm = noiseTile({seed: 73, size: 256, period: 3, oct: 5, contrast: 6, bias: -0.75});
+	drawTiled(b, pm, {w: brick.width, h: brick.height, scale: 2.6, ox: 140, oy: 60, op: 'destination-in'});
 	// borde de la cal rota: sombra suave alrededor del parche
 	g.save();
 	g.filter = 'blur(3px)';
@@ -166,8 +165,8 @@ const paintStreet = (g: Ctx) => {
 	const y0 = WALL_BASE;
 	const y1 = SET_Y0 + SET_H;
 	const gr = g.createLinearGradient(0, y0, 0, y1);
-	gr.addColorStop(0, '#5C4A38');
-	gr.addColorStop(1, '#3E2F22');
+	gr.addColorStop(0, '#4A3B2D');
+	gr.addColorStop(1, '#2E241A');
 	g.fillStyle = gr;
 	g.fillRect(SET_X0, y0, SET_W, y1 - y0);
 	// cuneta al pie del muro
@@ -188,9 +187,9 @@ const paintStreet = (g: Ctx) => {
 			const rh = rw * ((F_ * EYE) / (zz * zz) / s) * (0.9 + 0.3 * hash(k, 10));
 			if (py < y0 - 2) continue;
 			const tone = hash(k, 11);
-			const base = mixRGB('#8C7660', '#B39C80', tone);
+			const base = mixRGB('#6E5E4E', '#9A8670', tone);
 			const sg = g.createRadialGradient(px - rw * 0.25, py - rh * 0.45, 0, px, py, rw * 1.1);
-			sg.addColorStop(0, css(mixA(base, hx('#F2E6D2'), 0.35)));
+			sg.addColorStop(0, css(mixA(base, hx('#E8DCC6'), 0.22)));
 			sg.addColorStop(0.55, css(base));
 			sg.addColorStop(1, css(mixA(hx('#2C2018'), base, 0.45)));
 			g.fillStyle = sg;
@@ -213,6 +212,12 @@ const paintStreet = (g: Ctx) => {
 	}
 };
 
+// profundidad de campo del empedrado con el foco en la pared: bandas cada vez más borrosas hacia la cámara
+const DOF_BANDS: [number, number, number][] = [
+	[5, 1150, 1300],
+	[11, 1300, 1460],
+	[20, 1460, 1720],
+];
 export const setCanvas = () =>
 	cached('d07:set', () => {
 		const c = makeCanvas(SET_W, SET_H);
@@ -220,6 +225,26 @@ export const setCanvas = () =>
 		g.translate(-SET_X0, -SET_Y0);
 		paintWall(g);
 		paintStreet(g);
+		g.setTransform(1, 0, 0, 1, 0, 0);
+		const src = makeCanvas(SET_W, SET_H);
+		src.getContext('2d')!.drawImage(c, 0, 0);
+		const tmp = makeCanvas(SET_W, SET_H);
+		const q = tmp.getContext('2d')!;
+		for (const [r, ya, yb] of DOF_BANDS) {
+			q.setTransform(1, 0, 0, 1, 0, 0);
+			q.globalCompositeOperation = 'source-over';
+			q.clearRect(0, 0, SET_W, SET_H);
+			q.filter = `blur(${r}px)`;
+			q.drawImage(src, 0, 0);
+			q.filter = 'none';
+			q.globalCompositeOperation = 'destination-in';
+			const gr = q.createLinearGradient(0, ya - SET_Y0, 0, yb - SET_Y0);
+			gr.addColorStop(0, 'rgba(0,0,0,0)');
+			gr.addColorStop(1, 'rgba(0,0,0,1)');
+			q.fillStyle = gr;
+			q.fillRect(0, ya - SET_Y0, SET_W, SET_H);
+			g.drawImage(tmp, 0, 0);
+		}
 		return c;
 	});
 export const drawSet = (g: Ctx) => {

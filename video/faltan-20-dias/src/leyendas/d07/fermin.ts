@@ -8,10 +8,14 @@ import {humanOutline, type Head} from './shapes';
 import {P, pxPerM, seg, type V2, type V3} from './world';
 
 type PK = {t: number; x: number; z: number};
+// camino del tratamiento: sale de debajo del foco (0.3 s), diagonal a media calle (sx≈665 a 2.6 s), gira, camina
+// a la izquierda muy despacio (anciano con bastón) y se detiene en sx≈352 a 10.6 s. G1 ajusta zancada a la velocidad.
 const PATH: PK[] = [
-	{t: 0, x: -0.62, z: 0.85},
-	{t: 2.6, x: 0.42, z: 2.05},
-	{t: 3.6, x: 0.4, z: 2.12},
+	{t: 0, x: -0.62, z: 0.88},
+	{t: 0.3, x: -0.61, z: 0.9},
+	{t: 1.4, x: -0.25, z: 1.6},
+	{t: 2.6, x: 0.18, z: 2.2},
+	{t: 3.4, x: 0.16, z: 2.24},
 	{t: 10.6, x: -0.3, z: 2.4},
 ];
 export const STOP_X = -0.3;
@@ -23,7 +27,7 @@ const pathAt = (t: number): [number, number] => {
 		const b = PATH[i + 1];
 		if (t <= b.t) {
 			const u = clamp((t - a.t) / (b.t - a.t));
-			const e = i === 0 ? E.out(u) * 0.35 + u * 0.65 : i === PATH.length - 2 ? 1 - (1 - u) * (1 - u) : u;
+			const e = i === 1 ? u * u : i === 3 ? E.out(u) : i === PATH.length - 2 ? 1 - (1 - u) * (1 - u) : u;
 			return [lerp(a.x, b.x, e), lerp(a.z, b.z, e)];
 		}
 	}
@@ -36,7 +40,7 @@ export const ferminPose = (f: number): FerminPose => {
 	const t = f / FPS;
 	const [x, z] = pathAt(Math.min(t, 10.6));
 	// cara: a la derecha (se aleja en diagonal), gira a la izquierda 2.6–3.6 s
-	let face = t < 2.6 ? 1 : t < 3.6 ? Math.cos(Math.PI * E.inOut(seg(t, 2.6, 3.6))) : -1;
+	let face = t < 2.6 ? 1 : t < 3.4 ? Math.cos(Math.PI * E.inOut(seg(t, 2.6, 3.4))) : -1;
 	// fase de marcha: avanza con la distancia recorrida (se detiene a 10.6 s)
 	let dist = 0;
 	const N = Math.min(f, 318);

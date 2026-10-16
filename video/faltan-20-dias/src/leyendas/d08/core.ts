@@ -260,6 +260,22 @@ export const blink = (f: number, f0: number) => {
 export const eyeOpen = (f: number, f0: number) => (f < f0 ? 0 : clamp(spr((f - f0) / FPS, 900, 30) * 1.0));
 
 // ---------------------------------------------------------------- huellas (7 cm, planta angosta, 5 dedos redondos)
+// Lodo depositado: borde embarrado claro, núcleo oscuro húmedo, dedos separados y un arrastre detrás del talón.
+const TOES: [number, number, number][] = [
+	[-0.16, -0.46, 0.066],
+	[-0.065, -0.53, 0.058],
+	[0.03, -0.55, 0.052],
+	[0.115, -0.51, 0.046],
+	[0.185, -0.44, 0.04],
+];
+const soleP = (g: Ctx, L: number, k = 1) => {
+	g.moveTo(0, 0.48 * L * k);
+	g.bezierCurveTo(-0.14 * L * k, 0.48 * L * k, -0.13 * L * k, 0.18 * L * k, -0.1 * L * k, 0.05 * L * k);
+	g.bezierCurveTo(-0.08 * L * k, -0.08 * L * k, -0.21 * L * k, -0.2 * L * k, -0.18 * L * k, -0.31 * L * k);
+	g.bezierCurveTo(-0.14 * L * k, -0.41 * L * k, 0.16 * L * k, -0.41 * L * k, 0.19 * L * k, -0.29 * L * k);
+	g.bezierCurveTo(0.21 * L * k, -0.15 * L * k, 0.11 * L * k, 0.0, 0.12 * L * k, 0.18 * L * k);
+	g.bezierCurveTo(0.13 * L * k, 0.4 * L * k, 0.1 * L * k, 0.48 * L * k, 0, 0.48 * L * k);
+};
 export const footprint = (g: Ctx, x: number, y: number, ang: number, size: number, sq: number, side: number, wet = 0, light = 0, alpha = 1) => {
 	g.save();
 	g.translate(x, y);
@@ -268,34 +284,36 @@ export const footprint = (g: Ctx, x: number, y: number, ang: number, size: numbe
 	g.scale(side, 1);
 	const L = size;
 	g.globalAlpha = alpha;
-	// borde de lodo levantado
-	g.fillStyle = rgba('#4a3018', 0.55);
+	// arrastre de lodo detrás del talón
+	g.fillStyle = rgba('#3a2814', 0.45);
 	g.beginPath();
-	g.ellipse(0, 0.05 * L, L * 0.24, L * 0.5, 0.06, 0, Math.PI * 2);
+	g.ellipse(0.02 * L, 0.6 * L, 0.06 * L, 0.16 * L, 0.05, 0, Math.PI * 2);
 	g.fill();
-	g.fillStyle = P.mud;
+	// halo embarrado (lodo más seco, claro)
+	g.fillStyle = rgba('#5a4026', 0.55);
 	g.beginPath();
-	// planta: talón angosto, arco, base ancha
-	g.moveTo(0, 0.48 * L);
-	g.bezierCurveTo(-0.13 * L, 0.48 * L, -0.12 * L, 0.18 * L, -0.1 * L, 0.05 * L);
-	g.bezierCurveTo(-0.08 * L, -0.08 * L, -0.2 * L, -0.2 * L, -0.17 * L, -0.3 * L);
-	g.bezierCurveTo(-0.13 * L, -0.4 * L, 0.15 * L, -0.4 * L, 0.18 * L, -0.28 * L);
-	g.bezierCurveTo(0.2 * L, -0.15 * L, 0.11 * L, 0.0, 0.12 * L, 0.18 * L);
-	g.bezierCurveTo(0.13 * L, 0.4 * L, 0.1 * L, 0.48 * L, 0, 0.48 * L);
+	soleP(g, L * 1.12);
 	g.fill();
-	// dedos largos y redondos
-	const toes: [number, number, number][] = [
-		[-0.15, -0.47, 0.062],
-		[-0.06, -0.53, 0.056],
-		[0.03, -0.54, 0.05],
-		[0.11, -0.5, 0.045],
-		[0.18, -0.43, 0.04],
-	];
-	for (const [tx, ty, tr] of toes) {
+	for (const [tx, ty, tr] of TOES) {
+		g.beginPath();
+		g.ellipse(tx * L * 1.04, ty * L * 1.04, tr * L * 1.35, tr * L * 1.6, 0, 0, Math.PI * 2);
+		g.fill();
+	}
+	// núcleo húmedo
+	g.fillStyle = '#1c1108';
+	g.beginPath();
+	soleP(g, L);
+	g.fill();
+	for (const [tx, ty, tr] of TOES) {
 		g.beginPath();
 		g.ellipse(tx * L, ty * L, tr * L, tr * L * 1.25, 0, 0, Math.PI * 2);
 		g.fill();
 	}
+	// arco interior más claro (la planta no apoya toda)
+	g.fillStyle = rgba('#3c2a16', 0.7);
+	g.beginPath();
+	g.ellipse(-0.06 * L, 0.02 * L, 0.035 * L, 0.11 * L, 0.1, 0, Math.PI * 2);
+	g.fill();
 	if (wet > 0 && light > 0.02) {
 		g.fillStyle = rgba('#fff4dc', clamp(wet * light * 0.9));
 		g.beginPath();

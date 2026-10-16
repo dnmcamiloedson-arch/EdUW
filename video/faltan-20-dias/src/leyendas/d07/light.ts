@@ -4,7 +4,7 @@
 // El mapa resultante se multiplica sobre el albedo (pared + calle): las sombras solo oscurecen superficies iluminadas.
 import {H, W, clamp} from '../../lib/util';
 import {cached, makeCanvas, type Ctx} from '../kit/paint';
-import {EYE, P, WALL_BASE, WALL_SX0, WALL_Z, groundX, groundZ, irr, pxPerM, wallX, wallY, type V2, type V3} from './world';
+import {EYE, P, PIVOT, WALL_BASE, WALL_SX0, WALL_Z, groundX, groundZ, irr, pxPerM, wallX, wallY, type V2, type V3} from './world';
 
 export const Q = 4; // reducción del mapa de luz
 // el mapa cubre un poco más que la pantalla (paneos, zoom < 1 del susto, cámara en mano)
@@ -94,7 +94,20 @@ const canvases = () =>
 		return {D, S, T, M, img};
 	});
 
-const AMB: [number, number, number] = [30, 44, 46]; // ambiente teal (#16303A levantado)
+const AMB: [number, number, number] = [20, 32, 36]; // ambiente teal (#16303A levantado)
+const EXPO = 1.5;
+// pantalla de lámina del foco: más luz hacia el eje (abajo y hacia la pared), cae a los lados; se mece con el cable
+export const spot = (L: V3, p: V3) => {
+	const th = Math.atan2(L[0] - PIVOT[0], PIVOT[1] - L[1]);
+	const ax = Math.sin(th * 1.6) * 0.6 + 0.2;
+	const ay = -0.32;
+	const az = 0.93;
+	const dx = p[0] - L[0];
+	const dy = p[1] - L[1];
+	const dz = p[2] - L[2];
+	const c = Math.max(0, (dx * ax + dy * ay + dz * az) / Math.sqrt((dx * dx + dy * dy + dz * dz) * (ax * ax + ay * ay + az * az)));
+	return 0.3 + 0.7 * Math.pow(c, 7);
+};
 const NW: V3 = [0, 0, -1];
 const NG: V3 = [0, 1, 0];
 
@@ -116,12 +129,12 @@ export const lightMap = (L: V3, I: number, casters: Caster[], masks: MaskLayer[]
 		p[0] = G.px[k];
 		p[1] = G.py[k];
 		p[2] = G.pz[k];
-		const e = irr(L, p, kd === 0 ? NW : NG) * I;
-		const v = 1 - Math.exp(-1.7 * e);
+		const e = irr(L, p, kd === 0 ? NW : NG) * I * spot(L, p);
+		const v = 1 - Math.exp(-EXPO * e);
 		// cálido: núcleo oro → caída cempasúchil
-		d[o] = Math.min(255, v * 262);
-		d[o + 1] = Math.min(255, v * (150 + 95 * v));
-		d[o + 2] = Math.min(255, v * (70 + 120 * v * v));
+		d[o] = Math.min(255, v * 258);
+		d[o + 1] = Math.min(255, v * (172 + 62 * v));
+		d[o + 2] = Math.min(255, v * (100 + 85 * v * v));
 		d[o + 3] = 255;
 	}
 	const dg = D.getContext('2d')!;
@@ -197,5 +210,5 @@ export const applyLight = (g: Ctx, lm: HTMLCanvasElement) => {
 };
 
 // luz que recibe un punto (para pintar actores con la luz correcta): 0..~1.3
-export const lightAt = (L: V3, I: number, p: V3, n: V3 = [0, 0, -1]) => 1 - Math.exp(-1.7 * irr(L, p, n) * I);
+export const lightAt = (L: V3, I: number, p: V3, n: V3 = [0, 0, -1]) => 1 - Math.exp(-EXPO * irr(L, p, n) * I * spot(L, p));
 export {EYE};

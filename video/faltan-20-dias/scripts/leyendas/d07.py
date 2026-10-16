@@ -7,7 +7,7 @@ import sfx  # noqa: F401
 from sfx import SR, midi  # noqa: F401
 
 FPS = 30
-LEN = 1200  # frames del episodio (igual que EP07_LEN en src/leyendas/d07_nahual.tsx)
+LEN = 1230  # frames del episodio (igual que EP07_LEN en src/leyendas/d07_nahual.tsx)
 STANDARD_OUTRO = True  # el día 0 trae su propio outro
 
 

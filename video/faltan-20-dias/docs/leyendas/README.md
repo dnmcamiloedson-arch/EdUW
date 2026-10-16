@@ -13,3 +13,6 @@ Tratamientos finales aprobados por el jurado (síntesis del mejor de tres tratam
 | 2 | [Búscala en el agua](dia2.md) | 48.5 s |
 | 1 | [Falta uno](dia1.md) | 58.5 s |
 | 0 | [Ya llegaron](dia0.md) | 60 s |
+
+- [Guía de estilo](estilo.md)
+- [Crítica de serie](critica_serie.md)

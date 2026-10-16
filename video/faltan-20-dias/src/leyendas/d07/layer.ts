@@ -53,3 +53,6 @@ export const inLayer = (g: Ctx, box: [number, number, number, number], o: LayerO
 	g.drawImage(c, 0, 0, (bw + pad * 2) * res, (bh + pad * 2) * res, bx - pad, by - pad, bw + pad * 2, bh + pad * 2);
 	g.restore();
 };
+
+// atajo para los actores: (caja, desenfoque, tinte de luz, pintura)
+export const drawer = (g: Ctx) => (box: [number, number, number, number], blur: number, shade: {color: string; a: number}, fn: (q: Ctx) => void) => inLayer(g, box, {blur, shade}, fn);

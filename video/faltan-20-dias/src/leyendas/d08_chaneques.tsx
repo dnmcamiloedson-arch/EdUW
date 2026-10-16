@@ -43,13 +43,13 @@ const beamLevel = (f: number) => {
 type T = {text: string; at: number; out: number; y: number; size: number; font?: 'Rye' | 'Alike'; color: string; mode: LineMode; accent?: Record<string, string>; tracking?: number; scrim?: number; glow?: string};
 // T01–T17 (tratamiento): «» para las palabras de la abuela, arena; narración en hueso
 const TEXT: T[] = [
-	{text: 'Mi abuela decía:', at: 8, out: 88, y: 430, size: 46, font: 'Rye', color: P.arena, mode: 'flicker', tracking: 0.08},
-	{text: '«Si el monte te llama,\nno contestes.»', at: 21, out: 88, y: 510, size: 66, color: P.arena, mode: 'flicker'},
-	{text: '«No te quites el listón.»', at: 102, out: 157, y: 440, size: 64, color: P.arena, mode: 'soft'},
-	{text: '«Los chaneques\nte esconden las cosas\npara que los sigas.»', at: 160, out: 243, y: 420, size: 62, color: P.arena, mode: 'soft', accent: {chaneques: P.cempa}},
-	{text: 'Este año bajé al río\npor flores para su altar.', at: 254, out: 343, y: 430, size: 64, color: P.bone, mode: 'soft'},
-	{text: 'Las flores ya no estaban.', at: 435, out: 480, y: 440, size: 64, color: P.bone, mode: 'flicker'},
-	{text: 'Ni el listón.', at: 483, out: 520, y: 440, size: 72, color: P.bone, mode: 'flicker'},
+	{text: 'Mi abuela decía:', at: 8, out: 70, scrim: 0.3, y: 430, size: 46, font: 'Rye', color: P.arena, mode: 'flicker', tracking: 0.08},
+	{text: '«Si el monte te llama,\nno contestes.»', at: 21, out: 70, scrim: 0.3, y: 510, size: 66, color: P.arena, mode: 'flicker'},
+	{text: '«No te quites el listón.»', at: 102, out: 141, y: 440, size: 64, color: P.arena, mode: 'soft'},
+	{text: '«Los chaneques\nte esconden las cosas\npara que los sigas.»', at: 160, out: 227, y: 420, size: 62, color: P.arena, mode: 'soft', accent: {chaneques: P.cempa}},
+	{text: 'Este año bajé al río\npor flores para su altar.', at: 254, out: 327, y: 430, size: 64, color: P.bone, mode: 'soft'},
+	{text: 'Las flores ya no estaban.', at: 435, out: 466, y: 440, size: 64, color: P.bone, mode: 'flicker'},
+	{text: 'Ni el listón.', at: 483, out: 506, y: 440, size: 72, color: P.bone, mode: 'flicker'},
 	{text: 'Algo me llamó\ncon la voz de mi abuela.', at: 528, out: 600, y: 430, size: 64, color: P.bone, mode: 'flicker'},
 	{text: 'Mi abuela murió en marzo.', at: 606, out: 660, y: 470, size: 66, color: P.bone, mode: 'soft'},
 	{text: 'Y aun así, contesté.', at: 672, out: 712, y: 470, size: 66, color: P.bone, mode: 'flicker'},

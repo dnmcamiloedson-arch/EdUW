@@ -113,10 +113,11 @@ export const handPath = (p: HandPose, geom = handGeom(p), withForearm = true) =>
 	if (withForearm) {
 		const L = p.forearm ?? 260;
 		const fw = p.forearmW ?? 1;
-		q.moveTo(-36 * fw, -6);
-		q.bezierCurveTo(-40 * fw, L * 0.3, -46 * fw, L * 0.7, -50 * fw, L);
-		q.lineTo(50 * fw, L);
-		q.bezierCurveTo(46 * fw, L * 0.7, 40 * fw, L * 0.3, 34 * fw, -6);
+		// mismo sentido de giro que la palma (si no, la unión deja un hueco con la regla nonzero)
+		q.moveTo(34 * fw, -6);
+		q.bezierCurveTo(40 * fw, L * 0.3, 46 * fw, L * 0.7, 50 * fw, L);
+		q.lineTo(-50 * fw, L);
+		q.bezierCurveTo(-46 * fw, L * 0.7, -40 * fw, L * 0.3, -36 * fw, -6);
 		q.closePath();
 	}
 	for (const f of geom.fingers) for (const s of f) capsule(q, s);
@@ -272,59 +273,135 @@ export const drawHand = (g: Ctx, p: HandPose) => {
 		g.stroke();
 	}
 	if (p.engraved) {
-		// grabado: achurado que sigue la forma + manchas de edad (la abuela)
+		// grabado: achurado de contorno (arcos que abrazan cada falange), líneas a lo largo del dorso en el lado
+		// de sombra, cruzado en lo más oscuro, punteado de manchas de edad, venas y arrugas de nudillo
 		g.save();
 		g.beginPath();
 		path(g);
 		g.clip();
 		const k = p.engraved;
-		const gr = g.createLinearGradient(-50, 0, 50, 0);
-		gr.addColorStop(0, rgba('#2a160a', 0.05 * k));
-		gr.addColorStop(0.5, rgba('#2a160a', 0.35 * k));
-		gr.addColorStop(1, rgba('#2a160a', 0.75 * k));
-		g.strokeStyle = gr;
-		g.lineWidth = 0.9;
-		for (let y = -200; y < (p.forearm ?? 260); y += 3.4) {
+		const lx = Math.cos(la);
+		const ly = Math.sin(la);
+		g.lineCap = 'round';
+		const ink = (a: number) => rgba('#24120a', clamp(a) * k);
+		const segHatch = (sg: Seg, n: number, w: number) => {
+			const dx = sg.b[0] - sg.a[0];
+			const dy = sg.b[1] - sg.a[1];
+			const L = Math.hypot(dx, dy) || 1;
+			const tx = dx / L;
+			const ty = dy / L;
+			const nx = -ty;
+			const ny = tx;
+			const sh = -(nx * lx + ny * ly); // >0: el lado +n está en sombra
+			for (let j = 0; j < n; j++) {
+				const u = (j + 0.5) / n;
+				const cx = sg.a[0] + dx * u;
+				const cy = sg.a[1] + dy * u;
+				const r = lerp(sg.ra, sg.rb, u) * 0.98;
+				const bow = r * 0.35;
+				for (const sd of [-1, 1]) {
+					const dark = sd * sh;
+					const a = 0.12 + Math.max(0, dark) * 0.55;
+					g.strokeStyle = ink(a);
+					g.lineWidth = w;
+					g.beginPath();
+					g.moveTo(cx, cy);
+					g.quadraticCurveTo(cx + nx * sd * r * 0.55 + tx * bow, cy + ny * sd * r * 0.55 + ty * bow, cx + nx * sd * r, cy + ny * sd * r);
+					g.stroke();
+				}
+			}
+		};
+		geom.fingers.forEach((segs) => segs.forEach((sg, j) => segHatch(sg, j === 0 ? 7 : 5, 0.8)));
+		geom.thumb.forEach((sg) => segHatch(sg, 6, 0.85));
+		// dorso / palma: líneas que corren hacia los nudillos, más densas del lado de sombra
+		for (let i = 0; i < 26; i++) {
+			const u = i / 25;
+			const x0 = lerp(-34, 34, u);
+			const shade = clamp(0.5 - (x0 / 34) * lx * 0.8 + 0.25 * ly);
+			if (shade < 0.25) continue;
+			g.strokeStyle = ink(0.08 + shade * 0.42);
+			g.lineWidth = 0.75;
 			g.beginPath();
-			g.moveTo(-60, y);
-			g.bezierCurveTo(-20, y - 6, 20, y - 6, 60, y + 2);
+			g.moveTo(x0 * 0.9, 6);
+			g.bezierCurveTo(x0 * 0.98, -30, x0 * 1.05, -60, x0 * 1.02, -96 + Math.abs(x0) * 0.25);
 			g.stroke();
 		}
-		g.strokeStyle = rgba('#2a160a', 0.4 * k);
-		g.lineWidth = 0.7;
-		for (let y = -110; y < 40; y += 5) {
+		// cruzado en la zona más oscura
+		g.strokeStyle = ink(0.32);
+		g.lineWidth = 0.6;
+		for (let y = -100; y < 10; y += 4.2) {
+			const xs = lx > 0 ? -44 : 14;
 			g.beginPath();
-			g.moveTo(10, y - 30);
-			g.lineTo(60, y + 20);
+			g.moveTo(xs, y);
+			g.lineTo(xs + 30, y - 9);
 			g.stroke();
+		}
+		// antebrazo: achurado longitudinal en el lado de sombra
+		const fl2 = p.forearm ?? 260;
+		if (fl2 > 0) {
+			for (let i = 0; i < 16; i++) {
+				const u = i / 15;
+				const x0 = lerp(-40, 40, u);
+				const shade = clamp(0.5 - (x0 / 40) * lx * 0.9);
+				if (shade < 0.3) continue;
+				g.strokeStyle = ink(0.06 + shade * 0.36);
+				g.lineWidth = 0.8;
+				g.beginPath();
+				g.moveTo(x0 * 0.92, 4);
+				g.lineTo(x0 * 1.22, fl2);
+				g.stroke();
+			}
 		}
 		if (dorsal) {
-			for (let i = 0; i < 26; i++) {
+			for (let i = 0; i < 34; i++) {
 				const x = -36 + hash(i, 501) * 72;
-				const y = -95 + hash(i, 502) * 100;
-				g.fillStyle = rgba('#5a3418', (0.18 + hash(i, 503) * 0.3) * k);
+				const y = -95 + hash(i, 502) * 110;
+				g.fillStyle = rgba('#5a3418', (0.16 + hash(i, 503) * 0.3) * k);
 				g.beginPath();
-				g.ellipse(x, y, 1.5 + hash(i, 504) * 2.8, 1.2 + hash(i, 505) * 2.2, 0, 0, Math.PI * 2);
+				g.ellipse(x, y, 1.2 + hash(i, 504) * 2.6, 1 + hash(i, 505) * 2, hash(i, 506) * 3, 0, Math.PI * 2);
 				g.fill();
 			}
+			// punteado fino de grabado
+			for (let i = 0; i < 160; i++) {
+				const x = -40 + hash(i, 511) * 80;
+				const y = -100 + hash(i, 512) * 110;
+				if ((x / 40) * lx > 0.1) continue;
+				g.fillStyle = ink(0.35);
+				g.fillRect(x, y, 0.9, 0.9);
+			}
 			// venas
-			g.strokeStyle = rgba('#7a5a44', 0.45 * k);
-			g.lineWidth = 2.2;
+			g.strokeStyle = rgba('#6e5040', 0.5 * k);
+			g.lineWidth = 2.4;
 			g.beginPath();
 			g.moveTo(-14, 10);
 			g.bezierCurveTo(-18, -20, -6, -40, -12, -70);
 			g.moveTo(8, 12);
 			g.bezierCurveTo(14, -18, 4, -44, 14, -72);
+			g.moveTo(-2, -30);
+			g.quadraticCurveTo(4, -40, 8, -52);
 			g.stroke();
-			// arrugas de nudillo
-			g.strokeStyle = rgba('#2a160a', 0.55 * k);
+			g.strokeStyle = rgba('#f0d0b0', 0.22 * k);
 			g.lineWidth = 0.9;
+			g.beginPath();
+			g.moveTo(-15, 9);
+			g.bezierCurveTo(-19, -21, -7, -41, -13, -71);
+			g.stroke();
+			// arrugas de nudillo (anillos concéntricos)
+			g.strokeStyle = ink(0.6);
+			g.lineWidth = 0.85;
 			geom.fingers.forEach((segs) => {
-				const s = segs[1];
-				for (let j = 0; j < 3; j++) {
-					g.beginPath();
-					g.ellipse(s.a[0], s.a[1] + j * 2.4 - 2, s.ra * 0.55, 1.6, 0, Math.PI * 0.1, Math.PI * 0.9);
-					g.stroke();
+				for (const si of [1, 2]) {
+					const sg = segs[si];
+					const th = Math.atan2(sg.b[1] - sg.a[1], sg.b[0] - sg.a[0]);
+					for (let j = 0; j < (si === 1 ? 4 : 2); j++) {
+						g.save();
+						g.translate(sg.a[0], sg.a[1]);
+						g.rotate(th + Math.PI / 2);
+						g.beginPath();
+						g.ellipse(0, j * 2.3 - 3, sg.ra * 0.62, 1.5 + j * 0.3, 0, Math.PI * 0.08, Math.PI * 0.92);
+						g.stroke();
+						g.restore();
+					}
 				}
 			});
 		}
@@ -452,4 +529,56 @@ export const sleeve = (g: Ctx, p: HandPose, at: number, color = '#1b1917', rib =
 		g.stroke();
 	}
 	g.restore();
+};
+
+// manga de rebozo (abuela): tela oscura con rayado fino y pliegues; devuelve el borde (pantalla) para colgar el fleco
+export const rebozoSleeve = (g: Ctx, p: HandPose, at: number, o: {base?: string; stripe?: string; light?: number} = {}): V2[] => {
+	const L = (p.forearm ?? 260) + 80;
+	const w0 = 50;
+	const w1 = 78;
+	const edge: V2[] = [];
+	for (let k = 0; k <= 12; k++) {
+		const u = k / 12;
+		edge.push([lerp(-w0, w0, u), at + Math.sin(u * Math.PI * 3 + 0.5) * 3]);
+	}
+	const path = (q: Ctx) => {
+		q.moveTo(edge[0][0], edge[0][1]);
+		for (const [x, y] of edge) q.lineTo(x, y);
+		q.bezierCurveTo(w0 + 6, at + L * 0.3, w1 - 6, at + L * 0.7, w1, at + L);
+		q.lineTo(-w1, at + L);
+		q.bezierCurveTo(-w1 + 6, at + L * 0.7, -w0 - 6, at + L * 0.3, edge[0][0], edge[0][1]);
+		q.closePath();
+	};
+	g.save();
+	handXf(g, p);
+	paintShape(g, path, [-w1 - 4, at - 8, w1 * 2 + 8, L + 16], {fill: o.base ?? '#241a14', light: o.light ?? -Math.PI * 0.6, shadow: {color: '#070403', width: 26, alpha: 0.85}, rim: {color: '#d9a870', width: 3.5, alpha: 0.35}, texture: {seed: 133, scale: 0.25, alpha: 0.3}}, p.s);
+	// rayado: hilos finos a lo largo de la manga, alternando arena y terracota apagados
+	g.save();
+	g.beginPath();
+	path(g);
+	g.clip();
+	for (let i = 0; i < 22; i++) {
+		const u = i / 21;
+		const x0 = lerp(-w0, w0, u);
+		const x1 = lerp(-w1, w1, u);
+		g.strokeStyle = i % 3 === 0 ? 'rgba(168,58,37,0.32)' : i % 3 === 1 ? 'rgba(224,187,143,0.16)' : 'rgba(0,0,0,0.3)';
+		g.lineWidth = i % 3 === 2 ? 2.2 : 1.1;
+		g.beginPath();
+		g.moveTo(x0, at);
+		g.bezierCurveTo(x0 + 2, at + L * 0.3, x1 - 2, at + L * 0.7, x1, at + L);
+		g.stroke();
+	}
+	// pliegues: bandas oscuras suaves
+	for (let i = 0; i < 4; i++) {
+		const x0 = lerp(-w0 * 0.7, w0 * 0.7, i / 3) + (hash(i, 91) - 0.5) * 10;
+		g.strokeStyle = 'rgba(0,0,0,0.28)';
+		g.lineWidth = 7;
+		g.beginPath();
+		g.moveTo(x0, at + 10);
+		g.quadraticCurveTo(x0 * 1.3 + 6, at + L * 0.5, x0 * 1.5, at + L);
+		g.stroke();
+	}
+	g.restore();
+	g.restore();
+	return edge.map(([x, y]) => handPt(p, x, y));
 };

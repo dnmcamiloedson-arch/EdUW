@@ -20,17 +20,18 @@ const sheet = () =>
 		// costillas
 		for (let y = SH - LIP; y > -RIB; y -= RIB) {
 			const gr = g.createLinearGradient(0, y - RIB, 0, y);
-			gr.addColorStop(0, '#0A1A15');
-			gr.addColorStop(0.18, '#1B4436');
-			gr.addColorStop(0.45, '#245744');
-			gr.addColorStop(0.75, '#16382D');
-			gr.addColorStop(1, '#07130F');
+			gr.addColorStop(0, '#040B09');
+			gr.addColorStop(0.16, '#123328');
+			gr.addColorStop(0.3, '#1E4A3B');
+			gr.addColorStop(0.55, '#143429');
+			gr.addColorStop(0.85, '#0A1C16');
+			gr.addColorStop(1, '#030806');
 			g.fillStyle = gr;
 			g.fillRect(0, y - RIB, SW, RIB);
 		}
 		// pintura gastada + óxido
 		const rust = tinted(noiseTile({seed: 141, size: 256, period: 4, oct: 5, contrast: 3.2, bias: -0.25}), C.terracota, 'd07rust');
-		drawTiled(g, rust, {w: SW, h: SH, scale: 1.4, alpha: 0.55, sy: 0.6});
+		drawTiled(g, rust, {w: SW, h: SH, scale: 1.4, alpha: 0.28, sy: 0.6});
 		const grime = tinted(noiseTile({seed: 142, size: 256, period: 6, oct: 4, contrast: 1.8}), '#050B09', 'd07grime');
 		drawTiled(g, grime, {w: SW, h: SH, scale: 1.0, alpha: 0.5});
 		// escurrimientos de óxido
@@ -39,7 +40,7 @@ const sheet = () =>
 			const y = hash(i, 152) * SH;
 			const len = 60 + hash(i, 153) * 260;
 			const gr = g.createLinearGradient(0, y, 0, y + len);
-			gr.addColorStop(0, rgba(C.terracota, 0.5));
+			gr.addColorStop(0, rgba(C.terracota, 0.32));
 			gr.addColorStop(1, rgba(C.terracota, 0));
 			g.fillStyle = gr;
 			g.fillRect(x, y, 2 + hash(i, 154) * 4, len);
@@ -106,6 +107,9 @@ export const drawShutter = (g: Ctx, edge: number, I: number, t: number) => {
 
 // el negro tras el portazo: la banda perforada brilla con el foco que se mece; eclipse y ojos
 export const drawBlackBand = (g: Ctx, edge: number, f: number, t: number) => {
+	// cuarto oscuro: la cortina apenas se adivina
+	g.fillStyle = 'rgba(6,4,2,0.86)';
+	g.fillRect(-100, -100, 1300, 2200);
 	const L = bulbPos(t);
 	const cx = 540 + (L[0] - BULB0[0]) * 2600;
 	const yA = edge - BAND1;
