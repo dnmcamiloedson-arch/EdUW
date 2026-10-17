@@ -57,8 +57,6 @@ const TEXT: T[] = [
 	{text: 'Y siempre volvía\na la misma piedra.', at: 767, out: 846, y: 430, size: 64, color: P.bone, mode: 'soft', scrim: 0.45},
 	{text: 'LOS', at: EV.slam, out: 1011, y: 760, size: 70, font: 'Rye', color: P.gold, mode: 'slam', scrim: 0, glow: P.cempa, tracking: 0.12},
 	{text: 'CHANEQUES', at: EV.slam, out: 1011, y: 840, size: 128, font: 'Rye', color: P.gold, mode: 'slam', scrim: 0, glow: P.cempa, tracking: 0.02},
-	{text: 'Altar 7 · Ala Norte', at: EV.altar, out: 1011, y: 1010, size: 48, color: P.arena, mode: 'soft', scrim: 0, tracking: 0.04},
-	{text: 'Negocios', at: EV.altar + 5, out: 1011, y: 1074, size: 34, color: P.arena, mode: 'soft', scrim: 0, tracking: 0.12},
 	{text: 'Desperté a la orilla\ndel camino.', at: 1019, out: 1071, y: 430, size: 62, color: P.bone, mode: 'soft'},
 	{text: 'Para mí, fue una noche.', at: 1074, out: 1120, y: 470, size: 62, color: P.bone, mode: 'soft'},
 	{text: 'Me buscaron ocho días.', at: 1127, out: 1185, y: 430, size: 66, color: P.bone, mode: 'soft', accent: {ocho: P.gold}},

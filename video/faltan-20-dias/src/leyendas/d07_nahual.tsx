@@ -37,7 +37,6 @@ export const Ep07: React.FC<{dias: number; fecha: string}> = ({dias, fecha}) => 
 			))}
 			{/* título: lo ilumina el mismo foco que parpadea */}
 			<Line text="EL NAHUAL" f={f} at={87} out={192 - OUTK} y={264} size={112} font="Rye" color={C.flama} glow={C.cempa} mode="flicker" beam={bulbI(f)} tracking={0.06} lineHeight={1.0} scrim={0} />
-			<Line text="Altar 2 · Ala Sur · Institute" f={f} at={99} out={192 - OUTK} y={386} size={40} color={C.arena} mode="soft" lineHeight={1.1} tracking={0.04} scrim={0} />
 			{f >= 1146 ? <LeyendaLockup f={f} at={1146} dias={dias} fecha={fecha} top={296} bottom={1140} color={C.flama} /> : null}
 		</Scene>
 	);
