@@ -5,6 +5,7 @@ import {glow, type Ctx} from '../kit/paint';
 import type {PostOpts} from '../kit/post';
 import {resetLayers} from './layer';
 import {applyLight, lightMap, type Caster, type MaskLayer} from './light';
+
 import {drawAlley, drawBuckets, drawDust, drawSet} from './set';
 import {drawBlackBand, drawShutter} from './shutter';
 import {WALL_BASE, WALL_SX0, bulbI, bulbPos, camAt, focusZ, shutterEdge, shutterT, worldT, type CamT, type V3} from './world';
@@ -75,8 +76,6 @@ export const paintFrame = (g: Ctx, f: number, t: number): PostOpts => {
 		drawAlley(g, t, f, (q) => fr.alley.forEach((fn) => fn(q)));
 		drawSet(g);
 		applyLight(g, lightMap(fr.L, fr.I, fr.casters, fr.masks));
-		// calor del foco sobre la esquina alta del muro
-		glow(g, 300 + (fr.L[0] + 0.7) * 600, 430, 620, C.flama, 0.1 * fr.I, 0.1);
 		// brillos dentro de las sombras: solo donde hay pared o calle (el callejón no recibe sombras del foco)
 		g.save();
 		g.beginPath();

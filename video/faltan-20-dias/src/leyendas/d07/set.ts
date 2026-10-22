@@ -1,8 +1,9 @@
 // Día 7 · el set (en caché): pared de cal sobre adobe, empedrado de río, el callejón con niebla y papel picado,
 // y las cubetas de cempasúchil del primer plano. El albedo se pinta una vez; la luz del foco llega después (light.ts).
 import {C, H, W, clamp, hash, mixRGB, rgba} from '../../lib/util';
-import {cached, drawTiled, fogBand, glow, makeCanvas, noiseTile, tinted, type Ctx} from '../kit/paint';
-import {marigold, papelPicado} from '../kit/fx';
+import {cached, drawTiled, glow, makeCanvas, tinted, type Ctx} from '../kit/paint';
+import {tile} from './tiles';
+import {papelPicado} from '../kit/fx';
 import {EYE, F_, HZ, P, WALL_BASE, WALL_SX0, WALL_Z, pxPerM, sx, sy} from './world';
 
 // el lienzo del set cubre más que la pantalla (cámara en mano, paneo, golpe del susto)
@@ -25,9 +26,9 @@ const paintWall = (g: Ctx) => {
 	// cal: base clara con manchas
 	g.fillStyle = '#E9D5B4';
 	g.fillRect(x0, yTop, ww, yb - yTop);
-	const mott = tinted(noiseTile({seed: 71, size: 256, period: 4, oct: 5, contrast: 1.8}), '#B89470', 'd07mott');
+	const mott = tinted(tile({period: 4, contrast: 1.8}), '#B89470', 'd07mott');
 	drawTiled(g, mott, {x: x0, y: yTop, w: ww, h: yb - yTop, scale: 1.6, alpha: 0.3});
-	const fine = tinted(noiseTile({seed: 72, size: 256, period: 8, oct: 4, contrast: 2.2}), '#8E6A48', 'd07fine');
+	const fine = tinted(tile({period: 4, contrast: 2.2, ox: 101, oy: 37}), '#8E6A48', 'd07fine');
 	drawTiled(g, fine, {x: x0, y: yTop, w: ww, h: yb - yTop, scale: 0.7, alpha: 0.16});
 	// adobe asomando donde se cayó la cal (máscara de ruido con umbral)
 	const brick = makeCanvas(ww, yb - yTop);
@@ -43,8 +44,18 @@ const paintWall = (g: Ctx) => {
 			b.fillStyle = css(mixRGB(C.terracota, '#5E2616', 0.15 + hash(k, 3) * 0.45));
 			b.fillRect(c * bw + ox + 3, r * bh + 3, bw - 6, bh - 6);
 		}
-	const pm = noiseTile({seed: 73, size: 256, period: 3, oct: 5, contrast: 6, bias: -0.75});
+	const pm = tile({period: 4, contrast: 6, bias: -0.8, ox: 53, oy: 171});
 	drawTiled(b, pm, {w: brick.width, h: brick.height, scale: 2.6, ox: 140, oy: 60, op: 'destination-in'});
+	// la cal aguanta arriba (donde cae el ala de la sombra) y se cae más abajo, por la humedad del rodapié
+	const keep = b.createLinearGradient(0, 0, 0, brick.height);
+	keep.addColorStop(0, 'rgba(0,0,0,0.12)');
+	keep.addColorStop(0.42, 'rgba(0,0,0,0.25)');
+	keep.addColorStop(0.75, 'rgba(0,0,0,1)');
+	keep.addColorStop(1, 'rgba(0,0,0,1)');
+	b.globalCompositeOperation = 'destination-in';
+	b.fillStyle = keep;
+	b.fillRect(0, 0, brick.width, brick.height);
+	b.globalCompositeOperation = 'source-over';
 	// borde de la cal rota: sombra suave alrededor del parche
 	g.save();
 	g.filter = 'blur(3px)';
@@ -226,24 +237,29 @@ export const setCanvas = () =>
 		paintWall(g);
 		paintStreet(g);
 		g.setTransform(1, 0, 0, 1, 0, 0);
-		const src = makeCanvas(SET_W, SET_H);
-		src.getContext('2d')!.drawImage(c, 0, 0);
-		const tmp = makeCanvas(SET_W, SET_H);
+		// desenfoque por bandas a media resolución (barato y se ve igual)
+		const HW = Math.ceil(SET_W / 2);
+		const HH = Math.ceil(SET_H / 2);
+		const half = makeCanvas(HW, HH);
+		const hq = half.getContext('2d')!;
+		hq.drawImage(c, 0, 0, HW, HH);
+		const tmp = makeCanvas(HW, HH);
 		const q = tmp.getContext('2d')!;
 		for (const [r, ya, yb] of DOF_BANDS) {
 			q.setTransform(1, 0, 0, 1, 0, 0);
 			q.globalCompositeOperation = 'source-over';
-			q.clearRect(0, 0, SET_W, SET_H);
-			q.filter = `blur(${r}px)`;
-			q.drawImage(src, 0, 0);
+			q.clearRect(0, 0, HW, HH);
+			q.filter = `blur(${r / 2}px)`;
+			q.drawImage(half, 0, 0);
 			q.filter = 'none';
 			q.globalCompositeOperation = 'destination-in';
-			const gr = q.createLinearGradient(0, ya - SET_Y0, 0, yb - SET_Y0);
+			const gr = q.createLinearGradient(0, (ya - SET_Y0) / 2, 0, (yb - SET_Y0) / 2);
 			gr.addColorStop(0, 'rgba(0,0,0,0)');
 			gr.addColorStop(1, 'rgba(0,0,0,1)');
 			q.fillStyle = gr;
-			q.fillRect(0, ya - SET_Y0, SET_W, SET_H);
-			g.drawImage(tmp, 0, 0);
+			q.fillRect(0, (ya - SET_Y0) / 2, HW, HH);
+			g.imageSmoothingEnabled = true;
+			g.drawImage(tmp, 0, 0, SET_W, SET_H);
 		}
 		return c;
 	});
@@ -302,6 +318,33 @@ const alleyStatic = () =>
 		return c;
 	});
 
+// niebla del callejón: UNA textura chica (256, 4 octavas) compartida por las tres bandas (la del kit hace 3 de 512)
+const fogBuf = () => cached('d07:fogbuf', () => makeCanvas(420, 300));
+const alleyFog = (ctx: Ctx, o: {y0: number; y1: number; color: string; t: number; ox: number; alpha: number; speed: number; x: number; w: number}) => {
+	const band = fogBuf();
+	const bw = Math.min(band.width, Math.round(o.w));
+	const bh = Math.min(band.height, Math.round(o.y1 - o.y0));
+	const g = band.getContext('2d')!;
+	g.setTransform(1, 0, 0, 1, 0, 0);
+	g.globalCompositeOperation = 'source-over';
+	g.globalAlpha = 1;
+	g.clearRect(0, 0, band.width, band.height);
+	const ft = tinted(tile({period: 4, contrast: 1.5, ox: 30, oy: 60}), o.color, `d07fog${o.color}`);
+	drawTiled(g, ft, {w: bw, h: bh, scale: 1.6, ox: -o.t * o.speed + o.ox, sy: 0.45});
+	drawTiled(g, ft, {w: bw, h: bh, scale: 1.0, ox: o.t * o.speed * 0.55 + 200 + o.ox, oy: 90, alpha: 0.7, sy: 0.4});
+	g.globalCompositeOperation = 'destination-in';
+	const gr = g.createLinearGradient(0, 0, 0, bh);
+	gr.addColorStop(0, 'rgba(0,0,0,0)');
+	gr.addColorStop(0.35, 'rgba(0,0,0,1)');
+	gr.addColorStop(0.7, 'rgba(0,0,0,1)');
+	gr.addColorStop(1, 'rgba(0,0,0,0)');
+	g.fillStyle = gr;
+	g.fillRect(0, 0, bw, bh);
+	ctx.save();
+	ctx.globalAlpha *= o.alpha;
+	ctx.drawImage(band, 0, 0, bw, bh, o.x, o.y0, bw, bh);
+	ctx.restore();
+};
 export const drawAlley = (g: Ctx, t: number, f: number, owl?: (g: Ctx) => void) => {
 	g.save();
 	g.beginPath();
@@ -324,9 +367,10 @@ export const drawAlley = (g: Ctx, t: number, f: number, owl?: (g: Ctx) => void) 
 	papelPicado(g, {x0: SET_X0 - 20, x1: WALL_SX0 + 60, y: 480, t, n: 4, sag: 30, seed: 7, size: 0.55, alpha: 0.85, colors: [C.marfil, C.cempa, C.marfil, C.cempa]});
 	if (owl) owl(g);
 	// niebla teal en capas
-	fogBand(g, {y0: 640, y1: 900, color: '#6F9A94', t, seed: 31, alpha: 0.35, speed: 6, x: SET_X0, w: WALL_SX0 - SET_X0 + 40});
-	fogBand(g, {y0: 760, y1: 1010, color: '#88AAA2', t, seed: 33, alpha: 0.32, speed: 9, x: SET_X0, w: WALL_SX0 - SET_X0 + 40});
-	fogBand(g, {y0: 880, y1: 1070, color: '#9DBAB0', t: t + 3, seed: 35, alpha: 0.28, speed: 12, x: SET_X0, w: WALL_SX0 - SET_X0 + 40});
+	const fw = WALL_SX0 - SET_X0 + 40;
+	alleyFog(g, {y0: 640, y1: 900, color: '#6F9A94', t, ox: 0, alpha: 0.35, speed: 6, x: SET_X0, w: fw});
+	alleyFog(g, {y0: 760, y1: 1010, color: '#88AAA2', t, ox: 97, alpha: 0.32, speed: 9, x: SET_X0, w: fw});
+	alleyFog(g, {y0: 880, y1: 1070, color: '#9DBAB0', t: t + 3, ox: 191, alpha: 0.28, speed: 12, x: SET_X0, w: fw});
 	g.restore();
 	void f;
 };
@@ -334,34 +378,65 @@ export const drawAlley = (g: Ctx, t: number, f: number, owl?: (g: Ctx) => void) 
 // ---------------------------------------------------------------- cubetas de cempasúchil (primer plano, desenfocadas)
 const bucketSprite = (seed: number) =>
 	cached(`d07:bucket:${seed}`, () => {
-		const S = 460;
+		// se pinta a media resolución y se desenfoca (está a 28 px de desenfoque): cubeta de lámina con costillas y
+		// borde brillante, un ramo de cempasúchil (bolas cálidas con centro oscuro) y hojas
+		const S = 230;
 		const raw = makeCanvas(S, S);
 		const g = raw.getContext('2d')!;
-		// cubeta de lámina
 		const bx = S / 2;
 		const by = S * 0.62;
-		const bg = g.createLinearGradient(bx - 150, 0, bx + 150, 0);
-		bg.addColorStop(0, '#3C4442');
-		bg.addColorStop(0.4, '#8A908A');
-		bg.addColorStop(1, '#2A302E');
+		const bg = g.createLinearGradient(bx - 75, 0, bx + 75, 0);
+		bg.addColorStop(0, '#2E3634');
+		bg.addColorStop(0.32, '#9AA29C');
+		bg.addColorStop(0.5, '#6E7672');
+		bg.addColorStop(1, '#1E2422');
 		g.fillStyle = bg;
 		g.beginPath();
-		g.moveTo(bx - 150, by);
-		g.lineTo(bx + 150, by);
-		g.lineTo(bx + 125, S);
-		g.lineTo(bx - 125, S);
+		g.moveTo(bx - 75, by);
+		g.lineTo(bx + 75, by);
+		g.lineTo(bx + 62, S);
+		g.lineTo(bx - 62, S);
 		g.closePath();
 		g.fill();
-		// flores
-		for (let i = 0; i < 26; i++) {
-			const a = hash(i, seed) * Math.PI * 2;
-			const r = Math.sqrt(hash(i, seed + 1)) * 150;
-			marigold(g, bx + Math.cos(a) * r, by - 40 - Math.sin(a) * r * 0.55 - hash(i, seed + 2) * 60, 34 + hash(i, seed + 3) * 18, hash(i, seed + 4) * 6, i + seed, i % 3 === 0 ? 1 : 0);
+		g.strokeStyle = 'rgba(20,24,22,0.5)';
+		g.lineWidth = 3;
+		for (const yy of [by + 22, by + 50]) {
+			g.beginPath();
+			g.moveTo(bx - 72, yy);
+			g.lineTo(bx + 72, yy);
+			g.stroke();
 		}
-		const out = makeCanvas(S + 120, S + 120);
+		g.fillStyle = 'rgba(255,240,200,0.5)';
+		g.fillRect(bx - 76, by - 2, 152, 5);
+		// hojas
+		for (let i = 0; i < 10; i++) {
+			const a = hash(i, seed + 20) * Math.PI;
+			g.fillStyle = hash(i, seed + 21) > 0.5 ? '#2F5A2C' : '#1F4A28';
+			g.beginPath();
+			g.ellipse(bx + Math.cos(a) * 70, by - 10 - Math.sin(a) * 40, 18, 7, a, 0, Math.PI * 2);
+			g.fill();
+		}
+		// flores
+		for (let i = 0; i < 30; i++) {
+			const a = hash(i, seed) * Math.PI * 2;
+			const r = Math.sqrt(hash(i, seed + 1)) * 72;
+			const x = bx + Math.cos(a) * r;
+			const y = by - 22 - Math.sin(a) * r * 0.5 - hash(i, seed + 2) * 34;
+			const R = 15 + hash(i, seed + 3) * 9;
+			const gr = g.createRadialGradient(x - R * 0.2, y - R * 0.25, 0, x, y, R);
+			const hot = hash(i, seed + 4) > 0.35;
+			gr.addColorStop(0, hot ? '#FFD36A' : '#F5A040');
+			gr.addColorStop(0.55, hot ? C.cempa : C.flama);
+			gr.addColorStop(1, '#8A3410');
+			g.fillStyle = gr;
+			g.beginPath();
+			g.arc(x, y, R, 0, Math.PI * 2);
+			g.fill();
+		}
+		const out = makeCanvas(S + 60, S + 60);
 		const o = out.getContext('2d')!;
-		o.filter = 'blur(24px)';
-		o.drawImage(raw, 60, 60);
+		o.filter = 'blur(12px)';
+		o.drawImage(raw, 30, 30);
 		return out;
 	});
 export const drawBuckets = (g: Ctx, t: number, light = 1) => {
@@ -378,7 +453,7 @@ export const drawBuckets = (g: Ctx, t: number, light = 1) => {
 		g.globalAlpha = clamp(0.55 + 0.45 * light);
 		g.translate(px + sway, py + 120);
 		g.scale(k, k);
-		g.drawImage(sp, -sp.width / 2, -sp.height * 0.55);
+		g.drawImage(sp, -sp.width, -sp.height * 1.1, sp.width * 2, sp.height * 2);
 		g.restore();
 	}
 };

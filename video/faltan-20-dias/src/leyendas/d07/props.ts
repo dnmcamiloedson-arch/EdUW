@@ -8,79 +8,9 @@ import {P, pxPerM, seg, type V2, type V3} from './world';
 
 type Drawer = (box: [number, number, number, number], blur: number, shade: {color: string; a: number}, fn: (q: Ctx) => void) => void;
 
-// ---------------------------------------------------------------- perro callejero (x≈915 en la base del muro)
-export const dogState = (f: number) => {
-	const t = f / FPS;
-	let x = 1.0;
-	let z = 3.95;
-	let pose = 0; // 0 dormido, 1 cabeza arriba, 2 medio alzado, 3 agachado retrocede, 4 galope
-	if (t >= 8.4) pose = 1;
-	if (t >= 9.6) pose = 2;
-	if (t >= 14) {
-		pose = 3;
-		x = lerp(1.0, 1.32, E.inOut(seg(t, 14, 16)));
-	}
-	if (t >= 24.2) {
-		pose = 4;
-		x = lerp(1.32, 3.2, E.in(seg(t, 24.2, 24.9)));
-		z = lerp(3.95, 3.6, seg(t, 24.2, 24.9));
-	}
-	return {x, z, pose, gone: t > 25};
-};
-export const drawDog = (g: Ctx, f: number, L: V3, I: number, draw: Drawer) => {
-	const d = dogState(f);
-	if (d.gone) return;
-	const s = pxPerM(d.z);
-	const [px, py] = P(d.x, 0, d.z);
-	const lit = lightAt(L, I, [d.x, 0.3, d.z], [0, 0, -1]);
-	draw([px - 0.5 * s, py - 0.6 * s, 1.0 * s, 0.65 * s], 0, {color: '#101818', a: clamp(0.8 - lit * 0.7)}, (q) => {
-		q.save();
-		q.translate(px, py);
-		q.scale(s, -s);
-		const breath = d.pose === 0 ? Math.sin(f * 0.11) * 0.01 : 0;
-		const hy = d.pose === 0 ? 0.12 : d.pose === 1 ? 0.3 : d.pose === 2 ? 0.42 : d.pose === 3 ? 0.28 : 0.36;
-		const by = d.pose >= 2 ? 0.3 : 0.12;
-		q.fillStyle = '#B88A55';
-		q.beginPath();
-		q.ellipse(0, by, 0.3, 0.12 + breath, 0, 0, Math.PI * 2);
-		q.fill();
-		q.fillStyle = '#7A5530';
-		q.beginPath();
-		q.ellipse(0, by + 0.07, 0.26, 0.05, 0, 0, Math.PI * 2);
-		q.fill();
-		q.fillStyle = '#B88A55';
-		q.beginPath();
-		q.ellipse(-0.3, hy, 0.1, 0.075, 0, 0, Math.PI * 2);
-		q.fill();
-		q.beginPath();
-		q.moveTo(-0.33, hy + 0.05);
-		q.lineTo(-0.28, hy + (d.pose === 1 || d.pose === 3 ? 0.08 : 0.15));
-		q.lineTo(-0.25, hy + 0.04);
-		q.fill();
-		if (d.pose >= 2) {
-			q.fillStyle = '#9C7244';
-			for (const lx of [-0.2, -0.12, 0.14, 0.22]) q.fillRect(lx, 0, 0.04, by);
-		}
-		q.restore();
-	});
-	if (d.pose >= 1 && d.pose < 4) {
-		const [ex, ey] = P(d.x - 0.33, (d.pose === 1 ? 0.3 : 0.42) + 0.02, d.z - 0.05);
-		glow(g, ex, ey, 10, '#D8E07A', 0.6 * lit, 0.3);
-	}
-};
-export const dogCaster = (f: number): Caster | null => {
-	const d = dogState(f);
-	if (d.gone) return null;
-	const h = d.pose === 0 ? 0.26 : d.pose >= 2 ? 0.55 : 0.42;
-	const pts: V2[] = [];
-	for (let i = 0; i < 18; i++) {
-		const a = (i / 18) * Math.PI * 2;
-		pts.push([Math.cos(a) * 0.34, h / 2 + Math.sin(a) * (h / 2)]);
-	}
-	return {pts: card(pts, d.x, 0, d.z - 0.05), dens: 0.8};
-};
-
 // ---------------------------------------------------------------- tecolote en el cable del callejón
+// silueta a contraluz del farol lejano (borde frío), penachos, plumas que se esponjan; a 2.9 s gira la cabeza hacia
+// nosotros (20 f, con sobretiro) y aparecen el disco facial y los ojos ámbar. A 16.2 s se deja caer y vuela (G2).
 export const drawOwl = (g: Ctx, f: number) => {
 	const t = f / FPS;
 	let x = 112;
@@ -89,35 +19,114 @@ export const drawOwl = (g: Ctx, f: number) => {
 	if (t >= 16.2) {
 		flyU = seg(t, 16.2, 17.6);
 		x = lerp(112, -60, E.in(flyU));
-		y = lerp(556, 470, flyU) + Math.sin(flyU * 30) * 6;
+		y = lerp(556, 470, flyU) + Math.sin(flyU * 30) * 6 + (flyU < 0.15 ? flyU * 60 : 9 - flyU * 0);
 	}
 	if (flyU >= 1) return;
+	const ruffle = 1 + 0.05 * Math.max(0, Math.sin(t * 1.3 + 0.5)) ** 8;
+	// giro de cabeza 2.9 s → 3.57 s: −1 (de espaldas, mirando al callejón) → 0 (de frente a cámara) con sobretiro
+	const u = seg(t, 2.9, 2.9 + 20 / 30);
+	const turn = u <= 0 ? -1 : -1 + E.out(u) + 0.12 * Math.sin(Math.PI * u) * (u > 0.6 ? 1 : 0);
+	const face = clamp(1 - Math.abs(turn)); // 1 = de frente
 	g.save();
 	g.translate(x, y);
-	g.fillStyle = '#141A18';
+	const S = 1.15;
+	g.scale(S, S);
+	// patas en el cable
+	g.strokeStyle = '#0B0F0E';
+	g.lineWidth = 2;
 	g.beginPath();
-	g.ellipse(0, -26, 15, 26, 0, 0, Math.PI * 2);
-	g.fill();
-	g.beginPath();
-	g.ellipse(0, -56, 13, 11, 0, 0, Math.PI * 2);
-	g.fill();
-	if (flyU > 0) {
-		const wf = Math.sin(t * 2 * Math.PI / 0.45);
+	g.moveTo(-4, -2);
+	g.lineTo(-5, 2);
+	g.moveTo(4, -2);
+	g.lineTo(5, 2);
+	g.stroke();
+	// cuerpo (pera) con cola
+	const body = new Path2D();
+	body.moveTo(0, -52 * ruffle);
+	body.bezierCurveTo(17 * ruffle, -50, 19 * ruffle, -18, 11, -3);
+	body.lineTo(4, 6);
+	body.lineTo(-4, 6);
+	body.lineTo(-11, -3);
+	body.bezierCurveTo(-19 * ruffle, -18, -17 * ruffle, -50, 0, -52 * ruffle);
+	g.fillStyle = '#121816';
+	g.fill(body);
+	// alas plegadas y moteado del pecho (apenas, contraluz)
+	g.fillStyle = 'rgba(40,52,48,0.8)';
+	for (let i = 0; i < 9; i++) {
 		g.beginPath();
-		g.moveTo(-6, -36);
-		g.lineTo(-44, -36 - wf * 26);
-		g.lineTo(-6, -22);
-		g.moveTo(6, -36);
-		g.lineTo(44, -36 - wf * 26);
-		g.lineTo(6, -22);
+		g.ellipse(-6 + (i % 3) * 6, -36 + Math.floor(i / 3) * 9, 1.6, 1.1, 0, 0, Math.PI * 2);
 		g.fill();
 	}
-	// ojos ámbar: miran a cámara desde 2.9 s
-	const look = E.out(seg(t, 2.9, 2.9 + 20 / 30));
-	const ex = lerp(6, 0, look);
-	glow(g, -5 + ex, -57, 9, '#F5B342', 0.55, 0.35);
-	glow(g, 5 + ex, -57, 9, '#F5B342', 0.55, 0.35);
+	if (flyU > 0) {
+		const wf = Math.sin((t * 2 * Math.PI) / 0.42);
+		g.fillStyle = '#101614';
+		for (const sd of [-1, 1]) {
+			g.beginPath();
+			g.moveTo(sd * 8, -40);
+			g.quadraticCurveTo(sd * 40, -58 - wf * 26, sd * 62, -40 - wf * 34);
+			g.quadraticCurveTo(sd * 38, -30 - wf * 10, sd * 9, -22);
+			g.closePath();
+			g.fill();
+		}
+	}
+	// cabeza con penachos; el disco facial se revela al girar
+	const hx = 0;
+	const hy = -60 * ruffle;
+	g.fillStyle = '#131A18';
+	g.beginPath();
+	g.ellipse(hx, hy, 15, 13, 0, 0, Math.PI * 2);
+	g.fill();
+	const tw = 1 - 0.35 * Math.abs(turn);
+	g.beginPath();
+	g.moveTo(hx - 12 * tw, hy - 7);
+	g.lineTo(hx - 15 * tw + turn * 3, hy - 22);
+	g.lineTo(hx - 5 * tw, hy - 11);
+	g.moveTo(hx + 12 * tw, hy - 7);
+	g.lineTo(hx + 15 * tw + turn * 3, hy - 22);
+	g.lineTo(hx + 5 * tw, hy - 11);
+	g.fill();
+	if (face > 0.02) {
+		const fx = hx + turn * 9;
+		g.fillStyle = `rgba(70,74,62,${0.85 * face})`;
+		g.beginPath();
+		g.ellipse(fx - 5.5 * face, hy + 1, 6 * face, 6.5, 0, 0, Math.PI * 2);
+		g.ellipse(fx + 5.5 * face, hy + 1, 6 * face, 6.5, 0, 0, Math.PI * 2);
+		g.fill();
+		g.fillStyle = `rgba(30,24,16,${face})`;
+		g.beginPath();
+		g.moveTo(fx - 1.5, hy + 4);
+		g.lineTo(fx + 1.5, hy + 4);
+		g.lineTo(fx, hy + 9);
+		g.closePath();
+		g.fill();
+	}
+	// borde frío del farol (arriba a la izquierda, lejos)
+	g.strokeStyle = 'rgba(170,205,195,0.35)';
+	g.lineWidth = 1.4;
+	g.beginPath();
+	g.ellipse(hx, hy, 15, 13, 0, Math.PI * 1.05, Math.PI * 1.55);
+	g.stroke();
+	g.beginPath();
+	g.moveTo(-14, -44);
+	g.bezierCurveTo(-18, -30, -16, -16, -10, -5);
+	g.stroke();
 	g.restore();
+	// ojos ámbar (fuera de la escala para un brillo limpio)
+	if (face > 0.05) {
+		const fx = x + (turn * 9) * S;
+		const ey = y + (hy + 0.5) * S;
+		for (const sd of [-1, 1]) {
+			glow(g, fx + sd * 5.5 * face * S, ey, 11, '#F5B342', 0.6 * face, 0.35);
+			g.fillStyle = `rgba(255,214,120,${0.95 * face})`;
+			g.beginPath();
+			g.arc(fx + sd * 5.5 * face * S, ey, 2.6, 0, Math.PI * 2);
+			g.fill();
+			g.fillStyle = `rgba(10,6,2,${face})`;
+			g.beginPath();
+			g.arc(fx + sd * 5.5 * face * S, ey, 1.3, 0, Math.PI * 2);
+			g.fill();
+		}
+	}
 };
 
 // ---------------------------------------------------------------- caña y sombrero (caen en las vueltas)

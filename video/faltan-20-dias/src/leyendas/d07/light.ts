@@ -16,6 +16,8 @@ export const toL = (X: number, Y: number): V2 => [(X - LX0) / Q, (Y - LY0) / Q];
 
 export type Caster = {
 	pts: V3[]; // contorno cerrado (metros, mundo)
+	more?: V3[][]; // más polígonos del mismo cuerpo (se unen: cada uno se rellena por separado)
+	hulls?: V3[][]; // nubes de puntos: se rellena la envolvente convexa de su proyección (sarape, cuerpos)
 	dens?: number; // densidad de la sombra (0.88 por defecto)
 	soft?: number; // penumbra extra (px de pantalla)
 	alpha?: number; // peso (para mezclar contornos)
@@ -32,6 +34,47 @@ export const card = (pts: V2[], x: number, y: number, z: number, flip = 1, sc = 
 		return [x + uu * c - vv * s, y + uu * s + vv * c, z];
 	});
 };
+
+// envolvente convexa (cadena monótona)
+export const convexHull = (pts: V2[]): V2[] => {
+	if (pts.length < 4) return pts;
+	const a = [...pts].sort((p, q) => p[0] - q[0] || p[1] - q[1]);
+	const cr = (o: V2, p: V2, q: V2) => (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0]);
+	const lo: V2[] = [];
+	for (const p of a) {
+		while (lo.length >= 2 && cr(lo[lo.length - 2], lo[lo.length - 1], p) <= 0) lo.pop();
+		lo.push(p);
+	}
+	const up: V2[] = [];
+	for (let i = a.length - 1; i >= 0; i--) {
+		const p = a[i];
+		while (up.length >= 2 && cr(up[up.length - 2], up[up.length - 1], p) <= 0) up.pop();
+		up.push(p);
+	}
+	return lo.slice(0, -1).concat(up.slice(0, -1));
+};
+// cinta 3D alrededor de una polilínea, de cara al foco (para sombras de miembros, bastón, cola)
+export const ribbon = (L: V3, pts: V3[], hw: number[]): V3[] => {
+	const n = pts.length;
+	const A: V3[] = [];
+	const B: V3[] = [];
+	for (let i = 0; i < n; i++) {
+		const p = pts[i];
+		const a = pts[Math.max(0, i - 1)];
+		const b = pts[Math.min(n - 1, i + 1)];
+		const t: V3 = [b[0] - a[0], b[1] - a[1], b[2] - a[2]];
+		const d: V3 = [p[0] - L[0], p[1] - L[1], p[2] - L[2]];
+		let s: V3 = [t[1] * d[2] - t[2] * d[1], t[2] * d[0] - t[0] * d[2], t[0] * d[1] - t[1] * d[0]];
+		const m = Math.hypot(s[0], s[1], s[2]) || 1;
+		s = [s[0] / m, s[1] / m, s[2] / m];
+		const w = hw[Math.min(hw.length - 1, i)];
+		A.push([p[0] + s[0] * w, p[1] + s[1] * w, p[2] + s[2] * w]);
+		B.push([p[0] - s[0] * w, p[1] - s[1] * w, p[2] - s[2] * w]);
+	}
+	return A.concat(B.reverse());
+};
+// transforma todos los puntos de un caster
+export const mapCaster = (c: Caster, fn: (p: V3) => V3): Caster => ({...c, pts: c.pts.map(fn), more: c.more?.map((m) => m.map(fn)), hulls: c.hulls?.map((m) => m.map(fn))});
 
 // punto de sombra en pantalla (o null si el rayo no toca nada visible)
 export const projShadow = (L: V3, p: V3): V2 | null => {
@@ -94,7 +137,7 @@ const canvases = () =>
 		return {D, S, T, M, img};
 	});
 
-const AMB: [number, number, number] = [20, 32, 36]; // ambiente teal (#16303A levantado)
+const AMB: [number, number, number] = [15, 25, 29]; // ambiente teal (#16303A levantado)
 const EXPO = 1.5;
 // pantalla de lámina del foco: más luz hacia el eje (abajo y hacia la pared), cae a los lados; se mece con el cable
 export const spot = (L: V3, p: V3) => {
@@ -146,30 +189,34 @@ export const lightMap = (L: V3, I: number, casters: Caster[], masks: MaskLayer[]
 	sg.filter = 'none';
 	sg.clearRect(0, 0, LW, LH);
 	const tg = T.getContext('2d')!;
+	const poly = (pts: V3[], hull: boolean) => {
+		const sp: V2[] = [];
+		for (const q of pts) {
+			const s = projShadow(L, q);
+			if (!s) continue;
+			sp.push([(Math.max(-4000, Math.min(5000, s[0])) - LX0) / Q, (Math.max(-4000, Math.min(6000, s[1])) - LY0) / Q]);
+		}
+		const pp = hull ? convexHull(sp) : sp;
+		if (pp.length < 3) return;
+		tg.beginPath();
+		tg.moveTo(pp[0][0], pp[0][1]);
+		for (let i = 1; i < pp.length; i++) tg.lineTo(pp[i][0], pp[i][1]);
+		tg.closePath();
+		tg.fill();
+	};
 	for (const c of casters) {
-		if (c.pts.length < 3 || (c.alpha ?? 1) <= 0.001) continue;
+		if ((c.alpha ?? 1) <= 0.001) continue;
 		let zsum = 0;
 		for (const q of c.pts) zsum += q[2];
-		const zc = zsum / c.pts.length;
+		const zc = c.pts.length ? zsum / c.pts.length : (c.hulls?.[0]?.[0]?.[2] ?? c.more?.[0]?.[0]?.[2] ?? 2);
 		const pen = penumbra(L, zc) + (c.soft ?? 0);
 		tg.setTransform(1, 0, 0, 1, 0, 0);
 		tg.clearRect(0, 0, LW, LH);
 		tg.fillStyle = '#000';
-		tg.beginPath();
-		let started = false;
-		for (const q of c.pts) {
-			const s = projShadow(L, q);
-			if (!s) continue;
-			const X = (Math.max(-4000, Math.min(5000, s[0])) - LX0) / Q;
-			const Y = (Math.max(-4000, Math.min(6000, s[1])) - LY0) / Q;
-			if (!started) {
-				tg.moveTo(X, Y);
-				started = true;
-			} else tg.lineTo(X, Y);
-		}
-		tg.closePath();
-		tg.fill();
-		sg.globalAlpha = (c.dens ?? 0.88) * (c.alpha ?? 1);
+		if (c.pts.length >= 3) poly(c.pts, false);
+		for (const m of c.more ?? []) poly(m, false);
+		for (const h of c.hulls ?? []) poly(h, true);
+		sg.globalAlpha = (c.dens ?? 0.93) * (c.alpha ?? 1);
 		sg.filter = `blur(${(pen / Q).toFixed(2)}px)`;
 		sg.drawImage(T, 0, 0);
 		sg.filter = 'none';

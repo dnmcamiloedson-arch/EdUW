@@ -1,7 +1,8 @@
 // Día 7 · la cortina metálica de la tiendita (lado de cámara): lámina corrugada verde, óxido, labio gastado que
 // atrapa el filo caliente del foco, y la banda perforada que brilla en el negro con el foco que se mece.
 import {C, clamp, hash, rgba} from '../../lib/util';
-import {cached, drawTiled, glow, makeCanvas, noiseTile, tinted, type Ctx} from '../kit/paint';
+import {cached, drawTiled, glow, makeCanvas, tinted, type Ctx} from '../kit/paint';
+import {tile} from './tiles';
 import {bulbPos, BULB0} from './world';
 
 const SW = 1240; // ancho del lienzo (con margen para la cámara en mano)
@@ -30,9 +31,9 @@ const sheet = () =>
 			g.fillRect(0, y - RIB, SW, RIB);
 		}
 		// pintura gastada + óxido
-		const rust = tinted(noiseTile({seed: 141, size: 256, period: 4, oct: 5, contrast: 3.2, bias: -0.25}), C.terracota, 'd07rust');
+		const rust = tinted(tile({period: 4, contrast: 3.2, bias: -0.25, ox: 77, oy: 9}), C.terracota, 'd07rust');
 		drawTiled(g, rust, {w: SW, h: SH, scale: 1.4, alpha: 0.28, sy: 0.6});
-		const grime = tinted(noiseTile({seed: 142, size: 256, period: 6, oct: 4, contrast: 1.8}), '#050B09', 'd07grime');
+		const grime = tinted(tile({period: 4, contrast: 1.8, ox: 140, oy: 200}), '#050B09', 'd07grime');
 		drawTiled(g, grime, {w: SW, h: SH, scale: 1.0, alpha: 0.5});
 		// escurrimientos de óxido
 		for (let i = 0; i < 40; i++) {

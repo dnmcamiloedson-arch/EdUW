@@ -33,8 +33,9 @@ export const seg = (f: number, a: number, b: number) => clamp((f - a) / (b - a))
 export const smooth = (u: number) => u * u * (3 - 2 * u);
 
 // ---------------------------------------------------------------- el foco
-export const PIVOT: V3 = [-0.7, 2.31, 0.5];
-export const CABLE = 0.56;
+export const PIVOT: V3 = [-1.0, 2.31, 0.5];
+// cable corto: el foco cuelga a 1.95 m, así la sombra del sombrero completo cae bajo el labio de la cortina
+export const CABLE = 0.36;
 export const SWING_T = 1.5;
 export const KICKS: {t0: number; A: number; tau: number}[] = [
 	{t0: 31.3, A: (22 * Math.PI) / 180, tau: 1.0},
@@ -55,7 +56,7 @@ export const bulbPos = (t: number): V3 => {
 };
 export const BULB0: V3 = [PIVOT[0], PIVOT[1] - CABLE, PIVOT[2]];
 // intensidad: zumbido + parpadeo del filamento (f30–33)
-const FLICK: Record<number, number> = {30: 0.6, 31: 0.25, 32: 0.35, 33: 0.8};
+const FLICK: Record<number, number> = {30: 0.62, 31: 0.25, 32: 0.78};
 export const bulbI = (f: number) => {
 	const fi = Math.floor(f);
 	const base = FLICK[fi] ?? 1;

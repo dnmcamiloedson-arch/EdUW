@@ -4,12 +4,14 @@ import {C, E, clamp, lerp} from '../../lib/util';
 import {glow, type Ctx} from '../kit/paint';
 import type {Frame} from './frame';
 import {drawer} from './layer';
-import {card, magAt, projShadow, type Caster} from './light';
-import {caneCaster, drawFermin, ferminCaster, ferminPose, STOP_X, STOP_Z} from './fermin';
-import {coyoteCaster, coyoteState, dogCaster, drawCaneOnGround, drawCoyote, drawDog, drawHat, drawOwl, drawPile} from './props';
-import {BIPED_EYES, BIPED_FRONT, COYOTE4, FRONT_EYES, HUNCHED, humanOutline, morph, resample} from './shapes';
+import {card, magAt, mapCaster, projShadow, type Caster} from './light';
+import {caneCaster, drawFermin, ferminPose, ferminShadow, type ShadowOpts, STOP_X, STOP_Z} from './fermin';
+import {coyoteCaster, coyoteState, drawCaneOnGround, drawCoyote, drawHat, drawOwl, drawPile} from './props';
+import {dogCaster, drawDog} from './dog';
+import {BIPED_EYES, BIPED_FRONT, COYOTE4, FRONT_EYES, HEAD_COYOTE_PROFILE, HEAD_EARS_FRONT, HEAD_HAT_FRONT, HUNCHED, humanOutline, morph, resample} from './shapes';
 import {G7, SEVEN_REST, glyph7} from './glyph';
-import {BULB0, P, WALL_Z, blurFor, seg, wallX, wallY, type V2, type V3} from './world';
+import {BULB0, P, WALL_Z, blurFor, sec, seg, smooth, wallX, wallY, type V2, type V3} from './world';
+import {rigAt} from './gait';
 
 export type Beat = {id: string; name: string; f0: number; f1: number; fn: (fr: Frame) => void};
 
@@ -47,57 +49,87 @@ const backProject = (pt: V2, zc: number, L0: V3 = BULB0): V3 => {
 	return [L0[0] + (w[0] - L0[0]) * s, L0[1] + (w[1] - L0[1]) * s, zc];
 };
 
+// ---------------------------------------------------------------- su sombra (G1)
+// opciones de la sombra por frame: desde 7.2 s se retrasa 3 f y le crece una cola bajo el sarape; 11.6–13 s la cabeza
+// voltea de perfil a frente (sobretiro 4°) y el ala se parte en dos orejas (12.1–12.7 s); ojos a 13 s; ladea 12° a
+// 13.6 s; parpadea a 14.6 s; respira 1.5 % a 0.4 Hz.
+const TURN0 = 348;
+const TURN1 = 390;
+export const shadowOpts = (f: number): ShadowOpts => {
+	const o: ShadowOpts = {lag: 3 * smooth(seg(f, 206, 222)), tail: E.inOut(seg(f, 216, 290))};
+	if (f >= 31 && f <= 36) {
+		o.head = () => HEAD_COYOTE_PROFILE;
+		o.brim = 0;
+	}
+	if (f >= TURN0) {
+		const u = seg(f, TURN0, TURN1);
+		const tu = u * u * (3 - 2 * u);
+		const ears = E.inOut(seg(f, 362, 382));
+		o.head = (auto) => morph(morph(auto, HEAD_HAT_FRONT, tu), HEAD_EARS_FRONT, ears);
+		o.headFace = -1;
+		o.brim = 1 - ears;
+		const over = (4 * Math.PI) / 180;
+		const tilt = (12 * Math.PI) / 180;
+		o.tilt = over * Math.sin(Math.PI * seg(f, 378, 398)) * -1 + tilt * E.out(seg(f, 408, 420)) + 0.012 * Math.sin(sec(f) * 1.7) * seg(f, 420, 440);
+		o.drop = 0.055 * E.inOut(seg(f, 352, 392));
+		o.breathe = 1 + 0.015 * Math.sin(2 * Math.PI * 0.4 * sec(f - 390)) * seg(f, 390, 420);
+	}
+	return o;
+};
+// gancho: mientras él sigue fuera de cuadro bajo el foco, la sombra se diseña legible (cabeza de perfil gigante con
+// el ala en y≈505) y converge a la física real antes del subliminal.
+// trayectoria diseñada del punto del ala en el muro (px) y escala de la cabeza; se funde con la física 40→64
+const hookDesign = (f: number): {w: V2; s: number} => {
+	const u = smooth(seg(f, 9, 40));
+	return {w: [lerp(452, 470, u), lerp(505, 515, u)], s: lerp(0.42, 0.5, u)};
+};
+export const hookMap = (f: number, L: V3) => {
+	const blend = smooth(seg(f, 40, 64));
+	if (blend >= 1) return null;
+	const R = rigAt(Math.max(0, f));
+	const b: V3 = [R.head[0], R.head[1] + 0.08, R.head[2]];
+	const d = hookDesign(f);
+	const W: V3 = [wallX(d.w[0]), wallY(d.w[1]), WALL_Z];
+	const k = (b[2] - L[2]) / (WALL_Z - L[2]);
+	const c: V3 = [L[0] + (W[0] - L[0]) * k, L[1] + (W[1] - L[1]) * k, b[2]];
+	return (p: V3): V3 => {
+		const q: V3 = [c[0] + (p[0] - b[0]) * d.s, c[1] + (p[1] - b[1]) * d.s, c[2] + (p[2] - b[2]) * d.s];
+		return [lerp(q[0], p[0], blend), lerp(q[1], p[1], blend), lerp(q[2], p[2], blend)];
+	};
+};
+const ferminShadowInto = (fr: Frame, eyesOn = 0) => {
+	const sh = ferminShadow(fr.f, fr.L, shadowOpts(fr.f));
+	if (!sh) return;
+	const hm = hookMap(fr.f, fr.L);
+	fr.casters.push(hm ? mapCaster(sh.caster, hm) : sh.caster);
+	if (eyesOn > 0) shadowEyes(fr, sh.eyes, 9, eyesOn);
+};
+
 // ---------------------------------------------------------------- B01 HOOK · la sombra gigante (0–77)
 const B01 = (fr: Frame) => {
-	const head = fr.f >= 31 && fr.f <= 36 ? 'coyote' : 'hat';
-	const c = ferminCaster(fr.f, head);
-	if (c) fr.casters.push(c);
-	const cc = caneCaster(fr.f);
-	if (cc) fr.casters.push(cc);
+	ferminShadowInto(fr);
 	fermin(fr);
 	dog(fr);
 	owl(fr);
 };
 // ---------------------------------------------------------------- B02 TÍTULO y el lugar (78–197)
 const B02 = (fr: Frame) => {
-	const c = ferminCaster(fr.f);
-	if (c) fr.casters.push(c);
-	const cc = caneCaster(fr.f);
-	if (cc) fr.casters.push(cc);
+	ferminShadowInto(fr);
 	fermin(fr);
 	dog(fr);
 	owl(fr);
 };
 // ---------------------------------------------------------------- B03 su paseo; el perro despierta (198–335)
 const B03 = (fr: Frame) => {
-	// G1: retardo de 3 f de la sombra desde 216 + cola fina bajo el sarape
-	const c = ferminCaster(fr.f >= 216 ? fr.f - 3 : fr.f);
-	if (c) fr.casters.push(c);
-	const cc = caneCaster(fr.f);
-	if (cc) fr.casters.push(cc);
+	ferminShadowInto(fr);
 	fermin(fr);
 	dog(fr);
 	owl(fr);
 };
 // ---------------------------------------------------------------- B04 silencio · la sombra voltea (336–479)
+export const eyesB04 = (f: number) => E.out(seg(f, 390, 394)) * (f >= 438 && f <= 440 ? 0 : 1);
 const B04 = (fr: Frame) => {
-	const f = fr.f;
-	const turn = E.inOut(seg(f, 348, 390));
-	const human = ferminCaster(f, 'hat');
-	const front = ferminCaster(f, 'front');
-	if (human && front) {
-		human.alpha = 1 - turn;
-		front.alpha = turn;
-		fr.casters.push(human, front);
-		// ojos 390 (ease-out 4 f), parpadeo 438–440
-		const on = E.out(seg(f, 390, 394)) * (f >= 438 && f <= 440 ? 0 : 1);
-		if (on > 0) {
-			const p = ferminPose(f);
-			shadowEyes(fr, card(FRONT_EYES, p.x, 0, p.z, -1), 9, on);
-		}
-	}
-	const cc = caneCaster(f);
-	if (cc) fr.casters.push(cc);
+	ferminShadowInto(fr, eyesB04(fr.f));
 	fermin(fr);
 	dog(fr);
 	owl(fr);
@@ -114,12 +146,21 @@ const B05 = (fr: Frame) => {
 	const u2 = E.inOut(seg(f, 560, 606));
 	const shape = u2 > 0 ? morph(KEY_HUNCH, KEY_COY, u2) : morph(KEY_HUMAN, KEY_HUNCH, u1);
 	const breathe = 1 + 0.015 * Math.sin(fr.t * Math.PI * 0.8);
-	fr.casters.push({pts: card(shape, STOP_X, 0, STOP_Z, -1, breathe)});
-	if (f < 606) {
-		const on = 1 - seg(f, 486, 500);
-		if (on > 0) shadowEyes(fr, card(FRONT_EYES, p.x, 0, p.z, -1), 9, on);
+	// continuidad con B04 (G1): la sombra de B04 se funde en la del morph durante la primera vuelta (G2 lo rehace)
+	const hand = seg(f, 486, 516);
+	fr.casters.push({pts: card(shape, STOP_X, 0, STOP_Z, -1, breathe), alpha: hand});
+	if (hand < 1) {
+		const sh = ferminShadow(f, fr.L, shadowOpts(f));
+		if (sh) {
+			sh.caster.alpha = 1 - hand;
+			fr.casters.push(sh.caster);
+			const on = eyesB04(f) * (1 - seg(f, 486, 500));
+			if (on > 0) shadowEyes(fr, sh.eyes, 9, on);
+		}
 	}
-	const cc = caneCaster(f);
+	void FRONT_EYES;
+	void p;
+	const cc = hand >= 1 ? caneCaster(f) : null;
 	if (cc) fr.casters.push(cc);
 	const co = coyoteCaster(f);
 	if (co) fr.casters.push(co);
