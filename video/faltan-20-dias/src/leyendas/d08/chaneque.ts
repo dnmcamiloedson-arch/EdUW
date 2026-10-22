@@ -14,6 +14,8 @@ export type ChanequePose = {
 	lean?: number;
 	fringe?: (i: number) => number; // desplazamiento angular por hebra del fleco
 	crouch?: number; // 0 de pie … 1 agachado
+	stride?: number; // fase de zancada (rad) para correr; sin definir = de pie
+	strideAmp?: number; // amplitud de la zancada (u)
 };
 export type SilStyle = {fill: string; rim?: string; rimA?: number; rimSide?: number};
 
@@ -32,11 +34,17 @@ export const chanequeSil = (g: Ctx, pose: ChanequePose, st: SilStyle): V2 => {
 	// piernas cortas y arqueadas con pies largos
 	const hip = -66 * (1 - cr * 0.3);
 	const leg = (sd: number) => {
+		const ph = pose.stride === undefined ? undefined : pose.stride + (sd > 0 ? Math.PI : 0);
+		const amp = pose.strideAmp ?? 40;
+		const fx = ph === undefined ? 0 : Math.sin(ph) * amp;
+		const fy = ph === undefined ? 0 : -Math.max(0, Math.cos(ph)) * amp * 0.55;
 		g.lineWidth = 17;
 		g.beginPath();
 		g.moveTo(sd * 18 + lean * 16, hip);
-		g.quadraticCurveTo(sd * 36, hip * 0.45, sd * 24, -6);
+		g.quadraticCurveTo(sd * 36 + fx * 0.5, hip * 0.45 + fy * 0.3, sd * 24 + fx, -6 + fy);
 		g.stroke();
+		g.save();
+		g.translate(fx, fy);
 		g.beginPath();
 		g.moveTo(sd * 24 - 9, 0);
 		g.bezierCurveTo(sd * 24, -12, sd * 52, -10, sd * 64, -2);
@@ -52,6 +60,7 @@ export const chanequeSil = (g: Ctx, pose: ChanequePose, st: SilStyle): V2 => {
 			g.lineTo(sd * (70 + k * 4), 2 + k * 1.5);
 			g.stroke();
 		}
+		g.restore();
 	};
 	leg(-1);
 	leg(1);

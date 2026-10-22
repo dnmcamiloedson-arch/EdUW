@@ -38,15 +38,15 @@ export const ropeHand = (f: number): V2 => {
 const mixV = (a: V2, b: V2, t: number): V2 => [lerp(a[0], b[0], t), lerp(a[1], b[1], t)];
 
 // posiciones de llegada
-const AT_CRADLE = {x: 1004, y: 1372, s: 1.0};
-const AT_WINDOW = {x: 984, y: 1338, s: 0.95};
+const AT_CRADLE = {x: 918, y: 1372, s: 1.0};
+const AT_WINDOW = {x: 910, y: 1338, s: 0.95};
 export const SEAT = {x: 330, y: 1310, s: 0.95};
 const SILL_SPOT: V2 = [820, 1030];
 
 // mano que sostiene las tijeras (mundo) 192–232; null si no las tiene
 export const scissorsHand = (f: number): V2 | null => {
 	if (f < EV.scissorsLift || f >= EV.tock) return null;
-	const chest: V2 = [930, 1130];
+	const chest: V2 = [884, 1124];
 	const up: V2 = [838, 880];
 	const place: V2 = [SILL_SPOT[0] + 4, SILL_SPOT[1] - 34];
 	if (f < EV.scissorsOpen) {

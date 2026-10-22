@@ -114,8 +114,8 @@ const CKEYS: CK[] = [
 	{t: 11.2, s: 1.05, cx: 520, cy: 880},
 	{t: 16.0, s: 1.05, cx: 520, cy: 880},
 	{t: 22.6, s: 1.1, cx: 640, cy: 760},
-	{t: 24.6, s: 1.08, cx: 640, cy: 760, px: 70},
-	{t: 26.0, s: 1.06, cx: 640, cy: 760, px: 70},
+	{t: 24.6, s: 1.08, cx: 640, cy: 760, px: -40}, // G2: sigue al coyote hacia la derecha (mirada a la lente en cuadro)
+	{t: 26.0, s: 1.06, cx: 640, cy: 760, px: -30},
 	{t: 30.5, s: 1.0, cx: 540, cy: 900, px: 0},
 	{t: 34.0, s: 1.0, cx: 540, cy: 760},
 	{t: 38.2, s: 1.04, cx: 540, cy: 760},

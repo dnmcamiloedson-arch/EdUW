@@ -11,7 +11,10 @@ import {OCHO_CX, OCHO_CY} from './ocho';
 import {SKIN_POV, drawHand, sleeve, wristBand, type HandPose} from './hands';
 import {drawGlyph8, fuse, swell} from './finale';
 import {stoneShot} from './beats1';
-import {smoothPath} from '../kit/rig';
+import {HZN, crumble, dawnBG, dew, dewBeads, drawTop, driedHead, handprint, roadLayer} from './g3env';
+import {blurred} from '../kit/paint';
+import {easeInOut as easeIO, scratch} from './core';
+import {faceState, scareFace} from './face';
 import {B, EV, POST_DAWN, POST_NIGHT, POST_TITLE} from './timeline';
 
 const sec = (f: number) => f / 30;
@@ -37,39 +40,27 @@ export const paintB7 = (g: Ctx, f: number): PostOpts => {
 		drawHand(g, L);
 		wristBand(g, L, {wraps: 0, bare: 1});
 	}
-	// SUSTO: la cara del chaneque sube desde abajo a la derecha (bloque; la cara grabada llega en G3)
+	// SUSTO (RIG-07): la cara grabada del chaneque viejo embiste desde abajo a la derecha, a ~25 cm del lente
 	if (f >= EV.jump && f < EV.jumpEnd) {
 		const lf = f - EV.jump;
-		const sc = lf < 4 ? lerp(0.55, 1.04, expoOut(lf / 4)) : lerp(1.04, 1.0, smooth(clamp((lf - 4) / 6)));
-		const jit = (hash(lf, 3) - 0.5) * 2;
-		g.save();
-		g.translate(640 + jit + (1 - sc) * 500, 1180 + (1 - sc) * 900);
-		g.rotate(0.21 * clamp(lf / 2));
-		g.scale(sc, sc);
-		const sk = g.createLinearGradient(0, 400, 0, -400);
-		sk.addColorStop(0, '#8a6a48');
-		sk.addColorStop(0.5, '#3a2a1a');
-		sk.addColorStop(1, '#0d0906');
-		g.fillStyle = sk;
-		g.beginPath();
-		g.ellipse(0, 0, 430, 470, 0, 0, Math.PI * 2);
-		g.fill();
-		g.fillStyle = '#120c06';
-		g.beginPath();
-		g.ellipse(0, -380, 700, 120, 0, 0, Math.PI * 2);
-		g.fill();
-		eyePair(g, 0, -60, 46, {pupil: lf >= 3 ? 0.14 : 0.32, spread: 5.2, glow: 1.2});
-		g.strokeStyle = '#1a0e06';
-		g.lineWidth = 14;
-		g.lineCap = 'round';
-		g.beginPath();
-		g.moveTo(-230 - lf * 3, 200);
-		g.quadraticCurveTo(0, 290 + lf * 2, 230 + lf * 3, 200);
-		g.stroke();
-		g.restore();
+		const scAt = (q: number) => (q < 4 ? lerp(0.55, 1.04, expoOut(Math.max(0, q) / 4)) : lerp(1.04, 1.0, smooth(clamp((q - 4) / 6))));
+		const draw = (q: number, a: number) => {
+			const sc = scAt(q);
+			const jit = (hash(lf, 3) - 0.5) * 6;
+			g.save();
+			g.globalAlpha = a;
+			g.translate(560 + jit + (1 - sc) * 620, 1180 + (1 - sc) * 1000);
+			g.rotate(0.21 * smooth(clamp(q / 2.5)) - 0.03 * Math.sin(q * 0.7) * clamp(q / 4));
+			g.scale(sc * 0.9, sc * 0.9);
+			scareFace(g, faceState(Math.max(0, q)));
+			g.restore();
+		};
+		// embiste: dos fantasmas de sub-cuadro para el desenfoque de movimiento
+		if (lf < 2) for (const d of [0.66, 0.33]) draw(lf - d, 0.35);
+		draw(lf, 1);
 	}
 	const scare = f >= EV.jump && f < EV.jumpEnd;
-	return {...POST_NIGHT, hatch: scare ? 0.7 : POST_NIGHT.hatch, ca: f === EV.jump ? 10 : POST_NIGHT.ca, flash: f === EV.jump ? 0.35 : 0};
+	return {...POST_NIGHT, hatch: scare ? 0.7 : POST_NIGHT.hatch, ca: f === EV.jump ? 10 : POST_NIGHT.ca, flash: f === EV.jump ? 0.14 : 0};
 };
 
 // ---------------------------------------------------------------- B8 · negro · título (948–1014)
@@ -99,96 +90,100 @@ export const paintB8 = (g: Ctx, f: number): PostOpts => {
 	// hundimiento en la niebla
 	const sink = seg(f, EV.sink, B.b8[1]);
 	if (sink > 0) fogBand(g, {y0: 1920 - sink * 1900, y1: 1920, color: '#8a8a80', t, seed: 62, alpha: sink, speed: 10});
-	return {...POST_TITLE, flash: f >= EV.slam && f < EV.slam + 2 ? 0.25 : 0};
+	return {...POST_TITLE, flash: f === EV.slam ? 0.05 : 0, ca: f === EV.slam ? 4 : POST_TITLE.ca};
 };
 
 // ---------------------------------------------------------------- B9 · amanecer (1014–1122)
 export const paintB9 = (g: Ctx, f: number): PostOpts => {
 	const t = sec(f);
 	const lf = f - B.b9[0];
-	const rise = -60 * smooth(seg(f, EV.rise0, B.b9[1]));
-	const rack = smooth(seg(f, B.b9[0], EV.rack1));
-	const sky = g.createLinearGradient(0, 0, 0, 1300);
-	sky.addColorStop(0, '#5E6E78');
-	sky.addColorStop(0.65, '#b9a27a');
-	sky.addColorStop(1, P.gold);
-	g.fillStyle = sky;
-	g.fillRect(0, 0, W, H);
-	glow(g, 760, 1180 - rise, 520, '#ffd98a', 0.45);
-	// línea de árboles (silueta)
-	g.save();
-	g.translate(0, -rise * 0.3);
-	g.fillStyle = '#2b2f2e';
-	g.beginPath();
-	g.moveTo(0, H);
-	for (let x = 0; x <= W; x += 30) g.lineTo(x, 1120 - Math.abs(noise2D('tl', x * 0.006, 0)) * 360 - (hash(Math.floor(x / 90), 3) > 0.7 ? 160 : 0));
-	g.lineTo(W, H);
-	g.fill();
-	g.restore();
-	for (let k = 0; k < 3; k++) fogBand(g, {y0: 980 + k * 120 - lf * (0.6 + k * 0.4), y1: 1260 + k * 120 - lf * (0.6 + k * 0.4), color: '#e8e0cc', t: t + k * 4, seed: 70 + k, alpha: 0.35 * (1 - seg(f, B.b9[0], B.b9[1]) * 0.6), speed: 8 + k * 4});
-	// camino de tierra en primer plano
-	g.save();
-	g.translate(0, -rise);
-	const dirt = g.createLinearGradient(0, 1250, 0, H);
-	dirt.addColorStop(0, '#6a5038');
-	dirt.addColorStop(1, '#2e2014');
-	g.fillStyle = dirt;
-	g.beginPath();
-	g.moveTo(0, 1300);
-	g.quadraticCurveTo(540, 1230, W, 1290);
-	g.lineTo(W, H + 100);
-	g.lineTo(0, H + 100);
-	g.fill();
-	// mano con el ramo SECO (desaturado, pétalos rizados)
-	const hand: HandPose = {x: 380, y: 1640, rot: 1.2, s: 2.0, side: 'R', view: 'dorsal', skin: SKIN_POV, curl: [0.85, 0.9, 0.9, 0.9], thumb: 0.8, forearm: 600};
-	sleeve(g, hand, 180);
-	for (let i = 0; i < 14; i++) petal(g, 560 + (hash(i, 1) - 0.5) * 160, 1500 + (hash(i, 2) - 0.5) * 120, hash(i, 3) * 6, 34, P.cempa, 0.9);
-	drawHand(g, hand);
-	wristBand(g, hand, {wraps: 0, bare: 1});
-	// pétalos secos que se desmoronan y vuelan
-	for (let i = 0; i < 10; i++) {
-		const st = (hash(i, 9) * 3 + lf / 30) % 3;
-		petal(g, 600 + st * 220 + Math.sin(st * 3 + i) * 30, 1480 - st * 160 + Math.cos(st * 2 + i) * 40, st * 4 + i, 18, P.cempa, 1, 1 - st / 3);
+	const rise = 60 * easeIO(seg(f, EV.rise0, B.b9[1])); // al incorporarse, la escena baja
+	const rack = smooth(seg(f, B.b9[0], EV.rack1)); // 0: foco en la mano · 1: foco en los árboles
+	const hh = {x: noise2D('b9x', t * 0.25, 0) * 4, y: noise2D('b9y', 0, t * 0.25) * 3};
+	// fondo (cielo + árboles) con foco que entra: nítido y desenfocado en caché, fundidos
+	const bg = dawnBG();
+	const bgB = blurred(bg, 14, 'd8dawnBG');
+	const by = rise * 0.6 + hh.y;
+	g.drawImage(bg, hh.x * 0.3, by);
+	if (rack < 1) {
+		g.globalAlpha = 1 - rack;
+		g.drawImage(bgB.canvas, -bgB.pad + hh.x * 0.3, -bgB.pad + by);
+		g.globalAlpha = 1;
 	}
-	g.restore();
-	void rack;
+	// niebla que se levanta en capas
+	const lift = seg(f, B.b9[0], B.b9[1]);
+	for (let k = 0; k < 3; k++) {
+		const y = HZN - 140 + k * 70 - lf * (0.35 + k * 0.3) + by;
+		fogBand(g, {y0: y, y1: y + 260, color: '#e9dfc8', t: t + k * 4, seed: 70 + k, alpha: 0.42 * (1 - lift * 0.55) * (1 - k * 0.15), speed: 10 + k * 6});
+	}
+	// camino
+	const road = roadLayer();
+	const ry = rise * 0.6 + hh.y;
+	g.drawImage(road, 0, HZN, W, H - HZN, hh.x * 0.6, HZN + ry, W, H - HZN);
+	dew(g, t, HZN + 6 + ry, ry);
+	// primer plano: mano con el ramo SECO, desenfocado según el foco (un solo blur por cuadro)
+	const {c: fc, g: q} = scratch(4);
+	q.translate(hh.x, rise + hh.y * 1.4);
+	const hand: HandPose = {x: 380, y: 1640, rot: 1.2, s: 2.0, side: 'R', view: 'dorsal', skin: SKIN_POV, curl: [0.85, 0.9, 0.9, 0.9], thumb: 0.8, forearm: 600};
+	const fist: [number, number] = [612, 1560];
+	const heads: [number, number, number, number][] = [
+		[560, 1330, 62, -0.3],
+		[700, 1372, 70, 0.4],
+		[628, 1262, 56, 0.1],
+	];
+	const breeze = noise2D('b9br', t * 0.6, 0) * 0.05;
+	q.lineCap = 'round';
+	for (const [hx, hy] of heads) {
+		q.strokeStyle = '#4a3a20';
+		q.lineWidth = 7;
+		q.beginPath();
+		q.moveTo(fist[0], fist[1]);
+		q.quadraticCurveTo((fist[0] + hx) / 2 + 12, (fist[1] + hy) / 2, hx + breeze * 300, hy);
+		q.stroke();
+		// hojitas secas en el tallo
+		q.fillStyle = '#5a4424';
+		q.beginPath();
+		q.ellipse((fist[0] + hx) / 2 + 18, (fist[1] + hy) / 2 + 10, 26, 8, -0.8, 0, Math.PI * 2);
+		q.fill();
+	}
+	heads.forEach(([hx, hy, r, rot], i) => driedHead(q, hx + breeze * 300, hy, r, rot + breeze * 2, 950 + i * 7, 0.15 + 0.25 * lift));
+	sleeve(q, hand, 180);
+	drawHand(q, hand);
+	wristBand(q, hand, {wraps: 0, bare: 1});
+	// luz de amanecer: filo dorado desde el sol (arriba a la derecha) sobre la mano
+	q.globalCompositeOperation = 'source-atop';
+	const lg = q.createLinearGradient(900, 1100, 400, 1800);
+	lg.addColorStop(0, 'rgba(255,214,140,0.35)');
+	lg.addColorStop(1, 'rgba(30,18,8,0.35)');
+	q.fillStyle = lg;
+	q.fillRect(0, 1000, W, 920);
+	q.globalCompositeOperation = 'source-over';
+	const fb = rack * 10;
+	if (fb > 0.4) g.filter = `blur(${fb.toFixed(1)}px)`;
+	g.drawImage(fc, 0, 0);
+	g.filter = 'none';
+	// pétalos que se desmoronan (cerca de la cámara, siguen el foco del primer plano)
+	crumble(g, t, heads.map(([hx, hy]) => [hx + hh.x, hy + rise] as [number, number]));
 	const fadeIn = 1 - Math.exp(-5 * seg(f, B.b9[0], EV.dawnIn1));
-	return {...POST_DAWN, hatch: 0.5 * (1 - seg(f, B.b9[0], B.b9[1])), fade: 1 - fadeIn};
+	return {...POST_DAWN, hatch: 0.5 * (1 - lift), fade: (1 - fadeIn) * 0.9};
 };
 
 // ---------------------------------------------------------------- B10–B11 · la piedra vista desde arriba
 // coordenadas de la cara superior (u, v) = espacio del «8» del rótulo − (540, 930): a zoom 1 el listón ES el glifo
-const topDown = (g: Ctx, f: number, o: {zoom: number; rot: number; dim?: number; liston?: boolean}) => {
+const topDown = (g: Ctx, f: number, o: {zoom: number; rot: number; liston?: boolean}) => {
 	const t = sec(f);
-	fillBg(g, '#3a3226');
+	fillBg(g, '#2e261c');
 	g.save();
 	g.translate(OCHO_CX, OCHO_CY);
 	g.rotate(o.rot);
 	g.scale(o.zoom, o.zoom);
-	// suelo: tierra húmeda
-	g.fillStyle = '#4a3c2a';
-	g.fillRect(-2000, -2600, 4000, 5200);
-	// piedra
-	const gr = g.createRadialGradient(-120, -160, 60, 0, 0, 700);
-	gr.addColorStop(0, '#7d8679');
-	gr.addColorStop(0.7, '#556055');
-	gr.addColorStop(1, '#2c332c');
-	g.fillStyle = 'rgba(20,14,8,0.5)';
-	g.beginPath();
-	smoothPath(g, STONE.map(([u, v]) => [u * 1.05 + 30, v * 1.05 + 40] as [number, number]), true);
-	g.fill();
-	g.fillStyle = gr;
-	g.beginPath();
-	smoothPath(g, STONE, true);
-	g.fill();
-	// huellas en anillos
-	for (const p of PRINTS.rings) footprint(g, p.u, p.v, p.a, 72, 1, p.side, 0, 0, 0.85);
-	// pétalos secos en anillo
-	for (const pr of PETAL_RING) petal(g, pr.u, pr.v, pr.a, pr.s, pr.tone > 0.5 ? P.gold : P.cempa, 0.75);
+	drawTop(g);
 	g.translate(-OCHO_CX, -OCHO_CY);
-	if (o.liston !== false) ribbon(g, [...OCHO, OCHO[0]], {w: 18, shadow: 0.6});
+	if (o.liston !== false) {
+		ribbon(g, [...OCHO, OCHO[0]], {w: 18, shadow: 0.6});
+		dewBeads(g, OCHO, t);
+	}
 	g.restore();
-	void t;
 };
 
 export const paintB10 = (g: Ctx, f: number): PostOpts => {
@@ -198,7 +193,26 @@ export const paintB10 = (g: Ctx, f: number): PostOpts => {
 	topDown(g, f, {zoom: lerp(0.78, 0.7, e), rot: lerp(8, 0, e) * (Math.PI / 180)});
 	// rayo de sol dorado que entra entre los troncos
 	beamFx(g, -120, 200, 520, 1000, 80, 520, '#ffd98a', 0.22 + 0.04 * Math.sin(t * 2));
-	return {...POST_DAWN, hatch: 0.12};
+	glow(g, 470, 930, 420, '#ffd98a', 0.12);
+	// motas en el rayo
+	particles(g, {kind: 'dust', n: 26, t, seed: 83, x: 0, y: 300, w: 700, h: 900, alpha: 0.5});
+	// un pétalo seco cae (vista cenital: llega grande y desenfocado, se encoge hasta posarse junto al 8)
+	const pf = seg(f, EV.petalFall, EV.petalFall + 14);
+	if (f >= EV.petalFall) {
+		const land: [number, number] = [790, 1185];
+		const k = pf * pf;
+		const sc = lerp(4.2, 1, k);
+		const x = lerp(980, land[0], easeIO(pf)) + Math.sin(pf * 9) * 40 * (1 - pf);
+		const y = lerp(820, land[1], easeIO(pf));
+		g.fillStyle = rgba('#0b0703', 0.35 * pf);
+		g.beginPath();
+		g.ellipse(land[0] + 14 * (1 - pf) + 6, land[1] + 10, 16, 10, 0.6, 0, Math.PI * 2);
+		g.fill();
+		if (pf < 0.85) g.filter = `blur(${((1 - pf) * 8).toFixed(1)}px)`;
+		petal(g, x, y, 0.6 + pf * 4 * (1 - pf), 30 * sc, '#c4a272', 0.8);
+		g.filter = 'none';
+	}
+	return {...POST_DAWN, hatch: 0.12, vignette: 1.0};
 };
 
 export const paintB11 = (g: Ctx, f: number): PostOpts => {
@@ -235,30 +249,29 @@ export const paintB12 = (g: Ctx, f: number): PostOpts => {
 	gr.addColorStop(1, '#0b0703');
 	g.fillStyle = gr;
 	g.fillRect(0, 1560, W, H - 1560);
-	// remate: huellas que caminan hacia la cámara
+	// remate: huellas de lodo que salen de lo oscuro abajo a la derecha y caminan hacia la cámara
 	if (f >= EV.prints0) {
 		const n = Math.min(8, Math.floor((f - EV.prints0) / 3.6) + 1);
-		for (let i = 0; i < n; i++) footprint(g, 900 - i * 34 + (i % 2) * 40, 1600 + i * 30, 2.6, 46 + i * 7, 0.55, i % 2 ? 1 : -1, 0.6, 0.4, 0.95);
+		for (let i = 0; i < n; i++) {
+			const age = (f - EV.prints0 - i * 3.6) / 30;
+			const pop = clamp(age / 0.08);
+			const d = i / 7; // 0 lejos → 1 cerca
+			const x = lerp(900, 640, d) + (i % 2 ? 26 : -26) * (1 + d);
+			const y = lerp(1610, 1810, d * d);
+			const sz = lerp(30, 74, d);
+			glow(g, x, y, sz * 2.2, '#c9773a', 0.22 * pop);
+			footprint(g, x, y, Math.PI + 0.35, sz * (0.85 + 0.15 * pop), 0.5, i % 2 ? 1 : -1, 1, 0.9, pop);
+		}
 	}
-	if (f >= EV.eyes2) eyePair(g, 190, 1660, 11, {open: clamp((f - EV.eyes2) / 2) * blink(f, EV.eyes2 + 4)});
-	// palmada de lodo en el lente (abajo a la izquierda, fuera del texto)
+	if (f >= EV.eyes2) eyePair(g, 190, 1660, 16, {open: clamp((f - EV.eyes2) / 2) * blink(f, EV.eyes2 + 4), glow: 1.2});
+	// palmada de lodo en el lente (abajo a la izquierda, x 70–390, y 1500–1820)
 	let kick = 0;
 	if (f >= EV.slap) {
 		const slide = 30 * smooth(seg(f, EV.slap + 2, B.b12[1]));
-		kick = f === EV.slap ? 14 : 0;
-		g.save();
-		g.translate(230, 1660 + slide);
-		g.fillStyle = rgba('#3a2410', 0.92);
-		g.beginPath();
-		g.ellipse(0, 40, 90, 80, 0, 0, Math.PI * 2);
-		for (let k = 0; k < 4; k++) {
-			const a = -2.3 + k * 0.42;
-			g.ellipse(Math.cos(a) * 130, 20 + Math.sin(a) * 130, 22, 70, a + Math.PI / 2, 0, Math.PI * 2);
-		}
-		g.fill();
-		g.restore();
+		kick = f === EV.slap ? 1 : 0;
+		handprint(g, 228, 1690, 0.82, slide, 1);
 	}
-	return {...POST_TITLE, hatch: 0.12, bloom: 0.75, ...(kick ? {ca: 6} : {})};
+	return {...POST_TITLE, hatch: 0.12, bloom: 0.75, ...(kick ? {ca: 6, flash: 0.08} : {})};
 };
 
 void mixRGB;

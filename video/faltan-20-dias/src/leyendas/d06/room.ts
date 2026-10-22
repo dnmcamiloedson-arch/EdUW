@@ -725,16 +725,33 @@ export const paintVeladora = (g: Ctx, t: number, o: {lean?: number; flame?: numb
 	q.setTransform(1, 0, 0, 1, 0, 0);
 	q.clearRect(0, 0, 420, 640);
 	q.translate(210 - CANDLE.x, 470 - CANDLE.y);
-	// mesa (borde)
-	q.fillStyle = '#140a04';
-	q.fillRect(CANDLE.x - 260, CANDLE.y + 70, 520, 200);
-	q.fillStyle = 'rgba(160,100,50,0.45)';
-	q.fillRect(CANDLE.x - 260, CANDLE.y + 64, 520, 8);
-	// vaso de la veladora
+	// charco de luz sobre el borde de madera (sin losa negra: se funde con el piso)
+	const pool = q.createRadialGradient(CANDLE.x, CANDLE.y + 72, 10, CANDLE.x, CANDLE.y + 72, 230);
+	pool.addColorStop(0, 'rgba(242,150,70,0.55)');
+	pool.addColorStop(0.45, 'rgba(120,52,20,0.35)');
+	pool.addColorStop(1, 'rgba(35,19,5,0)');
+	q.fillStyle = pool;
+	q.beginPath();
+	q.ellipse(CANDLE.x, CANDLE.y + 78, 240, 60, 0, 0, Math.PI * 2);
+	q.fill();
+	// vaso de la veladora: vela dentro de un vidrio ámbar
 	const h = 170 * (1 - stub * 0.75);
-	candle2D(q, {x: CANDLE.x, y: CANDLE.y + 66, w: 86, h, t, seed: 6, lean, flameA: flame, wax: '#efe0c4'});
-	q.fillStyle = 'rgba(210,190,150,0.18)';
-	q.fillRect(CANDLE.x - 52, CANDLE.y + 66 - 190, 104, 190);
+	candle2D(q, {x: CANDLE.x, y: CANDLE.y + 66, w: 80, h, t, seed: 6, lean, flameA: flame, wax: '#f0cf98'});
+	const vg = q.createLinearGradient(CANDLE.x - 54, 0, CANDLE.x + 54, 0);
+	vg.addColorStop(0, 'rgba(120,40,16,0.55)');
+	vg.addColorStop(0.3, 'rgba(242,109,61,0.32)');
+	vg.addColorStop(0.55, 'rgba(255,214,150,0.22)');
+	vg.addColorStop(1, 'rgba(90,28,10,0.6)');
+	q.fillStyle = vg;
+	q.beginPath();
+	q.roundRect(CANDLE.x - 54, CANDLE.y + 66 - 196, 108, 200, [6, 6, 14, 14]);
+	q.fill();
+	q.strokeStyle = 'rgba(255,220,170,0.35)';
+	q.lineWidth = 3;
+	q.beginPath();
+	q.moveTo(CANDLE.x - 40, CANDLE.y + 66 - 186);
+	q.lineTo(CANDLE.x - 40, CANDLE.y + 56);
+	q.stroke();
 	g.save();
 	g.filter = `blur(${blur}px)`;
 	g.drawImage(tmp, CANDLE.x - 210, CANDLE.y - 470);

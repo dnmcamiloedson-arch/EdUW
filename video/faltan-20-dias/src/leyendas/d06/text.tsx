@@ -19,7 +19,7 @@ export const TEXT: T[] = [
 ];
 
 // título: LAS / BRUJAS / DE FUEGO (Rye, burn), bloque arriba en y 1090
-export const TITLE = {at: 363, out: 420, y: 1090};
+export const TITLE = {at: 363, out: 414, y: 1090};
 const TL = [
 	{text: 'LAS', size: 64, color: P.bone, tracking: 0.3},
 	{text: 'BRUJAS', size: 128, color: P.gold, tracking: 0.04},

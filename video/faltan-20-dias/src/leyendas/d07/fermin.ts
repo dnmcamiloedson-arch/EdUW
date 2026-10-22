@@ -16,13 +16,96 @@ export {STOP_X, STOP_Z};
 
 // ---------------------------------------------------------------- estado general (compatibilidad con G2/G3)
 export type FerminPose = {x: number; z: number; face: number; step: number; spin: number; gone: boolean; flare: number};
+// vueltas (G2): anticipación 476–486 (contragiro), luego 3 vueltas que aceleran con fin en 531 / 570 / 606.
+// Hermite monótono en vueltas; el vuelo del sarape sigue ω² con 3 f de inercia.
+const SPIN_K: [number, number, number][] = [
+	[476, 0, 0],
+	[481, -0.035, 0],
+	[486, 0, 0.009],
+	[531, 1, 0.0235],
+	[570, 2, 0.0268],
+	[606, 3, 0.0305],
+];
+export const turnsAt = (f: number) => {
+	if (f <= SPIN_K[0][0]) return 0;
+	const last = SPIN_K[SPIN_K.length - 1];
+	if (f >= last[0]) return last[1] + (f - last[0]) * last[2];
+	let i = 0;
+	while (f > SPIN_K[i + 1][0]) i++;
+	const [f0, p0, v0] = SPIN_K[i];
+	const [f1, p1, v1] = SPIN_K[i + 1];
+	const h = f1 - f0;
+	const u = (f - f0) / h;
+	const u2 = u * u;
+	const u3 = u2 * u;
+	return (2 * u3 - 3 * u2 + 1) * p0 + (u3 - 2 * u2 + u) * h * v0 + (-2 * u3 + 3 * u2) * p1 + (u3 - u2) * h * v1;
+};
+const omegaAt = (f: number) => turnsAt(f + 0.5) - turnsAt(f - 0.5); // vueltas por frame
 export const spinAt = (f: number) => {
-	const t = f / FPS;
-	if (t < 16.2) return {spin: 0, flare: 0};
-	const turns = t < 17.7 ? seg(t, 16.2, 17.7) : t < 19.0 ? 1 + seg(t, 17.7, 19.0) : 2 + seg(t, 19.0, 20.2);
-	const spin = Math.min(3, turns) * Math.PI * 2;
-	const w = t < 17.7 ? 1 / 1.5 : t < 19 ? 1 / 1.3 : 1 / 1.2;
-	return {spin, flare: clamp(seg(t, 16.2, 16.8) * w * 1.3)};
+	if (f < 476) return {spin: 0, flare: 0};
+	const spin = turnsAt(Math.min(f, 606)) * Math.PI * 2;
+	const w = Math.max(0, omegaAt(Math.min(f, 606) - 3));
+	return {spin, flare: clamp(Math.pow(w / 0.03, 2) * 1.05)};
+};
+const rotY = (p: V3, c: V3, a: number): V3 => {
+	const dx = p[0] - c[0];
+	const dz = p[2] - c[2];
+	const ca = Math.cos(a);
+	const sa = Math.sin(a);
+	return [c[0] + dx * ca + dz * sa, p[1], c[2] - dx * sa + dz * ca];
+};
+// pies que se acomodan a cuartos de vuelta (pivote talón-punta): ángulo escalonado + levantamiento
+const stepAng = (a: number, ph: number) => {
+	const q = Math.PI / 2;
+	const k = (a + ph) / q;
+	const fl = Math.floor(k);
+	const w = clamp((k - fl - 0.4) / 0.6);
+	const sm = w * w * (3 - 2 * w);
+	return {ang: (fl + sm) * q - ph, lift: Math.sin(Math.PI * w) * 0.028};
+};
+// rig girado: todo el cuerpo rota sobre el eje de la pelvis; las piernas se doblan un poco en la anticipación
+export const rigS = (f: number): Rig => {
+	const R = rigAt(f);
+	if (f < 476) return R;
+	const {spin} = spinAt(f);
+	const c: V3 = [R.x, 0, R.z];
+	const dip = 0.028 * Math.sin(Math.PI * seg(f, 474, 490)) + 0.012 * seg(f, 486, 500);
+	const body = (p: V3, k = 1): V3 => {
+		const q = rotY(p, c, spin);
+		return [q[0], q[1] - dip * k, q[2]];
+	};
+	const sL = stepAng(spin, 0);
+	const sR = stepAng(spin, Math.PI / 4);
+	const foot = (ft: typeof R.footL, st: {ang: number; lift: number}) => {
+		const q = rotY(ft.pos, c, st.ang);
+		return {...ft, pos: [q[0], q[1] + st.lift, q[2]] as V3, lift: ft.lift + st.lift};
+	};
+	const ankle = (a: V3, st: {ang: number; lift: number}): V3 => {
+		const q = rotY(a, c, st.ang);
+		return [q[0], q[1] + st.lift, q[2]];
+	};
+	const yaw = R.yaw + spin;
+	return {
+		...R,
+		yaw,
+		fwd: fwdOf(yaw),
+		left: leftOf(yaw),
+		pelvis: body(R.pelvis),
+		hipL: body(R.hipL),
+		hipR: body(R.hipR),
+		kneeL: body(R.kneeL, 0.6),
+		kneeR: body(R.kneeR, 0.6),
+		ankleL: ankle(R.ankleL, sL),
+		ankleR: ankle(R.ankleR, sR),
+		footL: foot(R.footL, sL),
+		footR: foot(R.footR, sR),
+		chest: body(R.chest),
+		shoulder: body(R.shoulder),
+		head: body(R.head),
+		caneTip: body(R.caneTip, 0),
+		hand: body(R.hand),
+		elbow: body(R.elbow),
+	};
 };
 export const ferminPose = (f: number): FerminPose => {
 	const R = rigAt(f);
@@ -91,9 +174,9 @@ const sarapeColor = (th: number, v: number, i: number, r: number): RGB => {
 	return [c[0] * j, c[1] * j, c[2] * j];
 };
 
-type Ring = {top: V3[]; hem: V3[]; theta: number[]; center: V3; axisF: V3; axisL: V3};
+type Ring = {top: V3[]; hem: V3[]; theta: number[]; center: V3; axisF: V3; axisL: V3; bulge?: (v: number, i: number) => number};
 const sarapeRing = (R: Rig, spin: number, flare: number): Ring => {
-	const yaw = R.yaw + spin;
+	const yaw = R.yaw; // rigS ya trae el giro en yaw
 	const fwd = fwdOf(yaw);
 	const left = leftOf(yaw);
 	const topC = add(R.shoulder, [0, -0.015, 0]);
@@ -130,10 +213,70 @@ const sarapeRing = (R: Rig, spin: number, flare: number): Ring => {
 const fringeKey = 'd07:fringe';
 const FR_N = 5;
 const FR_SEG = 0.018;
-const fringeAnchors = (f: number): V3[] => {
-	const R = rigAt(f);
+// colapso (606→): nadie adentro. El cuello cae en caída libre hasta el montón, el dobladillo aterriza antes y se abre;
+// el giro sigue y se frena. 624–650 el montón respira; 648–678 algo empuja por el lado derecho (sale el coyote).
+const COLL = 606;
+let ring0: Ring | null = null;
+const baseRing = () => {
+	if (!ring0) {
+		const R = rigS(COLL - 1);
+		const {spin, flare} = spinAt(COLL - 1);
+		ring0 = sarapeRing(R, spin, flare);
+	}
+	return ring0;
+};
+const smooth01 = (u: number) => u * u * (3 - 2 * u);
+export const pileState = (f: number) => {
+	const breath = f >= 624 && f < 650 ? Math.sin(Math.PI * seg(f, 624, 650)) : 0;
+	const heave = Math.sin(Math.PI * seg(f, 648, 680));
+	const empty = smooth01(seg(f, 664, 692)); // el coyote ya salió: el montón se aplana
+	return {breath, heave, empty};
+};
+const collapseRing = (f: number): Ring => {
+	const b = baseRing();
+	const tau = (f - (COLL - 1)) / FPS;
+	const c = b.center;
+	const rot = 5.8 * 0.25 * (1 - Math.exp(-tau * 4));
+	const {breath, heave, empty} = pileState(f);
+	const topY = 0.15 + 0.0096 * breath + 0.15 * heave - 0.07 * empty;
+	const land = (y0: number) => Math.sqrt((2 * Math.max(0, y0 - 0.01)) / 9.8);
+	const mv = (p: V3, rr: number, y: number, lean: number): V3 => {
+		const q = rotY(p, c, rot);
+		const dx = q[0] - c[0];
+		const dz = q[2] - c[2];
+		return [c[0] + dx * rr + lean, y, c[2] + dz * rr];
+	};
+	const top: V3[] = [];
+	const hem: V3[] = [];
+	for (let i = 0; i < b.top.length; i++) {
+		const t0 = b.top[i];
+		const yt = Math.max(topY + 0.03 * Math.sin(b.theta[i] * 3 + 1), t0[1] - 4.9 * tau * tau);
+		const tl = land(t0[1] - topY);
+		const shrink = lerp(1, 0.55, smooth01(clamp(tau / Math.max(0.05, tl))));
+		top.push(mv(t0, shrink, yt, 0.03 * smooth01(clamp(tau / 0.5))));
+		const h0 = b.hem[i];
+		const q0 = rotY(h0, c, rot);
+		const side = Math.max(0, (q0[0] - c[0]) / Math.max(0.05, Math.hypot(q0[0] - c[0], q0[2] - c[2])));
+		const hl = land(h0[1]);
+		const yh = Math.max(0.012 + 0.012 * hash(i, 3) + 0.09 * heave * side * side, h0[1] - 4.9 * tau * tau);
+		const spread = tau < hl ? lerp(1, 0.8, clamp(tau / 0.35)) : lerp(0.8, 0.7, smooth01(clamp((tau - hl) / 0.3)));
+		hem.push(mv(h0, spread, yh, 0));
+	}
+	const landed = smooth01(clamp((tau - 0.3) / 0.35));
+	return {
+		...b,
+		top,
+		hem,
+		bulge: (v, i) => landed * (0.075 + 0.05 * Math.sin(i * 1.7 + 0.6) + 0.025 * Math.sin(i * 4.1)) * Math.sin(Math.PI * Math.min(1, v * 1.25)) * (1 - 0.4 * empty),
+	};
+};
+const ringAt = (f: number): Ring => {
+	if (f >= COLL) return collapseRing(f);
 	const {spin, flare} = spinAt(f);
-	const ring = sarapeRing(R, spin, flare);
+	return sarapeRing(rigS(f), spin, flare);
+};
+const fringeAnchors = (f: number): V3[] => {
+	const ring = ringAt(f);
 	const out: V3[] = [];
 	for (let i = 0; i < NS; i++) out.push(ring.hem[i]);
 	return out;
@@ -148,6 +291,7 @@ const fringe = (f: number) =>
 			anchors: fringeAnchors,
 			gravity: 0.0109 * 0.5,
 			damping: 0.9,
+			floor: 0.004,
 			wind: (ff, s, i) => {
 				const w = windAt(ff, s * 3 + i);
 				return [w[0], w[1], w[0] * 0.4];
@@ -361,8 +505,10 @@ const legItem = (R: Rig, side: 1 | -1, lit: number, tone: number): Item => {
 };
 
 const sarapeItems = (R: Rig, f: number, L: V3, lit: number): Item[] => {
-	const {spin, flare} = spinAt(f);
-	const ring = sarapeRing(R, spin, flare);
+	const spin = 0; // los colores van pegados a la tela (el giro ya está en la geometría)
+	const ring = ringAt(f);
+	const bg = ring.bulge;
+	void R;
 	const FR = fringe(f);
 	const items: Item[] = [];
 	const toL = (p: V3) => nrm(sub(L, p));
@@ -387,10 +533,14 @@ const sarapeItems = (R: Rig, f: number, L: V3, lit: number): Item[] => {
 					const v1 = (r + 1) / NR;
 					const e0 = Math.pow(v0, 0.85);
 					const e1 = Math.pow(v1, 0.85);
-					const a0 = pr([lerp(c0[0], h0[0], e0), lerp(c0[1], h0[1], v0), lerp(c0[2], h0[2], e0)]);
-					const a1 = pr([lerp(c1[0], h1[0], e0), lerp(c1[1], h1[1], v0), lerp(c1[2], h1[2], e0)]);
-					const b1 = pr([lerp(c1[0], h1[0], e1), lerp(c1[1], h1[1], v1), lerp(c1[2], h1[2], e1)]);
-					const b0 = pr([lerp(c0[0], h0[0], e1), lerp(c0[1], h0[1], v1), lerp(c0[2], h0[2], e1)]);
+					const y0a = bg ? bg(v0, i) : 0;
+					const y1a = bg ? bg(v1, i) : 0;
+					const y0b = bg ? bg(v0, i + 1) : 0;
+					const y1b = bg ? bg(v1, i + 1) : 0;
+					const a0 = pr([lerp(c0[0], h0[0], e0), lerp(c0[1], h0[1], v0) + y0a, lerp(c0[2], h0[2], e0)]);
+					const a1 = pr([lerp(c1[0], h1[0], e0), lerp(c1[1], h1[1], v0) + y0b, lerp(c1[2], h1[2], e0)]);
+					const b1 = pr([lerp(c1[0], h1[0], e1), lerp(c1[1], h1[1], v1) + y1b, lerp(c1[2], h1[2], e1)]);
+					const b0 = pr([lerp(c0[0], h0[0], e1), lerp(c0[1], h0[1], v1) + y1a, lerp(c0[2], h0[2], e1)]);
 					const col = sarapeColor(thm + spin, (v0 + v1) / 2, i, r);
 					const kk = k * lerp(1, fold, (v0 + v1) / 2) * (0.92 + 0.08 * (1 - v0));
 					q.fillStyle = rgb(col, kk);
@@ -416,7 +566,8 @@ const sarapeItems = (R: Rig, f: number, L: V3, lit: number): Item[] => {
 					const o = (j - 1) * 0.011;
 					q.beginPath();
 					for (let m = 0; m < st.length; m++) {
-						const pp = pr(add(st[m], ring.axisL, o * Math.cos(thm)));
+						const sp = add(st[m], ring.axisL, o * Math.cos(thm));
+						const pp = pr([sp[0], Math.max(0.004, sp[1]), sp[2]]);
 						if (m === 0) q.moveTo(pp[0], pp[1]);
 						else q.lineTo(pp[0] + j * 0.3, pp[1]);
 					}
@@ -624,8 +775,9 @@ export const rimPass = (q: Ctx, dx: number, dy: number, color: string, a: number
 
 // ---------------------------------------------------------------- don Fermín completo
 export const drawFermin = (g: Ctx, f: number, L: V3, I: number, blur: number, draw: Drawer) => {
-	if (f >= 606) return;
-	const R = rigAt(f);
+	if (f >= 1020) return;
+	if (f >= COLL) return drawPileCloth(g, f, L, I, blur, draw);
+	const R = rigS(f);
 	const s = pxPerM(R.z);
 	const [fx, fy] = P(R.x, 0, R.z);
 	const litTop = lightAt(L, I, [R.x, 1.0, R.z - 0.2], [0, 0, -1]);
@@ -675,6 +827,46 @@ export const drawFermin = (g: Ctx, f: number, L: V3, I: number, blur: number, dr
 	});
 };
 
+// el sarape vacío: cae (606–621) y queda como montón (respira, empuja, se aplana)
+const drawPileCloth = (g: Ctx, f: number, L: V3, I: number, blur: number, draw: Drawer) => {
+	const R = rigAt(COLL - 1);
+	const s = pxPerM(R.z);
+	const [fx, fy] = P(R.x, 0, R.z);
+	const top = P(R.x, 1.5, R.z)[1];
+	const lit = clamp(lightAt(L, I, [R.x, 0.2, R.z - 0.3], [0, 0.6, -0.8]) + 0.1);
+	const box: [number, number, number, number] = [fx - 1.0 * s, top, 2.0 * s, fy - top + 0.35 * s];
+	draw(box, blur, {color: '#0E1A1A', a: 0}, (q) => {
+		const tau = (f - COLL) / FPS;
+		const k = clamp((tau - 0.25) / 0.3);
+		if (k > 0) {
+			const gr = q.createRadialGradient(fx, fy, 0, fx, fy, 0.75 * s);
+			gr.addColorStop(0, `rgba(10,6,3,${0.6 * k})`);
+			gr.addColorStop(1, 'rgba(10,6,3,0)');
+			q.fillStyle = gr;
+			q.beginPath();
+			q.ellipse(fx, fy - 0.01 * s, 0.75 * s, 0.16 * s, 0, 0, Math.PI * 2);
+			q.fill();
+		}
+		const items = sarapeItems(R, f, L, lit);
+		items.sort((a, b) => b.z - a.z).forEach((it) => it.draw(q));
+		const res = q.getTransform().a;
+		rimPass(q, 3 * res, 1.4 * res, '#FFB868', 0.45 * clamp(I), 1.2 * res);
+		rimPass(q, -2.5 * res, 0, '#2C6660', 0.35, 1.5 * res);
+	});
+};
+// sombra del sarape (cae y queda como montón bajo)
+export const sarapeCaster = (f: number): Caster | null => {
+	if (f < COLL || f >= 1020) return null;
+	const ring = collapseRing(f);
+	const hp: V3[] = [];
+	for (let i = 0; i < NS; i += 2) {
+		hp.push(ring.top[i]);
+		hp.push([ring.hem[i][0], ring.hem[i][1] + 0.03, ring.hem[i][2]]);
+	}
+	// entra cuando la tela ya va abajo (antes la sombra «no miente»: solo se ve la bestia, sin salto a 606)
+	return {pts: [], hulls: [hp], alpha: smooth01(seg(f, 611, 624))};
+};
+
 // ---------------------------------------------------------------- su sombra (caster 3D)
 export type ShadowOpts = {
 	lag?: number; // frames de retraso de la sombra respecto a él
@@ -709,7 +901,7 @@ const tailSpec = {
 export const ferminShadow = (f: number, L: V3, o: ShadowOpts = {}): {caster: Caster; eyes: V3[]; headAt: (p: V2) => V3} | null => {
 	const ff = Math.max(0, f - (o.lag ?? 0));
 	if (ff >= 606) return null;
-	const R = rigAt(ff);
+	const R = rigS(ff);
 	const {spin, flare} = spinAt(ff);
 	const more: V3[][] = [];
 	const hulls: V3[][] = [];
@@ -735,7 +927,7 @@ export const ferminShadow = (f: number, L: V3, o: ShadowOpts = {}): {caster: Cas
 	// cabeza con sombrero: tarjeta perpendicular al rayo del foco
 	const dL = nrm([R.head[0] - L[0], 0, R.head[2] - L[2]]);
 	const U: V3 = [dL[2], 0, -dL[0]];
-	const fu = dot(fwdOf(R.yaw + spin), U);
+	const fu = dot(fwdOf(R.yaw), U);
 	const face = o.headFace ?? (fu >= 0 ? 1 : -1);
 	const auto = morph(HEAD_HAT_FRONT, HEAD_HAT_PROFILE, clamp(Math.abs(fu) * 1.15));
 	let head = o.head ? o.head(auto) : auto;
@@ -797,7 +989,7 @@ export const ferminShadow = (f: number, L: V3, o: ShadowOpts = {}): {caster: Cas
 // compatibilidad (G2 la usa durante las vueltas): la caña como caster suelto
 export const caneCaster = (f: number): Caster | null => {
 	if (f >= 510) return null;
-	const R = rigAt(f);
+	const R = rigS(f);
 	return {pts: [], more: [[R.caneTip, R.hand, add(R.hand, R.fwd, 0.02), add(R.caneTip, R.fwd, 0.02)]]};
 };
 export const ferminCaster = (f: number, head: Head = 'hat', L: V3 = BULB0): Caster | null => ferminShadow(f, L)?.caster ?? (void head, null);

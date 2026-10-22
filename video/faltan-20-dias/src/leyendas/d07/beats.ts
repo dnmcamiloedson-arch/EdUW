@@ -5,13 +5,18 @@ import {glow, type Ctx} from '../kit/paint';
 import type {Frame} from './frame';
 import {drawer} from './layer';
 import {card, magAt, mapCaster, projShadow, type Caster} from './light';
-import {caneCaster, drawFermin, ferminPose, ferminShadow, type ShadowOpts, STOP_X, STOP_Z} from './fermin';
-import {coyoteCaster, coyoteState, drawCaneOnGround, drawCoyote, drawHat, drawOwl, drawPile} from './props';
+import {drawFermin, ferminPose, ferminShadow, sarapeCaster, spinAt, type ShadowOpts, STOP_X, STOP_Z} from './fermin';
+import {drawOwl} from './props';
+import {coyoteCaster, coyoteState, drawCoyote} from './coyote';
+import {caneShadow, caneZ, drawCane, drawHat, drawHuarache, drawPetals, hatShadow, hatZ, morphShadow} from './g2';
 import {dogCaster, drawDog} from './dog';
 import {BIPED_EYES, BIPED_FRONT, COYOTE4, FRONT_EYES, HEAD_COYOTE_PROFILE, HEAD_EARS_FRONT, HEAD_HAT_FRONT, HUNCHED, humanOutline, morph, resample} from './shapes';
 import {G7, SEVEN_REST, glyph7} from './glyph';
 import {BULB0, P, WALL_Z, blurFor, sec, seg, smooth, wallX, wallY, type V2, type V3} from './world';
 import {rigAt} from './gait';
+import {bipedShadow, hatCaneCaster} from './g3';
+import {drawScare, scareEyesScreen} from './scare';
+import {drawBuckets} from './set';
 
 export type Beat = {id: string; name: string; f0: number; f1: number; fn: (fr: Frame) => void};
 
@@ -27,10 +32,32 @@ const dog = (fr: Frame) => {
 	fr.actors.push({z: 3.95, draw: (g) => drawDog(g, fr.f, fr.L, fr.I, drawer(g))});
 };
 const owl = (fr: Frame) => fr.alley.push((g: Ctx) => drawOwl(g, fr.f));
+// la calle después de las vueltas (G2): don Fermín/sarape (cae y queda como montón), pétalos (vórtice → piso), caña,
+// sombrero, huarache; con sus sombras. G3 la sigue llamando (los objetos desaparecen solos a 1020).
 const streetLeftovers = (fr: Frame) => {
-	fr.actors.push({z: 2.42, draw: (g) => drawPile(g, fr.f, STOP_X, STOP_Z, fr.L, fr.I, blurFor(2.4, fr.f), drawer(g))});
-	fr.actors.push({z: 2.36, draw: (g) => drawCaneOnGround(g, fr.f)});
-	fr.actors.push({z: 1.5, draw: (g) => drawHat(g, fr.f, fr.L, fr.I, blurFor(1.5, fr.f), drawer(g))});
+	const f = fr.f;
+	const spin = spinAt(f).spin;
+	const sc = sarapeCaster(f);
+	if (sc) fr.casters.push(sc);
+	const cs = caneShadow(f, fr.L);
+	if (cs) fr.casters.push(cs);
+	const hs = hatShadow(f);
+	if (hs) fr.casters.push(hs);
+	if (f < 1020) fr.actors.push({z: f >= 606 ? STOP_Z + 0.02 : STOP_Z, draw: (g) => drawFermin(g, f, fr.L, fr.I, blurFor(STOP_Z, f), drawer(g))});
+	fr.actors.push({z: STOP_Z + 0.3, draw: (g) => drawPetals(g, f, spin, fr.L, fr.I, 1)});
+	fr.actors.push({z: STOP_Z - 0.3, draw: (g) => drawPetals(g, f, spin, fr.L, fr.I, -1)});
+	const cz = caneZ(f);
+	fr.actors.push({z: cz, draw: (g) => drawCane(g, f, fr.L, fr.I, blurFor(cz, f), drawer(g))});
+	const hz = hatZ(f);
+	fr.actors.push({z: hz, draw: (g) => drawHat(g, f, fr.L, fr.I, blurFor(hz, f), drawer(g))});
+	fr.actors.push({z: STOP_Z - 0.2, draw: (g) => drawHuarache(g, f, fr.L, fr.I, blurFor(STOP_Z - 0.2, f), drawer(g))});
+};
+const coyote = (fr: Frame) => {
+	const f = fr.f;
+	const co = coyoteCaster(f);
+	if (co) fr.casters.push(co);
+	const c = coyoteState(f);
+	if (c) fr.actors.push({z: c.z0, draw: (g) => drawCoyote(g, f, fr.L, fr.I, blurFor(c.z, f), drawer(g))});
 };
 // ojos de una sombra: anclas de la tarjeta proyectadas desde el foco
 const shadowEyes = (fr: Frame, pts: V3[], core: number, a: number, color = C.flama) => {
@@ -135,163 +162,97 @@ const B04 = (fr: Frame) => {
 	owl(fr);
 };
 // ---------------------------------------------------------------- B05 tres vueltas (480–677)
-const KEY_HUMAN = resample(humanOutline(0, 'front'));
-const KEY_HUNCH = resample(HUNCHED);
-const KEY_COY = resample(COYOTE4);
+// él gira (rig girado + sarape que vuela con ω²); su sombra deja de copiarlo: de la sombra real (con orejas) se funde
+// 488–508 en el morph de 5 claves (humano → encorvado → arqueado → medio bestia → coyote, cabeza primero). 606 el
+// sarape cae vacío; la sombra-coyote se hunde en el montón; 624 respira, huarache; 654 pata y hocico (coyote.ts).
 const B05 = (fr: Frame) => {
 	const f = fr.f;
-	const p = ferminPose(f);
-	// G2: 5 claves escalonadas (orejas primero), una por vuelta; esqueleto: humano → encorvado → coyote
-	const u1 = E.inOut(seg(f, 486, 560));
-	const u2 = E.inOut(seg(f, 560, 606));
-	const shape = u2 > 0 ? morph(KEY_HUNCH, KEY_COY, u2) : morph(KEY_HUMAN, KEY_HUNCH, u1);
-	const breathe = 1 + 0.015 * Math.sin(fr.t * Math.PI * 0.8);
-	// continuidad con B04 (G1): la sombra de B04 se funde en la del morph durante la primera vuelta (G2 lo rehace)
-	const hand = seg(f, 486, 516);
-	fr.casters.push({pts: card(shape, STOP_X, 0, STOP_Z, -1, breathe), alpha: hand});
-	if (hand < 1) {
+	const {spin} = spinAt(f);
+	// fundido sin hueco: la clave entra antes de que la sombra real se vaya
+	const hand = smooth(seg(f, 486, 500));
+	const out = smooth(seg(f, 494, 512));
+	if (out < 1) {
 		const sh = ferminShadow(f, fr.L, shadowOpts(f));
 		if (sh) {
-			sh.caster.alpha = 1 - hand;
+			sh.caster.alpha = 1 - out;
 			fr.casters.push(sh.caster);
-			const on = eyesB04(f) * (1 - seg(f, 486, 500));
+			const on = eyesB04(f) * (1 - seg(f, 484, 498));
 			if (on > 0) shadowEyes(fr, sh.eyes, 9, on);
 		}
 	}
-	void FRONT_EYES;
-	void p;
-	const cc = hand >= 1 ? caneCaster(f) : null;
-	if (cc) fr.casters.push(cc);
-	const co = coyoteCaster(f);
-	if (co) fr.casters.push(co);
-	fermin(fr);
-	dog(fr);
-	if (f < 540) owl(fr);
+	if (f >= 488 && f < 626) {
+		const m = morphShadow(f, spin);
+		m.caster.alpha = (m.caster.alpha ?? 1) * hand;
+		fr.casters.push(m.caster);
+		if (m.alpha > 0.01) shadowEyes(fr, m.eyes, 8, m.alpha);
+	}
 	streetLeftovers(fr);
-	if (coyoteState(f)) fr.actors.push({z: 2.38, draw: (g) => drawCoyote(g, f, fr.L, fr.I, blurFor(2.4, f), drawer(g))});
+	coyote(fr);
+	dog(fr);
+	if (f < 560) owl(fr);
 };
 // ---------------------------------------------------------------- B06 el coyote en la calle (678–779)
+// se sacude (678–696), camina hacia el perro, el perro huye (726), mira a la lente con eyeshine (744–762), se
+// escabulle al callejón (762→806). Sin texto.
 const B06 = (fr: Frame) => {
-	const f = fr.f;
-	const co = coyoteCaster(f);
-	if (co) fr.casters.push(co);
-	const c = coyoteState(f);
-	if (c) fr.actors.push({z: c.z, draw: (g) => drawCoyote(g, f, fr.L, fr.I, blurFor(c.z, f), drawer(g))});
+	coyote(fr);
 	dog(fr);
 	streetLeftovers(fr);
 };
 // ---------------------------------------------------------------- B07 la sombra crece, erguida (780–914)
-// camina por nuestra banqueta, siempre fuera de cuadro a la izquierda, hasta quedar bajo el foco (donde salió don
-// Fermín): M ≈ 2.5 → 9.7; su sombra entra por la esquina del muro a 798 y su cabeza llena la franja al final.
-const bipedPos = (f: number): {x: number; z: number; bob: number} => {
-	const u = seg(f, 798, 915);
-	const e = u * (1.12 - 0.12 * u); // paso pesado, apenas más lento al final (G3: ciclo de 1.0 s)
-	const z = lerp(2.05, 0.88, e);
-	const x = -0.65 - (1.05 * (z - 0.88)) / 2.75;
-	const bob = Math.abs(Math.sin(((f - 798) / 30) * Math.PI)) * 0.03;
-	return {x, z, bob};
+// el «entre formas» camina por nuestra banqueta, siempre fuera de cuadro a la izquierda, hacia el foco: su sombra entra
+// por la esquina del muro, crece de M 2 a 7, se endereza (sube) y afila la penumbra; ojos a 882 (g3.ts).
+const biped = (fr: Frame) => {
+	const b = bipedShadow(fr.f, fr.L);
+	if (!b) return;
+	fr.casters.push(b.caster);
+	if (b.eyeA > 0) shadowEyes(fr, b.eyes, 24, b.eyeA);
 };
-const BIPED = resample(BIPED_FRONT);
 const B07 = (fr: Frame) => {
-	const f = fr.f;
-	if (f >= 798) {
-		const b = bipedPos(f);
-		fr.casters.push({pts: card(BIPED, b.x, b.bob, b.z), soft: 2});
-		const on = E.out(seg(f, 882, 886));
-		if (on > 0) shadowEyes(fr, card(BIPED_EYES, b.x, b.bob, b.z), 24, on);
-	}
-	const co = coyoteCaster(f);
-	if (co) fr.casters.push(co);
-	const c = coyoteState(f);
-	if (c) fr.actors.push({z: c.z, draw: (g) => drawCoyote(g, f, fr.L, fr.I, blurFor(c.z, f), drawer(g))});
-	if (f >= 786 && f <= 800) {
-		const k = Math.sin(seg(f, 786, 800) * Math.PI);
-		fr.alley.push((g) => {
-			const [ex, ey] = P(-1.75, 0.55, 4.6);
-			g.save();
-			g.globalCompositeOperation = 'lighter';
-			g.fillStyle = `rgba(214,227,106,${0.8 * k})`;
-			g.beginPath();
-			g.arc(ex - 5, ey, 3, 0, Math.PI * 2);
-			g.arc(ex + 5, ey, 3, 0, Math.PI * 2);
-			g.fill();
-			g.restore();
-		});
-	}
-	streetLeftovers(fr);
+	biped(fr);
+	coyote(fr);
+	streetLeftovers(fr); // continuidad G2→G3: montón, caña, sombrero, pétalos y huarache siguen en la calle
 };
 // ---------------------------------------------------------------- B08 aliento contenido (915–935)
+// cae a cuatro patas: la sombra baja por el muro y sale al piso, fuera de la luz. Muro vacío.
 const B08 = (fr: Frame) => {
-	const f = fr.f;
-	const u = E.inOut(seg(f, 915, 927));
-	// cae a cuatro patas: la sombra baja por el muro y sale al piso
-	const shape = morph(BIPED, resample(COYOTE4.map(([x, y]) => [x * 0.6, y] as V2)), u);
-	fr.casters.push({pts: card(shape, lerp(-0.65, -0.56, u), -0.6 * u, lerp(0.88, 0.8, u)), alpha: 1 - seg(f, 924, 932)});
+	biped(fr);
 	streetLeftovers(fr);
 };
 // ---------------------------------------------------------------- B09 SUSTO (936–956)
 const B09 = (fr: Frame) => {
 	const f = fr.f;
 	streetLeftovers(fr);
-	// G3: cabeza pintada (scare.ts). Esqueleto: silueta con rim y ojos que irrumpe desde abajo a la derecha.
-	const u = E.out(seg(f, 936, 940));
-	const over = 1 + 0.06 * Math.sin(seg(f, 939, 945) * Math.PI);
-	fr.actors.push({
-		z: 0.6,
-		draw: (g) => {
-			const cx = lerp(980, 640, u);
-			const cy = lerp(1500, 960, u);
-			const s = 1.25 * over;
-			g.save();
-			g.translate(cx, cy);
-			g.scale(s, s);
-			g.fillStyle = '#120B07';
-			g.beginPath();
-			g.moveTo(-260, 260);
-			g.quadraticCurveTo(-300, 40, -200, -60);
-			g.lineTo(-250, -300);
-			g.lineTo(-90, -130);
-			g.quadraticCurveTo(0, -160, 90, -130);
-			g.lineTo(250, -300);
-			g.lineTo(200, -60);
-			g.quadraticCurveTo(300, 40, 260, 260);
-			g.quadraticCurveTo(0, 360, -260, 260);
-			g.fill();
-			g.strokeStyle = 'rgba(242,109,61,0.9)';
-			g.lineWidth = 10;
-			g.beginPath();
-			g.moveTo(-250, -300);
-			g.lineTo(-200, -60);
-			g.quadraticCurveTo(-300, 40, -260, 260);
-			g.stroke();
-			g.restore();
-			const eu = clamp(u * 1.2);
-			glow(g, lerp(900, 545, u), lerp(1450, 890, u), 70, C.flama, eu, 0.25);
-			glow(g, lerp(1060, 745, u), lerp(1450, 890, u), 70, C.flama, eu, 0.25);
-		},
-	});
-	fr.buckets = true;
-	fr.post.flash = f === 936 ? 0.5 : f === 937 ? 0.18 : 0;
-	fr.post.ca = lerp(6, 1, seg(f, 936, 946));
+	fr.actors.push({z: 0.6, draw: (g) => drawScare(g, f)});
+	// las cubetas (z 0.95) van DETRÁS de la cabeza (z 0.6)
+	fr.buckets = false;
+	fr.actors.push({z: 0.95, draw: (g) => drawBuckets(g, fr.t, fr.I)});
+	fr.post.flash = f === 936 ? 0.5 : f === 937 ? 0.2 : f === 945 ? 0.08 : 0;
+	fr.post.ca = Math.max(lerp(6, 1, seg(f, 936, 946)), f >= 945 && f < 948 ? 3 : 0);
 };
 // ---------------------------------------------------------------- B10 portazo · negro (957–1019)
 const B10 = (fr: Frame) => {
 	const f = fr.f;
-	if (f < 960) streetLeftovers(fr);
+	if (f < 960) {
+		streetLeftovers(fr);
+		fr.actors.push({z: 0.6, draw: (g) => drawScare(g, 956 + (f - 956) * 0.5)});
+		fr.buckets = false;
+		fr.actors.push({z: 0.95, draw: (g) => drawBuckets(g, fr.t, fr.I)});
+	}
+	// posimagen verde-oro del eyeshine (0.4 s)
 	if (f < 970) {
 		const k = 1 - seg(f, 957, 969);
+		const eyes = scareEyesScreen(956);
 		fr.over.push((g) => {
 			g.save();
 			g.globalCompositeOperation = 'lighter';
-			for (const [x, y] of [
-				[545, 890],
-				[745, 890],
-			]) {
-				const gr = g.createRadialGradient(x, y, 0, x, y, 60);
-				gr.addColorStop(0, `rgba(190,220,90,${0.55 * k})`);
-				gr.addColorStop(1, 'rgba(190,220,90,0)');
+			for (const [x, y] of eyes) {
+				const gr = g.createRadialGradient(x, y, 0, x, y, 70);
+				gr.addColorStop(0, `rgba(200,226,110,${0.6 * k})`);
+				gr.addColorStop(0.4, `rgba(150,190,80,${0.25 * k})`);
+				gr.addColorStop(1, 'rgba(120,170,70,0)');
 				g.fillStyle = gr;
-				g.fillRect(x - 60, y - 60, 120, 120);
+				g.fillRect(x - 70, y - 70, 140, 140);
 			}
 			g.restore();
 		});
@@ -311,7 +272,7 @@ const B11 = (fr: Frame) => {
 	const f = fr.f;
 	const snap = E.inOut(seg(f, 1128, 1140));
 	const gm = glyph7();
-	fr.casters.push({pts: HATCANE, alpha: gm ? 1 - snap : 1, soft: snap * 3});
+	fr.casters.push(hatCaneCaster(fr.t, gm ? 1 - snap : 1, 1 + snap * 3));
 	if (gm && snap > 0) {
 		const [ox, oy] = sevenOffset(fr);
 		fr.masks.push({canvas: gm.canvas, alpha: 0.88 * snap, blur: 4 + snap * 3, ox, oy});
@@ -325,7 +286,7 @@ const B12 = (fr: Frame) => {
 	if (gm) {
 		const [ox, oy] = sevenOffset(fr);
 		fr.masks.push({canvas: gm.canvas, alpha: 0.88, blur: 7, ox, oy});
-	} else fr.casters.push({pts: HATCANE});
+	} else fr.casters.push(hatCaneCaster(fr.t, 1, 1));
 	if (f >= 1188 && f <= 1203) {
 		const blink = f >= 1194 && f <= 1196 ? 0 : 1;
 		const k = Math.sin(seg(f, 1188, 1203) * Math.PI) * blink;

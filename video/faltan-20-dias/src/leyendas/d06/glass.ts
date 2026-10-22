@@ -152,7 +152,7 @@ export const paintFog = (g: Ctx, o: FogOpts) => {
 	q.filter = 'none';
 	// condensación: grano fino, sin manchas grandes
 	q.globalCompositeOperation = 'destination-out';
-	drawTiled(q, noiseTile({seed: 93, period: 16, oct: 3, contrast: 2.0, bias: -0.15}), {w: W, h: H, scale: 1.2, alpha: 0.35, op: 'destination-out'});
+	drawTiled(q, noiseTile({seed: 93, period: 8, oct: 4, contrast: 1.25, bias: -0.1}), {w: W, h: H, scale: 2.2, alpha: 0.16, op: 'destination-out'});
 	if (o.wipe) o.wipe(q);
 	if (o.carve) o.carve(q);
 	q.setTransform(1, 0, 0, 1, 0, 0);

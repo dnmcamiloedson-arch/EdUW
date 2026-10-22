@@ -674,30 +674,55 @@ export const paintEyeECU = (g: Ctx, o: {cx: number; cy: number; s: number; lid: 
 		g.bezierCurveTo(200 + k * 10, -360, 250 + k * 6, -250, 230 + k * 9 + Math.sin(k) * 20, -120 + k * 6);
 		g.stroke();
 	}
-	// --- borde del rebozo sobre la frente (tela cercana, terracota con raya verde)
+	// --- borde del rebozo sobre la frente: tela cercana con caída en pliegues (terracota, rayas verde y hueso)
+	const edge: V2[] = [
+		[-780, -436],
+		[-560, -470],
+		[-380, -432],
+		[-200, -478],
+		[-40, -446],
+		[110, -470],
+		[230, -420],
+		[330, -500],
+		[420, -640],
+		[500, -900],
+	];
 	const hood = (q: Ctx) => {
-		q.moveTo(-760, -900);
-		q.lineTo(560, -900);
-		q.bezierCurveTo(460, -640, 330, -470, 120, -440);
-		q.bezierCurveTo(-100, -410, -400, -470, -760, -430);
+		q.moveTo(-780, -940);
+		q.lineTo(520, -940);
+		q.lineTo(edge[edge.length - 1][0], edge[edge.length - 1][1]);
+		smoothPath(q, [...edge].reverse(), false, 0.5);
 		q.closePath();
 	};
-	paintShape(g, hood, [-760, -900, 1320, 500], {fill: vgrad('#3a120a', night ? '#9a3a22' : '#4a1a10'), light: night ? Math.PI / 2 : -Math.PI / 4, rim: {color: night ? '#F5B04A' : '#FFE0A8', width: 10, alpha: 0.6}, shadow: {color: '#140402', width: 70, alpha: 0.7}, texture: {seed: 5, alpha: 0.25, scale: 1.2}}, s);
+	paintShape(g, hood, [-780, -940, 1300, 520], {fill: vgrad('#2a0c06', night ? '#8e3420' : '#4a1a10'), light: night ? Math.PI / 2 : -Math.PI / 4, rim: {color: night ? '#F5B04A' : '#FFE0A8', width: 8, alpha: 0.5}, shadow: {color: '#140402', width: 80, alpha: 0.65}, texture: {seed: 5, alpha: 0.3, scale: 1.2}}, s);
 	g.save();
 	g.beginPath();
 	hood(g);
 	g.clip();
-	g.strokeStyle = rgba(P.green, 0.85);
-	g.lineWidth = 22;
-	g.beginPath();
-	g.moveTo(-760, -480);
-	g.bezierCurveTo(-400, -520, -100, -460, 130, -490);
-	g.bezierCurveTo(330, -520, 450, -690, 540, -900);
-	g.stroke();
-	g.strokeStyle = rgba(P.bone, 0.35);
-	g.lineWidth = 4;
-	g.stroke();
-	g.restore();
+	// rayas que siguen la caída (desplazadas del borde)
+	const band = (off: number, w: number, c: string) => {
+		g.strokeStyle = c;
+		g.lineWidth = w;
+		g.beginPath();
+		smoothPath(g, edge.map(([x, y], i) => [x - (i > 6 ? off * 0.8 : 0), y - off] as V2), false, 0.5);
+		g.stroke();
+	};
+	band(46, 18, rgba(P.green, 0.7));
+	band(64, 3, rgba(P.bone, 0.3));
+	band(150, 26, rgba(P.green, 0.55));
+	band(176, 3, rgba(P.bone, 0.22));
+	// pliegues: valles oscuros y crestas tibias que bajan hacia cada punta del borde
+	for (let i = 1; i < edge.length - 2; i++) {
+		const [x, y] = edge[i];
+		const crest = i % 2 === 1;
+		g.strokeStyle = crest ? (night ? 'rgba(245,150,80,0.07)' : 'rgba(255,220,170,0.05)') : 'rgba(18,4,2,0.2)';
+		g.lineCap = 'round';
+		g.lineWidth = crest ? 70 : 90;
+		g.beginPath();
+		g.moveTo(x + 40, y - 520);
+		g.quadraticCurveTo(x - 10, y - 220, x, y - 10);
+		g.stroke();
+	}
 	g.restore();
 	if (night) glow(g, cx - 160 * s, cy + 520 * s, 520 * s, '#F5A04A', 0.2 * a);
 };

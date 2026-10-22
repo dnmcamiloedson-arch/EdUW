@@ -151,6 +151,7 @@ export const paintShadowPuppet = (g: Ctx, f: number, o: {collapse?: number} = {}
 	gr.addColorStop(0.35, rgba('#F28A3D', 0.42));
 	gr.addColorStop(1, rgba('#F26D3D', 0));
 	q.fillStyle = gr;
+	q.filter = 'blur(14px)';
 	q.beginPath();
 	q.moveTo(OX - 8, OY + 6);
 	q.lineTo(OX - 260, OY - 360);
@@ -158,6 +159,7 @@ export const paintShadowPuppet = (g: Ctx, f: number, o: {collapse?: number} = {}
 	q.lineTo(OX + 8, OY + 6);
 	q.closePath();
 	q.fill();
+	q.filter = 'none';
 	q.globalCompositeOperation = 'destination-out';
 	drawTiled(q, noiseTile({seed: 34, period: 4, oct: 5, contrast: 1.8}), {w: CW, h: CH, scale: 0.8, ox: t * 14, oy: -t * 22, alpha: 0.55, op: 'destination-out'});
 	// la sombra: hueco en la luz

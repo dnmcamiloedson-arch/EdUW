@@ -89,7 +89,7 @@ export const EV = {
 	slam: 960,
 	altar: 971,
 	sweep: 987,
-	sink: 1005,
+	sink: 1008,
 	// B9
 	dawnIn1: 1044,
 	rack1: 1068,

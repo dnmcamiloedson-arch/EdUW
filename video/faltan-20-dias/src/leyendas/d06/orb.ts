@@ -19,6 +19,7 @@ export type OrbOpts = {
 	a?: number;
 	lower?: boolean; // solo mitad inferior (forma de alimentarse)
 	pulse?: number; // 0..1 pulso del núcleo
+	big?: number; // 0..1 rig de primer plano: lenguas de flama finas alrededor, remolinos y cuencas de ojos profundas
 };
 
 const shellPath = (g: Ctx, o: OrbOpts, k: number, gap: number) => {
@@ -37,7 +38,10 @@ const shellPath = (g: Ctx, o: OrbOpts, k: number, gap: number) => {
 			}
 		}
 		const n = noise2D('orb' + seed, Math.cos(th) * 1.3 + t * 1.7, Math.sin(th) * 1.3 + t * 1.1);
-		const rr = r * k * (1 + 0.18 * n) * (1 - 0.35 * crumple * (0.6 + 0.4 * Math.sin(th * 5 + t * 20)));
+		const big = o.big ?? 0;
+		// primer plano: cuerpo de lágrima de flama (más alto arriba) y borde más roto
+		const tall = 1 + big * 0.32 * Math.max(0, -Math.sin(th)) ** 1.5;
+		const rr = r * k * tall * (1 + (0.18 + 0.12 * big) * n) * (1 - 0.35 * crumple * (0.6 + 0.4 * Math.sin(th * 5 + t * 20)));
 		const px = x + Math.cos(th) * rr;
 		const py = y + Math.sin(th) * rr;
 		if (!started) {
@@ -76,10 +80,57 @@ export const paintOrb = (g: Ctx, o: OrbOpts) => {
 		}
 		g.globalCompositeOperation = 'source-over';
 	}
+	// primer plano: muchas lenguas finas que suben (flotación), en dos capas, con largo que parpadea rápido
+	const big = o.big ?? 0;
+	if (big > 0) {
+		// corona de humo oscuro entre las lenguas: contraste y amenaza
+		g.save();
+		g.globalCompositeOperation = 'multiply';
+		const sm = g.createRadialGradient(x, y - r * 0.2, r * 0.9, x, y - r * 0.2, r * 2.1);
+		sm.addColorStop(0, 'rgba(40,16,6,0)');
+		sm.addColorStop(0.35, rgba('#2a1206', 0.55 * big * a));
+		sm.addColorStop(1, 'rgba(40,16,6,0)');
+		g.fillStyle = sm;
+		g.fillRect(x - r * 2.2, y - r * 2.4, r * 4.4, r * 4.4);
+		g.restore();
+		g.globalCompositeOperation = 'lighter';
+		for (let layer = 0; layer < 2; layer++) {
+			const N = layer ? 11 : 17;
+			for (let k = 0; k < N; k++) {
+				const base = (k / N) * Math.PI * 2 + layer * 0.37 + noise2D('bgb' + seed + layer, k * 0.7, t * 0.4) * 0.3;
+				const up = -Math.sin(base); // 1 arriba, −1 abajo
+				const fl = 0.5 + 0.5 * noise2D('bgl' + seed + layer + k, t * 4.2, k * 1.3);
+				const L = r * (layer ? 0.35 : 0.5) * (0.5 + fl) * (0.55 + 0.6 * Math.max(0, up) + 0.15);
+				const w = r * (layer ? 0.11 : 0.16) * (0.7 + 0.3 * fl);
+				const bx = x + Math.cos(base) * r * 0.92;
+				const by = y + Math.sin(base) * r * 0.92;
+				// la punta se curva hacia arriba y ondula
+				const sway = noise2D('bgs' + seed + k, t * 3.1, layer) * L * 0.5;
+				const tx = bx + Math.cos(base) * L * 0.7 + sway;
+				const ty = by + Math.sin(base) * L * 0.55 - L * 0.75;
+				const nx = -Math.sin(base) * w;
+				const ny = Math.cos(base) * w;
+				const mx = (bx + tx) / 2 - sway * 0.6;
+				const my = (by + ty) / 2;
+				const grd = g.createLinearGradient(bx, by, tx, ty);
+				grd.addColorStop(0, rgba(layer ? P.gold : P.cempa, (layer ? 0.55 : 0.5) * a * big));
+				grd.addColorStop(0.7, rgba(P.cempa, 0.3 * a * big));
+				grd.addColorStop(1, rgba(P.terra, 0));
+				g.fillStyle = grd;
+				g.beginPath();
+				g.moveTo(bx + nx, by + ny);
+				g.quadraticCurveTo(mx + nx * 0.6, my + ny * 0.6, tx, ty);
+				g.quadraticCurveTo(mx - nx * 0.6, my - ny * 0.6, bx - nx, by - ny);
+				g.closePath();
+				g.fill();
+			}
+		}
+		g.globalCompositeOperation = 'source-over';
+	}
 	// lóbulos de flama contra la velocidad
 	const dir = sp > 0.3 ? Math.atan2(-vy, -vx) : -Math.PI / 2;
 	g.globalCompositeOperation = 'lighter';
-	for (let k = 0; k < 6; k++) {
+	for (let k = 0; k < (big > 0.5 ? 0 : 6); k++) {
 		const base = dir + (k - 2.5) * 0.42;
 		const wob = noise2D('lobe' + seed + k, t * 2.4, k) * 0.35;
 		const L = r * (1.3 + 0.5 * noise2D('lobl' + seed + k, t * 1.9, 0.5));
@@ -114,16 +165,56 @@ export const paintOrb = (g: Ctx, o: OrbOpts) => {
 	g.globalCompositeOperation = 'source-over';
 	// núcleo blanco-oro
 	const pr = 1 + 0.08 * Math.sin(t * 8) + 0.15 * pulse;
-	const core = g.createRadialGradient(x, y, 0, x, y, r * 0.75 * pr);
+	const cr = r * (big > 0 ? 0.5 : 0.75) * pr;
+	const core = g.createRadialGradient(x, y, 0, x, y, cr);
 	core.addColorStop(0, rgba(P.core, a));
 	core.addColorStop(0.55, rgba('#FFE08A', 0.9 * a * (1 - curtain)));
 	core.addColorStop(1, rgba(P.gold, 0));
 	g.fillStyle = core;
 	g.beginPath();
-	g.arc(x, y, r * 0.75 * pr, 0, Math.PI * 2);
+	g.arc(x, y, cr, 0, Math.PI * 2);
 	g.fill();
+	// fuego que hierve: manchas más oscuras que derivan dentro de la coraza (sin trazos)
+	if (big > 0) {
+		g.save();
+		g.globalCompositeOperation = 'multiply';
+		for (let k = 0; k < 9; k++) {
+			// en el anillo exterior (nunca en el centro bajo: no debe leerse una boca)
+			const th = (k / 9) * Math.PI * 2 + noise2D('bbt' + k, t * 0.35, k) * 0.6 - Math.PI / 2;
+			const rad = r * (0.62 + 0.2 * noise2D('bbr' + k, k, t * 0.5));
+			const bx = x + Math.cos(th) * rad;
+			const by = y + Math.sin(th) * rad * (Math.sin(th) > 0 ? 0.8 : 1.1);
+			const br = r * (0.22 + 0.18 * hash(k, 62));
+			const bg = g.createRadialGradient(bx, by, 0, bx, by, br);
+			bg.addColorStop(0, rgba(k % 3 ? '#C9542A' : '#9a3418', 0.45 * big * a));
+			bg.addColorStop(1, 'rgba(201,84,42,0)');
+			g.fillStyle = bg;
+			g.fillRect(bx - br, by - br, br * 2, br * 2);
+		}
+		g.restore();
+	}
+	// cuencas de ojos profundas, quietas, apuntando al espejo
+	if (eyes > 0 && big > 0) {
+		for (const sx of [-1, 1]) {
+			const ex = x + sx * r * 0.25;
+			const ey = y - r * (0.04 + (sx > 0 ? 0.025 : 0));
+			g.save();
+			g.translate(ex, ey);
+			g.rotate(sx * 0.1);
+			g.scale(sx > 0 ? 0.62 : 0.7, 1.15);
+			const eg = g.createRadialGradient(0, r * 0.03, 0, 0, 0, r * 0.22);
+			eg.addColorStop(0, rgba('#3a0f04', 0.7 * eyes * a));
+			eg.addColorStop(0.5, rgba('#7a2a10', 0.45 * eyes * a));
+			eg.addColorStop(1, rgba('#A83A25', 0));
+			g.fillStyle = eg;
+			g.beginPath();
+			g.arc(0, 0, r * 0.22, 0, Math.PI * 2);
+			g.fill();
+			g.restore();
+		}
+	}
 	// huecos de ojos
-	if (eyes > 0) {
+	if (eyes > 0 && big <= 0) {
 		g.fillStyle = rgba('#7a2a10', 0.55 * eyes * a);
 		for (const sx of [-1, 1]) {
 			g.beginPath();
