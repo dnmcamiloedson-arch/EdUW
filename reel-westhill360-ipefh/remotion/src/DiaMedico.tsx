@@ -47,7 +47,7 @@ const ONDA: Box[] = [
 ];
 
 /** La capa del lince viene con otro encuadre: se escala y mueve para que quede como en el banner */
-const LINCE = {s: 0.79, x: 228, y: 291};
+const LINCE = {s: 0.79, x: 308, y: 291}; // x +80 para que la cinta de "Médico" no le tape la cara
 
 // Renglones de la frase (y de la capa a 1080x1920)
 const RENGLONES: [number, number][] = [
@@ -153,6 +153,9 @@ export const DiaMedico: React.FC<{music?: boolean}> = ({music = true}) => {
         {/* onda izquierda (detrás de la cola) */}
         <Piece n="ondas_0" b={ONDA[0]} style={{transform: `translateX(${-230 * (1 - tw(f, [T.ondas + 6, T.ondas + 30], [0, 1]))}px)`}} />
 
+        {/* rayos de la derecha: detrás del lince para no cruzarle la cara */}
+        <Destello name="rayosDerecha" at={T.destellos + 6} />
+
         {/* lince */}
         <Layer n="lince" style={{transformOrigin: '0 0', transform: `translate(${LINCE.x + (1 - lince) * 620}px, ${LINCE.y + respira}px) scale(${LINCE.s})`, opacity: Math.min(1, lince * 3)}} />
 
@@ -172,7 +175,6 @@ export const DiaMedico: React.FC<{music?: boolean}> = ({music = true}) => {
         {/* destellos */}
         <Destello name="rayosTitulo" at={T.medico + 6} />
         <Destello name="verdeArriba" at={T.destellos} />
-        <Destello name="rayosDerecha" at={T.destellos + 6} />
         <Destello name="rayosAzules" at={T.destellos + 12} />
         <Destello name="verdeAbajo" at={T.destellos + 18} />
 
