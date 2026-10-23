@@ -163,7 +163,7 @@ export const DiaMedico: React.FC<{music?: boolean}> = ({music = true}) => {
         <Piece n="ondas_0" b={ONDA[0]} style={{transform: `translateX(${-230 * (1 - tw(f, [T.ondas + 6, T.ondas + 30], [0, 1]))}px)`}} />
 
         {/* lince */}
-        <Layer n="lince" style={{transformOrigin: '0 0', transform: `translate(${LINCE.x + (1 - lince) * 620}px, ${LINCE.y + respira}px) scale(${LINCE.s})`, opacity: Math.min(1, lince * 3)}} />
+        <Layer n="lince" style={{transformOrigin: '0 0', transform: `translate(${LINCE.x + (1 - lince) * 240}px, ${LINCE.y + respira}px) scale(${LINCE.s})`, opacity: Math.min(1, lince * 3)}} />
 
         {/* ondas de abajo, delante del lince como en el banner */}
         <Piece n="ondas_1" b={ONDA[1]} style={{transform: `translateX(${60 * (1 - tw(f, [T.ondas + 10, T.ondas + 30], [0, 1]))}px)`}} />
