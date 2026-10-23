@@ -8,7 +8,7 @@ import {EV, P} from './timeline';
 type T = {text: string; at: number; out: number; y: number; size: number; font?: 'Alike' | 'Rye'; color?: string; glow?: string; mode?: LineMode; accent?: Record<string, string>; scrim?: number; tracking?: number; maxWidth?: number};
 
 export const TEXT: T[] = [
-	{text: 'Si oyes cascos a tu espalda,', at: 12, out: 70, y: 400, size: 58},
+	{text: 'Si oyes galopar detrás de ti,', at: 12, out: 70, y: 400, size: 58},
 	{text: 'NO VOLTEES.', at: 39, out: 70, y: 480, size: 96, font: 'Rye', color: P.gold, glow: P.cempa, mode: 'flicker', scrim: 0, tracking: 0.04},
 	{text: 'Eso dicen los arrieros.', at: 88, out: 144, y: 410, size: 56},
 	{text: 'Lo tenías detrás.', at: 303, out: 352, y: 400, size: 60},
