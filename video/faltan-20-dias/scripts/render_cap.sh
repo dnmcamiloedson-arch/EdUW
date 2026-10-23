@@ -15,7 +15,7 @@ for d in "${DIAS[@]}"; do
 	secs=$(python3 -c "import json,sys; print(json.loads(sys.argv[1])['segundos'])" "$meta")
 	npx remotion render out/_bundle Capitulo "$DIR/_video_$n.mp4" \
 		--props="{\"dias\": $d, \"fecha\": \"28 · 10\"}" \
-		--muted --image-format=jpeg --jpeg-quality=95 --crf=12 >/dev/null
+		--concurrency=${CONC:-4} --muted --image-format=jpeg --jpeg-quality=95 --crf=12 >/dev/null
 	ffmpeg -y -hide_banner -loglevel error -i "$DIR/_video_$n.mp4" -i "$wav" \
 		-map 0:v -map 1:a -c:v libx264 -preset slow -crf 18 -pix_fmt yuv420p -profile:v high -level 4.2 \
 		-r 30 -g 30 -bf 2 -tune film -c:a aac -b:a 256k -ar 48000 -ac 2 -t "$secs" -movflags +faststart \
