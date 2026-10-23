@@ -1,46 +1,102 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Grain, ScriptWord} from './components';
-import {DiaMedico} from './DiaMedico';
 import {Sfx} from './shots';
 import {C, F, ease, tw} from './theme';
 
 // ---------------------------------------------------------------------------
 // Historia "Día del Médico · describe tu carrera en 3 palabras".
-//  1. Intro de cine: pantalla negra, la voz del doctor y sus frases en blanco; su imagen aparece
-//     oscura y desenfocada en una franja; termina con un latido de monitor.
-//  2. Título con el estilo del banner (papel, ondas, West).
-//  3. Respuestas: cada palabra aparece como estampa de papel rasgado justo cuando la dicen.
+//  1. Intro de cine: pantalla negra con la voz del doctor y sus frases; después entra su toma
+//     completa con look de cine y termina con un latido de monitor.
+//  2. Motion graphics "Describe tu carrera en 3 palabras" (gráficos propios, sin capas del banner).
+//  3. Respuestas: cada palabra aparece como estampa justo cuando la dicen. En dos respuestas la
+//     toma va como tarjeta sobre tomas del lugar (clip del director, sin su audio).
 //  4. El que no pudo con 3 palabras.
-//  5. El director con subtítulos palabra por palabra.
-//  6. Cierre: el banner del Día del Médico armándose.
+//  5. Cierre en motion graphics con el logo de la universidad.
 // Clips en public/proxies/medico (vN_limpio.mp4 = audio limpio con scripts/limpiar_voz.py).
 // Tiempos de palabras medidos sobre el audio (Whisper + búsqueda del inicio de cada palabra).
 // ---------------------------------------------------------------------------
 const sec = (s: number) => Math.round(s * 30);
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const vid = (n: string) => staticFile(`proxies/medico/${n}_limpio.mp4`);
-const capa = (n: string) => staticFile(`photos/medico/${n}.png`);
-const AZUL_T = '#0E4C8E'; // azul del título del banner
-const PAPEL = '#FBF9F5';
+const AZUL_T = '#0E4C8E';
 
 const Clip: React.FC<{n: string; from: number; dur: number; vol?: number; style?: React.CSSProperties}> = ({n, from, dur, vol = 1, style}) => (
   <OffthreadVideo
     src={vid(n)}
     startFrom={sec(from)}
+    muted={vol === 0}
     volume={(fr) => vol * interpolate(fr, [0, 3, dur - 4, dur], [0, 1, 1, 0], clamp)}
     style={{position: 'absolute', left: 0, top: 0, width: 1080, height: 1920, objectFit: 'cover', ...style}}
   />
 );
 
-const Papel: React.FC = () => (
-  <AbsoluteFill style={{background: PAPEL}}>
-    <Img src={capa('fondo')} style={{width: 1080, height: 1920}} />
-    <AbsoluteFill>
-      <Img src={capa('trama')} style={{width: 1080, height: 1920, opacity: 0.8}} />
+// ---------------------------------------------------------------------------
+// Fondo de motion graphics: marino con brillo azul, anillos de pulso, cruces que flotan y rejilla de puntos
+// ---------------------------------------------------------------------------
+const CRUCES = [
+  [130, 300, 46, 0.5, C.azulClaro],
+  [920, 260, 34, 0.8, C.amarillo],
+  [860, 1540, 52, 0.4, '#1FB37A'],
+  [170, 1460, 30, 0.9, C.amarillo],
+  [980, 980, 26, 0.6, C.azulClaro],
+  [80, 880, 24, 0.7, '#1FB37A'],
+] as const;
+const FondoMG: React.FC<{pulsoEn?: number[]}> = ({pulsoEn = []}) => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill style={{background: C.marino, overflow: 'hidden'}}>
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(39,99,154,0.95) 0%, rgba(20,35,60,0) 62%)'}} />
+      <AbsoluteFill
+        style={{
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.12) 2px, transparent 2.5px)',
+          backgroundSize: '46px 46px',
+          backgroundPosition: `${(f * 0.6) % 46}px ${(f * 0.3) % 46}px`,
+          maskImage: 'radial-gradient(ellipse at 50% 50%, #000 20%, transparent 75%)',
+          WebkitMaskImage: 'radial-gradient(ellipse at 50% 50%, #000 20%, transparent 75%)',
+        }}
+      />
+      {pulsoEn.map((at) => {
+        const p = tw(f, [at, at + 40], [0, 1]);
+        return p > 0 && p < 1 ? (
+          <div key={at} style={{position: 'absolute', left: 540 - 600 * p, top: 960 - 600 * p, width: 1200 * p, height: 1200 * p, borderRadius: '50%', border: `${6 * (1 - p) + 1}px solid ${C.amarillo}`, opacity: 1 - p}} />
+        ) : null;
+      })}
+      {CRUCES.map(([x, y, s, v, col], i) => {
+        const d = Math.sin(f / (30 + i * 7) + i) * 22;
+        const r = (f * v) % 360;
+        return (
+          <svg key={i} width={s} height={s} viewBox="-10 -10 20 20" style={{position: 'absolute', left: x - s / 2, top: y - s / 2 + d, transform: `rotate(${r}deg)`, opacity: 0.55}}>
+            <path d="M-3 -9 H3 V-3 H9 V3 H3 V9 H-3 V3 H-9 V-3 H-3 Z" fill={col} />
+          </svg>
+        );
+      })}
     </AbsoluteFill>
-  </AbsoluteFill>
-);
+  );
+};
+
+/** Electrocardiograma que se dibuja de izquierda a derecha */
+const Electro: React.FC<{y: number; from: number; dur: number; out?: number; color?: string}> = ({y, from, dur, out, color = C.amarillo}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [from, from + dur], [0, 1], ease.inOut);
+  const o = out !== undefined ? tw(f, [out, out + 8], [1, 0]) : 1;
+  return (
+    <svg width={1080} height={240} style={{position: 'absolute', left: 0, top: y - 120, opacity: o}}>
+      <path
+        d="M0 120 L380 120 L420 120 L450 40 L490 210 L520 80 L545 120 L1080 120"
+        fill="none"
+        stroke={color}
+        strokeWidth={7}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        pathLength={1}
+        strokeDasharray="1 1"
+        strokeDashoffset={1 - p}
+        style={{filter: `drop-shadow(0 0 12px ${color})`}}
+      />
+    </svg>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // 1. Intro de cine
@@ -48,12 +104,12 @@ const Papel: React.FC = () => (
 type Linea = {text: string; at: number; big?: boolean; amarillo?: boolean};
 type Tarjeta = {from: number; to: number; lineas: Linea[]};
 const VOZ_AT = 36; // cuadros de negro antes de la voz
-const BANDA_AT = 11.6; // segundo de la voz en que aparece su imagen
+const TOMA_AT = 8.0; // segundo de la voz en que entra su toma completa ("Por otro lado")
 const FIN_VOZ = 16.1;
 const INTRO_TARJETAS: Tarjeta[] = [
   {from: 0.4, to: 3.3, lineas: [{text: 'Una de las cosas', at: 0.5}, {text: 'más hermosas', at: 1.35, big: true}]},
-  {from: 3.4, to: 7.95, lineas: [{text: 'Por un lado', at: 3.5}, {text: 'poder ayudar', at: 5.8, big: true}, {text: 'a la gente con problemas', at: 6.9}]},
-  {from: 8.0, to: 11.5, lineas: [{text: 'Por otro lado', at: 8.1}, {text: 'que no tenga problemas de salud', at: 10.2, big: true}]},
+  {from: 3.4, to: 7.8, lineas: [{text: 'Por un lado', at: 3.5}, {text: 'poder ayudar', at: 5.8, big: true}, {text: 'a la gente con problemas', at: 6.9}]},
+  {from: 8.3, to: 11.5, lineas: [{text: 'Por otro lado', at: 8.3}, {text: 'que no tenga problemas de salud', at: 10.2, big: true}]},
   {from: 11.6, to: 13.95, lineas: [{text: 'A través de la', at: 11.7}, {text: 'prevención', at: 12.0, big: true}, {text: 'y la promoción', at: 12.85, big: true}]},
   {from: 14.05, to: 17.2, lineas: [{text: 'Nada como', at: 14.1}, {text: 'la carrera de medicina', at: 14.7, big: true, amarillo: true}]},
 ];
@@ -61,11 +117,10 @@ export const INTRO_FRAMES = VOZ_AT + sec(FIN_VOZ) + 40;
 
 const TarjetaCine: React.FC<{t: Tarjeta; abajo: boolean}> = ({t, abajo}) => {
   const f = useCurrentFrame();
-  const a = VOZ_AT + sec(t.from);
   const b = VOZ_AT + sec(t.to);
   const out = tw(f, [b - 8, b], [1, 0]);
   return (
-    <div style={{position: 'absolute', left: 80, right: 80, top: abajo ? 1400 : 760, textAlign: 'center', opacity: out}}>
+    <div style={{position: 'absolute', left: 70, right: 70, top: abajo ? 1330 : 760, textAlign: 'center', opacity: out}}>
       {t.lineas.map((l) => {
         const s = VOZ_AT + sec(l.at);
         const p = tw(f, [s, s + 14], [0, 1]);
@@ -81,7 +136,7 @@ const TarjetaCine: React.FC<{t: Tarjeta; abajo: boolean}> = ({t, abajo}) => {
               textTransform: l.big ? 'none' : 'uppercase',
               lineHeight: 1.25,
               color: l.amarillo ? C.amarillo : '#F4F1EA',
-              textShadow: l.amarillo ? `0 0 26px rgba(242,194,48,0.55)` : '0 0 18px rgba(255,255,255,0.18)',
+              textShadow: abajo ? '0 4px 24px rgba(0,0,0,0.9)' : l.amarillo ? '0 0 26px rgba(242,194,48,0.55)' : '0 0 18px rgba(255,255,255,0.18)',
               opacity: p,
               filter: `blur(${(1 - p) * 10}px)`,
               transform: `translateY(${(1 - p) * 18}px)`,
@@ -98,43 +153,36 @@ const TarjetaCine: React.FC<{t: Tarjeta; abajo: boolean}> = ({t, abajo}) => {
 
 const IntroCine: React.FC = () => {
   const f = useCurrentFrame();
-  const banda = VOZ_AT + sec(BANDA_AT);
-  const vis = interpolate(f, [banda, banda + 40, VOZ_AT + sec(FIN_VOZ), INTRO_FRAMES - 10], [0, 0.6, 0.75, 0], clamp);
-  const blur = interpolate(f, [banda, VOZ_AT + sec(FIN_VOZ)], [8, 2], clamp);
-  const push = 1.04 + 0.05 * tw(f, [banda, INTRO_FRAMES], [0, 1], ease.inOut);
-  const ecg = tw(f, [VOZ_AT + sec(15.2), VOZ_AT + sec(16.3)], [0, 1], ease.inOut);
-  const ecgOut = tw(f, [INTRO_FRAMES - 14, INTRO_FRAMES - 4], [1, 0]);
+  const toma = VOZ_AT + sec(TOMA_AT);
+  const fin = VOZ_AT + sec(FIN_VOZ);
+  // la toma completa entra desde negro, con un destello suave de luz, y se va a negro con el latido final
+  const vis = interpolate(f, [toma, toma + 30, fin + 6, INTRO_FRAMES - 8], [0, 1, 1, 0], clamp);
+  const luz = interpolate(f, [toma + 10, toma + 26, toma + 60], [0, 0.35, 0], clamp);
+  const push = 1.0 + 0.07 * tw(f, [toma, INTRO_FRAMES], [0, 1], ease.inOut);
+  const barras = tw(f, [toma, toma + 30], [0, 1], ease.inOut);
   return (
     <AbsoluteFill style={{background: '#000'}}>
-      {/* franja de cine con su imagen (el audio sale del mismo clip) */}
-      <AbsoluteFill style={{clipPath: 'inset(560px 0 600px 0)', opacity: vis}}>
-        <AbsoluteFill style={{transform: `translateY(470px) scale(${push})`, transformOrigin: '540px 420px', filter: `blur(${blur}px) grayscale(0.55) brightness(0.75) contrast(1.1)`}}>
+      <AbsoluteFill style={{opacity: vis}}>
+        <AbsoluteFill style={{transform: `scale(${push})`, transformOrigin: '540px 640px', filter: 'contrast(1.1) saturate(0.8) brightness(0.9) sepia(0.1)'}}>
           <Sequence from={VOZ_AT} layout="none">
             <Clip n="v1" from={0} dur={INTRO_FRAMES - VOZ_AT} vol={1} />
           </Sequence>
         </AbsoluteFill>
+        {/* viñeta, degradado para el texto y luz cálida */}
+        <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 38%, rgba(0,0,0,0) 35%, rgba(0,0,0,0.7) 100%)'}} />
+        <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.75) 85%)'}} />
+        <AbsoluteFill style={{background: 'radial-gradient(ellipse at 85% 15%, rgba(255,190,110,1) 0%, rgba(255,190,110,0) 55%)', opacity: luz, mixBlendMode: 'screen'}} />
       </AbsoluteFill>
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%)'}} />
+      {/* barras de cine */}
+      <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: 150 * barras, background: '#000'}} />
+      <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 150 * barras, background: '#000'}} />
       {INTRO_TARJETAS.map((t, i) => (
-        <TarjetaCine key={i} t={t} abajo={t.from >= BANDA_AT} />
+        <TarjetaCine key={i} t={t} abajo={t.from >= TOMA_AT} />
       ))}
-      {/* electro que cruza la franja al final */}
-      <svg width={1080} height={240} style={{position: 'absolute', left: 0, top: 1210, opacity: ecgOut}}>
-        <path
-          d="M0 120 L380 120 L420 120 L450 40 L490 210 L520 80 L545 120 L1080 120"
-          fill="none"
-          stroke={C.amarillo}
-          strokeWidth={6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          pathLength={1}
-          strokeDasharray="1 1"
-          strokeDashoffset={1 - ecg}
-          style={{filter: `drop-shadow(0 0 10px ${C.amarillo})`}}
-        />
-      </svg>
+      <Electro y={1700} from={VOZ_AT + sec(15.2)} dur={sec(1.1)} out={INTRO_FRAMES - 14} />
       <Grain opacity={0.09} />
       <Sfx at={8} name="latido" volume={0.6} />
+      <Sfx at={toma} name="whoosh_largo" volume={0.25} />
       <Sfx at={VOZ_AT + sec(15.7)} name="beep_monitor" volume={0.5} />
       <Sfx at={INTRO_FRAMES - 16} name="latido" volume={0.7} />
     </AbsoluteFill>
@@ -142,47 +190,81 @@ const IntroCine: React.FC = () => {
 };
 
 // ---------------------------------------------------------------------------
-// 2. Título
+// 2. Motion graphics: "Describe tu carrera en 3 palabras"
 // ---------------------------------------------------------------------------
-export const TITULO_FRAMES = 105;
+export const TITULO_FRAMES = 126;
+const Letras: React.FC<{text: string; at: number; style: React.CSSProperties; stagger?: number}> = ({text, at, style, stagger = 2}) => {
+  const f = useCurrentFrame();
+  return (
+    <div style={{display: 'flex', justifyContent: 'center', ...style}}>
+      {text.split('').map((ch, i) => {
+        const p = tw(f, [at + i * stagger, at + i * stagger + 12], [0, 1], ease.back);
+        return (
+          <span key={i} style={{display: 'inline-block', whiteSpace: 'pre', opacity: Math.min(1, p * 2), transform: `translateY(${(1 - p) * -90}px) scale(${0.6 + 0.4 * p})`, filter: `blur(${(1 - Math.min(1, p)) * 8}px)`}}>
+            {ch}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
 const Titulo: React.FC = () => {
   const f = useCurrentFrame();
-  const west = tw(f, [10, 34], [0, 1]);
-  const ondas = tw(f, [0, 22], [0, 1]);
-  const l1 = tw(f, [8, 22], [0, 1]);
-  const cinta = tw(f, [16, 30], [0, 100], ease.inOut);
-  const l2 = tw(f, [26, 38], [0, 1], ease.back);
-  const l3 = tw(f, [36, 50], [0, 1]);
-  const tres = tw(f, [46, 58], [0, 1], ease.back);
+  const tres = tw(f, [46, 62], [0, 1], ease.back);
+  const relleno = tw(f, [58, 74], [0, 100], ease.inOut);
+  const palabras = tw(f, [66, 80], [0, 1]);
+  const salida = tw(f, [TITULO_FRAMES - 16, TITULO_FRAMES], [0, 1], ease.in);
   return (
     <AbsoluteFill>
-      <Papel />
-      <Img src={capa('ondas_0')} style={{position: 'absolute', left: 0, top: 872, width: 206, height: 687, transform: `translateX(${-230 * (1 - ondas)}px)`}} />
-      <AbsoluteFill style={{transformOrigin: '0 0', transform: `translate(${228 + (1 - west) * 240}px, ${291 + 120}px) scale(0.79)`, opacity: Math.min(1, west * 3)}}>
-        <Img src={capa('lince')} style={{width: 1080, height: 1920}} />
+      <FondoMG pulsoEn={[14, 62]} />
+      <AbsoluteFill style={{transform: `scale(${1 + salida * 3.5})`, opacity: 1 - salida, filter: `blur(${salida * 14}px)`, transformOrigin: '540px 1080px'}}>
+        <Electro y={960} from={0} dur={16} out={16} />
+        <Letras text="DESCRIBE" at={16} style={{position: 'absolute', top: 380, width: '100%', fontFamily: F.display, fontSize: 200, color: '#fff', letterSpacing: 6, lineHeight: 1}} />
+        <div style={{position: 'absolute', top: 610, width: '100%', textAlign: 'center', clipPath: `inset(0 ${100 - tw(f, [30, 46], [0, 100], ease.inOut)}% 0 0)`}}>
+          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 84, color: C.amarillo, letterSpacing: 14}}>TU CARRERA EN</span>
+        </div>
+        {/* el 3 gigante: contorno que se rellena */}
+        <div style={{position: 'absolute', top: 700, width: '100%', textAlign: 'center', transform: `scale(${tres}) rotate(${(1 - tres) * -25}deg)`}}>
+          <span
+            style={{
+              fontFamily: F.display,
+              fontSize: 620,
+              lineHeight: 1,
+              color: 'transparent',
+              WebkitTextStroke: `8px ${C.amarillo}`,
+              backgroundImage: `linear-gradient(0deg, ${C.amarillo} ${relleno}%, transparent ${relleno}%)`,
+              WebkitBackgroundClip: 'text',
+              backgroundClip: 'text',
+              filter: `drop-shadow(0 0 30px rgba(242,194,48,${0.5 * tres}))`,
+            }}
+          >
+            3
+          </span>
+        </div>
+        <div style={{position: 'absolute', top: 1360, width: '100%', display: 'flex', justifyContent: 'center'}}>
+          <div style={{background: '#fff', padding: '6px 40px 0', transform: `rotate(-3deg) scaleX(${palabras})`, fontFamily: F.display, fontSize: 150, lineHeight: 1.05, color: C.marino, letterSpacing: 4}}>PALABRAS</div>
+        </div>
+        {/* 1 · 2 · 3 */}
+        <div style={{position: 'absolute', top: 1600, width: '100%', display: 'flex', justifyContent: 'center', gap: 36}}>
+          {[1, 2, 3].map((n, i) => {
+            const p = tw(f, [80 + i * 7, 92 + i * 7], [0, 1], ease.back);
+            return (
+              <div key={n} style={{width: 92, height: 92, borderRadius: 46, border: `5px solid ${C.amarillo}`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F.sans, fontWeight: 900, fontSize: 46, transform: `scale(${p})`, background: i === 2 ? C.amarillo : 'transparent'}}>
+                <span style={{color: i === 2 ? C.marino : '#fff'}}>{n}</span>
+              </div>
+            );
+          })}
+        </div>
       </AbsoluteFill>
-      <Img src={capa('ondas_2')} style={{position: 'absolute', left: 0, top: 1583, width: 1080, height: 337, transform: `translateY(${360 * (1 - ondas)}px)`}} />
-      <div style={{position: 'absolute', left: 74, top: 330, fontFamily: F.sans, fontWeight: 900, fontSize: 92, color: AZUL_T, letterSpacing: -2, opacity: l1, transform: `translateY(${(1 - l1) * -40}px)`, filter: `blur(${(1 - l1) * 8}px)`}}>
-        Describe tu
-      </div>
-      <div style={{position: 'absolute', left: 40, top: 445, width: 600, height: 170, clipPath: `inset(0 ${100 - cinta}% 0 0)`}}>
-        <Img src={capa('cinta_strip')} style={{width: '100%', height: '100%'}} />
-      </div>
-      <div style={{position: 'absolute', left: 78, top: 462, fontFamily: F.sans, fontWeight: 900, fontSize: 112, color: '#fff', letterSpacing: -2, transformOrigin: '250px 70px', transform: `scale(${0.6 + 0.4 * l2})`, opacity: Math.min(1, l2 * 2)}}>
-        carrera
-      </div>
-      <div style={{position: 'absolute', left: 78, top: 660, display: 'flex', alignItems: 'center', gap: 18, fontFamily: F.sans, fontWeight: 800, fontSize: 64, color: AZUL_T, opacity: l3}}>
-        en
-        <span style={{display: 'inline-flex', width: 104, height: 104, borderRadius: 52, background: C.amarillo, color: AZUL_T, justifyContent: 'center', alignItems: 'center', fontWeight: 900, fontSize: 74, transform: `scale(${tres}) rotate(${(1 - tres) * -90}deg)`}}>
-          3
-        </span>
-        palabras
-      </div>
-      <Sfx at={2} name="swipe" volume={0.4} />
-      <Sfx at={8} name="whoosh" volume={0.35} />
-      <Sfx at={16} name="hist_paper" volume={0.6} />
-      <Sfx at={26} name="pop" volume={0.5} />
-      <Sfx at={46} name="pop" volume={0.6} />
+      <Sfx at={2} name="beep_monitor" volume={0.4} />
+      <Sfx at={16} name="whoosh" volume={0.4} />
+      <Sfx at={30} name="swipe" volume={0.35} />
+      <Sfx at={46} name="impact" volume={0.5} />
+      <Sfx at={66} name="whoosh" volume={0.3} />
+      {[80, 87, 94].map((s) => (
+        <Sfx key={s} at={s} name="pop" volume={0.45} />
+      ))}
+      <Sfx at={TITULO_FRAMES - 16} name="whoosh_largo" volume={0.4} />
     </AbsoluteFill>
   );
 };
@@ -191,7 +273,7 @@ const Titulo: React.FC = () => {
 // 3. Respuestas
 // ---------------------------------------------------------------------------
 type Palabra = {text: string; t: number; script?: boolean};
-type Respuesta = {n: string; from: number; to: number; palabras: Palabra[]; reemplaza?: boolean; extra?: (dur: number) => React.ReactNode};
+type Respuesta = {n: string; from: number; to: number; palabras: Palabra[]; reemplaza?: boolean; broll?: number; extra?: (dur: number) => React.ReactNode};
 
 /** Estampa de papel rasgado con la palabra */
 const Estampa: React.FC<{text: string; at: number; i: number; total: number; reemplaza?: boolean; hasta?: number}> = ({text, at, i, total, reemplaza, hasta}) => {
@@ -205,7 +287,7 @@ const Estampa: React.FC<{text: string; at: number; i: number; total: number; ree
   return (
     <div style={{position: 'absolute', top: y, width: '100%', display: 'flex', justifyContent: 'center', opacity: Math.min(1, p * 2) * out}}>
       <div style={{position: 'relative', padding: `${fs * 0.26}px ${fs * 0.55}px ${fs * 0.32}px`, transform: `rotate(${tilt}deg) scale(${0.45 + 0.55 * p})`, filter: 'drop-shadow(0 10px 16px rgba(0,0,0,0.35))'}}>
-        <Img src={capa('cinta_strip')} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', filter: blanco ? 'grayscale(1) brightness(3.4)' : 'none'}} />
+        <Img src={staticFile('photos/medico/cinta_strip.png')} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', filter: blanco ? 'grayscale(1) brightness(3.4)' : 'none'}} />
         <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: fs, letterSpacing: -1, color: blanco ? AZUL_T : '#fff', whiteSpace: 'nowrap'}}>{text}</span>
       </div>
     </div>
@@ -228,17 +310,43 @@ const RespuestaShot: React.FC<{r: Respuesta}> = ({r}) => {
   const dur = sec(r.to - r.from);
   const punch = 1.08 - 0.08 * tw(f, [0, 8], [0, 1]);
   const estampas = r.palabras.filter((p) => !p.script);
+  const card = tw(f, [0, 14], [0, 1], ease.back);
   return (
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
-      <AbsoluteFill style={{transform: `scale(${punch + 0.03 * (f / dur)})`}}>
-        <Clip n={r.n} from={r.from} dur={dur} />
-      </AbsoluteFill>
+      {r.broll !== undefined ? (
+        <>
+          {/* tomas del lugar de fondo y la respuesta como tarjeta */}
+          <AbsoluteFill style={{transform: `scale(${1.12 + 0.05 * (f / dur)})`, filter: 'blur(3px) brightness(0.55) saturate(0.9)'}}>
+            <Clip n="v2" from={r.broll} dur={dur} vol={0} />
+          </AbsoluteFill>
+          <div
+            style={{
+              position: 'absolute',
+              left: 150,
+              top: 330,
+              width: 780,
+              height: 1387,
+              borderRadius: 38,
+              overflow: 'hidden',
+              border: '9px solid #fff',
+              boxShadow: '0 30px 70px rgba(0,0,0,0.55)',
+              transform: `rotate(${-2 + (1 - card) * 6}deg) scale(${0.85 + 0.15 * card})`,
+              opacity: Math.min(1, card * 2),
+            }}
+          >
+            <Clip n={r.n} from={r.from} dur={dur} style={{width: '100%', height: '100%'}} />
+          </div>
+        </>
+      ) : (
+        <AbsoluteFill style={{transform: `scale(${punch + 0.03 * (f / dur)})`}}>
+          <Clip n={r.n} from={r.from} dur={dur} />
+        </AbsoluteFill>
+      )}
       <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 22%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.5) 100%)'}} />
       {estampas.map((p, i) => {
-        const at = sec(p.t - r.from);
         const sig = r.palabras[r.palabras.indexOf(p) + 1];
         const hasta = r.reemplaza && sig ? sec(sig.t - r.from) - 2 : undefined;
-        return <Estampa key={i} text={p.text} at={at} i={i} total={r.reemplaza ? 1 : estampas.length} reemplaza={r.reemplaza} hasta={hasta} />;
+        return <Estampa key={i} text={p.text} at={sec(p.t - r.from)} i={i} total={r.reemplaza ? 1 : estampas.length} reemplaza={r.reemplaza} hasta={hasta} />;
       })}
       {r.palabras
         .filter((p) => p.script)
@@ -256,7 +364,7 @@ const RespuestaShot: React.FC<{r: Respuesta}> = ({r}) => {
   );
 };
 
-/** "¿3 palabras?" tachado cuando el chico admite que fueron más */
+/** "3 palabras" tachado cuando el chico admite que fueron más */
 const MasDeTres: React.FC<{at: number}> = ({at}) => {
   const f = useCurrentFrame();
   const p = tw(f, [at, at + 12], [0, 1], ease.back);
@@ -271,97 +379,100 @@ const MasDeTres: React.FC<{at: number}> = ({at}) => {
   );
 };
 
-/** Aviso antes del que no pudo con 3 palabras */
-export const AVISO_FRAMES = 60;
+// ---------------------------------------------------------------------------
+// 4. Aviso en motion graphics: el contador se pasa de 3
+// ---------------------------------------------------------------------------
+export const AVISO_FRAMES = 78;
+const CUENTA = [3, 4, 5, 6, 8, 10, 15];
 const Aviso: React.FC = () => {
   const f = useCurrentFrame();
-  const p = tw(f, [4, 18], [0, 1]);
+  const p = tw(f, [2, 14], [0, 1]);
+  const k = Math.min(CUENTA.length - 1, Math.max(0, Math.floor((f - 14) / 4)));
+  const n = CUENTA[k];
+  const pasado = n > 3;
+  const salida = tw(f, [AVISO_FRAMES - 10, AVISO_FRAMES], [0, 1], ease.in);
   return (
     <AbsoluteFill>
-      <Papel />
-      <div style={{position: 'absolute', top: 740, width: '100%', textAlign: 'center', fontFamily: F.sans, fontWeight: 800, fontSize: 56, color: AZUL_T, opacity: p, transform: `translateY(${(1 - p) * 20}px)`}}>
-        …y hubo quien
-      </div>
-      <div style={{position: 'absolute', top: 830, width: '100%', textAlign: 'center'}}>
-        <ScriptWord text="no pudo con solo 3" start={16} size={120} color={C.azul} tilt={-5} dur={16} />
-      </div>
-      <Sfx at={4} name="whoosh" volume={0.35} />
-      <Sfx at={16} name="flicker" volume={0.35} />
+      <FondoMG pulsoEn={[14]} />
+      <AbsoluteFill style={{opacity: 1 - salida, transform: `scale(${1 + salida * 0.3})`}}>
+        <div style={{position: 'absolute', top: 470, width: '100%', textAlign: 'center', fontFamily: F.sans, fontWeight: 800, fontSize: 60, color: '#fff', opacity: p, transform: `translateY(${(1 - p) * 20}px)`}}>
+          …y hubo quien
+        </div>
+        <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center', fontFamily: F.display, fontSize: 480, lineHeight: 1, color: pasado ? '#FF5A5F' : C.amarillo, opacity: f >= 14 ? 1 : 0, transform: `scale(${1 + 0.08 * Math.sin(f * 1.3)})`, textShadow: `0 0 40px ${pasado ? 'rgba(255,90,95,0.5)' : 'rgba(242,194,48,0.5)'}`}}>
+          {n}
+          {k === CUENTA.length - 1 ? '+' : ''}
+        </div>
+        <div style={{position: 'absolute', top: 1110, width: '100%', textAlign: 'center'}}>
+          <ScriptWord text="no pudo con solo 3" start={44} size={120} neon tilt={-5} dur={16} />
+        </div>
+      </AbsoluteFill>
+      <Sfx at={2} name="whoosh" volume={0.35} />
+      {CUENTA.map((_, i) => (
+        <Sfx key={i} at={14 + i * 4} name="click" volume={0.3} />
+      ))}
+      <Sfx at={44} name="flicker" volume={0.4} />
     </AbsoluteFill>
   );
 };
 
 // ---------------------------------------------------------------------------
-// 5. Director con subtítulos palabra por palabra
+// 5. Cierre en motion graphics con el logo
 // ---------------------------------------------------------------------------
-type Sub = {from: number; to: number; text: string};
-/** Tramos del clip del director que se usan (se quita un pedazo que no se entiende) */
-const DIR_TRAMOS: [number, number][] = [
-  [0, 3.7],
-  [6.9, 21.9],
-];
-/** segundo del clip original → cuadro dentro de la sección */
-const dirLocal = (t: number) => {
-  let acc = 0;
-  for (const [a, b] of DIR_TRAMOS) {
-    if (t <= b) return sec(acc + Math.max(0, t - a));
-    acc += b - a;
-  }
-  return sec(acc);
-};
-const SUBS: Sub[] = [
-  {from: 0.1, to: 3.6, text: 'Reconocer a quienes han dedicado su vida a cuidar a otros'},
-  {from: 7.0, to: 10.5, text: 'y a quienes apenas inician este camino.'},
-  {from: 10.6, to: 13.8, text: 'A nuestros alumnos quiero decirles algo:'},
-  {from: 14.0, to: 17.4, text: 'su formación como médicos…'},
-  {from: 17.6, to: 21.8, text: '…se construye cuando estudian con responsabilidad.'},
-];
-export const DIRECTOR_FRAMES = dirLocal(DIR_TRAMOS[DIR_TRAMOS.length - 1][1]);
-const Subtitulo: React.FC<{s: Sub}> = ({s}) => {
+export const CIERRE_FRAMES = 165;
+const Corazon: React.FC<{at: number}> = ({at}) => {
   const f = useCurrentFrame();
-  const words = s.text.split(' ');
-  const a = dirLocal(s.from);
-  const b = dirLocal(s.to);
-  const step = (b - a - 6) / words.length;
-  if (f < a - 2 || f > b + 6) return null;
+  const p = tw(f, [at, at + 30], [0, 1], ease.inOut);
+  const lat = f > at + 30 ? 1 + 0.06 * Math.max(0, Math.sin(((f - at - 30) / 30) * Math.PI * 2)) ** 8 : 1;
   return (
-    <div style={{position: 'absolute', top: 1330, left: 90, right: 90, textAlign: 'center', fontFamily: F.sans, fontWeight: 800, fontSize: 54, lineHeight: 1.3, opacity: tw(f, [b, b + 6], [1, 0])}}>
-      {words.map((w, i) => {
-        const at = a + i * step;
-        const on = f >= at;
-        const cur = on && f < at + step + 2;
-        return (
-          <span
-            key={i}
-            style={{
-              color: cur ? C.amarillo : '#fff',
-              opacity: on ? 1 : 0,
-              display: 'inline-block',
-              transform: `translateY(${on ? 0 : 10}px)`,
-              textShadow: '0 4px 14px rgba(0,0,0,0.85), 0 0 2px rgba(0,0,0,0.9)',
-              marginRight: '0.28em',
-            }}
-          >
-            {w}
-          </span>
-        );
-      })}
-    </div>
+    <svg width={300} height={280} viewBox="-150 -130 300 280" style={{position: 'absolute', left: 390, top: 300, transform: `scale(${lat})`, overflow: 'visible'}}>
+      <path
+        d="M0 110 C-70 60 -140 10 -140 -50 C-140 -100 -100 -125 -65 -125 C-30 -125 -8 -100 0 -80 C8 -100 30 -125 65 -125 C100 -125 140 -100 140 -50 C140 10 70 60 0 110 Z"
+        fill="none"
+        stroke={C.amarillo}
+        strokeWidth={10}
+        strokeLinejoin="round"
+        pathLength={1}
+        strokeDasharray="1 1"
+        strokeDashoffset={1 - p}
+        style={{filter: `drop-shadow(0 0 16px ${C.amarillo})`}}
+      />
+      <path d="M-100 -10 L-40 -10 L-20 -50 L5 40 L25 -10 L100 -10" fill="none" stroke="#fff" strokeWidth={8} strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray="1 1" strokeDashoffset={1 - tw(f, [at + 20, at + 40], [0, 1])} />
+    </svg>
   );
 };
-const Director: React.FC = () => (
-  <AbsoluteFill style={{background: '#000'}}>
-    {DIR_TRAMOS.map(([a, b]) => (
-      <Sequence key={a} from={dirLocal(a)} durationInFrames={sec(b - a)}>
-        <Clip n="v2" from={a} dur={sec(b - a)} />
-      </Sequence>
-    ))}
-    <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.6) 100%)'}} />
-    {SUBS.map((s, i) => (
-      <Subtitulo key={i} s={s} />
-    ))}
-  </AbsoluteFill>
-);
+const Cierre: React.FC = () => {
+  const f = useCurrentFrame();
+  const dia = tw(f, [30, 44], [0, 1], ease.back);
+  const gracias = tw(f, [56, 70], [0, 1]);
+  const logo = tw(f, [84, 104], [0, 1]);
+  const hash = tw(f, [104, 116], [0, 1]);
+  return (
+    <AbsoluteFill>
+      <FondoMG pulsoEn={[50, 110]} />
+      <Corazon at={4} />
+      <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center'}}>
+        <ScriptWord text="Feliz" start={22} size={130} neon tilt={-6} dur={14} />
+      </div>
+      <div style={{position: 'absolute', top: 760, width: '100%', textAlign: 'center', fontFamily: F.display, fontSize: 150, lineHeight: 1, color: '#fff', letterSpacing: 4, transform: `scale(${dia})`, opacity: Math.min(1, dia * 2)}}>
+        DÍA DEL MÉDICO
+      </div>
+      <div style={{position: 'absolute', top: 950, left: 120, right: 120, textAlign: 'center', fontFamily: F.sans, fontWeight: 700, fontSize: 44, lineHeight: 1.35, color: '#fff', opacity: gracias, transform: `translateY(${(1 - gracias) * 20}px)`}}>
+        Gracias a quienes dedican su vida a cuidar la nuestra.
+      </div>
+      <div style={{position: 'absolute', left: 250, top: 1180, width: 580, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`, transform: `translateY(${(1 - logo) * 30}px)`}}>
+        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
+      </div>
+      <div style={{position: 'absolute', top: 1470, width: '100%', textAlign: 'center', fontFamily: F.sans, fontWeight: 800, fontSize: 34, letterSpacing: 8, color: C.amarillo, opacity: hash}}>
+        #SOMOSWESTHILL
+      </div>
+      <Sfx at={4} name="latido" volume={0.6} />
+      <Sfx at={22} name="flicker" volume={0.4} />
+      <Sfx at={30} name="impact" volume={0.45} />
+      <Sfx at={84} name="whoosh" volume={0.35} />
+      <Sfx at={104} name="ding" volume={0.4} />
+    </AbsoluteFill>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // Línea de tiempo
@@ -370,9 +481,9 @@ const RESPUESTAS: Respuesta[] = [
   {n: 'v5', from: 4.0, to: 9.05, palabras: [{text: 'Apasionante', t: 5.15}, {text: 'Divertida', t: 6.3}, {text: 'Sumamente interesante', t: 7.6}]},
   {n: 'v7', from: 0.75, to: 5.65, palabras: [{text: 'Retadora', t: 2.0}, {text: 'Divertida', t: 3.3}, {text: 'Competitiva', t: 4.8}]},
   {n: 'v8', from: 1.0, to: 6.9, palabras: [{text: 'Inspiradora', t: 2.9}, {text: 'Retadora', t: 4.35}, {text: 'Muy divertida', t: 5.75}]},
-  {n: 'v4', from: 6.0, to: 9.3, palabras: [{text: 'Divertida', t: 6.2}, {text: 'Demandante', t: 8.3}]},
+  {n: 'v4', from: 6.0, to: 9.3, broll: 12.0, palabras: [{text: 'Divertida', t: 6.2}, {text: 'Demandante', t: 8.3}]},
   {n: 'v6', from: 0.0, to: 7.9, reemplaza: true, palabras: [{text: 'Interesante', t: 0.4}, {text: 'Demandante', t: 2.31}, {text: 'Demandante', t: 4.15}, {text: 'La mejor decisión de mi vida', t: 5.75, script: true}]},
-  {n: 'v9', from: 5.0, to: 13.4, palabras: [{text: 'Hermosa', t: 5.9}, {text: 'Muy cansada', t: 8.0}, {text: 'Bastante pesada', t: 10.2}, {text: 'pero sobre todo hermosa', t: 11.5, script: true}]},
+  {n: 'v9', from: 5.0, to: 13.4, broll: 13.3, palabras: [{text: 'Hermosa', t: 5.9}, {text: 'Muy cansada', t: 8.0}, {text: 'Bastante pesada', t: 10.2}, {text: 'pero sobre todo hermosa', t: 11.5, script: true}]},
 ];
 const MAS_DE_TRES: Respuesta = {
   n: 'v3',
@@ -384,29 +495,19 @@ const MAS_DE_TRES: Respuesta = {
 
 type Bloque = {dur: number; el: React.ReactNode; musica: number};
 const respDur = (r: Respuesta) => sec(r.to - r.from);
-const FINAL_DESDE = 100; // cuadro interno de DiaMedico desde el que se muestra
-const FINAL_FRAMES = 330 - FINAL_DESDE;
 const BLOQUES: Bloque[] = [
   {dur: INTRO_FRAMES, el: <IntroCine />, musica: 0},
-  {dur: TITULO_FRAMES, el: <Titulo />, musica: 0.4},
+  {dur: TITULO_FRAMES, el: <Titulo />, musica: 0.45},
   ...RESPUESTAS.map((r) => ({dur: respDur(r), el: <RespuestaShot r={r} />, musica: 0.1})),
-  {dur: AVISO_FRAMES, el: <Aviso />, musica: 0.35},
+  {dur: AVISO_FRAMES, el: <Aviso />, musica: 0.4},
   {dur: respDur(MAS_DE_TRES), el: <RespuestaShot r={MAS_DE_TRES} />, musica: 0.1},
-  {dur: DIRECTOR_FRAMES, el: <Director />, musica: 0.1},
-  {
-    dur: FINAL_FRAMES,
-    el: (
-      <Sequence from={-FINAL_DESDE}>
-        <DiaMedico music={false} />
-      </Sequence>
-    ),
-    musica: 0.45,
-  },
+  {dur: CIERRE_FRAMES, el: <Cierre />, musica: 0.5},
 ];
 const STARTS = BLOQUES.reduce<number[]>((a, b, i) => [...a, i === 0 ? 0 : a[i - 1] + BLOQUES[i - 1].dur], []);
 export const M3P_FRAMES = STARTS[STARTS.length - 1] + BLOQUES[BLOQUES.length - 1].dur;
-/** Inicio de la música (después de la intro de cine) */
+/** La música entra con los motion graphics, después de la intro de cine */
 export const MUSICA_DESDE = INTRO_FRAMES;
+export const CIERRE_DESDE = STARTS[STARTS.length - 1];
 
 export const Medico3Palabras: React.FC<{music?: boolean}> = ({music = true}) => {
   const vol = (fr: number) => {
