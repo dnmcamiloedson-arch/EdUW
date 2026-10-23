@@ -123,8 +123,11 @@ const TarjetaCine: React.FC<{t: Tarjeta; abajo: boolean; off?: number; base?: nu
   const out = tw(f, [b - 8, b], [1, 0]);
   return (
     <div style={{position: 'absolute', left: 70, right: 70, top: abajo ? 1330 : 760, textAlign: 'center', opacity: out}}>
-      {t.lineas.map((l) => {
+      {t.lineas.map((l, i) => {
         const s = off + sec(l.at - base);
+        const antes = t.lineas[i - 1];
+        // aire entre renglones: más espacio cuando una línea chica va después de una grande
+        const sep = !antes ? 0 : antes.big && !l.big ? 26 : 12;
         const p = tw(f, [s, s + 14], [0, 1]);
         return (
           <div
@@ -142,7 +145,7 @@ const TarjetaCine: React.FC<{t: Tarjeta; abajo: boolean; off?: number; base?: nu
               opacity: p,
               filter: `blur(${(1 - p) * 10}px)`,
               transform: `translateY(${(1 - p) * 18}px)`,
-              marginTop: l.big ? 6 : 0,
+              marginTop: sep,
             }}
           >
             {l.text}
