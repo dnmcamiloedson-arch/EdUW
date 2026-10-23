@@ -7,6 +7,7 @@ import {particles} from '../kit/fx';
 import {glow, type Ctx} from '../kit/paint';
 import {shake} from '../kit/stage';
 import {emberEyes, riderFront} from './charro';
+import {riderFront2} from './rider';
 import {paintCoin} from './coin';
 import {flameToward, lampK, paintFarol} from './farol';
 import {lidState, paintLids} from './lids';
@@ -151,7 +152,8 @@ const groundScene = (g: Ctx, f: number) => {
 		const u = clamp((f - EV.fadeIn[0]) / (EV.fogSwallow - EV.fadeIn[0]));
 		const a = 1 - clamp((f - EV.fogSwallow) / 20);
 		g.globalAlpha = a;
-		riderFront(g, lerp(380, 700, u), 1040, 110, {t, eyes: 0});
+		riderFront2(g, lerp(380, 700, u), 1040, 120, {f, t, eyes: 0.35, detail: 0.2, fog: 0.4});
+		riderFront2(g, lerp(380, 700, u) + 70, 1040, 80, {f, t, eyes: 0, detail: 0.1, fog: 0.55});
 		g.globalAlpha = 1;
 	}
 };

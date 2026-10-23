@@ -8,9 +8,9 @@ import type {PostOpts} from './kit/post';
 import type {Ctx} from './kit/paint';
 import {B, LEN, ORDER, P, type BeatId} from './d05/timeline';
 import {paintArco, paintCamino, paintHook, paintNoParp, paintSilencio, paintSombra} from './d05/beats1';
-import {paintColumna, paintRecoge, paintTrato, paintVacio} from './d05/beats2';
-import {paintCabalgata, paintCinco, paintJump, paintSinDueno, paintVuelve} from './d05/beats3';
+import {paintCinco, paintSinDueno, paintVuelve} from './d05/beats3';
 import {Texts05} from './d05/text';
+import {paintCabalgataF, paintColumnaF, paintJumpF, paintRecogeF, paintTratoF, paintVacioF} from './d05/frente';
 
 export const EP05_LEN = LEN;
 
@@ -21,12 +21,12 @@ const PAINTERS: Record<BeatId, (g: Ctx, f: number) => PostOpts> = {
 	silencio: paintSilencio,
 	arco: paintArco,
 	noparp: paintNoParp,
-	vacio: paintVacio,
-	columna: paintColumna,
-	trato: paintTrato,
-	recoge: paintRecoge,
-	jump: paintJump,
-	cabalgata: paintCabalgata,
+	vacio: paintVacioF,
+	columna: paintColumnaF,
+	trato: paintTratoF,
+	recoge: paintRecogeF,
+	jump: paintJumpF,
+	cabalgata: paintCabalgataF,
 	sindueno: paintSinDueno,
 	vuelve: paintVuelve,
 	cinco: paintCinco,

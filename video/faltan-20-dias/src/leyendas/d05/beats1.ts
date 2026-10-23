@@ -32,8 +32,16 @@ export const charroAt = (f: number): {x: number; z: number; where: 'behind' | 'f
 	if (f < EV.blink2[0] + 3) return {x: 0, z: ARCH_Z + 0.3, where: 'front'};
 	if (f < EV.blink3[0] + 2) return {x: -0.3, z: zt + 14, where: 'front'};
 	if (f < EV.blink4[0] + 2) return {x: 0.1, z: zt + 5, where: 'front'};
-	if (f < EV.flameRight) return {x: 0, z: zt + 60, where: 'none'};
-	return {x: 1.0, z: zt + 0.2, where: 'right'};
+	return {x: 0.05, z: zt + frontDist(f), where: 'front'};
+};
+
+// distancia del charro (m) cuando ya lo tienes de frente: se acerca a cada parpadeo y se lanza al agarrar el oro
+export const frontDist = (f: number) => {
+	if (f >= EV.sub[0] && f < EV.sub[1]) return 1.25;
+	if (f < EV.tilt[0]) return 3.4;
+	if (f < EV.deal) return lerp(3.4, 2.35, E.inOut(clamp((f - EV.tilt[0]) / (EV.deal - EV.tilt[0]))));
+	if (f < EV.grab) return 2.35;
+	return lerp(2.35, 1.75, E.out(clamp((f - EV.grab) / 5)));
 };
 
 // objetivo de la llama (ángulo en pantalla, 0 = arriba) por tramo — suavizado con resorte
@@ -43,12 +51,10 @@ const flameTarget = (f: number) => {
 	if (f < EV.blink2[0] + 3) return -0.32; // hacia el arco
 	if (f < EV.blink3[0] + 2) return -0.6;
 	if (f < EV.blink4[0] + 9) return -1.3; // casi horizontal hacia él
-	if (f < EV.flameRight) return -0.1;
-	if (f < EV.flameBack) return 1.35; // a la derecha
-	return -0.6; // atrás otra vez
+	return -0.25; // hacia él, enfrente
 };
 const flameAng = () => springFollow('d5flame', LEN, flameTarget, 0.22);
-const flameBehind = (f: number) => (f >= EV.hoof1 && f < 288) || f >= EV.flameBack ? 1 : 0;
+const flameBehind = (f: number) => (f >= EV.hoof1 && f < 288 ? 1 : 0);
 
 export const flameDirAt = (f: number) => {
 	const ch = charroAt(f);
@@ -97,6 +103,10 @@ export type RoadOpts = {
 	charro?: 'none' | 'far' | 'mid' | 'near' | 'sub';
 	riderShadow?: boolean;
 	quiote?: {sway: number; rattle: number};
+	lift?: number; // el jinete sube/baja (m): galope
+	extra?: (c: Pov) => void; // utilería extra en el mundo (después de la utilería, antes del farol)
+	ch?: {x: number; z: number}; // posición forzada del charro
+	noFarol?: boolean;
 };
 
 export const road = (g: Ctx, f: number, c: Pov, o: RoadOpts = {}) => {
@@ -104,7 +114,7 @@ export const road = (g: Ctx, f: number, c: Pov, o: RoadOpts = {}) => {
 	const k = lampK(t);
 	const dir = flameDirAt(f);
 	const lamp: Lamp = {x: c.x + 0.32, z: c.z + 0.5, k: k * clamp(dir.size, 0.3, 1.1), r: 3.3 * clamp(dir.size, 0.4, 1)};
-	const ch = charroAt(f);
+	const ch = o.ch ? {...charroAt(f), ...o.ch} : charroAt(f);
 	withRoll(g, c, () => {
 		paintSky(g, c, t);
 		paintHills(g, c);
@@ -119,21 +129,22 @@ export const road = (g: Ctx, f: number, c: Pov, o: RoadOpts = {}) => {
 		}
 		castShadows(g, c, figs, {alpha: 0.55, blur: 9, nearFade: 0.6});
 		const layers: {z: number; fn: () => void}[] = [];
-		if (o.charro === 'mid' || o.charro === 'near' || o.charro === 'sub') layers.push({z: ch.z, fn: () => drawRider(g, c, f, ch.x, ch.z, o.charro === 'near' ? 0.6 : 0.3)});
+		if (o.charro === 'mid' || o.charro === 'near' || o.charro === 'sub') layers.push({z: ch.z, fn: () => drawRider(g, c, f, ch.x, ch.z, o.charro === 'near' ? 0.6 : 0.3, o.lift ?? 0)});
 		paintProps(g, c, t, {lamp, quiote: o.quiote, layers});
+		o.extra?.(c);
 	});
 	// farol en la mano derecha (pantalla): péndulo con patada en el talonazo
 	const ph = walkPhase(f);
 	const swing = deg(5) * Math.sin((t / 0.9) * Math.PI * 2) * (f < EV.walk[0] ? 0.3 : f < EV.freeze ? 1 : Math.exp(-(f - EV.freeze) / 40)) + deg(2) * walkOffset(ph, 1).heel;
 	const hy = c.pitch < deg(-10) ? 1500 : 1430;
-	paintFarol(g, {hx: 790 + c.ox * 0.3, hy: hy + c.oy * 0.5, swing, sc: 1.05, t, dir, k});
+	if (!o.noFarol) paintFarol(g, {hx: 790 + c.ox * 0.3, hy: hy + c.oy * 0.5, swing, sc: 1.05, t, dir, k});
 	// vaho cada 1.8 s (1.1 s con miedo)
 	breath(g, f);
 	paintLids(g, f, t, lidState(f));
 };
 
-const drawRider = (g: Ctx, c: Pov, f: number, x: number, z: number, warm: number) => {
-	const [sx, sy, d] = proj(c, x, 0, z);
+const drawRider = (g: Ctx, c: Pov, f: number, x: number, z: number, warm: number, lift = 0) => {
+	const [sx, sy, d] = proj(c, x, lift, z);
 	if (d <= 0.2) return;
 	const u = 3.0 * pxPerM(c, d);
 	const t = f / FPS;
