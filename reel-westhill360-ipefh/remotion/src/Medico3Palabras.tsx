@@ -436,7 +436,7 @@ const RESPUESTAS: Respuesta[] = [
   {n: 'v7', from: 0.75, to: 5.65, palabras: [{text: 'Retadora', t: 2.0}, {text: 'Divertida', t: 3.3}, {text: 'Competitiva', t: 4.8}]},
   {n: 'v8', from: 1.0, to: 6.9, palabras: [{text: 'Inspiradora', t: 2.9}, {text: 'Retadora', t: 4.35}, {text: 'Muy divertida', t: 5.75}]},
   {n: 'v4', from: 6.0, to: 9.3, broll: 12.0, palabras: [{text: 'Divertida', t: 6.2}, {text: 'Demandante', t: 8.3}]},
-  {n: 'v6', from: 0.0, to: 7.9, reemplaza: true, palabras: [{text: 'Interesante', t: 0.4}, {text: 'Demandante', t: 2.31}, {text: 'Demandante', t: 4.15}, {text: 'La mejor decisión de mi vida', t: 5.75, script: true}]},
+  {n: 'v6', from: 0.0, to: 7.9, reemplaza: true, palabras: [{text: 'Interesante', t: 0.4}, {text: 'Cansancio', t: 2.31}, {text: 'Demandante', t: 4.15}, {text: 'La mejor decisión de mi vida', t: 5.75, script: true}]},
   {n: 'v9', from: 5.0, to: 13.4, broll: 13.3, palabras: [{text: 'Hermosa', t: 5.9}, {text: 'Muy cansada', t: 8.0}, {text: 'Bastante pesada', t: 10.2}, {text: 'pero sobre todo hermosa', t: 11.5, script: true}]},
 ];
 /** Reflexión final: el chico que no pudo con 3 palabras, con look de cine y subtítulos elegantes */
