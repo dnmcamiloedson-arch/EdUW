@@ -47,7 +47,16 @@ const ONDA: Box[] = [
 ];
 
 /** La capa del lince viene con otro encuadre: se escala y mueve para que quede como en el banner */
-const LINCE = {s: 0.79, x: 308, y: 291}; // x +80 para que la cinta de "Médico" no le tape la cara
+const LINCE = {s: 0.79, x: 228, y: 291};
+/** Las capas del título también vienen más grandes que en el banner (y cada una a otra escala):
+ *  se ajustan midiendo el banner original para que "Médico" quede dentro de su cinta */
+type Ajuste = {sx: number; sy: number; x: number; y: number};
+const AJ_CINTA: Ajuste = {sx: 0.923, sy: 0.886, x: -0.5, y: 65.4};
+const AJ_DIA: Ajuste = {sx: 0.89, sy: 0.89, x: 16.4, y: 26.9};
+const AJ_MEDICO: Ajuste = {sx: 0.825, sy: 0.825, x: 11.3, y: 87.7};
+const Fit: React.FC<{a: Ajuste; children: React.ReactNode}> = ({a, children}) => (
+  <AbsoluteFill style={{transformOrigin: '0 0', transform: `translate(${a.x}px, ${a.y}px) scale(${a.sx}, ${a.sy})`}}>{children}</AbsoluteFill>
+);
 
 // Renglones de la frase (y de la capa a 1080x1920)
 const RENGLONES: [number, number][] = [
@@ -153,9 +162,6 @@ export const DiaMedico: React.FC<{music?: boolean}> = ({music = true}) => {
         {/* onda izquierda (detrás de la cola) */}
         <Piece n="ondas_0" b={ONDA[0]} style={{transform: `translateX(${-230 * (1 - tw(f, [T.ondas + 6, T.ondas + 30], [0, 1]))}px)`}} />
 
-        {/* rayos de la derecha: detrás del lince para no cruzarle la cara */}
-        <Destello name="rayosDerecha" at={T.destellos + 6} />
-
         {/* lince */}
         <Layer n="lince" style={{transformOrigin: '0 0', transform: `translate(${LINCE.x + (1 - lince) * 620}px, ${LINCE.y + respira}px) scale(${LINCE.s})`, opacity: Math.min(1, lince * 3)}} />
 
@@ -164,9 +170,15 @@ export const DiaMedico: React.FC<{music?: boolean}> = ({music = true}) => {
         <Piece n="ondas_2" b={ONDA[2]} style={{transform: `translateY(${360 * (1 - tw(f, [T.ondas, T.ondas + 26], [0, 1]))}px)`}} />
 
         {/* título: cinta rasgada, "Día del" y "Médico" */}
-        <Layer n="cinta" style={{clipPath: `inset(0 ${100 - cinta}% 0 0)`, transformOrigin: '22px 570px', transform: `rotate(${(1 - cinta / 100) * -3}deg)`}} />
-        <Layer n="titulo" band={[300, 480]} style={{transform: `translateY(${(1 - dia) * -70}px)`, opacity: dia, filter: `blur(${(1 - dia) * 8}px)`}} />
-        <Layer n="titulo" band={[490, 670]} style={{transformOrigin: '370px 575px', transform: `scale(${0.6 + 0.4 * medico})`, opacity: Math.min(1, medico * 2)}} />
+        <Fit a={AJ_CINTA}>
+          <Layer n="cinta" style={{clipPath: `inset(0 ${100 - cinta}% 0 0)`, transformOrigin: '22px 570px', transform: `rotate(${(1 - cinta / 100) * -3}deg)`}} />
+        </Fit>
+        <Fit a={AJ_DIA}>
+          <Layer n="titulo" band={[300, 480]} style={{transform: `translateY(${(1 - dia) * -70}px)`, opacity: dia, filter: `blur(${(1 - dia) * 8}px)`}} />
+        </Fit>
+        <Fit a={AJ_MEDICO}>
+          <Layer n="titulo" band={[490, 670]} style={{transformOrigin: '370px 575px', transform: `scale(${0.6 + 0.4 * medico})`, opacity: Math.min(1, medico * 2)}} />
+        </Fit>
 
         {/* frase + subrayado */}
         <Frase />
@@ -175,17 +187,18 @@ export const DiaMedico: React.FC<{music?: boolean}> = ({music = true}) => {
         {/* destellos */}
         <Destello name="rayosTitulo" at={T.medico + 6} />
         <Destello name="verdeArriba" at={T.destellos} />
+        <Destello name="rayosDerecha" at={T.destellos + 6} />
         <Destello name="rayosAzules" at={T.destellos + 12} />
         <Destello name="verdeAbajo" at={T.destellos + 18} />
 
         {/* logo y fecha */}
-        <div style={{position: 'absolute', left: 360, top: 80, width: 360, clipPath: `inset(${(1 - logo) * 100}% 0 0 0)`, transform: `translateY(${(1 - logo) * 24}px)`}}>
+        <div style={{position: 'absolute', left: 380, top: 66, width: 320, clipPath: `inset(${(1 - logo) * 100}% 0 0 0)`, transform: `translateY(${(1 - logo) * 24}px)`}}>
           <Img src={staticFile('logos/logo_westhill_sin_blanco.png')} style={{width: '100%'}} />
         </div>
-        <div style={{position: 'absolute', top: 244, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22}}>
-          <div style={{width: 70 * fecha, height: 4, borderRadius: 2, background: C.amarillo}} />
+        <div style={{position: 'absolute', top: 206, width: '100%', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 22}}>
+          <div style={{width: 56 * fecha, height: 4, borderRadius: 2, background: C.amarillo}} />
           <div style={{fontFamily: F.sans, fontWeight: 500, fontSize: 30, letterSpacing: 6, color: '#1F4F86', opacity: fecha}}>23 DE OCTUBRE</div>
-          <div style={{width: 70 * fecha, height: 4, borderRadius: 2, background: C.amarillo}} />
+          <div style={{width: 56 * fecha, height: 4, borderRadius: 2, background: C.amarillo}} />
         </div>
       </AbsoluteFill>
 
