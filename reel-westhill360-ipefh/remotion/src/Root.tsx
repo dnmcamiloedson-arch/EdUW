@@ -6,6 +6,7 @@ import {ReelVisita2, REEL2_FRAMES} from './Visita2';
 import {FlyOverStory, FLYOVER_FRAMES} from './FlyOver';
 import {VotoMujer, VOTO_FRAMES} from './VotoMujer';
 import {DiaMedico, MEDICO_FRAMES} from './DiaMedico';
+import {Medico3Palabras, M3P_FRAMES} from './Medico3Palabras';
 import {Chapter, chapterDur, CHAPTERS, CORNHOLE_FRAMES, CornholeStory} from './Stories';
 import {FPS, H, W, loadFonts} from './theme';
 
@@ -25,6 +26,8 @@ export const Root: React.FC = () => (
     <Composition id="VotoMujerSinMusica" component={VotoMujer} durationInFrames={VOTO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="DiaMedico" component={DiaMedico} durationInFrames={MEDICO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="DiaMedicoSinMusica" component={DiaMedico} durationInFrames={MEDICO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
+    <Composition id="Medico3Palabras" component={Medico3Palabras} durationInFrames={M3P_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
+    <Composition id="Medico3PalabrasSinMusica" component={Medico3Palabras} durationInFrames={M3P_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
