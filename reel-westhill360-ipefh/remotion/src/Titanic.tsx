@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Grain} from './components';
-import {Sfx} from './shots';
+import {Banner, Sfx} from './shots';
 import {F, ease, tw} from './theme';
 
 // ---------------------------------------------------------------------------
@@ -239,6 +239,10 @@ export const Titanic: React.FC<{music?: boolean}> = ({music = true}) => {
       {/* viñeta y grano de película */}
       <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%)', pointerEvents: 'none'}} />
       <Grain opacity={0.06} />
+      {/* banderín Westhill arriba a la derecha, hasta el cierre con el logo */}
+      <Sequence from={20} durationInFrames={END_AT - 20}>
+        <Banner />
+      </Sequence>
       <Sequence from={END_AT} durationInFrames={END_FRAMES}>
         <EndCard />
       </Sequence>
