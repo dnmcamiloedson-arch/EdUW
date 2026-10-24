@@ -160,7 +160,7 @@ const CapituloTitulo: React.FC<{c: Capitulo}> = ({c}) => {
   const p = tw(f, [4, 26], [0, 1]);
   return (
     <AbsoluteFill style={{opacity: out}}>
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(10,20,32,0.55) 0%, rgba(10,20,32,0) 60%)'}} />
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse 75% 22% at 50% 52%, rgba(10,20,32,0.82) 0%, rgba(10,20,32,0.5) 55%, rgba(10,20,32,0) 100%)'}} />
       <div style={{position: 'absolute', top: 820, width: '100%', textAlign: 'center'}}>
         <Regla at={2} w={300} />
         <div style={{marginTop: 18, opacity: p, filter: `blur(${(1 - p) * 10}px)`}}>
