@@ -47,6 +47,7 @@ export const F = {
   serif: 'Playfair Display',
   display: 'Anton',
   script: 'Yellowtail', // acento escrito a mano (estilo de la referencia)
+  clasica: 'Cinzel', // serif clásica (estilo cartel del Titanic)
 };
 
 // Curvas tipo After Effects
@@ -74,6 +75,8 @@ const FONT_FILES: [string, string, string, string][] = [
   [F.serif, 'playfair-display-latin-700-italic.woff2', '700', 'italic'],
   [F.display, 'anton-latin-400-normal.woff2', '400', 'normal'],
   [F.script, 'yellowtail-latin-400-normal.woff2', '400', 'normal'],
+  [F.clasica, 'cinzel-latin-400-normal.woff2', '400', 'normal'],
+  [F.clasica, 'cinzel-latin-700-normal.woff2', '700', 'normal'],
 ];
 
 let loaded = false;
