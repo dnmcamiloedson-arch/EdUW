@@ -20,7 +20,7 @@ import sfx  # noqa: E402
 from sfx import SR, Bus, midi  # noqa: E402
 
 FPS = 30
-LEN = 480
+LEN = 540
 OUTRO = 135
 AUD = os.path.join(os.path.dirname(os.path.dirname(HERE)), 'public', 'audio', 'mascotas')
 
@@ -62,16 +62,19 @@ def meow(seed=0, dur=0.75, f0=520.0):
 def score(bus):
     maull = load('maullido*.wav') or [meow(1), meow(2, 0.6, 600), meow(3, 0.9, 470)]
     ladri = load('ladrido*.wav') or [L.norm(L.dog_bark(4)), L.norm(L.dog_bark(5))]
+    llanto = load('llanto*.wav') or [meow(6, 1.2, 700)]
     # intro en negro: solo ellos y un aire tenue
     bus.place2(sfx.wind_bed(int(fr(LEN) * SR), 9), 0, 0.03, wet=0.3)
-    bus.place(maull[0], fr(4), 0.42, -0.25, wet=0.5)
-    bus.place(ladri[0], fr(60), 0.38, 0.25, wet=0.5)
-    bus.place(ladri[min(1, len(ladri) - 1)], fr(60) + 0.42, 0.3, 0.3, wet=0.5)
-    bus.place(maull[min(1, len(maull) - 1)], fr(116), 0.3, -0.2, wet=0.7)
+    # 1) un cachorro que llora bajito; 2) los ladridos con que te recibía; 3) maullidos; 4) el llanto otra vez, lejos
+    bus.place(llanto[0][: int(3.2 * SR)] * np.linspace(1, 0.4, int(3.2 * SR)), fr(4), 0.24, -0.15, wet=0.45)
+    bus.place(ladri[0], fr(70), 0.24, 0.2, wet=0.4)
+    bus.place(maull[0], fr(138), 0.24, -0.2, wet=0.45)
+    bus.place(maull[min(1, len(maull) - 1)], fr(166), 0.24, 0.15, wet=0.5)
+    bus.place(llanto[min(1, len(llanto) - 1)][: int(2.2 * SR)] * np.linspace(0.8, 0, int(2.2 * SR)), fr(200), 0.16, 0.1, wet=0.7)
     # la escena: caja de música y guitara suave en sol mayor, melodía original
     beat = 60 / 72
     prog = [(43, [59, 62, 67]), (40, [59, 64, 67]), (36, [60, 64, 67]), (38, [57, 62, 66])]
-    t = fr(176)
+    t = fr(236)
     k = 0
     while t < fr(LEN):
         root, ch = prog[k % 4]
@@ -80,22 +83,22 @@ def score(bus):
         t += 4 * beat
         k += 1
     mel = [(74, 1), (71, 1), (72, 0.5), (74, 0.5), (76, 2), (74, 1), (71, 1), (69, 2), (71, 1), (72, 1), (74, 1), (67, 3)]
-    t = fr(200)
+    t = fr(262)
     for m, d in mel:
         bus.place(M.musicbox(midi(m), 1.8, 0.8), t, 0.12, 0.2, wet=0.7)
         t += d * beat
     # cada huellita aparece con un toque suave
-    for j, f0 in enumerate([192 + 10 * i for i in range(11)] + [200 + 8 * i for i in range(14)]):
+    for j, f0 in enumerate([252 + 10 * i for i in range(11)] + [260 + 8 * i for i in range(14)]):
         bus.place(sfx.bell(midi(91 + (j % 3) * 2), 0.6), fr(f0), 0.018, (-0.3, 0.3)[j % 2], wet=0.8)
     # llegan: el cascabel del collar, beben agua, un maullido bajito
     for q in range(5):
-        bus.place(sfx.bell(midi(96) * (1 + 0.03 * q), 0.4), fr(340) + q * 0.07, 0.07, 0.35, wet=0.5)
+        bus.place(sfx.bell(midi(96) * (1 + 0.03 * q), 0.4), fr(400) + q * 0.07, 0.07, 0.35, wet=0.5)
     for q in range(6):
-        bus.place(sfx.bp(sfx.noise(int(0.08 * SR), 30 + q), 900, 3000) * sfx.env(int(0.08 * SR), 0.005, 0.03), fr(352) + q * 0.22, 0.1, 0.25, wet=0.4)
-    bus.place(maull[min(2, len(maull) - 1)], fr(392), 0.14, -0.1, wet=0.8)
+        bus.place(sfx.bp(sfx.noise(int(0.08 * SR), 30 + q), 900, 3000) * sfx.env(int(0.08 * SR), 0.005, 0.03), fr(412) + q * 0.22, 0.1, 0.25, wet=0.4)
+    bus.place(maull[min(2, len(maull) - 1)], fr(452), 0.12, -0.1, wet=0.8)
     # final: acorde que abre con el texto
-    bus.place(M.choir([55, 62, 67, 71], fr(LEN) - fr(404), 'a', 0.6, seed=7, attack=1.2), fr(404), 0.1, wet=0.8)
-    bus.place(sfx.bell(midi(91), 2.6), fr(412), 0.07, 0, wet=0.8)
+    bus.place(M.choir([55, 62, 67, 71], fr(LEN) - fr(462), 'a', 0.6, seed=7, attack=1.2), fr(462), 0.1, wet=0.8)
+    bus.place(sfx.bell(midi(91), 2.6), fr(470), 0.07, 0, wet=0.8)
     return fr(LEN)
 
 
@@ -107,4 +110,4 @@ if __name__ == '__main__':
     M.outro(bus, at)
     mix, lufs = sfx.master(bus, fade=(fr(total - 6), fr(total)))
     wavfile.write(out, SR, (np.clip(mix, -1, 1).T * 32767).astype(np.int16))
-    print(json.dumps({'segundos': total / FPS, 'lufs': round(lufs, 2), 'clientes': bool(load('maullido*.wav') or load('ladrido*.wav'))}))
+    print(json.dumps({'segundos': total / FPS, 'lufs': round(lufs, 2), 'clientes': bool(load('maullido*.wav') or load('ladrido*.wav') or load('llanto*.wav'))}))

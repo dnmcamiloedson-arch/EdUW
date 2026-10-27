@@ -10,20 +10,20 @@ import {Glow3D, type V3} from '../cap/kit/fx3d';
 import {Line} from './kit/text';
 import {Floor, Veladora, flick, petalGeo} from './d01_altares';
 
-export const MASCOTAS_LEN = 480; // 16 s (+ outro)
+export const MASCOTAS_LEN = 540; // 18 s (+ outro)
 const FPS = 30;
-const SCENE = 180; // termina la intro en negro
+const SCENE = 240; // termina la intro en negro
 const FOV = 50;
 
 // ---------- cámara ----------
 type K = [number, V3, V3];
 const KEYS: K[] = [
-	[180, [0.0, 0.45, 5.7], [0, 0.05, 2.6]],
-	[262, [0.15, 0.55, 3.3], [0, 0.12, 0.6]],
-	[335, [0.05, 0.72, 0.7], [0, 0.32, -2.0]],
-	[385, [0.05, 0.85, -0.55], [0, 0.38, -2.1]],
-	[436, [0.2, 4.2, 2.6], [0, 0.15, 0.1]],
-	[480, [0.1, 5.1, 3.0], [0, 0.1, 0.4]],
+	[240, [0.0, 0.45, 5.7], [0, 0.05, 2.6]],
+	[322, [0.15, 0.55, 3.3], [0, 0.12, 0.6]],
+	[395, [0.05, 0.72, 0.7], [0, 0.32, -2.0]],
+	[445, [0.05, 0.85, -0.55], [0, 0.38, -2.1]],
+	[496, [0.2, 4.2, 2.6], [0, 0.15, 0.1]],
+	[540, [0.1, 5.1, 3.0], [0, 0.1, 0.4]],
 ];
 const cr = (p0: number, p1: number, p2: number, p3: number, u: number) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
 const camAt = (f: number) => {
@@ -48,7 +48,7 @@ const trail = (x0: number, amp: number, phase: number, s: number, step: number, 
 		const dx = amp * 0.7 * Math.cos(z * 0.7 + phase);
 		return {x, z, rot: Math.atan2(dx, 1), s, at: at0 + j * gap};
 	});
-const PRINTS: Print[] = [...trail(-0.3, 0.22, 0, 2.0, 0.55, 192, 10, 11), ...trail(0.32, 0.18, 1.7, 1.35, 0.42, 200, 8, 14)];
+const PRINTS: Print[] = [...trail(-0.3, 0.22, 0, 2.0, 0.55, 252, 10, 11), ...trail(0.32, 0.18, 1.7, 1.35, 0.42, 260, 8, 14)];
 const PAW = (() => {
 	// posiciones locales (m) de los pétalos de una huella de perro de ~11 cm
 	const pts: [number, number][] = [];
@@ -211,8 +211,8 @@ const petPhoto = (() => {
 const ALT_Z = -2.1;
 const Altar: React.FC<{f: number; t: number; cam: V3}> = ({f, t, cam}) => {
 	// llegan: el agua tiembla (beben) y el collar se mueve con su cascabel
-	const drink = f > 350 && f < 392 ? Math.sin(((f - 350) / 42) * Math.PI) : 0;
-	const bell = f > 338 && f < 368 ? Math.sin((f - 338) * 0.9) * Math.exp(-(f - 338) / 12) : 0;
+	const drink = f > 410 && f < 452 ? Math.sin(((f - 410) / 42) * Math.PI) : 0;
+	const bell = f > 398 && f < 428 ? Math.sin((f - 398) * 0.9) * Math.exp(-(f - 398) / 12) : 0;
 	return (
 		<>
 			<mesh position={[0, 0.18, ALT_Z - 0.15]}>
@@ -289,7 +289,7 @@ const Altar: React.FC<{f: number; t: number; cam: V3}> = ({f, t, cam}) => {
 				] as [number, number, number][]
 			).map(([x, z, i]) => (
 				<group key={i} position={[0, 0.37, 0]}>
-					<Veladora X={x} Z={z} k={E.out(clamp((f - (300 + i * 10)) / 14)) * 0.75 + 0.25} t={t} i={i} cam={[cam[0], cam[1] - 0.37, cam[2]]} sc={0.8} power={0.12} />
+					<Veladora X={x} Z={z} k={E.out(clamp((f - (360 + i * 10)) / 14)) * 0.75 + 0.25} t={t} i={i} cam={[cam[0], cam[1] - 0.37, cam[2]]} sc={0.8} power={0.12} />
 				</group>
 			))}
 			{Array.from({length: 9}, (_, i) => (
@@ -298,7 +298,7 @@ const Altar: React.FC<{f: number; t: number; cam: V3}> = ({f, t, cam}) => {
 			{Array.from({length: 8}, (_, i) => (
 				<Cempasuchil3D key={`f${i}`} pos={[(i < 4 ? -1 : 1) * (0.72 + (i % 4) * 0.1), 0.02, ALT_Z + 0.1 - (i % 2) * 0.2]} s={0.026} rot={[0, i * 1.9, 0]} seed={i + 90} />
 			))}
-			<pointLight position={[0, 1.1, ALT_Z + 0.6]} intensity={1.0 * (0.35 + 0.65 * clamp((f - 300) / 30)) * flick(t, 3)} distance={0} decay={2} color="#ffb060" />
+			<pointLight position={[0, 1.1, ALT_Z + 0.6]} intensity={1.0 * (0.35 + 0.65 * clamp((f - 360) / 30)) * flick(t, 3)} distance={0} decay={2} color="#ffb060" />
 		</>
 	);
 };
@@ -334,17 +334,18 @@ const World: React.FC<{f: number}> = ({f}) => {
 
 // textos: la intro en negro (con maullidos y ladridos) y el recorrido
 const TEXTS = [
-	{text: '¿Lo escuchaste?', at: 14, out: 62, y: 860, size: 66},
-	{text: 'Hoy vuelven los que\nnos esperaban en la puerta.', at: 72, out: 120, y: 820, size: 60},
-	{text: 'Los que nos quisieron\nsin pedir nada a cambio.', at: 126, out: 176, y: 820, size: 60},
-	{text: 'Su plato, su agua,\nsu juguete de siempre…', at: 214, out: 276, y: 300, size: 58},
-	{text: '…y un camino de flores\npara que sepan volver.', at: 284, out: 346, y: 300, size: 58},
+	{text: '¿Lo escuchaste?', at: 16, out: 64, y: 860, size: 66},
+	{text: 'Así me recibías\ncada vez que llegaba a casa.', at: 74, out: 134, y: 820, size: 60},
+	{text: 'Todavía volteo a la puerta\nesperando verte.', at: 142, out: 196, y: 820, size: 60},
+	{text: 'Eras mi mejor amigo.', at: 202, out: 238, y: 860, size: 66},
+	{text: 'Te dejé tu plato, tu agua\ny tu juguete favorito…', at: 274, out: 336, y: 300, size: 58},
+	{text: '…y un camino de flores\npara que encuentres\nel camino a casa.', at: 344, out: 412, y: 300, size: 58},
 ];
 
 export const Mascotas: React.FC<{dias: number; fecha: string}> = () => {
 	const f = useCurrentFrame();
 	const sceneIn = E.out(clamp((f - SCENE) / 24));
-	const endDark = 0.5 * E.inOut(clamp((f - 404) / 24));
+	const endDark = 0.55 * E.inOut(clamp((f - 462) / 24));
 	return (
 		<AbsoluteFill style={{background: '#000'}}>
 			{f >= SCENE - 2 ? (
@@ -359,8 +360,9 @@ export const Mascotas: React.FC<{dias: number; fecha: string}> = () => {
 			{TEXTS.map((p, i) => (
 				<Line key={i} {...p} f={f} color="#efe3c8" mode="soft" scrim={i < 3 ? 0 : 0.35} />
 			))}
-			<Line text={'Hoy llegan\nnuestras mascotas.'} f={f} at={412} y={680} size={88} font="Rye" color="#F5C242" mode="soft" lineHeight={1.15} scrim={0} glow="#F26D3D" />
-			<Line text={'27 · 10'} f={f} at={432} y={930} size={52} color="#E0BB8F" mode="soft" scrim={0} tracking={0.2} />
+			<Line text={'Bienvenido a casa.'} f={f} at={470} y={700} size={92} font="Rye" color="#F5C242" mode="soft" scrim={0} glow="#F26D3D" />
+			<Line text={'Hoy llegan nuestras mascotas.'} f={f} at={490} y={830} size={50} color="#efe3c8" mode="soft" scrim={0} />
+			<Line text={'27 · 10'} f={f} at={504} y={910} size={46} color="#E0BB8F" mode="soft" scrim={0} tracking={0.2} />
 		</AbsoluteFill>
 	);
 };
