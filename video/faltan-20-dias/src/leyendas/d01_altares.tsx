@@ -12,10 +12,10 @@ import {flame2D, marigold, particles} from './kit/fx';
 import type {PostOpts} from './kit/post';
 import {UNO_PATH, UNO_PTS} from './d01/uno';
 
-export const EP01_LEN = 195; // 6.5 s
+export const EP01_LEN = 230; // 7.7 s
 const FPS = 30;
-const LOCK = 112;
-const IGN = [74, 112]; // el fuego corre por el camino
+const LOCK = 172;
+const IGN = [96, 132]; // el fuego corre por el camino mientras la cámara se acerca a ras del suelo
 const N = UNO_PTS.length / 2;
 
 const hash = (i: number, s = 0) => {
@@ -95,15 +95,16 @@ const RIBBON = (g: Ctx, x: number, y: number, t: number, k: number) => {
 		glow(g, fx, fy, 16, '#B8E07A', (0.5 + 0.5 * Math.sin(t * 4 + i * 2)) * 0.8 * k);
 	}
 };
-const ALT: Alt[] = [
-	{x: 300, y: 1555, at: 12, sig: ORB},
-	{x: 540, y: 1590, at: 21, sig: EYES('#9FD36B', 85, -75, 34)},
-	{x: 780, y: 1555, at: 30, sig: COIN},
-	{x: 190, y: 400, at: 39, sig: EYES('#E03A2A', -80, 55, 22)},
-	{x: 410, y: 330, at: 48, sig: CROSS},
-	{x: 670, y: 330, at: 57, sig: VEIL},
-	{x: 890, y: 400, at: 66, sig: RIBBON},
-];
+// las siete veladoras en círculo alrededor del 1 (ángulos desde arriba, en el sentido del reloj)
+export const RING = {cx: 540, cy: 925, rx: 420, ry: 640};
+const SIGS = [ORB, EYES('#9FD36B', 85, -75, 34), COIN, EYES('#E03A2A', -80, 55, 22), CROSS, VEIL, RIBBON];
+const ORBIT = {f0: 0, f1: 84, a0: -88, a1: 244}; // la cámara da la vuelta sobre las velas
+const ALT: Alt[] = SIGS.map((sig, i) => {
+	const a = -90 + 180 / 7 + (i * 360) / 7;
+	const r = (a * Math.PI) / 180;
+	const at = Math.max(8, ORBIT.f0 + ((a - ORBIT.a0) / (ORBIT.a1 - ORBIT.a0)) * (ORBIT.f1 - ORBIT.f0) - 17);
+	return {x: RING.cx + RING.rx * Math.cos(r), y: RING.cy + RING.ry * Math.sin(r), at, sig};
+});
 
 const ground = (g: Ctx, t: number) => {
 	g.fillStyle = '#120a05';
@@ -168,7 +169,6 @@ const path = (g: Ctx, f: number, t: number) => {
 	if (p > 0 && p < 1.05) {
 		const fy = lerp(1240, 600, clamp(p));
 		glow(g, 540, fy, 170, '#F5B04A', 0.55);
-		particles(g, {kind: 'embers', n: 40, t, seed: 4, x: 400, y: fy - 200, w: 280, h: 260, alpha: 0.8});
 	}
 };
 const pathGlow = (g: Ctx, k: number) => {
@@ -201,17 +201,265 @@ const veladora = (g: Ctx, a: Alt, f: number, t: number, i: number) => {
 	g.fill();
 	if (k <= 0) return;
 	glow(g, a.x, a.y - 10, 210, '#F5B04A', 0.32 * k);
-	flame2D(g, a.x, a.y - 8, 19, t + i, i, 0.15 * Math.sin(t * 1.7 + i), k);
-	a.sig(g, a.x, a.y, t, E.inOut(clamp((f - a.at - 4) / 10)));
+	if (a.sig !== ORB) a.sig(g, a.x, a.y, t, E.inOut(clamp((f - a.at - 4) / 10)));
+};
+
+// ---------- suelo en coordenadas de mundo (el plano del patio), con margen alrededor del cuadro final ----------
+const M = 1000;
+const WW = W + M * 2;
+const WH = H + M * 2;
+const groundLayer = (f: number, t: number) => {
+	const c = cached('d1world', () => makeCanvas(WW, WH));
+	const q = c.getContext('2d')!;
+	q.setTransform(1, 0, 0, 1, 0, 0);
+	q.globalAlpha = 1;
+	q.globalCompositeOperation = 'source-over';
+	q.filter = 'none';
+	const base = cached('d1worldBase', () => {
+		const b = makeCanvas(WW, WH);
+		const bq = b.getContext('2d')!;
+		bq.translate(M, M);
+		bq.save();
+		bq.translate(-M, -M);
+		bq.fillStyle = '#120a05';
+		bq.fillRect(0, 0, WW, WH);
+		const st = tinted(noiseTile({seed: 8, size: 256, period: 4, oct: 4, contrast: 1.3}), '#3a2a1c', 'd1st');
+		drawTiled(bq, st, {x: 0, y: 0, w: WW, h: WH, scale: 2.4, alpha: 0.55});
+		bq.strokeStyle = 'rgba(0,0,0,0.45)';
+		bq.lineWidth = 3;
+		for (let y = -180 * 4; y < H + M; y += 180) {
+			bq.beginPath();
+			bq.moveTo(0, y + M);
+			bq.lineTo(WW, y + M);
+			bq.stroke();
+			for (let x = (Math.abs(y) / 180) % 2 ? 90 - 180 * 4 : -180 * 4; x < W + M; x += 180) {
+				bq.beginPath();
+				bq.moveTo(x + M, y + M);
+				bq.lineTo(x + M, y + M + 180);
+				bq.stroke();
+			}
+		}
+		bq.restore();
+		// el patio se pierde en la oscuridad hacia los bordes (sin orilla visible)
+		bq.setTransform(1, 0, 0, 1, 0, 0);
+		const vg = bq.createRadialGradient(WW / 2, WH / 2, Math.min(WW, WH) * 0.32, WW / 2, WH / 2, Math.max(WW, WH) * 0.62);
+		vg.addColorStop(0, 'rgba(7,4,3,0)');
+		vg.addColorStop(1, 'rgba(7,4,3,1)');
+		bq.fillStyle = vg;
+		bq.fillRect(0, 0, WW, WH);
+		return b;
+	});
+	q.drawImage(base, 0, 0);
+	q.translate(M, M);
+	fogBand(q, {y0: -M, y1: H + M, x: -M, w: WW, color: '#1F5C48', t, seed: 3, scale: 1.4, speed: 0.04, alpha: 0.12});
+	pathGlow(q, E.inOut(clamp((f - IGN[0] - 10) / 40)));
+	path(q, f, t);
+	ALT.forEach((a, i) => veladora(q, a, f, t, i));
+	return c;
+};
+
+// ---------- cámara dron: posición (x, y en el plano; h altura), rumbo y picada ----------
+type Cam3 = {x: number; y: number; h: number; pitch: number; yaw: number};
+const F = 1100;
+const D2R = Math.PI / 180;
+const camKeys = cached('d1keys', () => {
+	const keys: [number, Cam3][] = [];
+	const at = (a: number, k = 1): [number, number] => [RING.cx + RING.rx * k * Math.cos(a * D2R), RING.cy + RING.ry * k * Math.sin(a * D2R)];
+	const tang = (a: number) => Math.atan2(RING.ry * Math.cos(a * D2R), -RING.rx * Math.sin(a * D2R)) / D2R;
+	for (let k = 0; k <= 7; k++) {
+		const a = ORBIT.a0 + ((ORBIT.a1 - ORBIT.a0) * k) / 7;
+		const [x, y] = at(a, 1.12);
+		keys.push([ORBIT.f0 + ((ORBIT.f1 - ORBIT.f0) * k) / 7, {x, y, h: 520, pitch: 52, yaw: tang(a) + 22}]);
+	}
+	const [ex, ey] = at(ORBIT.a1 + 18, 0.92);
+	const toC = Math.atan2(960 - ey, 540 - ex) / D2R;
+	keys.push([104, {x: lerp(ex, 540, 0.45), y: lerp(ey, 960, 0.45), h: 150, pitch: 18, yaw: toC}]);
+	keys.push([124, {x: lerp(ex, 540, 0.88), y: lerp(ey, 960, 0.88), h: 95, pitch: 11, yaw: toC}]);
+	keys.push([146, {x: 540, y: 960, h: 520, pitch: 62, yaw: lerp(toC, -90, 0.6)}]);
+	keys.push([168, {x: 540, y: 960, h: F, pitch: 90, yaw: -90}]);
+	keys.push([230, {x: 540, y: 960, h: F, pitch: 90, yaw: -90}]);
+	// rumbo continuo (sin saltos de 360°)
+	for (let i = 1; i < keys.length; i++) {
+		let y = keys[i][1].yaw;
+		const p = keys[i - 1][1].yaw;
+		while (y - p > 180) y -= 360;
+		while (y - p < -180) y += 360;
+		keys[i][1].yaw = y;
+	}
+	return keys;
+});
+const camAt = (f: number): Cam3 => {
+	const K = camKeys;
+	let i = 0;
+	while (i < K.length - 2 && f > K[i + 1][0]) i++;
+	const [f1, c1] = K[i];
+	const [f2, c2] = K[i + 1];
+	const c0 = K[Math.max(0, i - 1)][1];
+	const c3 = K[Math.min(K.length - 1, i + 2)][1];
+	const u = clamp((f - f1) / (f2 - f1));
+	const cr = (p0: number, p1: number, p2: number, p3: number) => {
+		const u2 = u * u;
+		const u3 = u2 * u;
+		return 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u2 + (-p0 + 3 * p1 - 3 * p2 + p3) * u3);
+	};
+	const k = (key: keyof Cam3) => cr(c0[key], c1[key], c2[key], c3[key]);
+	return {x: k('x'), y: k('y'), h: Math.max(40, k('h')), pitch: clamp(k('pitch'), 5, 90), yaw: k('yaw')};
+};
+
+type Basis = {c: Cam3; r: number[]; u: number[]; fw: number[]};
+const basis = (c: Cam3): Basis => {
+	const p = c.pitch * D2R;
+	const y = c.yaw * D2R;
+	const fw = [Math.cos(y) * Math.cos(p), Math.sin(y) * Math.cos(p), -Math.sin(p)];
+	const r = [-Math.sin(y), Math.cos(y), 0];
+	const u = [fw[1] * r[2] - fw[2] * r[1], fw[2] * r[0] - fw[0] * r[2], fw[0] * r[1] - fw[1] * r[0]];
+	return {c, r, u, fw};
+};
+// mundo (x, y en px del cuadro final; z hacia arriba) → pantalla [sx, sy, profundidad]
+const proj3 = (b: Basis, x: number, y: number, z: number): [number, number, number] => {
+	const dx = x - b.c.x;
+	const dy = y - b.c.y;
+	const dz = z - b.c.h;
+	const zc = dx * b.fw[0] + dy * b.fw[1] + dz * b.fw[2];
+	const xc = dx * b.r[0] + dy * b.r[1];
+	const yc = dx * b.u[0] + dy * b.u[1] + dz * b.u[2];
+	return [W / 2 + (F * xc) / zc, H / 2 - (F * yc) / zc, zc];
+};
+
+// pinta el plano del suelo en perspectiva: malla de triángulos con mapeo afín; los triángulos grandes o con mucha
+// diferencia de profundidad (cerca de la cámara) se subdividen para que la perspectiva no se deforme
+const NX = 24;
+const NY = 32;
+type SP = {u: number; v: number; p: [number, number, number]};
+const warpGround = (g: Ctx, src: HTMLCanvasElement, b: Basis) => {
+	const mk = (u: number, v: number): SP => ({u, v, p: proj3(b, u - M, v - M, 0)});
+	const draw = (A: SP, B: SP, C: SP) => {
+		const p0 = A.p;
+		const p1 = B.p;
+		const p2 = C.p;
+		const den = (B.u - A.u) * (C.v - A.v) - (C.u - A.u) * (B.v - A.v);
+		if (Math.abs(den) < 1e-6) return;
+		const a11 = ((p1[0] - p0[0]) * (C.v - A.v) - (p2[0] - p0[0]) * (B.v - A.v)) / den;
+		const a12 = ((p2[0] - p0[0]) * (B.u - A.u) - (p1[0] - p0[0]) * (C.u - A.u)) / den;
+		const a21 = ((p1[1] - p0[1]) * (C.v - A.v) - (p2[1] - p0[1]) * (B.v - A.v)) / den;
+		const a22 = ((p2[1] - p0[1]) * (B.u - A.u) - (p1[1] - p0[1]) * (C.u - A.u)) / den;
+		const tx = p0[0] - a11 * A.u - a12 * A.v;
+		const ty = p0[1] - a21 * A.u - a22 * A.v;
+		const cx = (p0[0] + p1[0] + p2[0]) / 3;
+		const cy = (p0[1] + p1[1] + p2[1]) / 3;
+		const inf = (p: number[]) => {
+			const dx = p[0] - cx;
+			const dy = p[1] - cy;
+			const l = Math.hypot(dx, dy) || 1;
+			return [p[0] + (dx / l) * 0.9, p[1] + (dy / l) * 0.9];
+		};
+		const q0 = inf(p0);
+		const q1 = inf(p1);
+		const q2 = inf(p2);
+		g.save();
+		g.beginPath();
+		g.moveTo(q0[0], q0[1]);
+		g.lineTo(q1[0], q1[1]);
+		g.lineTo(q2[0], q2[1]);
+		g.closePath();
+		g.clip();
+		g.setTransform(a11, a21, a12, a22, tx, ty);
+		g.drawImage(src, 0, 0);
+		g.restore();
+	};
+	const tri = (A: SP, B: SP, C: SP, depth: number) => {
+		const zs = [A.p[2], B.p[2], C.p[2]];
+		const zmin = Math.min(...zs);
+		const zmax = Math.max(...zs);
+		if (zmax <= 4) return; // todo detrás de la cámara
+		const front = zmin > 4;
+		if (front) {
+			const xs = [A.p[0], B.p[0], C.p[0]];
+			const ys = [A.p[1], B.p[1], C.p[1]];
+			const minx = Math.min(...xs);
+			const maxx = Math.max(...xs);
+			const miny = Math.min(...ys);
+			const maxy = Math.max(...ys);
+			if (maxx < -2 || minx > W + 2 || maxy < -2 || miny > H + 2) return;
+			const big = Math.max(maxx - minx, maxy - miny);
+			if (depth >= 5 || (zmax / zmin < 1.25 && big < 260) || big < 24) {
+				draw(A, B, C);
+				return;
+			}
+		} else if (depth >= 5) return;
+		// subdividir en 4 por los puntos medios (en el plano del suelo)
+		const ab = mk((A.u + B.u) / 2, (A.v + B.v) / 2);
+		const bc = mk((B.u + C.u) / 2, (B.v + C.v) / 2);
+		const ca = mk((C.u + A.u) / 2, (C.v + A.v) / 2);
+		tri(A, ab, ca, depth + 1);
+		tri(ab, B, bc, depth + 1);
+		tri(ca, bc, C, depth + 1);
+		tri(ab, bc, ca, depth + 1);
+	};
+	const G: SP[] = [];
+	for (let j = 0; j <= NY; j++) for (let i = 0; i <= NX; i++) G.push(mk((i / NX) * WW, (j / NY) * WH));
+	for (let j = 0; j < NY; j++)
+		for (let i = 0; i < NX; i++) {
+			const a = j * (NX + 1) + i;
+			tri(G[a], G[a + 1], G[a + NX + 2], 0);
+			tri(G[a], G[a + NX + 2], G[a + NX + 1], 0);
+		}
 };
 
 const paint = (g: Ctx, f: number): PostOpts => {
 	const t = f / FPS;
-	ground(g, t);
-	pathGlow(g, E.inOut(clamp((f - IGN[0] - 10) / 40)));
-	path(g, f, t);
-	ALT.forEach((a, i) => veladora(g, a, f, t, i));
-	// las siete llamas se inclinan hacia el camino justo antes de que arda (algo inhala)
+	const cam = camAt(f);
+	const b = basis(cam);
+	g.fillStyle = '#070403';
+	g.fillRect(0, 0, W, H);
+	warpGround(g, groundLayer(f, t), b);
+	// bruma hacia el horizonte cuando la cámara va baja
+	const far = proj3(b, cam.x + Math.cos(cam.yaw * D2R) * 1e5, cam.y + Math.sin(cam.yaw * D2R) * 1e5, 0);
+	if (cam.pitch < 80 && far[2] > 0) {
+		const hy = far[1];
+		const fg = g.createLinearGradient(0, hy - 40, 0, hy + 520);
+		fg.addColorStop(0, 'rgba(7,4,3,1)');
+		fg.addColorStop(0.35, 'rgba(18,24,20,0.55)');
+		fg.addColorStop(1, 'rgba(18,24,20,0)');
+		g.fillStyle = fg;
+		g.fillRect(0, hy - 40, W, 560);
+		if (hy > 0) {
+			g.fillStyle = '#070403';
+			g.fillRect(0, 0, W, Math.max(0, hy - 38));
+		}
+	}
+	// flamas paradas sobre cada veladora (carteles proyectados), de la más lejana a la más cercana
+	const items = ALT.map((a, i) => ({a, i, p: proj3(b, a.x, a.y - 8, 18)})).filter((o) => o.p[2] > 20).sort((m, n) => n.p[2] - m.p[2]);
+	for (const {a, i, p} of items) {
+		const k = E.out(clamp((f - a.at) / 8));
+		if (k <= 0) continue;
+		const sc = 1100 / p[2];
+		glow(g, p[0], p[1] - 14 * sc, 60 * sc, '#F5B04A', 0.35 * k);
+		flame2D(g, p[0], p[1], 19 * sc, t + i, i, 0.15 * Math.sin(t * 1.7 + i), k);
+		if (a.sig === ORB) {
+			const op = proj3(b, a.x + 30, a.y, 95 + Math.sin(t * 2.2) * 10);
+			if (op[2] > 20) {
+				const so = 1100 / op[2];
+				const ks = E.inOut(clamp((f - a.at - 4) / 10));
+				glow(g, op[0], op[1], 90 * so, '#F26D3D', 0.75 * ks);
+				flame2D(g, op[0], op[1] + 14 * so, 16 * so, t * 1.3, 11, 0, 0.9 * ks);
+				glow(g, op[0], op[1], 10 * so, '#FFF3D6', 0.9 * ks);
+			}
+		}
+	}
+	// brasas que suben del frente de fuego
+	const pf = (f - IGN[0]) / (IGN[1] - IGN[0]);
+	if (pf > 0 && pf < 1.1) {
+		for (let e = 0; e < 36; e++) {
+			const life = (t * 0.9 + hash(e, 9)) % 1;
+			const ex = 540 + (hash(e, 10) - 0.5) * 260;
+			const ey = lerp(1240, 600, clamp(pf)) + (hash(e, 11) - 0.5) * 120;
+			const ep = proj3(b, ex, ey, life * 220);
+			if (ep[2] < 20) continue;
+			const so = 1100 / ep[2];
+			glow(g, ep[0], ep[1], 7 * so, '#F5A23A', (1 - life) * 0.9);
+		}
+	}
 	return {bloom: 0.75, bloomThr: 0.6, halation: 0.35, vignette: 0.9, grain: 0.07, hatch: 0.1, contrast: 1.08, saturation: 1.05, exposure: lerp(0.85, 1.05, clamp((f - 10) / 70)), fade: 1 - E.out(clamp(f / 10))};
 };
 
