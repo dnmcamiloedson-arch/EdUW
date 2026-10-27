@@ -15,27 +15,32 @@ const FPS = 30;
 const SCENE = 240; // termina la intro en negro
 const FOV = 50;
 
-// ---------- cámara ----------
-type K = [number, V3, V3];
+// ---------- cámara: tomas lentas y continuas (grúa que baja sobre las huellas → travelling lateral a ras del piso →
+// acercamiento al altar → sube y abre). Catmull-Rom con llaves a intervalos iguales (velocidad continua, sin frenones)
+// y una curva de tiempo suave que arranca y termina con calma.
+type K = [V3, V3];
 const KEYS: K[] = [
-	[240, [0.0, 0.45, 5.7], [0, 0.05, 2.6]],
-	[322, [0.15, 0.55, 3.3], [0, 0.12, 0.6]],
-	[395, [0.05, 0.72, 0.7], [0, 0.32, -2.0]],
-	[445, [0.05, 0.85, -0.55], [0, 0.38, -2.1]],
-	[496, [0.2, 4.2, 2.6], [0, 0.15, 0.1]],
-	[540, [0.1, 5.1, 3.0], [0, 0.1, 0.4]],
+	[[0.6, 3.2, 5.6], [0, 0, 3.6]],
+	[[0.9, 2.2, 4.2], [-0.1, 0, 2.4]],
+	[[1.5, 0.75, 2.5], [-0.1, 0.05, 1.2]],
+	[[1.3, 0.55, 0.6], [-0.2, 0.15, -0.8]],
+	[[0.35, 0.62, -0.45], [0, 0.4, -2.1]],
+	[[-0.2, 1.6, 0.6], [0, 0.4, -1.4]],
+	[[-0.3, 3.6, 2.2], [0, 0.2, -0.6]],
 ];
 const cr = (p0: number, p1: number, p2: number, p3: number, u: number) => 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u * u + (-p0 + 3 * p1 - 3 * p2 + p3) * u * u * u);
 const camAt = (f: number) => {
-	let i = 0;
-	while (i < KEYS.length - 2 && f > KEYS[i + 1][0]) i++;
+	const u0 = clamp((f - 240) / 300);
+	const u = 0.7 * u0 + 0.3 * u0 * u0 * (3 - 2 * u0);
+	const x = u * (KEYS.length - 1);
+	const i = Math.min(KEYS.length - 2, Math.floor(x));
+	const v = x - i;
 	const k0 = KEYS[Math.max(0, i - 1)];
 	const k1 = KEYS[i];
 	const k2 = KEYS[i + 1];
 	const k3 = KEYS[Math.min(KEYS.length - 1, i + 2)];
-	const u = E.inOut(clamp((f - k1[0]) / (k2[0] - k1[0])));
-	const v = (j: 1 | 2) => [0, 1, 2].map((a) => cr(k0[j][a], k1[j][a], k2[j][a], k3[j][a], u)) as V3;
-	return {pos: v(1), look: v(2)};
+	const at = (j: 0 | 1) => [0, 1, 2].map((a) => cr(k0[j][a], k1[j][a], k2[j][a], k3[j][a], v)) as V3;
+	return {pos: at(0), look: at(1)};
 };
 
 // ---------- huellitas de pétalos: cojinete + cuatro dedos; dos caminos (perro y gato) que llegan al altar ----------
@@ -48,7 +53,7 @@ const trail = (x0: number, amp: number, phase: number, s: number, step: number, 
 		const dx = amp * 0.7 * Math.cos(z * 0.7 + phase);
 		return {x, z, rot: Math.atan2(dx, 1), s, at: at0 + j * gap};
 	});
-const PRINTS: Print[] = [...trail(-0.3, 0.22, 0, 2.0, 0.55, 252, 10, 11), ...trail(0.32, 0.18, 1.7, 1.35, 0.42, 260, 8, 14)];
+const PRINTS: Print[] = [...trail(-0.3, 0.22, 0, 2.0, 0.55, 236, 11, 11), ...trail(0.32, 0.18, 1.7, 1.35, 0.42, 244, 9, 14)];
 const PAW = (() => {
 	// posiciones locales (m) de los pétalos de una huella de perro de ~11 cm
 	const pts: [number, number][] = [];
@@ -317,9 +322,9 @@ const World: React.FC<{f: number}> = ({f}) => {
 			<Altar f={f} t={t} cam={pos} />
 			{/* veladoras a los lados del camino */}
 			{[
-				[-0.9, 3.8],
-				[0.9, 2.2],
-				[-0.85, 0.6],
+				[-1.0, 3.9],
+				[-1.05, 2.1],
+				[-0.95, 0.4],
 			].map(([x, z], i) => (
 				<Veladora key={i} X={x} Z={z} k={1} t={t} i={i + 4} cam={pos} sc={1.1} power={0.16} />
 			))}
@@ -339,7 +344,7 @@ const TEXTS = [
 	{text: 'Todavía volteo a la puerta\nesperando verte.', at: 142, out: 196, y: 820, size: 60},
 	{text: 'Eras mi mejor amigo.', at: 202, out: 238, y: 860, size: 66},
 	{text: 'Te dejé tu plato, tu agua\ny tu juguete favorito…', at: 274, out: 336, y: 300, size: 58},
-	{text: '…y un camino de flores\npara que encuentres\nel camino a casa.', at: 344, out: 412, y: 300, size: 58},
+	{text: '…y un camino de flores\npara que encuentres\nel camino a casa.', at: 354, out: 416, y: 300, size: 58},
 ];
 
 export const Mascotas: React.FC<{dias: number; fecha: string}> = () => {

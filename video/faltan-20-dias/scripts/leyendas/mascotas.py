@@ -65,12 +65,13 @@ def score(bus):
     llanto = load('llanto*.wav') or [meow(6, 1.2, 700)]
     # intro en negro: solo ellos y un aire tenue
     bus.place2(sfx.wind_bed(int(fr(LEN) * SR), 9), 0, 0.03, wet=0.3)
-    # 1) un cachorro que llora bajito; 2) los ladridos con que te recibía; 3) maullidos; 4) el llanto otra vez, lejos
-    bus.place(llanto[0][: int(3.2 * SR)] * np.linspace(1, 0.4, int(3.2 * SR)), fr(4), 0.24, -0.15, wet=0.45)
-    bus.place(ladri[0], fr(70), 0.24, 0.2, wet=0.4)
+    # 1) los cachorros que ladran como cuando llegabas; 2) maullidos; 3) un llanto suave, el que se queda
+    bus.place(ladri[0], fr(6), 0.24, -0.15, wet=0.4)
+    bus.place(ladri[min(1, len(ladri) - 1)], fr(72), 0.24, 0.2, wet=0.4)
     bus.place(maull[0], fr(138), 0.24, -0.2, wet=0.45)
-    bus.place(maull[min(1, len(maull) - 1)], fr(166), 0.24, 0.15, wet=0.5)
-    bus.place(llanto[min(1, len(llanto) - 1)][: int(2.2 * SR)] * np.linspace(0.8, 0, int(2.2 * SR)), fr(200), 0.16, 0.1, wet=0.7)
+    bus.place(maull[min(1, len(maull) - 1)], fr(166), 0.2, 0.15, wet=0.5)
+    ll = llanto[0]
+    bus.place(ll * np.linspace(1, 0.5, len(ll)), fr(196), 0.2, 0.1, wet=0.6)
     # la escena: caja de música y guitara suave en sol mayor, melodía original
     beat = 60 / 72
     prog = [(43, [59, 62, 67]), (40, [59, 64, 67]), (36, [60, 64, 67]), (38, [57, 62, 66])]
@@ -88,7 +89,7 @@ def score(bus):
         bus.place(M.musicbox(midi(m), 1.8, 0.8), t, 0.12, 0.2, wet=0.7)
         t += d * beat
     # cada huellita aparece con un toque suave
-    for j, f0 in enumerate([252 + 10 * i for i in range(11)] + [260 + 8 * i for i in range(14)]):
+    for j, f0 in enumerate([236 + 11 * i for i in range(11)] + [244 + 9 * i for i in range(14)]):
         bus.place(sfx.bell(midi(91 + (j % 3) * 2), 0.6), fr(f0), 0.018, (-0.3, 0.3)[j % 2], wet=0.8)
     # llegan: el cascabel del collar, beben agua, un maullido bajito
     for q in range(5):
