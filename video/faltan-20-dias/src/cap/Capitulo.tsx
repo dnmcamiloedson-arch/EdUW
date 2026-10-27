@@ -42,7 +42,7 @@ export const CAPS: Record<number, Cap> = {
 	3: {len: EP03_LEN, Comp: Ep03, own: true},
 	2: {len: EP02_LEN, Comp: Ep02, own: true},
 	1: {len: EP01_LEN, Comp: Ep01, own: true},
-	0: {len: EP00_LEN, Comp: Ep00, own: true, outro: false},
+	0: {len: EP00_LEN, Comp: Ep00, own: true},
 };
 export type CapProps = {dias: number; fecha: string};
 export const capLength = (dias: number) => (CAPS[dias]?.len ?? 300) + (CAPS[dias]?.outro === false ? 0 : OUTRO_LEN);

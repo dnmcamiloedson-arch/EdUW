@@ -89,10 +89,10 @@ const cam3 = (f: number) => {
 	return {pos, look, up};
 };
 
-const flick = (t: number, s: number) => 0.86 + 0.08 * Math.sin(t * 9.1 + s) + 0.06 * Math.sin(t * 23.7 + s * 3);
+export const flick = (t: number, s: number) => 0.86 + 0.08 * Math.sin(t * 9.1 + s) + 0.06 * Math.sin(t * 23.7 + s * 3);
 
 // ---------- piso de cantera ----------
-const Floor: React.FC = () => {
+export const Floor: React.FC = () => {
 	const st = stoneTex('patio1', {rows: 4, base: '#5a4a38', mortar: '#1a120b', seed: 41, pores: 45, vari: 0.2, slab: true});
 	const mat = useMemo(() => new THREE.MeshStandardMaterial({map: withRepeat(st.map, 9, 9), bumpMap: withRepeat(st.bump, 9, 9), bumpScale: 1.4, roughness: 0.92}), [st]);
 	return (
@@ -103,7 +103,7 @@ const Floor: React.FC = () => {
 };
 
 // ---------- el camino de pétalos en forma de 1 (pétalos 3D instanciados); los que ya ardieron se cambian de malla ----------
-const petalGeo = (() => {
+export const petalGeo = (() => {
 	// pétalo: óvalo con punta, cóncavo
 	const g = new THREE.CircleGeometry(0.05, 14);
 	const p = g.attributes.position;
@@ -188,8 +188,8 @@ const FireFront: React.FC<{f: number; t: number; cam: V3}> = ({f, t, cam}) => {
 };
 
 // ---------- veladora: vaso, cera, flama, luz real y corona de cempasúchil ----------
-const Veladora: React.FC<{X: number; Z: number; k: number; t: number; i: number; cam: V3}> = ({X, Z, k, t, i, cam}) => (
-	<group position={[X, 0, Z]} scale={1.6}>
+export const Veladora: React.FC<{X: number; Z: number; k: number; t: number; i: number; cam: V3; sc?: number; power?: number}> = ({X, Z, k, t, i, cam, sc = 1.6, power = 1}) => (
+	<group position={[X, 0, Z]} scale={sc}>
 		{Array.from({length: 8}, (_, j) => {
 			const a = (j / 8) * Math.PI * 2 + i;
 			return <Cempasuchil3D key={j} pos={[Math.cos(a) * 0.36, 0.02, Math.sin(a) * 0.36]} s={0.06} rot={[0.15 * Math.sin(a * 3), a, 0]} seed={j + i * 8} lit={0.55 + 0.45 * k} />;
@@ -204,8 +204,8 @@ const Veladora: React.FC<{X: number; Z: number; k: number; t: number; i: number;
 		</mesh>
 		{k > 0 ? (
 			<>
-				<Flame3D pos={[0, 0.15, 0]} size={0.16} t={t + i} cam={[(cam[0] - X) / 1.6, cam[1] / 1.6, (cam[2] - Z) / 1.6]} seed={i} grow={k} intensity={1.2} />
-				<pointLight position={[0, 0.45, 0]} intensity={5 * k * flick(t, i)} distance={0} decay={2} color="#ffb060" />
+				<Flame3D pos={[0, 0.15, 0]} size={0.16} t={t + i} cam={[(cam[0] - X) / sc, cam[1] / sc, (cam[2] - Z) / sc]} seed={i} grow={k} intensity={1.2} />
+				<pointLight position={[0, 0.45, 0]} intensity={5 * power * k * flick(t, i)} distance={0} decay={2} color="#ffb060" />
 			</>
 		) : null}
 	</group>
