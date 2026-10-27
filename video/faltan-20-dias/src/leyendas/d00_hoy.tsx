@@ -293,8 +293,8 @@ const World: React.FC<{f: number}> = ({f}) => {
 };
 
 const TEXTS = [
-	{text: 'Abuela, tú decías:', at: 18, out: 66, y: 300, size: 58},
-	{text: 'si la flama se mueve sola,\nes que ya llegaron.', at: 60, out: 122, y: 300, size: 58},
+	{text: 'Abuela, tú decías:', at: 18, out: 122, y: 300, size: 58},
+	{text: 'si la flama se mueve sola,\nes que ya llegaron.', at: 62, out: 122, y: 390, size: 58},
 	{text: 'Pétalos desde la puerta,\npara que sepas llegar.', at: 132, out: 206, y: 300, size: 58},
 	{text: 'Tu café de olla.\nSiempre le soplabas.', at: 214, out: 290, y: 300, size: 58},
 	{text: 'Hoy, en cada altar,\nalguien vuelve a casa.', at: 300, out: 372, y: 300, size: 62},
