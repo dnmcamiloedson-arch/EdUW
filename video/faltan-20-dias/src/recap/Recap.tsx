@@ -168,12 +168,12 @@ const Gracias: React.FC = () => {
 		<AbsoluteFill style={{background: fondo, opacity: fade(f, GRACIAS)}}>
 			<Lluvia f={f + 400} n={22} />
 			<Img src={staticFile('brand/banderin-naranja.png')} style={{position: 'absolute', top: 270, left: (W - 300) / 2, width: 300, opacity: E.out(clamp(f / 16)), transform: `translateY(${(1 - E.out(clamp(f / 16))) * -24}px) rotate(${Math.sin(f * 0.05) * 1.5}deg)`, transformOrigin: '50% 0%', filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.6))'}} />
-			<Texto f={f} at={10} y={590} size={150} color="#F5C242" font="Rye">¡Gracias!</Texto>
-			<Texto f={f} at={30} y={830} size={54} color="#efe3c8">{'A todos los alumnos que ayudaron\na que esto fuera posible.'}</Texto>
-			<Texto f={f} at={60} y={990} size={54} color="#efe3c8">{'Gracias por su arduo trabajo\ny dedicación.'}</Texto>
-			<Texto f={f} at={100} y={1180} size={56} color="#E0BB8F">Con mucho cariño,</Texto>
-			<Texto f={f} at={114} y={1255} size={76} color="#F26D3D" font="Rye">Universidad</Texto>
-			<Texto f={f} at={124} y={1340} size={110} color="#F26D3D" font="Rye">Westhill</Texto>
+			<Texto f={f} at={10} y={612} size={150} color="#F5C242" font="Rye">¡Gracias!</Texto>
+			<Texto f={f} at={30} y={850} size={54} color="#efe3c8">{'A todos los alumnos que ayudaron\na que esto fuera posible.'}</Texto>
+			<Texto f={f} at={60} y={1005} size={54} color="#efe3c8">{'Gracias por su arduo trabajo\ny dedicación.'}</Texto>
+			<Texto f={f} at={100} y={1190} size={56} color="#E0BB8F">Con mucho cariño,</Texto>
+			<Texto f={f} at={114} y={1262} size={76} color="#F26D3D" font="Rye">Universidad</Texto>
+			<Texto f={f} at={124} y={1345} size={110} color="#F26D3D" font="Rye">Westhill</Texto>
 		</AbsoluteFill>
 	);
 };
