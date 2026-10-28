@@ -2,10 +2,10 @@
 // cortina de cempasúchil deja el nombre de la carrera (el PNG con el diseño de su leyenda) y el nombre de la leyenda.
 // Los clips y la música viven en public/recap/ y se describen en recap.json (ver scripts/render_recap.sh).
 import React from 'react';
-import {AbsoluteFill, Audio, Img, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Audio, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {E, H, W, clamp, hash, lerp} from '../lib/util';
 
-export type RecapClip = {file: string; start?: number; dur: number; carrera: string; leyenda: string; png: string};
+export type RecapClip = {file: string; start?: number; dur: number; carrera: string; leyenda: string};
 export type RecapProps = {clips: RecapClip[]; musica?: string; intro?: number};
 
 const FPS = 30;
@@ -60,9 +60,10 @@ const Rotulo: React.FC<{c: RecapClip}> = ({c}) => {
 	return (
 		<AbsoluteFill>
 			<AbsoluteFill style={{background: `linear-gradient(180deg, rgba(18,10,5,0) 35%, rgba(18,10,5,${0.75 * k}) 60%, rgba(18,10,5,${0.75 * k}) 85%, rgba(18,10,5,0) 100%)`}} />
-			<div style={{position: 'absolute', top: 1180, width: W, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: k, transform: `translateY(${(1 - inU) * 40}px) scale(${lerp(0.94, 1, inU)})`}}>
-				<Img src={staticFile(c.png)} style={{maxWidth: 940, maxHeight: 300, objectFit: 'contain'}} />
-				<div style={{fontFamily: 'Alike', fontSize: 50, color: '#efe3c8', marginTop: 10, textShadow: '0 3px 18px rgba(0,0,0,0.9)', letterSpacing: '0.04em'}}>{c.leyenda}</div>
+			<div style={{position: 'absolute', top: 1130, width: W, display: 'flex', flexDirection: 'column', alignItems: 'center', opacity: k, transform: `translateY(${(1 - inU) * 40}px) scale(${lerp(0.94, 1, inU)})`}}>
+				<div style={{fontFamily: 'Rye', fontSize: c.carrera.length > 22 ? 58 : 84, lineHeight: 1.12, maxWidth: 960, textAlign: 'center', color: '#F5C242', textShadow: '0 4px 22px rgba(0,0,0,0.9)', letterSpacing: '0.03em', whiteSpace: 'pre-line'}}>{c.carrera}</div>
+				<div style={{width: lerp(0, 360, inU), height: 3, background: '#F26D3D', margin: '18px 0 14px'}} />
+				<div style={{fontFamily: 'Alike', fontSize: 52, color: '#efe3c8', textShadow: '0 3px 18px rgba(0,0,0,0.9)', letterSpacing: '0.04em'}}>{c.leyenda}</div>
 			</div>
 			<Petalos f={f} />
 		</AbsoluteFill>
