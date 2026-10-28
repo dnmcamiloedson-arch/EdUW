@@ -8,3 +8,10 @@ out/temporada2/
 out/historias/
 out/facultades/
 out/facultades.zip
+public/recap/*.mp4
+public/recap/*.mov
+public/recap/*.MOV
+public/recap/*.mp3
+public/recap/*.wav
+public/recap/*.m4a
+public/recap/recap.json
