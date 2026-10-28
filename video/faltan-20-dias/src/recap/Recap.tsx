@@ -187,6 +187,12 @@ const Final: React.FC = () => (
 	</AbsoluteFill>
 );
 
+// banderín de la universidad en la esquina mientras corren las tomas (desaparece al llegar el agradecimiento)
+const Banderin: React.FC<{len: number}> = ({len}) => {
+	const f = useCurrentFrame();
+	return <Img src={staticFile('brand/banderin-naranja.png')} style={{position: 'absolute', top: 250, right: 56, width: 170, opacity: fade(f, len) * 0.95, filter: 'drop-shadow(0 6px 16px rgba(0,0,0,0.5))'}} />;
+};
+
 const clipsEnd = (p: RecapProps) => (p.intro ?? 105) + p.clips.reduce((s, c) => s + Math.round(c.dur * FPS) - XF, 0) + XF;
 export const recapLength = (p: RecapProps) => clipsEnd(p) - XF + FINAL;
 
@@ -210,6 +216,9 @@ export const Recap: React.FC<RecapProps> = (p) => {
 			</Sequence>
 			<Sequence from={clipsEnd(p) - XF} durationInFrames={FINAL}>
 				<Final />
+			</Sequence>
+			<Sequence from={intro - XF} durationInFrames={clipsEnd(p) - intro + ANUNCIO + GANA + FOTO - 3 * XF}>
+				<Banderin len={clipsEnd(p) - intro + ANUNCIO + GANA + FOTO - 3 * XF} />
 			</Sequence>
 			{p.musica ? <Audio src={staticFile(p.musica)} /> : null}
 			<AbsoluteFill style={{background: 'radial-gradient(ellipse 80% 65% at 50% 50%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.55) 100%)', pointerEvents: 'none'}} />
