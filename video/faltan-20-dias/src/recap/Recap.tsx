@@ -80,7 +80,7 @@ const Clip: React.FC<{c: RecapClip; len: number}> = ({c, len}) => {
 			<AbsoluteFill style={{transform: `scale(${z})`}}>
 				<OffthreadVideo src={staticFile(c.file)} startFrom={Math.round((c.start ?? 0) * FPS)} muted style={{width: W, height: H, objectFit: 'cover'}} />
 			</AbsoluteFill>
-			<Rotulo c={c} />
+			{c.carrera ? <Rotulo c={c} /> : null}
 		</AbsoluteFill>
 	);
 };
