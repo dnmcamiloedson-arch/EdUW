@@ -11,6 +11,7 @@ out/facultades.zip
 public/recap/*.mp4
 public/recap/*.mov
 public/recap/*.MOV
+public/recap/*.jpg
 public/recap/*.mp3
 public/recap/*.wav
 public/recap/*.m4a
