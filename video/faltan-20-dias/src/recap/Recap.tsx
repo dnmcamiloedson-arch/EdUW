@@ -171,7 +171,8 @@ const Gracias: React.FC = () => {
 			<Texto f={f} at={30} y={760} size={54} color="#efe3c8">{'A todos los alumnos que ayudaron\na que esto fuera posible.'}</Texto>
 			<Texto f={f} at={60} y={940} size={54} color="#efe3c8">{'Gracias por su arduo trabajo\ny dedicación.'}</Texto>
 			<Texto f={f} at={100} y={1170} size={56} color="#E0BB8F">Con mucho cariño,</Texto>
-			<Texto f={f} at={114} y={1250} size={110} color="#F26D3D" font="Rye">Westhill</Texto>
+			<Texto f={f} at={114} y={1250} size={76} color="#F26D3D" font="Rye">Universidad</Texto>
+			<Texto f={f} at={124} y={1340} size={110} color="#F26D3D" font="Rye">Westhill</Texto>
 		</AbsoluteFill>
 	);
 };
