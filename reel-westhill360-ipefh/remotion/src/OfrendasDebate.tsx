@@ -435,7 +435,6 @@ const Cierre: React.FC = () => {
   const a = tw(f, [4, 18], [0, 1], ease.back);
   const o = tw(f, [14, 24], [0, 1], ease.back);
   const b = tw(f, [22, 36], [0, 1], ease.back);
-  const cta = tw(f, [50, 64], [0, 1]);
   const lado = tw(f, [0, 20], [0, 1], ease.inOut);
   // los dos colores se juntan en uno solo: la comunidad
   const une = tw(f, [POSITIVO - 14, POSITIVO + 10], [0, 1], ease.inOut);
@@ -464,9 +463,6 @@ const Cierre: React.FC = () => {
           <div style={{fontSize: 200, lineHeight: 1, transform: `scale(${a}) rotate(${(1 - a) * -10}deg)`}}>¿DERECHO</div>
           <div style={{fontFamily: F.script, fontSize: 150, lineHeight: 1.1, color: '#fff', transform: `scale(${o})`}}>o</div>
           <div style={{fontSize: 172, lineHeight: 1, transform: `scale(${b}) rotate(${(1 - b) * 10}deg)`}}>PSICOLOGÍA?</div>
-        </div>
-        <div style={{position: 'absolute', top: 1270, width: '100%', textAlign: 'center', opacity: cta, transform: `translateY(${(1 - cta) * 20}px)`}}>
-          <span style={{background: '#fff', color: NEGRO, padding: '16px 40px', borderRadius: 60, fontFamily: F.sans, fontWeight: 800, fontSize: 44}}>Te leemos en comentarios 👇</span>
         </div>
       </AbsoluteFill>
       {/* el comentario "Todo Westhill ganó" crece hasta ocupar la pantalla */}
@@ -509,7 +505,6 @@ const Cierre: React.FC = () => {
       <Sfx at={4} name="impact" volume={0.6} />
       <Sfx at={14} name="pop" volume={0.6} />
       <Sfx at={22} name="impact" volume={0.6} />
-      <Sfx at={50} name="flicker" volume={0.4} />
       <Sfx at={COMENTARIO_AT} name="pop" volume={0.6} />
       <Sfx at={COMENTARIO_AT + 4} name="whoosh_largo" volume={0.4} />
       <Sfx at={COMENTARIO_AT + 72} name="ding" volume={0.45} />
