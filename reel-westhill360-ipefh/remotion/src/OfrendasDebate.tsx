@@ -121,8 +121,8 @@ const AVATAR = [
 ];
 
 /** Tarjeta de respuesta redibujada (estilo de Instagram), sin foto ni nombre completo */
-const Tarjeta: React.FC<{i: number; w?: number; tinte?: number}> = ({i, w = 460, tinte = 0}) => {
-  const [u, t, v] = RESPUESTAS[i];
+const Tarjeta: React.FC<{i: number; w?: number; tinte?: number; datos?: [string, string, Voto]}> = ({i, w = 460, tinte = 0, datos}) => {
+  const [u, t, v] = datos ?? RESPUESTAS[i];
   const [a, b] = AVATAR[i % AVATAR.length];
   const fs = t.length > 40 ? w * 0.062 : t.length > 22 ? w * 0.072 : w * 0.085;
   const borde = v === 'P' ? AZUL : v === 'D' ? AMARILLO : '#5A6170';
@@ -435,8 +435,11 @@ const Grafica: React.FC = () => {
 // ---------------------------------------------------------------------------
 // 4. Cierre: ¿Derecho o Psicología?
 // ---------------------------------------------------------------------------
-export const CIERRE_F = 270;
-const POSITIVO = 112; // "Al final, ganó la comunidad Westhill"
+/** Comentario que deja de lado la rivalidad (la misma persona también votó; no entra en el conteo) */
+const TODO_WESTHILL: [string, string, Voto] = ['de••••••16', 'Todo Westhill Ganó!!!', 'O'];
+const COMENTARIO_AT = 78; // aparece el comentario y empieza a crecer
+const POSITIVO = 205; // "Al final, ganó la comunidad Westhill"
+export const CIERRE_F = POSITIVO + 160;
 const Cierre: React.FC = () => {
   const f = useCurrentFrame();
   const a = tw(f, [4, 18], [0, 1], ease.back);
@@ -446,6 +449,13 @@ const Cierre: React.FC = () => {
   const lado = tw(f, [0, 20], [0, 1], ease.inOut);
   // los dos colores se juntan en uno solo: la comunidad
   const une = tw(f, [POSITIVO - 14, POSITIVO + 10], [0, 1], ease.inOut);
+  // el comentario crece y la rivalidad se desenfoca y se apaga
+  const crece = tw(f, [COMENTARIO_AT, COMENTARIO_AT + 80], [0, 1], ease.inOut);
+  const aparece = tw(f, [COMENTARIO_AT, COMENTARIO_AT + 12], [0, 1]);
+  const rival = 1 - tw(f, [COMENTARIO_AT + 10, COMENTARIO_AT + 70], [0, 1], ease.inOut);
+  const brilla = tw(f, [COMENTARIO_AT + 70, COMENTARIO_AT + 90], [0, 1]);
+  const sale = tw(f, [POSITIVO - 20, POSITIVO + 4], [0, 1], ease.in);
+  const escala = (0.3 + 1.45 * crece + 0.06 * tw(f, [COMENTARIO_AT + 80, POSITIVO], [0, 1])) * (1 - sale * 0.25);
   const p1 = tw(f, [POSITIVO + 6, POSITIVO + 20], [0, 1]);
   const p2 = tw(f, [POSITIVO + 18, POSITIVO + 34], [0, 1], ease.back);
   const corazon = tw(f, [POSITIVO + 34, POSITIVO + 46], [0, 1], ease.back);
@@ -456,7 +466,7 @@ const Cierre: React.FC = () => {
   return (
     <AbsoluteFill style={{background: NEGRO, overflow: 'hidden'}}>
       {/* fondo partido en diagonal: Derecho (amarillo) y Psicología (azul); al final se funden */}
-      <AbsoluteFill style={{opacity: 1 - une}}>
+      <AbsoluteFill style={{opacity: rival * (1 - une), filter: `blur(${(1 - rival) * 22}px)`, transform: `scale(${1 + (1 - rival) * 0.08})`}}>
         <AbsoluteFill style={{background: `linear-gradient(160deg, ${AMARILLO}, #E39B00)`, clipPath: `polygon(0 0, ${100 * lado}% 0, ${100 * lado - 30}% 100%, 0 100%)`}} />
         <AbsoluteFill style={{background: `linear-gradient(160deg, ${AZUL}, ${AZUL_OSC})`, clipPath: `polygon(${100 - 70 * lado + 30}% 0, 100% 0, 100% 100%, ${100 - 70 * lado}% 100%)`, opacity: lado > 0 ? 1 : 0}} />
         <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(6,7,9,0.2) 0%, rgba(6,7,9,0.6) 100%)'}} />
@@ -469,6 +479,17 @@ const Cierre: React.FC = () => {
           <span style={{background: '#fff', color: NEGRO, padding: '16px 40px', borderRadius: 60, fontFamily: F.sans, fontWeight: 800, fontSize: 44}}>Te leemos en comentarios 👇</span>
         </div>
       </AbsoluteFill>
+      {/* el comentario "Todo Westhill ganó" crece hasta ocupar la pantalla */}
+      {f >= COMENTARIO_AT && f < POSITIVO + 6 && (
+        <AbsoluteFill style={{opacity: aparece * (1 - sale)}}>
+          <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 50%, rgba(61,139,212,${0.45 * crece}) 0%, rgba(39,99,154,${0.2 * crece}) 40%, rgba(6,7,9,0) 75%)`}} />
+          <div style={{position: 'absolute', left: 540 - 230, top: 960 - 170, transformOrigin: '230px 170px', transform: `scale(${escala}) rotate(${(1 - crece) * -8}deg) translateY(${-sale * 60}px)`}}>
+            <div style={{borderRadius: 26, boxShadow: `0 0 ${70 * brilla}px rgba(242,194,48,${0.7 * brilla})`}}>
+              <Tarjeta i={0} datos={TODO_WESTHILL} />
+            </div>
+          </div>
+        </AbsoluteFill>
+      )}
       {/* cierre positivo */}
       <AbsoluteFill style={{opacity: une}}>
         <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 42%, rgba(61,139,212,0.55) 0%, rgba(39,99,154,0.25) 35%, rgba(6,7,9,0) 70%)`}} />
@@ -499,6 +520,9 @@ const Cierre: React.FC = () => {
       <Sfx at={14} name="pop" volume={0.6} />
       <Sfx at={22} name="impact" volume={0.6} />
       <Sfx at={50} name="flicker" volume={0.4} />
+      <Sfx at={COMENTARIO_AT} name="pop" volume={0.6} />
+      <Sfx at={COMENTARIO_AT + 4} name="whoosh_largo" volume={0.4} />
+      <Sfx at={COMENTARIO_AT + 72} name="ding" volume={0.45} />
       <Sfx at={POSITIVO - 14} name="whoosh_largo" volume={0.45} />
       <Sfx at={POSITIVO + 18} name="flicker" volume={0.4} />
       <Sfx at={POSITIVO + 34} name="ding" volume={0.5} />
@@ -525,6 +549,7 @@ export const MARCAS = {
   remonta: (STARTS[2] + REMONTA) / 30,
   golpe: (STARTS[2] + FIN_P) / 30,
   cierre: STARTS[3] / 30,
+  comentario: (STARTS[3] + COMENTARIO_AT) / 30,
   positivo: (STARTS[3] + POSITIVO) / 30,
   fin: OFRENDAS_FRAMES / 30,
 };
