@@ -28,10 +28,11 @@ const Portada: React.FC<{len: number}> = ({len}) => {
 	};
 	return (
 		<AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, #3a1a0a 0%, #120a05 70%)', opacity: a * out}}>
-			{line('Así se vivió', 6, 620, 84, '#efe3c8', 'Alike')}
-			{line('Día de Muertos', 18, 730, 120, '#F5C242', 'Rye')}
-			{line('en Westhill', 30, 880, 96, '#F26D3D', 'Rye')}
-			{line('Siete altares · siete leyendas · 28 · 10', 46, 1040, 46, '#E0BB8F', 'Alike')}
+			{line('Así se vivió', 6, 560, 84, '#efe3c8', 'Alike')}
+			{line('el Concurso', 18, 660, 112, '#F5C242', 'Rye')}
+			{line('de Ofrendas', 28, 790, 112, '#F5C242', 'Rye')}
+			{line('en Westhill', 38, 930, 90, '#F26D3D', 'Rye')}
+			{line('Siete altares · siete leyendas · 28 · 10', 50, 1080, 44, '#E0BB8F', 'Alike')}
 		</AbsoluteFill>
 	);
 };
