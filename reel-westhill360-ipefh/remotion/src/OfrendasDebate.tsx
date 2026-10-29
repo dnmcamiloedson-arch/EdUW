@@ -294,7 +294,7 @@ const Lluvia: React.FC = () => {
 // 3. Gráfica de votos
 // ---------------------------------------------------------------------------
 export const GRAFICA_F = 330;
-const BARRAS_AT = 70;
+const BARRAS_AT = 84;
 const Grafica: React.FC = () => {
   const f = useCurrentFrame();
   const max = CONTEO[0].n;
@@ -316,7 +316,7 @@ const Grafica: React.FC = () => {
         <div style={{opacity: l2, transform: `translateY(${(1 - l2) * 20}px)`, marginTop: 14, fontFamily: F.display, fontSize: 104, color: '#fff'}}>…pero ustedes dijeron:</div>
       </div>
       {/* barras */}
-      <div style={{position: 'absolute', top: 470, left: 70, right: 70, opacity: tw(f, [60, 74], [0, 1])}}>
+      <div style={{position: 'absolute', top: 470, left: 70, right: 70, opacity: tw(f, [72, 86], [0, 1])}}>
         {CONTEO.map((c, i) => {
           const big = i < 2;
           const v = crece(c.n);
