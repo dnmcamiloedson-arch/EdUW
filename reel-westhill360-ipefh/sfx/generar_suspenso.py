@@ -1,14 +1,16 @@
 """Pista de suspenso para el debate de ofrendas (sin derechos).
 Intro suave -> silencio total en el apagón -> tensión que crece mientras caen las respuestas -> golpe al
 llenarse la pantalla -> ritmo durante el duelo de la gráfica -> golpe al ganar -> golpe final en la pregunta.
-Uso: python3 generar_suspenso.py <salida.wav> <dur> <apagon> <primera> <lleno> <grafica> <golpe> <cierre>"""
+En la gráfica: el ritmo se corta en seco cuando Derecho se estanca y vuelve acelerado en la remontada.
+Al final, acordes cálidos para el cierre positivo.
+Uso: python3 generar_suspenso.py <salida.wav> <dur> <apagon> <primera> <lleno> <grafica> <estanca> <remonta> <golpe> <cierre> <positivo>"""
 import sys, wave
 import numpy as np
 from scipy.signal import butter, lfilter
 
 SR = 44100
 OUT = sys.argv[1]
-DUR, AP, PR, LL, GR, GO, CI = map(float, sys.argv[2:9])
+DUR, AP, PR, LL, GR, ES, RE, GO, CI, PO = map(float, sys.argv[2:12])
 N = int(SR * DUR); rng = np.random.default_rng(7)
 L = np.zeros(N); R = np.zeros(N)
 tt = lambda d: np.arange(int(SR * max(d, 0.01))) / SR
@@ -56,25 +58,40 @@ while tk < LL - 0.1:
     add(tick(2400 if k % 2 else 1800), tk, 0.16 + 0.1 * q, -0.3 if k % 2 else 0.3); tk += 0.45 - 0.36 * q ** 1.2; k += 1
 add(riser(2.2), LL - 2.2, 0.35)
 add(boom(), LL, 0.9)
-# 4. gráfica: entra el ritmo, sube hasta el golpe y sigue más brillante hasta el cierre
+# 4. gráfica: ritmo mientras Derecho va ganando, corte en seco al estancarse, remontada acelerada
 B = 0.5
-i = 0
-while True:
-    t0 = GR + 0.6 + i * B
-    if t0 >= CI - 0.25: break
-    fuerte = t0 >= GO
-    add(kick(), t0, 0.6 if fuerte else 0.45)
-    add(hat(), t0 + B / 2, 0.24 if fuerte else 0.16, 0.2)
-    if fuerte and i % 2 == 1: add(clap(), t0, 0.25, -0.1)
-    i += 1
-t = tt(GO - GR); x = t / (GO - GR)
-add(barrido(saw(t, (110, 164.8)), 400, 2900, 1.0) * x * 0.8, GR, 0.4)
+t0 = GR + 0.6
+while t0 < ES - 0.05:
+    add(kick(), t0, 0.45); add(hat(), t0 + B / 2, 0.16, 0.2); t0 += B
+t = tt(ES - GR); x = t / (ES - GR)
+add(barrido(saw(t, (110, 164.8)), 400, 2200, 1.0) * x * 0.8, GR, 0.4)
+add(boom(1.6), ES, 0.8)  # ¡pam!
+t = tt(RE - ES)
+add(filt(saw(t, (55, 58.3)), 300) * 0.6, ES, 0.5)  # tensión grave mientras está congelado
+t0 = RE; k = 0
+while t0 < GO - 0.05:  # remontada: semicorcheas cada vez más fuertes
+    q = (t0 - RE) / (GO - RE)
+    if k % 4 == 0: add(kick(), t0, 0.4 + 0.3 * q)
+    add(hat(), t0, 0.12 + 0.2 * q, 0.2 if k % 2 else -0.2)
+    t0 += B / 4; k += 1
+add(riser(GO - RE + 0.3), RE - 0.3, 0.5)
+add(boom(), GO, 0.95)
+t0 = GO; i = 0
+while t0 < CI - 0.25:
+    add(kick(), t0, 0.6); add(hat(), t0 + B / 2, 0.24, 0.2)
+    if i % 2 == 1: add(clap(), t0, 0.25, -0.1)
+    t0 += B; i += 1
 t = tt(CI - GO)
 add(filt(saw(t, (130.8, 196, 261.6)), 2400) * np.minimum(1, t / 0.3), GO, 0.35)
-add(riser(2.0), GO - 2.0, 0.45)
-add(boom(), GO, 0.9)
 add(riser(1.6), CI - 1.6, 0.4)
 add(boom(3.5), CI, 1.0)
+# 5. cierre positivo: acordes cálidos (Do mayor) y campanitas
+def campana(f, d=1.6):
+    t = tt(d); return (np.sin(2 * np.pi * f * t) + 0.3 * np.sin(2 * np.pi * f * 2.01 * t)) * np.exp(-t * 3) * np.minimum(1, t / 0.005)
+t = tt(DUR - PO)
+add(filt(saw(t, (130.8, 164.8, 196, 261.6), 0.003), 1600) * np.minimum(1, t / 0.6), PO, 0.5)
+for n, f in enumerate([523.3, 659.3, 784.0, 1046.5, 784.0, 659.3, 784.0, 1046.5]):
+    add(campana(f), PO + 0.4 + n * 0.35, 0.18, -0.4 + 0.1 * n)
 # silencio total en el apagón
 a, b = int(AP * SR), int(PR * SR)
 L[a:b] = 0; R[a:b] = 0

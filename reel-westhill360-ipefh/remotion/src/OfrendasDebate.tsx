@@ -279,17 +279,37 @@ const Caida: React.FC = () => {
 // ---------------------------------------------------------------------------
 // 3. Gráfica: duelo de barras
 // ---------------------------------------------------------------------------
-export const GRAFICA_F = 420;
+export const GRAFICA_F = 440;
+// Historia de los votos: Derecho va ganando, de repente se estanca (¡pam!) y Psicología sube muy rápido
 const DUELO_AT = 78; // empiezan a crecer
-const RITMO = 3.4; // cuadros por voto
-const FIN_D = DUELO_AT + Math.round(DERECHO * RITMO);
-const FIN_P = DUELO_AT + Math.round(PSICO * RITMO);
-const OTRAS_AT = FIN_P + 70;
+const ESTANCA = 152; // Derecho se frena en seco
+const REMONTA = 180; // Psicología despega
+const FIN_D = 204; // Derecho llega a su total
+const FIN_P = 226; // Psicología llega a su total (golpe final)
+const votosD = (f: number) => interpolate(f, [DUELO_AT, ESTANCA, REMONTA, FIN_D], [0, DERECHO - 2, DERECHO - 1, DERECHO], {...clamp, easing: ease.out});
+const votosP = (f: number) =>
+  f < REMONTA ? interpolate(f, [DUELO_AT, ESTANCA, REMONTA], [0, 5, 7], clamp) : interpolate(f, [REMONTA, FIN_P], [7, PSICO], {...clamp, easing: (t) => t * t * (3 - 2 * t)});
+/** cuadro en que Psicología rebasa a Derecho */
+const REBASA = (() => {
+  for (let f = REMONTA; f < FIN_P; f++) if (Math.floor(votosP(f)) > Math.floor(votosD(f))) return f;
+  return FIN_P;
+})();
+/** reloj: desde que se subió la historia (miércoles 28 de octubre, 3:00 p.m.) hasta el momento de la captura (21 h 36 min) */
+const HORAS = (f: number) => interpolate(f, [DUELO_AT, ESTANCA, REMONTA, FIN_P], [0, 3.5, 5, 21.6], clamp);
+const reloj = (h: number) => {
+  const min = Math.round(h * 60);
+  const total = 15 * 60 + min;
+  const dia = total >= 24 * 60 ? 'JUE 29 OCT' : 'MIÉ 28 OCT';
+  const hh = Math.floor((total % (24 * 60)) / 60);
+  const mm = total % 60;
+  const h12 = hh % 12 === 0 ? 12 : hh % 12;
+  return {dia, hora: `${h12}:${String(mm).padStart(2, '0')} ${hh < 12 ? 'A.M.' : 'P.M.'}`, pasado: `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`};
+};
+const OTRAS_AT = FIN_P + 72;
 const BASE = 1420;
-const ALTO = 820;
-const Barra: React.FC<{x: number; n: number; color: string; color2: string; label: string; fin: number; gana: boolean}> = ({x, n, color, color2, label, fin, gana}) => {
+const ALTO = 700;
+const Barra: React.FC<{x: number; v: number; color: string; color2: string; label: string; fin: number; gana: boolean}> = ({x, v, color, color2, label, fin, gana}) => {
   const f = useCurrentFrame();
-  const v = Math.min(n, Math.max(0, (f - DUELO_AT) / RITMO));
   const vv = Math.floor(v);
   const paro = f < fin ? 0 : tw(f, [fin, fin + 10], [1, 0]);
   const h = (v / PSICO) * ALTO;
@@ -320,10 +340,15 @@ const Grafica: React.FC = () => {
   const subeTitulo = tw(f, [56, 74], [0, 1], ease.inOut);
   const duelo = tw(f, [64, 80], [0, 1]);
   const golpe = tw(f, [FIN_P, FIN_P + 8], [0, 1]);
-  const flash = interpolate(f, [FIN_P - 1, FIN_P + 1, FIN_P + 10], [0, 0.8, 0], clamp);
-  const sacude = f >= FIN_P && f < FIN_P + 14 ? (FIN_P + 14 - f) * 1.6 : 0;
-  const empuje = 1 + 0.06 * tw(f, [DUELO_AT, FIN_P], [0, 1], ease.inOut);
   const reduce = tw(f, [OTRAS_AT - 10, OTRAS_AT + 14], [0, 1], ease.inOut);
+  const flash = interpolate(f, [FIN_P - 1, FIN_P + 1, FIN_P + 10], [0, 0.8, 0], clamp) + interpolate(f, [REBASA - 1, REBASA + 1, REBASA + 8], [0, 0.45, 0], clamp);
+  const golpeSeco = (at: number, fuerza: number) => (f >= at && f < at + 14 ? (at + 14 - f) * fuerza : 0);
+  const sacude = golpeSeco(FIN_P, 1.6) + golpeSeco(ESTANCA, 1.3);
+  const remontada = tw(f, [REBASA, REBASA + 10], [0, 1], ease.back) * tw(f, [FIN_P - 4, FIN_P + 4], [1, 0]);
+  const rel = reloj(HORAS(f));
+  const relojVis = tw(f, [DUELO_AT - 6, DUELO_AT + 8], [0, 1]) * (1 - reduce);
+  const congelado = f >= ESTANCA && f < REMONTA;
+  const empuje = 1 + 0.06 * tw(f, [DUELO_AT, FIN_P], [0, 1], ease.inOut);
   return (
     <AbsoluteFill style={{background: NEGRO, overflow: 'hidden'}}>
       {/* rejilla de fondo que se mueve */}
@@ -334,20 +359,37 @@ const Grafica: React.FC = () => {
         <div style={{position: 'absolute', left: 310 - 900, top: 700 - 900, width: 1800, height: 1800, borderRadius: '50%', background: `repeating-conic-gradient(from ${f * 1.2}deg, rgba(61,139,212,0.22) 0deg 8deg, rgba(0,0,0,0) 8deg 20deg)`, opacity: golpe * (1 - reduce), maskImage: 'radial-gradient(circle, #000 20%, transparent 65%)', WebkitMaskImage: 'radial-gradient(circle, #000 20%, transparent 65%)'}} />
       )}
       {/* El jurado eligió... pero ustedes dijeron */}
-      <div style={{position: 'absolute', top: interpolate(subeTitulo, [0, 1], [700, 120]), width: '100%', textAlign: 'center', transform: `scale(${1 - subeTitulo * 0.38})`, opacity: (1 - reduce) * (1 - golpe)}}>
+      <div style={{position: 'absolute', top: interpolate(subeTitulo, [0, 1], [700, 40]), width: '100%', textAlign: 'center', transformOrigin: '50% 0%', transform: `scale(${1 - subeTitulo * 0.42})`, opacity: (1 - reduce) * (1 - golpe)}}>
         <div style={{opacity: l1, fontFamily: F.sans, fontWeight: 700, fontSize: 52, color: '#E6ECF3'}}>
           El jurado eligió a <span style={{color: AMARILLO}}>Derecho</span> 🏆
         </div>
         <div style={{opacity: Math.min(1, l2 * 2), transform: `scale(${0.7 + 0.3 * l2})`, marginTop: 14, fontFamily: F.display, fontSize: 112, color: '#fff'}}>…pero ustedes dijeron:</div>
       </div>
+      {/* reloj: tiempo desde que se subió la historia */}
+      <div style={{position: 'absolute', top: 205, width: '100%', textAlign: 'center', opacity: relojVis}}>
+        <div style={{display: 'inline-flex', alignItems: 'center', gap: 18, padding: '10px 30px', borderRadius: 50, background: 'rgba(255,255,255,0.06)', border: `2px solid ${congelado ? AMARILLO : 'rgba(255,255,255,0.15)'}`}}>
+          <span style={{fontSize: 40}}>🕒</span>
+          <span style={{fontFamily: F.sans, fontWeight: 700, fontSize: 30, letterSpacing: 3, color: '#B9C2D0'}}>{rel.dia}</span>
+          <span style={{fontFamily: F.display, fontSize: 58, color: '#fff', minWidth: 230, textAlign: 'left'}}>{rel.hora}</span>
+        </div>
+        <div style={{marginTop: 8, fontFamily: F.sans, fontWeight: 600, fontSize: 26, color: '#8B93A3'}}>
+          {rel.pasado} desde que subimos la historia (ayer, 3:00 p.m.)
+        </div>
+      </div>
       {/* duelo */}
       <AbsoluteFill style={{opacity: duelo, transformOrigin: '540px 0px', transform: `translate(${Math.sin(f * 3) * sacude}px, ${-reduce * 40}px) scale(${empuje * (1 - reduce * 0.48)})`}}>
-        <Barra x={310} n={PSICO} color={AZUL} color2={AZUL_OSC} label="PSICOLOGÍA" fin={FIN_P} gana />
-        <Barra x={770} n={DERECHO} color={AMARILLO} color2="#C98E00" label="DERECHO" fin={FIN_D} gana={false} />
+        <Barra x={310} v={votosP(f)} color={AZUL} color2={AZUL_OSC} label="PSICOLOGÍA" fin={FIN_P} gana />
+        <Barra x={770} v={votosD(f)} color={AMARILLO} color2="#C98E00" label="DERECHO" fin={ESTANCA} gana={false} />
         {golpe > 0 && (
-          <div style={{position: 'absolute', left: 310 - 80, top: BASE - ALTO - 380 - (1 - golpe) * 200, fontSize: 150, opacity: golpe, transform: `rotate(${(1 - golpe) * -40}deg)`}}>👑</div>
+          <div style={{position: 'absolute', left: 310 + 70, top: BASE - ALTO - 330 - (1 - golpe) * 200, fontSize: 120, opacity: golpe, transform: `rotate(${18 - (1 - golpe) * 40}deg)`}}>👑</div>
         )}
       </AbsoluteFill>
+      {/* ¡remontada! */}
+      {remontada > 0 && (
+        <div style={{position: 'absolute', top: 1700, width: '100%', textAlign: 'center', transform: `scale(${remontada}) rotate(-4deg)`, opacity: Math.min(1, remontada * 2)}}>
+          <span style={{background: AZUL, color: '#fff', padding: '10px 36px', borderRadius: 16, fontFamily: F.display, fontSize: 84, letterSpacing: 2, boxShadow: `0 0 50px ${AZUL}`}}>¡LA REMONTADA!</span>
+        </div>
+      )}
       {/* el resto de respuestas */}
       <div style={{position: 'absolute', top: 1060, left: 90, right: 90, opacity: reduce}}>
         <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 34, letterSpacing: 6, color: VERDE, marginBottom: 22}}>OTRAS RESPUESTAS</div>
@@ -377,9 +419,12 @@ const Grafica: React.FC = () => {
       <AbsoluteFill style={{background: '#fff', opacity: flash}} />
       <Sfx at={4} name="whoosh" volume={0.4} />
       <Sfx at={30} name="impact" volume={0.5} />
-      <Sfx at={DUELO_AT} name="charge" volume={0.5} />
-      <Sfx at={DUELO_AT} name="riser" volume={0.5} />
-      <Sfx at={FIN_D} name="hist_stamp" volume={0.7} />
+      <Sfx at={DUELO_AT} name="charge" volume={0.45} />
+      <Sfx at={ESTANCA} name="impact" volume={0.75} />
+      <Sfx at={ESTANCA} name="hist_stamp" volume={0.8} />
+      <Sfx at={REMONTA - 6} name="riser" volume={0.6} />
+      <Sfx at={REMONTA} name="whoosh_largo" volume={0.5} />
+      <Sfx at={REBASA} name="flash" volume={0.6} />
       <Sfx at={FIN_P} name="impact" volume={0.8} />
       <Sfx at={FIN_P} name="ding" volume={0.6} />
       <Sfx at={OTRAS_AT - 10} name="whoosh" volume={0.4} />
@@ -390,38 +435,73 @@ const Grafica: React.FC = () => {
 // ---------------------------------------------------------------------------
 // 4. Cierre: ¿Derecho o Psicología?
 // ---------------------------------------------------------------------------
-export const CIERRE_F = 150;
+export const CIERRE_F = 270;
+const POSITIVO = 112; // "Al final, ganó la comunidad Westhill"
 const Cierre: React.FC = () => {
   const f = useCurrentFrame();
   const a = tw(f, [4, 18], [0, 1], ease.back);
   const o = tw(f, [14, 24], [0, 1], ease.back);
   const b = tw(f, [22, 36], [0, 1], ease.back);
   const cta = tw(f, [50, 64], [0, 1]);
-  const logo = tw(f, [70, 90], [0, 1]);
   const lado = tw(f, [0, 20], [0, 1], ease.inOut);
-  const negro = tw(f, [CIERRE_F - 12, CIERRE_F], [0, 1]);
+  // los dos colores se juntan en uno solo: la comunidad
+  const une = tw(f, [POSITIVO - 14, POSITIVO + 10], [0, 1], ease.inOut);
+  const p1 = tw(f, [POSITIVO + 6, POSITIVO + 20], [0, 1]);
+  const p2 = tw(f, [POSITIVO + 18, POSITIVO + 34], [0, 1], ease.back);
+  const corazon = tw(f, [POSITIVO + 34, POSITIVO + 46], [0, 1], ease.back);
+  const logo = tw(f, [POSITIVO + 50, POSITIVO + 72], [0, 1]);
+  const hash = tw(f, [POSITIVO + 70, POSITIVO + 82], [0, 1]);
+  const late = 1 + 0.08 * Math.max(0, Math.sin(((f - POSITIVO - 46) / 30) * Math.PI * 2)) ** 6;
+  const negro = tw(f, [CIERRE_F - 16, CIERRE_F], [0, 1]);
   return (
     <AbsoluteFill style={{background: NEGRO, overflow: 'hidden'}}>
-      {/* fondo partido en diagonal: Derecho (amarillo) y Psicología (azul) */}
-      <AbsoluteFill style={{background: `linear-gradient(160deg, ${AMARILLO}, #E39B00)`, clipPath: `polygon(0 0, ${100 * lado}% 0, ${100 * lado - 30}% 100%, 0 100%)`}} />
-      <AbsoluteFill style={{background: `linear-gradient(160deg, ${AZUL}, ${AZUL_OSC})`, clipPath: `polygon(${100 - 70 * lado + 30}% 0, 100% 0, 100% 100%, ${100 - 70 * lado}% 100%)`, opacity: lado > 0 ? 1 : 0}} />
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(6,7,9,0.2) 0%, rgba(6,7,9,0.6) 100%)'}} />
-      <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center', fontFamily: F.display, color: '#fff', textShadow: '0 10px 40px rgba(0,0,0,0.5)'}}>
-        <div style={{fontSize: 200, lineHeight: 1, transform: `scale(${a}) rotate(${(1 - a) * -10}deg)`}}>¿DERECHO</div>
-        <div style={{fontFamily: F.script, fontSize: 150, lineHeight: 1.1, color: '#fff', transform: `scale(${o})`}}>o</div>
-        <div style={{fontSize: 172, lineHeight: 1, transform: `scale(${b}) rotate(${(1 - b) * 10}deg)`}}>PSICOLOGÍA?</div>
-      </div>
-      <div style={{position: 'absolute', top: 1270, width: '100%', textAlign: 'center', opacity: cta, transform: `translateY(${(1 - cta) * 20}px)`}}>
-        <span style={{background: '#fff', color: NEGRO, padding: '16px 40px', borderRadius: 60, fontFamily: F.sans, fontWeight: 800, fontSize: 44}}>Te leemos en comentarios 👇</span>
-      </div>
-      <div style={{position: 'absolute', left: 340, top: 1450, width: 400, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`}}>
-        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
-      </div>
+      {/* fondo partido en diagonal: Derecho (amarillo) y Psicología (azul); al final se funden */}
+      <AbsoluteFill style={{opacity: 1 - une}}>
+        <AbsoluteFill style={{background: `linear-gradient(160deg, ${AMARILLO}, #E39B00)`, clipPath: `polygon(0 0, ${100 * lado}% 0, ${100 * lado - 30}% 100%, 0 100%)`}} />
+        <AbsoluteFill style={{background: `linear-gradient(160deg, ${AZUL}, ${AZUL_OSC})`, clipPath: `polygon(${100 - 70 * lado + 30}% 0, 100% 0, 100% 100%, ${100 - 70 * lado}% 100%)`, opacity: lado > 0 ? 1 : 0}} />
+        <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(6,7,9,0.2) 0%, rgba(6,7,9,0.6) 100%)'}} />
+        <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center', fontFamily: F.display, color: '#fff', textShadow: '0 10px 40px rgba(0,0,0,0.5)'}}>
+          <div style={{fontSize: 200, lineHeight: 1, transform: `scale(${a}) rotate(${(1 - a) * -10}deg)`}}>¿DERECHO</div>
+          <div style={{fontFamily: F.script, fontSize: 150, lineHeight: 1.1, color: '#fff', transform: `scale(${o})`}}>o</div>
+          <div style={{fontSize: 172, lineHeight: 1, transform: `scale(${b}) rotate(${(1 - b) * 10}deg)`}}>PSICOLOGÍA?</div>
+        </div>
+        <div style={{position: 'absolute', top: 1270, width: '100%', textAlign: 'center', opacity: cta, transform: `translateY(${(1 - cta) * 20}px)`}}>
+          <span style={{background: '#fff', color: NEGRO, padding: '16px 40px', borderRadius: 60, fontFamily: F.sans, fontWeight: 800, fontSize: 44}}>Te leemos en comentarios 👇</span>
+        </div>
+      </AbsoluteFill>
+      {/* cierre positivo */}
+      <AbsoluteFill style={{opacity: une}}>
+        <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 42%, rgba(61,139,212,0.55) 0%, rgba(39,99,154,0.25) 35%, rgba(6,7,9,0) 70%)`}} />
+        <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center'}}>
+          <div style={{opacity: p1, transform: `translateY(${(1 - p1) * 20}px)`, fontFamily: F.sans, fontWeight: 700, fontSize: 56, color: '#E6ECF3'}}>Al final, ganó la</div>
+          <div style={{marginTop: 6, opacity: Math.min(1, p2 * 2), transform: `scale(${0.7 + 0.3 * p2})`, fontFamily: F.display, fontSize: 150, lineHeight: 1, color: '#fff', textShadow: `0 0 40px ${AZUL}`}}>
+            COMUNIDAD
+            <div style={{fontFamily: F.script, fontSize: 150, lineHeight: 1.1, color: AMARILLO, textShadow: `0 0 30px rgba(242,194,48,0.6)`}}>Westhill</div>
+          </div>
+          <div style={{marginTop: 4, fontSize: 120, transform: `scale(${corazon * late})`}}>💙</div>
+        </div>
+        <div style={{position: 'absolute', left: 300, top: 1340, width: 480, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`}}>
+          <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
+        </div>
+        <div style={{position: 'absolute', top: 1560, width: '100%', textAlign: 'center', opacity: hash, fontFamily: F.sans, fontWeight: 800, fontSize: 32, letterSpacing: 8, color: AMARILLO}}>#SOMOSWESTHILL</div>
+        {/* confeti suave con los colores de la universidad */}
+        {Array.from({length: 40}, (_, i) => {
+          const t = (f - POSITIVO - (i % 10) * 3) / 120;
+          if (t < 0) return null;
+          const x = rnd(i, 21) * 1080 + Math.sin(f / 15 + i) * 30;
+          const y = -40 + t * 2100 * (0.6 + rnd(i, 22) * 0.6);
+          const col = [AZUL, AMARILLO, VERDE, '#fff'][i % 4];
+          return <div key={i} style={{position: 'absolute', left: x, top: y, width: 16, height: 10, background: col, opacity: 0.8, transform: `rotate(${f * 8 + i * 37}deg)`}} />;
+        })}
+      </AbsoluteFill>
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
       <Sfx at={4} name="impact" volume={0.6} />
       <Sfx at={14} name="pop" volume={0.6} />
       <Sfx at={22} name="impact" volume={0.6} />
       <Sfx at={50} name="flicker" volume={0.4} />
+      <Sfx at={POSITIVO - 14} name="whoosh_largo" volume={0.45} />
+      <Sfx at={POSITIVO + 18} name="flicker" volume={0.4} />
+      <Sfx at={POSITIVO + 34} name="ding" volume={0.5} />
     </AbsoluteFill>
   );
 };
@@ -435,14 +515,17 @@ const BLOQUES = [
 ];
 const STARTS = BLOQUES.reduce<number[]>((a, b, i) => [...a, i === 0 ? 0 : a[i - 1] + BLOQUES[i - 1].dur], []);
 export const OFRENDAS_FRAMES = STARTS[STARTS.length - 1] + BLOQUES[BLOQUES.length - 1].dur;
-/** Momentos para la música (segundos): apagón, primera tarjeta, pantalla llena, gráfica, golpe de la gráfica y cierre */
+/** Momentos para la música (segundos) */
 export const MARCAS = {
   apagon: STARTS[1] / 30,
   primera: (STARTS[1] + APAGON) / 30,
   lleno: (STARTS[1] + LLENO) / 30,
   grafica: STARTS[2] / 30,
+  estanca: (STARTS[2] + ESTANCA) / 30,
+  remonta: (STARTS[2] + REMONTA) / 30,
   golpe: (STARTS[2] + FIN_P) / 30,
   cierre: STARTS[3] / 30,
+  positivo: (STARTS[3] + POSITIVO) / 30,
   fin: OFRENDAS_FRAMES / 30,
 };
 
