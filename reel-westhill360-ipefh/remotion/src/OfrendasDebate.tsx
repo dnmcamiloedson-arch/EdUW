@@ -344,7 +344,6 @@ const Grafica: React.FC = () => {
   const flash = interpolate(f, [FIN_P - 1, FIN_P + 1, FIN_P + 10], [0, 0.8, 0], clamp) + interpolate(f, [REBASA - 1, REBASA + 1, REBASA + 8], [0, 0.45, 0], clamp);
   const golpeSeco = (at: number, fuerza: number) => (f >= at && f < at + 14 ? (at + 14 - f) * fuerza : 0);
   const sacude = golpeSeco(FIN_P, 1.6) + golpeSeco(ESTANCA, 1.3);
-  const remontada = tw(f, [REBASA, REBASA + 10], [0, 1], ease.back) * tw(f, [FIN_P - 4, FIN_P + 4], [1, 0]);
   const rel = reloj(HORAS(f));
   const relojVis = tw(f, [DUELO_AT - 6, DUELO_AT + 8], [0, 1]) * (1 - reduce);
   const congelado = f >= ESTANCA && f < REMONTA;
@@ -380,16 +379,7 @@ const Grafica: React.FC = () => {
       <AbsoluteFill style={{opacity: duelo, transformOrigin: '540px 0px', transform: `translate(${Math.sin(f * 3) * sacude}px, ${-reduce * 40}px) scale(${empuje * (1 - reduce * 0.48)})`}}>
         <Barra x={310} v={votosP(f)} color={AZUL} color2={AZUL_OSC} label="PSICOLOGÍA" fin={FIN_P} gana />
         <Barra x={770} v={votosD(f)} color={AMARILLO} color2="#C98E00" label="DERECHO" fin={ESTANCA} gana={false} />
-        {golpe > 0 && (
-          <div style={{position: 'absolute', left: 310 + 70, top: BASE - ALTO - 330 - (1 - golpe) * 200, fontSize: 120, opacity: golpe, transform: `rotate(${18 - (1 - golpe) * 40}deg)`}}>👑</div>
-        )}
       </AbsoluteFill>
-      {/* ¡remontada! */}
-      {remontada > 0 && (
-        <div style={{position: 'absolute', top: 1700, width: '100%', textAlign: 'center', transform: `scale(${remontada}) rotate(-4deg)`, opacity: Math.min(1, remontada * 2)}}>
-          <span style={{background: AZUL, color: '#fff', padding: '10px 36px', borderRadius: 16, fontFamily: F.display, fontSize: 84, letterSpacing: 2, boxShadow: `0 0 50px ${AZUL}`}}>¡LA REMONTADA!</span>
-        </div>
-      )}
       {/* el resto de respuestas */}
       <div style={{position: 'absolute', top: 1060, left: 90, right: 90, opacity: reduce}}>
         <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 34, letterSpacing: 6, color: VERDE, marginBottom: 22}}>OTRAS RESPUESTAS</div>
