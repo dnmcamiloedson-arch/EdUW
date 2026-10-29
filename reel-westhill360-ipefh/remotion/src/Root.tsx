@@ -8,6 +8,7 @@ import {VotoMujer, VOTO_FRAMES} from './VotoMujer';
 import {DiaMedico, MEDICO_FRAMES} from './DiaMedico';
 import {Medico3Palabras, M3P_FRAMES} from './Medico3Palabras';
 import {Titanic, TITANIC_FRAMES} from './Titanic';
+import {OfrendasDebate, OFRENDAS_FRAMES} from './OfrendasDebate';
 import {Chapter, chapterDur, CHAPTERS, CORNHOLE_FRAMES, CornholeStory} from './Stories';
 import {FPS, H, W, loadFonts} from './theme';
 
@@ -31,6 +32,8 @@ export const Root: React.FC = () => (
     <Composition id="Medico3PalabrasSinMusica" component={Medico3Palabras} durationInFrames={M3P_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="Titanic" component={Titanic} durationInFrames={TITANIC_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="TitanicSinMusica" component={Titanic} durationInFrames={TITANIC_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
+    <Composition id="OfrendasDebate" component={OfrendasDebate} durationInFrames={OFRENDAS_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
+    <Composition id="OfrendasDebateSinMusica" component={OfrendasDebate} durationInFrames={OFRENDAS_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
