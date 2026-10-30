@@ -308,36 +308,68 @@ const Poster: React.FC = () => {
   );
 };
 
-const Barrido: React.FC = () => {
+const Barrido: React.FC<{alto: number}> = ({alto}) => {
   const f = useCurrentFrame();
-  const y = interpolate(f, [0, 12, 30], [VAC_H, -460, -2800], {...clamp, easing: ease.inOut});
+  const y = interpolate(f, [0, 12, 30], [alto, -460, -2800], {...clamp, easing: ease.inOut});
   return (
     <>
-      <Img src={capa('cinta')} style={{position: 'absolute', left: -60, width: 1200, height: 2600, top: y}} />
+      <Img src={capa('cinta')} style={{position: 'absolute', left: -60, width: 1200, height: Math.max(2600, alto + 900), top: y}} />
       <Sfx at={0} name="whoosh_largo" volume={0.5} />
     </>
   );
 };
 
 export const VACUNA_FRAMES = INTRO_F + POSTER_F;
-export const Vacunacion: React.FC<{music?: boolean}> = ({music = true}) => (
-  <AbsoluteFill style={{background: CREMA}}>
-    <Sequence durationInFrames={INTRO_F + 2}>
-      <AbsoluteFill style={{background: CREMA}}>
-        <Papel />
-        <div style={{position: 'absolute', left: (VAC_W - 1080 * (VAC_H / 1920)) / 2, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `scale(${VAC_H / 1920})`}}>
-          <Intro />
+/** Historia de IG (9:16): el póster completo al centro, un poco más chico para librar las barras de Instagram,
+ *  sobre una versión desenfocada del mismo póster */
+const ESCALA_HISTORIA = 0.86;
+const FondoDifuso: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill style={{opacity: tw(f, [0, 20], [0, 1])}}>
+      <Img src={capa('original')} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(40px) saturate(1.1)', transform: 'scale(1.25)'}} />
+      <AbsoluteFill style={{background: 'rgba(245,242,234,0.25)'}} />
+    </AbsoluteFill>
+  );
+};
+export const Vacunacion: React.FC<{music?: boolean; historia?: boolean}> = ({music = true, historia = false}) => {
+  const alto = historia ? 1920 : VAC_H;
+  const s = historia ? ESCALA_HISTORIA : 1;
+  return (
+    <AbsoluteFill style={{background: CREMA}}>
+      <Sequence durationInFrames={INTRO_F + 2}>
+        <AbsoluteFill style={{background: CREMA}}>
+          <Papel />
+          <div style={{position: 'absolute', left: (VAC_W - 1080 * (alto / 1920)) / 2, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `scale(${alto / 1920})`}}>
+            <Intro />
+          </div>
+        </AbsoluteFill>
+      </Sequence>
+      <Sequence from={INTRO_F}>
+        {historia && <FondoDifuso />}
+        <div
+          style={{
+            position: 'absolute',
+            left: (VAC_W - VAC_W * s) / 2,
+            top: (alto - VAC_H * s) / 2,
+            width: VAC_W,
+            height: VAC_H,
+            transformOrigin: '0 0',
+            transform: `scale(${s})`,
+            overflow: 'hidden',
+            borderRadius: historia ? 28 : 0,
+            boxShadow: historia ? '0 30px 80px rgba(0,0,0,0.35)' : 'none',
+          }}
+        >
+          <Poster />
         </div>
-      </AbsoluteFill>
-    </Sequence>
-    <Sequence from={INTRO_F}>
-      <Poster />
-    </Sequence>
-    {/* barrido entre la intro y el póster: tira azul rasgada que sube y cruza toda la pantalla */}
-    <Sequence from={INTRO_F - 12} durationInFrames={30}>
-      <Barrido />
-    </Sequence>
-    <Grain opacity={0.035} />
-    {music && <Audio src={staticFile('music/vacuna.mp3')} volume={(fr) => interpolate(fr, [0, 10, VACUNA_FRAMES - 30, VACUNA_FRAMES], [0, 0.6, 0.6, 0], clamp)} />}
-  </AbsoluteFill>
-);
+      </Sequence>
+      {/* barrido entre la intro y el póster: tira azul rasgada que sube y cruza toda la pantalla */}
+      <Sequence from={INTRO_F - 12} durationInFrames={30}>
+        <Barrido alto={alto} />
+      </Sequence>
+      <Grain opacity={0.035} />
+      {music && <Audio src={staticFile('music/vacuna.mp3')} volume={(fr) => interpolate(fr, [0, 10, VACUNA_FRAMES - 30, VACUNA_FRAMES], [0, 0.6, 0.6, 0], clamp)} />}
+    </AbsoluteFill>
+  );
+};

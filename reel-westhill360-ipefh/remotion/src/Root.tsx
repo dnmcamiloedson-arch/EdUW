@@ -39,6 +39,7 @@ export const Root: React.FC = () => (
     <Composition id="Tdah" component={Tdah} durationInFrames={TDAH_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="TdahSinMusica" component={Tdah} durationInFrames={TDAH_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="Vacunacion" component={Vacunacion} durationInFrames={VACUNA_FRAMES} fps={FPS} width={VAC_W} height={VAC_H} defaultProps={{music: true}} />
+    <Composition id="VacunacionHistoria" component={Vacunacion} durationInFrames={VACUNA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true, historia: true}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
