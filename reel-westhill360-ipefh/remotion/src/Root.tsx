@@ -10,6 +10,7 @@ import {Medico3Palabras, M3P_FRAMES} from './Medico3Palabras';
 import {Titanic, TITANIC_FRAMES} from './Titanic';
 import {OfrendasDebate, OFRENDAS_FRAMES} from './OfrendasDebate';
 import {Tdah, TDAH_FRAMES} from './Tdah';
+import {Vacunacion, VACUNA_FRAMES} from './Vacunacion';
 import {Chapter, chapterDur, CHAPTERS, CORNHOLE_FRAMES, CornholeStory} from './Stories';
 import {FPS, H, W, loadFonts} from './theme';
 
@@ -37,6 +38,7 @@ export const Root: React.FC = () => (
     <Composition id="OfrendasDebateSinMusica" component={OfrendasDebate} durationInFrames={OFRENDAS_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="Tdah" component={Tdah} durationInFrames={TDAH_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="TdahSinMusica" component={Tdah} durationInFrames={TDAH_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
+    <Composition id="Vacunacion" component={Vacunacion} durationInFrames={VACUNA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
