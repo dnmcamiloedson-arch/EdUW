@@ -9,9 +9,9 @@ import {F, ease, tw} from './theme';
 //  1. Intro que invita a vacunarse, con el estilo del póster (papel crema, azul, amarillo, papel rasgado).
 //  2. El póster se arma pieza por pieza con las capas del cliente (public/photos/vacuna, posiciones
 //     medidas contra el diseño original de 1292x2000). Los elementos que no venían en capas
-//     (logo, "CONTRA LA INFLUENZA", "Tu salud merece…", redes) se recrean aquí.
-// El póster (1292x2000) se escala para caber a lo ancho y se centra; las esquinas de arriba y las ondas de abajo
-// se recorren hasta el borde del video para que no quede franja vacía.
+//     (logo, "CONTRA LA INFLUENZA", "Tu salud merece…", redes) se recortan del propio original, y al final
+//     se funde con la imagen original para que el resultado sea idéntico al diseño.
+// El video tiene las mismas proporciones que el póster (1080x1672), así que nada se recorre ni se recorta.
 // ---------------------------------------------------------------------------
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const CREMA = '#F5F2EA';
@@ -41,10 +41,27 @@ const P: Record<string, Caja> = {
   ondas: {x: 8, y: 1710, w: 1279, h: 290},
   linea_ola: {x: 6, y: 1728, w: 1279, h: 271},
 };
-const K = 1080 / 1292; // escala del póster en el video (cabe completo a lo ancho)
-const OX = (1080 - 1292 * K) / 2;
-const OY = (1920 - 2000 * K) / 2;
-const EXTRA = OY / K; // lo que se recorren las piezas de los bordes (en unidades del póster)
+export const VAC_W = 1080;
+export const VAC_H = 1672; // misma proporción que el póster (1292x2000)
+const K = VAC_W / 1292;
+const OX = 0;
+const OY = 0;
+const EXTRA = 0;
+/** piezas recortadas del original (caja en coordenadas del póster) */
+const RECORTE: Record<string, Caja> = {
+  logo: {x: 400, y: 25, w: 495, h: 207},
+  contra: {x: 66, y: 812, w: 742, h: 74},
+  tusalud: {x: 140, y: 1670, w: 532, h: 106},
+  redes: {x: 760, y: 1914, w: 512, h: 76},
+};
+const Recorte: React.FC<{n: string; style?: React.CSSProperties}> = ({n, style}) => {
+  const c = RECORTE[n];
+  return (
+    <div style={{position: 'absolute', left: c.x, top: c.y, width: c.w, height: c.h, ...style}}>
+      <Img src={capa(n)} style={{width: '100%', height: '100%', display: 'block'}} />
+    </div>
+  );
+};
 
 const Pieza: React.FC<{n: string; dy?: number; style?: React.CSSProperties; img?: React.CSSProperties}> = ({n, dy = 0, style, img}) => {
   const c = P[n];
@@ -154,7 +171,6 @@ const Intro: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill>
-      <Papel />
       {f < 80 && Array.from({length: 22}, (_, i) => <Copo key={i} i={i} />)}
       <Escena from={0} dur={78}>
         <Linea texto="Ya llegó" at={6} top={640} size={90} />
@@ -199,26 +215,6 @@ const Intro: React.FC = () => {
 // 2. El póster se arma
 // ---------------------------------------------------------------------------
 export const POSTER_F = 360;
-const RedIcono: React.FC<{tipo: 'yt' | 'tt' | 'fb' | 'ig'}> = ({tipo}) => (
-  <svg width={58} height={58} viewBox="-30 -30 60 60">
-    <circle r={27} fill="none" stroke="#fff" strokeWidth={3.5} />
-    {tipo === 'yt' && (
-      <>
-        <rect x={-15} y={-11} width={30} height={22} rx={7} fill="#fff" />
-        <path d="M-4 -6 L7 0 L-4 6 Z" fill={AZUL} />
-      </>
-    )}
-    {tipo === 'tt' && <path d="M2 -16 L2 6 A7 7 0 1 1 -5 -1 M2 -16 C3 -10 8 -7 13 -7" fill="none" stroke="#fff" strokeWidth={4.5} strokeLinecap="round" />}
-    {tipo === 'fb' && <path d="M4 18 L4 1 L10 1 L11 -6 L4 -6 L4 -10 C4 -13 5 -14 8 -14 L11 -14 L11 -20 L6 -20 C-1 -20 -3 -16 -3 -10 L-3 -6 L-8 -6 L-8 1 L-3 1 L-3 18 Z" fill="#fff" />}
-    {tipo === 'ig' && (
-      <>
-        <rect x={-15} y={-15} width={30} height={30} rx={9} fill="none" stroke="#fff" strokeWidth={4} />
-        <circle r={7} fill="none" stroke="#fff" strokeWidth={4} />
-        <circle cx={9} cy={-9} r={2.4} fill="#fff" />
-      </>
-    )}
-  </svg>
-);
 const Poster: React.FC = () => {
   const f = useCurrentFrame();
   const t = (a: number, b: number, e = ease.out) => tw(f, [a, b], [0, 1], e);
@@ -245,36 +241,30 @@ const Poster: React.FC = () => {
   const lugar = t(166, 182);
   const l2 = t(178, 190, ease.inOut);
   const salud = t(188, 206);
-  const redes = (i: number) => t(202 + i * 5, 214 + i * 5, ease.back);
+  const redes = (_: number) => t(202, 226, ease.inOut);
   const flash = interpolate(f, [80, 82, 92], [0, 0.5, 0], clamp);
-  const respira = Math.sin(f / 22);
-  const empuje = 1 + 0.012 * tw(f, [140, POSTER_F], [0, 1], ease.inOut);
+  // West se mece un poco y se detiene antes de fundirse con el original
+  const respira = Math.sin(f / 22) * (1 - tw(f, [215, 240], [0, 1]));
+  const final = tw(f, [240, 262], [0, 1], ease.inOut);
   return (
     <AbsoluteFill style={{background: CREMA, overflow: 'hidden'}}>
-      <AbsoluteFill style={{transformOrigin: '540px 900px', transform: `scale(${empuje})`}}>
+      <AbsoluteFill>
         <div style={{position: 'absolute', left: OX, top: OY, width: 1292, height: 2000, transformOrigin: '0 0', transform: `scale(${K})`}}>
           {/* decoración */}
           <Pieza n="esquina_sup" dy={-EXTRA} style={{transformOrigin: '0 0', transform: `scale(${1 + 0 * esq}) translate(${(1 - esq) * -420}px, ${(1 - esq) * -340}px)`}} />
           <Pieza n="semitono" dy={-EXTRA} style={{opacity: semi, transformOrigin: '100% 0', transform: `scale(${0.6 + 0.4 * semi})`}} />
           <Pieza n="esquina_izq" style={{transform: `translateX(${(1 - izq) * -260}px)`}} />
           {/* logo */}
-          <div style={{position: 'absolute', left: 411, top: 35, width: 472, clipPath: `inset(${(1 - logo) * 100}% 0 0 0)`, transform: `translateY(${(1 - logo) * 30}px)`}}>
-            <Img src={staticFile('logos/logo_westhill_sin_blanco.png')} style={{width: '100%'}} />
-          </div>
+          <Recorte n="logo" style={{clipPath: `inset(${(1 - logo) * 100}% 0 0 0)`, transform: `translateY(${(1 - logo) * 30}px)`}} />
           {/* títulos */}
           <Pieza n="cuidarte" style={{clipPath: `inset(0 ${(1 - cuid) * 100}% 0 0)`}} />
           <Pieza n="jornada" style={{opacity: Math.min(1, jor * 2), transformOrigin: '50% 100%', transform: `translateY(${(1 - jor) * -160}px) scale(${0.7 + 0.3 * jor})`}} />
           <Pieza n="cinta" style={{clipPath: `inset(0 ${(1 - cinta) * 50}% 0 ${(1 - cinta) * 50}%)`}} />
           <Pieza n="vacunacion" style={{opacity: Math.min(1, vac * 3), transform: `scale(${1.6 - 0.6 * vac})`, filter: `blur(${(1 - Math.min(1, vac)) * 8}px)`}} />
-          <svg width={728} height={70} style={{position: 'absolute', left: 74, top: 815, overflow: 'visible', clipPath: `inset(0 ${(1 - contra) * 100}% 0 0)`}}>
-            <text x={0} y={61} textLength={728} lengthAdjust="spacingAndGlyphs" fontFamily={F.sans} fontWeight={900} fontSize={76} fill={NAVY}>
-              CONTRA LA INFLUENZA
-            </text>
-          </svg>
+          <Recorte n="contra" style={{clipPath: `inset(0 ${(1 - contra) * 100}% 0 0)`}} />
           {/* West */}
           <Pieza
             n="lince"
-            dy={EXTRA * 0.55}
             style={{transformOrigin: '60% 100%', transform: `translateY(${(1 - lince) * 700}px) rotate(${respira * 0.8 * Math.min(1, lince)}deg)`, opacity: Math.min(1, lince * 3)}}
           />
           {/* ondas de abajo delante de West, como en el original */}
@@ -289,29 +279,16 @@ const Poster: React.FC = () => {
           <Pieza n="linea1" style={{clipPath: `inset(0 ${(1 - l1) * 100}% 0 0)`}} />
           <Pieza n="lugar" style={{opacity: lugar, transform: `translateY(${(1 - lugar) * 24}px)`}} />
           <Pieza n="linea2" style={{clipPath: `inset(0 ${(1 - l2) * 100}% 0 0)`}} />
-          <svg width={600} height={100} style={{position: 'absolute', left: 107, top: 1672, overflow: 'visible', opacity: salud, transform: `translateY(${(1 - salud) * 20}px)`}}>
-            <text x={300} y={40} textAnchor="middle" fontFamily={F.sans} fontWeight={500} fontSize={40} fill="#0F3A64">
-              Tu salud merece un espacio
-            </text>
-            <text x={300} y={92} textAnchor="middle" fontFamily={F.sans} fontWeight={500} fontSize={40} fill="#0F3A64">
-              en tu agenda.
-            </text>
-          </svg>
-          {/* redes */}
-          <div style={{position: 'absolute', left: 772, top: 1920 + EXTRA, display: 'flex', alignItems: 'center', gap: 4, transformOrigin: '0 50%', transform: 'scale(0.9)'}}>
-            {(['yt', 'tt', 'fb', 'ig'] as const).map((k, i) => (
-              <div key={k} style={{transform: `scale(${redes(i)})`}}>
-                <RedIcono tipo={k} />
-              </div>
-            ))}
-            <span style={{marginLeft: 6, fontFamily: F.sans, fontWeight: 700, fontSize: 38, color: '#fff', opacity: redes(4), transform: `translateX(${(1 - redes(4)) * 30}px)`}}>@univwesthill</span>
-          </div>
+          <Recorte n="tusalud" style={{opacity: salud, transform: `translateY(${(1 - salud) * 20}px)`}} />
+          {/* redes: entran de izquierda a derecha */}
+          <Recorte n="redes" style={{clipPath: `inset(0 ${(1 - redes(0)) * 100}% 0 0)`}} />
         </div>
       </AbsoluteFill>
-      <AbsoluteFill style={{background: '#fff', opacity: flash}} />
-      {/* barrido de entrada: tira azul rasgada que cruza la pantalla */}
-      <AbsoluteFill style={{pointerEvents: 'none'}}>
+      {/* al final se funde con el diseño original: queda idéntico */}
+      <AbsoluteFill style={{opacity: final}}>
+        <Img src={capa('original')} style={{width: VAC_W, height: VAC_H}} />
       </AbsoluteFill>
+      <AbsoluteFill style={{background: '#fff', opacity: flash}} />
       <Sfx at={30} name="click" volume={0.4} />
       <Sfx at={44} name="hist_typing" volume={0.4} />
       <Sfx at={58} name="impact" volume={0.5} />
@@ -333,7 +310,7 @@ const Poster: React.FC = () => {
 
 const Barrido: React.FC = () => {
   const f = useCurrentFrame();
-  const y = interpolate(f, [0, 12, 30], [1920, -340, -2800], {...clamp, easing: ease.inOut});
+  const y = interpolate(f, [0, 12, 30], [VAC_H, -460, -2800], {...clamp, easing: ease.inOut});
   return (
     <>
       <Img src={capa('cinta')} style={{position: 'absolute', left: -60, width: 1200, height: 2600, top: y}} />
@@ -346,7 +323,12 @@ export const VACUNA_FRAMES = INTRO_F + POSTER_F;
 export const Vacunacion: React.FC<{music?: boolean}> = ({music = true}) => (
   <AbsoluteFill style={{background: CREMA}}>
     <Sequence durationInFrames={INTRO_F + 2}>
-      <Intro />
+      <AbsoluteFill style={{background: CREMA}}>
+        <Papel />
+        <div style={{position: 'absolute', left: (VAC_W - 1080 * (VAC_H / 1920)) / 2, top: 0, width: 1080, height: 1920, transformOrigin: '0 0', transform: `scale(${VAC_H / 1920})`}}>
+          <Intro />
+        </div>
+      </AbsoluteFill>
     </Sequence>
     <Sequence from={INTRO_F}>
       <Poster />
