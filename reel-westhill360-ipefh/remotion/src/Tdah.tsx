@@ -262,12 +262,15 @@ const TituloTdah: React.FC = () => {
 
 /** Tarjeta de sección: número + pregunta */
 export const SECCION_F = 42;
+/** La tarjeta entra PRE cuadros antes de su lugar (barre sobre la toma anterior) y sale PRE cuadros
+ *  sobre la toma siguiente, para que nunca se vea negro entre tomas */
+const PRE = 10;
 const Seccion: React.FC<{num: string; titulo: string; color?: string}> = ({num, titulo, color = AZUL}) => {
   const f = useCurrentFrame();
-  const barre = tw(f, [0, 10], [0, 1], ease.inOut);
-  const n = tw(f, [4, 14], [0, 1], ease.back);
-  const t = tw(f, [8, 18], [0, 1], ease.back);
-  const sale = tw(f, [SECCION_F - 8, SECCION_F], [0, 1], ease.in);
+  const barre = tw(f, [0, PRE], [0, 1], ease.inOut);
+  const n = tw(f, [PRE - 4, PRE + 6], [0, 1], ease.back);
+  const t = tw(f, [PRE - 2, PRE + 8], [0, 1], ease.back);
+  const sale = tw(f, [SECCION_F + PRE, SECCION_F + 2 * PRE], [0, 1], ease.in);
   return (
     <AbsoluteFill style={{clipPath: `inset(0 ${sale * 100}% 0 ${(1 - barre) * 100}%)`}}>
       <FondoMG color={color} />
@@ -343,17 +346,17 @@ const Outro: React.FC = () => {
 // ---------------------------------------------------------------------------
 // Línea de tiempo
 // ---------------------------------------------------------------------------
-type Pieza = {dur: number; el: React.ReactNode; voz?: boolean};
+type Pieza = {dur: number; el: React.ReactNode; voz?: boolean; tarjeta?: boolean};
 const PIEZAS: Pieza[] = [
   {dur: durLista(HOOK), el: <Bloque lista={HOOK} />, voz: true},
   {dur: TITULO_F, el: <TituloTdah />},
-  {dur: SECCION_F, el: <Seccion num="01" titulo="¿Qué es?" />},
+  {dur: SECCION_F, tarjeta: true, el: <Seccion num="01" titulo="¿Qué es?" />},
   {dur: durLista(QUE), el: <Bloque lista={QUE} pregunta="¿Qué es el TDAH?" num="01" />, voz: true},
-  {dur: SECCION_F, el: <Seccion num="02" titulo="¿Cómo se ve?" color={VERDE} />},
+  {dur: SECCION_F, tarjeta: true, el: <Seccion num="02" titulo="¿Cómo se ve?" color={VERDE} />},
   {dur: durLista(COMO), el: <Bloque lista={COMO} pregunta="¿Cómo se manifiesta?" num="02" />, voz: true},
-  {dur: SECCION_F, el: <Seccion num="03" titulo="¿Conoces a alguien?" color={AZUL_CL} />},
+  {dur: SECCION_F, tarjeta: true, el: <Seccion num="03" titulo="¿Conoces a alguien?" color={AZUL_CL} />},
   {dur: durLista(CONOCES), el: <Bloque lista={CONOCES} pregunta="¿Conoces a alguien con TDAH?" num="03" />, voz: true},
-  {dur: SECCION_F, el: <Seccion num="✓" titulo="Lo que hay que saber" color={AZUL} />},
+  {dur: SECCION_F, tarjeta: true, el: <Seccion num="✓" titulo="Lo que hay que saber" color={AZUL} />},
   {dur: durLista(HOST), el: <Bloque lista={HOST} />, voz: true},
   {dur: OUTRO_F, el: <Outro />},
 ];
@@ -372,11 +375,21 @@ export const Tdah: React.FC<{music?: boolean}> = ({music = true}) => {
   };
   return (
     <AbsoluteFill style={{background: '#000'}}>
-      {PIEZAS.map((p, i) => (
-        <Sequence key={i} from={STARTS[i]} durationInFrames={p.dur}>
-          {p.el}
-        </Sequence>
-      ))}
+      {PIEZAS.map((p, i) =>
+        p.tarjeta ? null : (
+          <Sequence key={i} from={STARTS[i]} durationInFrames={p.dur}>
+            {p.el}
+          </Sequence>
+        ),
+      )}
+      {/* tarjetas de sección encima, traslapadas con la toma anterior y la siguiente */}
+      {PIEZAS.map((p, i) =>
+        p.tarjeta ? (
+          <Sequence key={`t${i}`} from={STARTS[i] - PRE} durationInFrames={p.dur + 2 * PRE}>
+            {p.el}
+          </Sequence>
+        ) : null,
+      )}
       <Sequence from={STARTS[2]} durationInFrames={STARTS[10] - STARTS[2]}>
         <Banner />
       </Sequence>
