@@ -43,7 +43,7 @@ const CONOCES: Resp[] = [
   {n: 'e2', segs: [[26.12, 28.14], [28.35, 29.22], [29.83, 33.21]], texto: 'Mi *hermano menor* tiene 9 años… y pues sí, es mucho trabajo con él'},
   {n: 'e1', segs: [[33.66, 37.25], [37.82, 43.06]], texto: 'Tengo un *amigo* que estudia arquitectura que tiene TDAH… es muy distraído, *hiperactivo*, le gusta estar haciendo muchas cosas'},
   {n: 'e6', segs: [[13.09, 19.84]], texto: 'No conozco a nadie personalmente, pero creo que es algo *muy común*… muchos aquí podríamos *identificarnos*'},
-  {n: 'e7', segs: [[43.34, 50.18]], texto: 'Le brindaba *estrategias*, daba mayor contención, *lo escuchaba* y pasaba mayor tiempo con él'},
+  {n: 'e7', segs: [[32.13, 33.24], [36.0, 38.5], [43.34, 50.18]], texto: 'En algún momento… un *estudiante*, hace algunos años. Le brindaba *estrategias*, daba mayor contención, *lo escuchaba* y pasaba mayor tiempo con él'},
 ];
 const HOST: Resp[] = [
   {n: 'i3', segs: [[0.94, 5.62], [5.72, 7.03]], texto: 'Es una condición del *neurodesarrollo* que afecta la *atención*, la *impulsividad* y el *nivel de actividad*'},
