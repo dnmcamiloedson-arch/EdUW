@@ -1,6 +1,6 @@
 import React from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
-import {Flash, Grain} from './components';
+import {Flash, Grain, ScriptWord} from './components';
 import {Banner, Sfx} from './shots';
 import {C, F, SAFE_X, ease, tw} from './theme';
 
@@ -21,13 +21,15 @@ type Toma = [src: string, from: number, beats: number];
 /** foto: tomas que son una imagen fija; recorteArriba: clips exportados de Instagram (se sube el encuadre para ocultar su barra) */
 type Seccion = {titulo?: string; sub?: string; tomas: Toma[]; foto?: string; recorteArriba?: boolean};
 
-/** Arranque en frío: "si usara tres palabras… pero bueno, no son más de tres palabras" */
-const FRIO = {src: 'medico/v3_limpio', from: 5.0, to: 14.9};
+/** Intro emotiva: el doctor del Día del Médico ("…una de las cosas más hermosas… poder ayudar a la gente") */
+const FRIO = {src: 'medico/v1_limpio', from: 0.0, to: 8.2};
+const TOMA_DOC = 3.4; // segundo en que entra su toma completa
 export const FRIO_F = sec(FRIO.to - FRIO.from);
 export const TITULO_F = 8 * BEAT;
 export const FIN_F = 8 * BEAT;
 
 const SECCIONES: Seccion[] = [
+  {tomas: [['', 0, 6]], foto: 'TEXTOS'},
   {tomas: [['', 0, 4]], foto: 'photos/experiencia_westhill.jpg'},
   {
     titulo: 'Experiencia Westhill 360',
@@ -121,23 +123,39 @@ const MUERTOS = 'recap/muertos_base';
 const CUENTA = 20;
 const CUENTA_DESDE = 1.0; // dentro de cada bloque de 3 s se toma desde aquí…
 const CUENTA_TRAMO = 1.2; // …este tramo, comprimido a un tiempo de la canción
-const RESTO = {from: 60.0, to: 106.5};
+/** Tramos del recap del cliente después de la cuenta (se quitan 60–66 "HOY / Bienvenido a casa" y 72–75 "Hoy vuelven a casa") */
+const TRAMOS_RESTO: [number, number][] = [
+  [66.0, 72.0],
+  [75.0, 95.9],
+];
+const RESTO_FIN = 106.5;
 /** Las fotos del momento entran entre los altares y el 1er lugar del recap del cliente */
 const CORTE_FOTOS = 95.9;
-const FOTO_CAM = ['f1', 'f2', 'f6'];
-const FOTO_POL = ['f3', 'f4', 'f5', 'f7'];
-const T_CAM = 43; // dos tiempos de "Fantasmas" por foto de cámara
-const T_POL = 22; // un tiempo por polaroid
-const FOTOS_F = FOTO_CAM.length * T_CAM + FOTO_POL.length * T_POL + 2 * T_CAM;
+const T_POL = 22; // cada polaroid cae en dos tiempos de "Fantasmas"
+/** Collage: 7 polaroids en tres filas que cubren la pantalla; caen en este orden */
+const POLAROIDS: {n: string; x: number; y: number; r: number}[] = [
+  {n: 'f4', x: 60, y: 150, r: -7},
+  {n: 'f2', x: 590, y: 200, r: 6},
+  {n: 'f1', x: 10, y: 720, r: -4},
+  {n: 'f6', x: 650, y: 760, r: 5},
+  {n: 'f3', x: 90, y: 1270, r: 4},
+  {n: 'f7', x: 570, y: 1250, r: -5},
+  {n: 'f5', x: 330, y: 680, r: 2},
+];
+const FOTOS_F = POLAROIDS.length * T_POL + 70;
+/** después de las fotos se salta la tarjeta "Y el primer lugar es para…" (96.0–96.45 s) y entra directo el 1er lugar */
+const REANUDA = 96.5;
+const durResto = TRAMOS_RESTO.reduce((a, [x, y]) => a + sec(y - x), 0) + sec(RESTO_FIN - REANUDA);
 /** Día de Muertos usa "Fantasmas" (instrumental) desde 1:10: lo tranquilo de 70.0 a 75.1 s va bajo la voz en
  *  negro y el golpe de 75.1 s abre la cuenta regresiva; cada número dura dos tiempos (0.72 s). */
-const FANTASMAS_DESDE = 70.0;
+const FANTASMAS_DESDE = 67.1;
 const NEGRO_F = sec(75.1 - FANTASMAS_DESDE);
 const NUM = 0.72; // segundos por número
 const numIni = (k: number) => NEGRO_F + Math.round(k * NUM * 30);
 const CUENTA_F = numIni(CUENTA) - NEGRO_F;
-const VOZ_AT = 12; // la voz entra poco después del negro
-export const MUERTOS_F = NEGRO_F + CUENTA_F + sec(RESTO.to - RESTO.from) + FOTOS_F;
+const VOZ1_AT = 45; // primera frase después de un silencio en negro
+const VOZ2_AT = 140; // segunda frase, separada para dar suspenso
+export const MUERTOS_F = NEGRO_F + CUENTA_F + durResto + FOTOS_F;
 export const RECAP_FRAMES = ARRANQUES.fin + MUERTOS_F + FIN_F;
 /** segundo de la canción en que empieza el video: su entrada fuerte (18.0 s) cae en el título */
 const MUSICA_DESDE = 18.0 - FRIO_F / 30;
@@ -156,12 +174,47 @@ const Clip: React.FC<{src: string; from: number; dur: number; k: number; recorte
   );
 };
 
-/** Foto fija con acercamiento lento */
+/** Foto fija: entra con golpe de zoom y sacudida, luego acercamiento lento */
 const Foto: React.FC<{src: string; dur: number}> = ({src, dur}) => {
   const f = useCurrentFrame();
+  const golpe = tw(f, [0, 10], [0, 1], ease.out);
+  const sacude = f < 10 ? (10 - f) * 1.8 : 0;
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
-      <Img src={staticFile(src)} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.04 + 0.06 * (f / dur)})`}} />
+      <Img src={staticFile(src)} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `translate(${Math.sin(f * 3) * sacude}px, ${Math.cos(f * 4) * sacude}px) scale(${1.35 - 0.3 * golpe + 0.05 * (f / dur)}) rotate(${(1 - golpe) * -3}deg)`}} />
+      <Sfx at={0} name="impact" volume={0.55} />
+    </AbsoluteFill>
+  );
+};
+/** Antes de la foto: frases de la Experiencia Westhill al ritmo (un cambio por tiempo de la canción) */
+const FRASES_EXP: {t: number; arriba?: string; grande?: string; script?: string}[] = [
+  {t: 0, grande: 'Este mes'},
+  {t: 1, arriba: 'abrimos nuestras', grande: 'PUERTAS'},
+  {t: 3, arriba: 'a quienes vienen a', script: 'descubrir su futuro'},
+  {t: 5, arriba: 'EXPERIENCIA', grande: 'WESTHILL 360'},
+];
+const TextosExperiencia: React.FC = () => {
+  const f = useCurrentFrame();
+  const i = FRASES_EXP.filter((x) => f >= x.t * BEAT).length - 1;
+  const fr = FRASES_EXP[i];
+  const at = fr.t * BEAT;
+  const p = tw(f, [at, at + 8], [0, 1], ease.back);
+  return (
+    <AbsoluteFill style={{background: C.azul, overflow: 'hidden'}}>
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(61,139,212,0.95) 0%, rgba(39,99,154,0) 65%)'}} />
+      <AbsoluteFill style={{backgroundImage: 'radial-gradient(rgba(255,255,255,0.14) 2.5px, transparent 3px)', backgroundSize: '50px 50px', backgroundPosition: `${(f * 0.8) % 50}px ${(f * 0.4) % 50}px`}} />
+      <div style={{position: 'absolute', top: 780, left: SAFE_X, right: SAFE_X, textAlign: 'center', transform: `scale(${0.6 + 0.4 * p})`, opacity: Math.min(1, p * 2)}}>
+        {fr.arriba && <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 58, color: '#fff', letterSpacing: fr.t === 5 ? 14 : 0}}>{fr.arriba}</div>}
+        {fr.grande && <div style={{fontFamily: F.display, fontSize: fr.t === 0 ? 170 : 150, lineHeight: 1.05, color: fr.t === 5 ? C.amarillo : '#fff', textShadow: '0 10px 0 rgba(20,35,60,0.35)'}}>{fr.grande}</div>}
+        {fr.script && (
+          <div style={{marginTop: 6}}>
+            <ScriptWord text={fr.script} start={at + 2} size={120} neon tilt={-5} dur={12} />
+          </div>
+        )}
+      </div>
+      {FRASES_EXP.map((x) => (
+        <Sfx key={x.t} at={x.t * BEAT} name={x.t === 5 ? 'impact' : 'whoosh'} volume={0.4} />
+      ))}
     </AbsoluteFill>
   );
 };
@@ -192,7 +245,7 @@ const SeccionVid: React.FC<{s: Seccion}> = ({s}) => {
         acc += d;
         return (
           <Sequence key={k} from={at} durationInFrames={d}>
-            {s.foto ? <Foto src={s.foto} dur={d} /> : <Clip src={src} from={from} dur={d} k={k} recorte={s.recorteArriba} />}
+            {s.foto === 'TEXTOS' ? <TextosExperiencia /> : s.foto ? <Foto src={s.foto} dur={d} /> : <Clip src={src} from={from} dur={d} k={k} recorte={s.recorteArriba} />}
           </Sequence>
         );
       })}
@@ -234,8 +287,8 @@ const Subt: React.FC<{at: number; children: React.ReactNode; top: number}> = ({a
 const EntradaMuertos: React.FC = () => {
   const f = useCurrentFrame();
   const vela = 0.85 + 0.15 * Math.sin(f * 0.5) + 0.06 * Math.sin(f * 1.7);
-  const a1 = VOZ_AT + sec(LINEA1.at);
-  const a2 = VOZ_AT + sec(LINEA2.at);
+  const a1 = VOZ1_AT;
+  const a2 = VOZ2_AT;
   return (
     <AbsoluteFill style={{background: '#050304', overflow: 'hidden'}}>
       <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 100%, rgba(232,129,26,${0.22 * vela}) 0%, rgba(5,3,4,0) 55%)`}} />
@@ -264,81 +317,61 @@ const EntradaMuertos: React.FC = () => {
           OLVIDO
         </span>
       </Subt>
-      <Sequence from={VOZ_AT} layout="none">
+      <Sequence from={VOZ1_AT} durationInFrames={sec(LINEA1.to + 0.1)} layout="none">
         <Audio src={staticFile('music/voz_muertos.mp3')} volume={1} />
+      </Sequence>
+      <Sequence from={VOZ2_AT} layout="none">
+        <Audio src={staticFile('music/voz_muertos.mp3')} startFrom={sec(LINEA2.at - 0.12)} volume={1} />
       </Sequence>
     </AbsoluteFill>
   );
 };
 const fotoSrc = (n: string) => staticFile(`photos/muertos_fotos/${n}.jpg`);
-/** Visor de cámara: esquinas, REC parpadeando y destello con obturador al disparar */
-const FotoCamara: React.FC<{n: string}> = ({n}) => {
+/** Entrada al 1er lugar: viene de un destello dorado y se asienta con un leve zoom */
+const PrimerLugar: React.FC = () => {
   const f = useCurrentFrame();
-  const enfoca = tw(f, [0, 8], [1.12, 1], ease.out);
-  const blur = (1 - tw(f, [0, 8], [0, 1])) * 10;
-  const disparo = interpolate(f, [10, 11, 18], [0, 1, 0], clamp);
-  const rec = Math.floor(f / 8) % 2 === 0;
-  const esq = (st: React.CSSProperties) => <div style={{position: 'absolute', width: 90, height: 90, borderColor: 'rgba(255,255,255,0.9)', borderStyle: 'solid', borderWidth: 0, ...st}} />;
+  const luz = interpolate(f, [0, 3, 18], [1, 0.9, 0], clamp);
+  const z = 1.12 - 0.12 * tw(f, [0, 16], [0, 1], ease.out);
   return (
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
-      <Img src={fotoSrc(n)} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${enfoca * (1 + 0.03 * (f / T_CAM))})`, filter: `blur(${blur}px)`}} />
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)'}} />
-      {esq({left: 70, top: 230, borderTopWidth: 6, borderLeftWidth: 6})}
-      {esq({right: 70, top: 230, borderTopWidth: 6, borderRightWidth: 6})}
-      {esq({left: 70, bottom: 260, borderBottomWidth: 6, borderLeftWidth: 6})}
-      {esq({right: 70, bottom: 260, borderBottomWidth: 6, borderRightWidth: 6})}
-      <div style={{position: 'absolute', left: 510, top: 930, width: 60, height: 60, border: '3px solid rgba(255,255,255,0.75)', borderRadius: 8, transform: `scale(${1.5 - 0.5 * tw(f, [0, 8], [0, 1])})`}} />
-      <div style={{position: 'absolute', left: 100, top: 270, display: 'flex', alignItems: 'center', gap: 12, fontFamily: F.sans, fontWeight: 800, fontSize: 32, color: '#fff'}}>
-        <div style={{width: 22, height: 22, borderRadius: 11, background: '#E8333C', opacity: rec ? 1 : 0.2}} />
-        REC
-      </div>
-      <AbsoluteFill style={{background: '#fff', opacity: disparo}} />
-      <Sfx at={10} name="shutter" volume={0.7} />
+      <AbsoluteFill style={{transform: `scale(${z})`}}>
+        <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(REANUDA)} muted style={{width: '100%', height: '100%'}} />
+      </AbsoluteFill>
+      <AbsoluteFill style={{background: 'radial-gradient(circle at 50% 45%, #FFF1C9 0%, #F4A93C 45%, rgba(194,90,18,0.6) 100%)', opacity: luz}} />
+      <Sfx at={0} name="impact" volume={0.6} />
     </AbsoluteFill>
   );
 };
-/** Polaroids que caen y se apilan sobre fondo oscuro con pétalos */
-const POL_POS = [
-  {x: 110, y: 240, r: -8},
-  {x: 540, y: 300, r: 7},
-  {x: 130, y: 880, r: 5},
-  {x: 530, y: 930, r: -6},
-];
-const Polaroids: React.FC = () => {
+/** Polaroids que caen y se acomodan en collage sobre fondo oscuro con pétalos; al final la cámara entra con luz dorada */
+const FotosMuertos: React.FC = () => {
   const f = useCurrentFrame();
+  const sale = tw(f, [FOTOS_F - 14, FOTOS_F], [0, 1], ease.in);
+  const empuje = (1 + 0.03 * (f / FOTOS_F)) * (1 + sale * 1.4);
   return (
     <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, #2A1408 0%, #080405 75%)', overflow: 'hidden'}}>
       <PetalosNegro />
-      {FOTO_POL.map((n, i) => {
-        const at = i * T_POL;
-        const p = tw(f, [at, at + 12], [0, 1], ease.back);
-        const pos = POL_POS[i];
-        if (f < at) return null;
-        return (
-          <div key={n} style={{position: 'absolute', left: pos.x, top: pos.y, width: 430, padding: '20px 20px 80px', background: '#F7F2E8', boxShadow: '0 24px 50px rgba(0,0,0,0.6)', transform: `translateY(${(1 - p) * -900}px) rotate(${pos.r + (1 - p) * 30}deg) scale(${1.3 - 0.3 * p})`}}>
-            <Img src={fotoSrc(n)} style={{width: 390, height: 520, objectFit: 'cover', display: 'block'}} />
-            <Sfx at={at} name="shutter" volume={0.55} />
-          </div>
-        );
-      })}
-      <div style={{position: 'absolute', top: 1620, width: '100%', textAlign: 'center', opacity: tw(f, [FOTO_POL.length * T_POL, FOTO_POL.length * T_POL + 14], [0, 1])}}>
-        <span style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 78, letterSpacing: 6, backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>ASÍ LO VIVIMOS</span>
-      </div>
+      <AbsoluteFill style={{transform: `scale(${empuje})`}}>
+        {POLAROIDS.map(({n, x, y, r}, i) => {
+          const at = i * T_POL;
+          const p = tw(f, [at, at + 12], [0, 1], ease.back);
+          if (f < at) return null;
+          const flash = interpolate(f, [at + 10, at + 11, at + 16], [0, 0.7, 0], clamp);
+          return (
+            <div key={n} style={{position: 'absolute', left: x, top: y, width: 420, padding: '18px 18px 74px', background: '#F7F2E8', boxShadow: '0 24px 50px rgba(0,0,0,0.65)', transform: `translateY(${(1 - p) * -1000}px) rotate(${r + (1 - p) * 30}deg) scale(${1.3 - 0.3 * p})`}}>
+              <div style={{position: 'relative'}}>
+                <Img src={fotoSrc(n)} style={{width: 384, height: 520, objectFit: 'cover', display: 'block'}} />
+                <AbsoluteFill style={{background: '#fff', opacity: flash}} />
+              </div>
+              <Sfx at={at} name="shutter" volume={0.55} />
+            </div>
+          );
+        })}
+      </AbsoluteFill>
+      <AbsoluteFill style={{background: 'radial-gradient(circle at 50% 45%, #FFF1C9 0%, #F4A93C 45%, rgba(194,90,18,0.6) 100%)', opacity: sale}} />
+      <Sfx at={FOTOS_F - 14} name="whoosh_largo" volume={0.45} />
     </AbsoluteFill>
   );
 };
-const FotosMuertos: React.FC = () => (
-  <AbsoluteFill style={{background: '#000'}}>
-    {FOTO_CAM.map((n, i) => (
-      <Sequence key={n} from={i * T_CAM} durationInFrames={T_CAM}>
-        <FotoCamara n={n} />
-      </Sequence>
-    ))}
-    <Sequence from={FOTO_CAM.length * T_CAM}>
-      <Polaroids />
-    </Sequence>
-  </AbsoluteFill>
-);
 const Muertos: React.FC = () => {
   const vel = CUENTA_TRAMO / NUM;
   return (
@@ -352,14 +385,19 @@ const Muertos: React.FC = () => {
           <Sfx at={0} name="click" volume={0.3} />
         </Sequence>
       ))}
-      <Sequence from={NEGRO_F + CUENTA_F} durationInFrames={sec(CORTE_FOTOS - RESTO.from)}>
-        <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(RESTO.from)} muted style={{width: '100%', height: '100%'}} />
-      </Sequence>
-      <Sequence from={NEGRO_F + CUENTA_F + sec(CORTE_FOTOS - RESTO.from)} durationInFrames={FOTOS_F}>
+      {TRAMOS_RESTO.map(([a, b], i) => {
+        const from = NEGRO_F + CUENTA_F + TRAMOS_RESTO.slice(0, i).reduce((acc, [x, y]) => acc + sec(y - x), 0);
+        return (
+          <Sequence key={a} from={from} durationInFrames={sec(b - a)}>
+            <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(a)} muted style={{width: '100%', height: '100%'}} />
+          </Sequence>
+        );
+      })}
+      <Sequence from={NEGRO_F + CUENTA_F + durResto - sec(RESTO_FIN - REANUDA)} durationInFrames={FOTOS_F}>
         <FotosMuertos />
       </Sequence>
-      <Sequence from={NEGRO_F + CUENTA_F + sec(CORTE_FOTOS - RESTO.from) + FOTOS_F}>
-        <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(CORTE_FOTOS)} muted style={{width: '100%', height: '100%'}} />
+      <Sequence from={NEGRO_F + CUENTA_F + durResto - sec(RESTO_FIN - REANUDA) + FOTOS_F}>
+        <PrimerLugar />
       </Sequence>
       <Sequence from={NEGRO_F} layout="none">
         <Flash at={0} dur={8} />
@@ -368,14 +406,63 @@ const Muertos: React.FC = () => {
   );
 };
 
-/** Arranque en frío: la toma con su audio, sin rótulos */
+/** Intro: negro con la voz del doctor y sus frases; su toma entra con look de cine */
+type LineaDoc = {text: string; at: number; big?: boolean};
+const TARJETAS_DOC: {from: number; to: number; abajo?: boolean; lineas: LineaDoc[]}[] = [
+  {from: 0.4, to: 3.3, lineas: [{text: 'Una de las cosas', at: 0.5}, {text: 'más hermosas', at: 1.35, big: true}]},
+  {from: 3.4, to: 8.1, abajo: true, lineas: [{text: 'Por un lado', at: 3.5}, {text: 'poder ayudar', at: 5.8, big: true}, {text: 'a la gente', at: 6.9}]},
+];
 const Frio: React.FC = () => {
   const f = useCurrentFrame();
+  const toma = sec(TOMA_DOC);
+  const vis = interpolate(f, [toma, toma + 24, FRIO_F - 8, FRIO_F], [0, 1, 1, 0.3], clamp);
+  const barras = tw(f, [toma, toma + 24], [0, 1], ease.inOut);
   return (
     <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
-      <AbsoluteFill style={{transform: `scale(${1.02 + 0.05 * (f / FRIO_F)})`}}>
-        <OffthreadVideo src={staticFile(`proxies/${FRIO.src}.mp4`)} startFrom={sec(FRIO.from)} style={{width: '100%', height: '100%', objectFit: 'cover'}} volume={(fr) => interpolate(fr, [0, 4, FRIO_F - 6, FRIO_F], [0, 1, 1, 0], clamp)} />
+      <AbsoluteFill style={{opacity: vis}}>
+        <AbsoluteFill style={{transform: `scale(${1.0 + 0.06 * (f / FRIO_F)})`, transformOrigin: '540px 640px', filter: 'contrast(1.1) saturate(0.8) brightness(0.9) sepia(0.1)'}}>
+          <OffthreadVideo src={staticFile(`proxies/${FRIO.src}.mp4`)} startFrom={sec(FRIO.from)} style={{width: '100%', height: '100%', objectFit: 'cover'}} volume={(fr) => interpolate(fr, [0, 4, FRIO_F - 6, FRIO_F], [0, 1, 1, 0], clamp)} />
+        </AbsoluteFill>
+        <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.8) 85%)'}} />
       </AbsoluteFill>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: 150 * barras, background: '#000'}} />
+      <div style={{position: 'absolute', left: 0, right: 0, bottom: 0, height: 150 * barras, background: '#000'}} />
+      {TARJETAS_DOC.map((t, i) => {
+        const out = tw(f, [sec(t.to) - 8, sec(t.to)], [1, 0]);
+        return (
+          <div key={i} style={{position: 'absolute', left: 70, right: 70, top: t.abajo ? 1330 : 780, textAlign: 'center', opacity: out}}>
+            {t.lineas.map((l, j) => {
+              const p = tw(f, [sec(l.at), sec(l.at) + 14], [0, 1]);
+              const antes = t.lineas[j - 1];
+              return (
+                <div
+                  key={l.text}
+                  style={{
+                    marginTop: !antes ? 0 : antes.big && !l.big ? 26 : 12,
+                    fontFamily: l.big ? F.serif : F.sans,
+                    fontStyle: l.big ? 'italic' : 'normal',
+                    fontWeight: l.big ? 600 : 500,
+                    fontSize: l.big ? 88 : 40,
+                    letterSpacing: l.big ? 0 : 8,
+                    textTransform: l.big ? 'none' : 'uppercase',
+                    lineHeight: 1.2,
+                    color: '#F4F1EA',
+                    textShadow: '0 4px 24px rgba(0,0,0,0.9)',
+                    opacity: p,
+                    filter: `blur(${(1 - p) * 10}px)`,
+                    transform: `translateY(${(1 - p) * 18}px)`,
+                  }}
+                >
+                  {l.text}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+      <Grain opacity={0.08} />
+      <Sfx at={6} name="latido" volume={0.5} />
+      <Sfx at={FRIO_F - 16} name="riser" volume={0.45} />
     </AbsoluteFill>
   );
 };
@@ -421,22 +508,25 @@ const Titulo: React.FC = () => {
 /** Cierre: logo sobre azul */
 const Fin: React.FC = () => {
   const f = useCurrentFrame();
-  const logo = tw(f, [6, 28], [0, 1]);
-  const t = tw(f, [26, 40], [0, 1]);
-  const negro = tw(f, [FIN_F - 24, FIN_F], [0, 1]);
+  const entra = tw(f, [0, 16], [0, 1]);
+  const logo = tw(f, [10, 34], [0, 1]);
+  const t = tw(f, [32, 48], [0, 1]);
+  const h = tw(f, [46, 60], [0, 1]);
+  const vela = 0.85 + 0.15 * Math.sin(f * 0.5) + 0.06 * Math.sin(f * 1.7);
+  const negro = tw(f, [FIN_F - 26, FIN_F], [0, 1]);
   return (
-    <AbsoluteFill style={{background: C.azul}}>
-      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(61,139,212,0.9) 0%, rgba(39,99,154,0) 65%)'}} />
-      <div style={{position: 'absolute', left: 240, top: 690, width: 600, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`, transform: `translateY(${(1 - logo) * 30}px)`}}>
+    <AbsoluteFill style={{background: '#080405', opacity: entra}}>
+      <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 45%, rgba(232,129,26,${0.32 * vela}) 0%, rgba(8,4,5,0) 60%)`}} />
+      <PetalosNegro />
+      <div style={{position: 'absolute', left: 240, top: 660, width: 600, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`, transform: `translateY(${(1 - logo) * 30}px)`, filter: `drop-shadow(0 0 ${16 * vela}px rgba(244,169,60,0.55))`}}>
         <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
       </div>
-      <div style={{position: 'absolute', top: 1010, width: '100%', textAlign: 'center', opacity: t, transform: `translateY(${(1 - t) * 20}px)`}}>
-        <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 48, color: '#fff'}}>¡Nos vemos en noviembre!</div>
-        <div style={{marginTop: 18, fontFamily: F.sans, fontWeight: 800, fontSize: 32, letterSpacing: 8, color: C.amarillo}}>#SOMOSWESTHILL</div>
+      <div style={{position: 'absolute', top: 990, width: '100%', textAlign: 'center', opacity: t, transform: `translateY(${(1 - t) * 20}px)`}}>
+        <span style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 58, letterSpacing: 4, backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>¡Nos vemos en noviembre!</span>
       </div>
+      <div style={{position: 'absolute', top: 1100, width: '100%', textAlign: 'center', opacity: h, fontFamily: F.sans, fontWeight: 800, fontSize: 30, letterSpacing: 8, color: '#F3E3C8'}}>#SOMOSWESTHILL</div>
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
-      <Flash at={0} dur={10} />
-      <Sfx at={0} name="whoosh_largo" volume={0.45} />
+      <Sfx at={10} name="whoosh_largo" volume={0.35} />
     </AbsoluteFill>
   );
 };
@@ -463,10 +553,10 @@ export const RecapOctubre: React.FC<{music?: boolean}> = ({music = true}) => {
         <Fin />
       </Sequence>
       {/* banderín: se oculta durante la foto de bienvenida, que ya trae su propio título arriba */}
-      <Sequence from={inicioTitulo} durationInFrames={ARRANQUES.secciones[0] - inicioTitulo}>
+      <Sequence from={inicioTitulo} durationInFrames={ARRANQUES.secciones[1] - inicioTitulo}>
         <Banner />
       </Sequence>
-      <Sequence from={ARRANQUES.secciones[1]} durationInFrames={ARRANQUES.fin - ARRANQUES.secciones[1]}>
+      <Sequence from={ARRANQUES.secciones[2]} durationInFrames={ARRANQUES.fin - ARRANQUES.secciones[2]}>
         <Banner />
       </Sequence>
       <Grain opacity={0.04} />
