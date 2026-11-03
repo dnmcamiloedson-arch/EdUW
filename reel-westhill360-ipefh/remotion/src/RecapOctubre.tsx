@@ -128,9 +128,10 @@ const TRAMOS_RESTO: [number, number][] = [
   [66.0, 72.0],
   [75.0, 95.9],
 ];
-const RESTO_FIN = 106.95;
-/** el "¡Gracias! … Universidad Westhill" se queda completo unos segundos antes del outro */
-const GRACIAS_HOLD = 60;
+const RESTO_FIN = 105.0;
+/** el final del "¡Gracias!" (105–107 s, donde aparece "Universidad Westhill") va en cámara lenta para que se lea completo */
+const LENTO = {from: 105.0, to: 106.97, rate: 0.5};
+const GRACIAS_HOLD = Math.round(((LENTO.to - LENTO.from) / LENTO.rate) * 30);
 /** Las fotos del momento entran entre los altares y el 1er lugar del recap del cliente */
 const CORTE_FOTOS = 95.9;
 const T_POL = 22; // cada polaroid cae en dos tiempos de "Fantasmas"
@@ -407,7 +408,7 @@ const Muertos: React.FC = () => {
         <FotosMuertos />
       </Sequence>
       <Sequence from={NEGRO_F + CUENTA_F + durResto + FOTOS_F} durationInFrames={GRACIAS_HOLD}>
-        <Img src={staticFile('photos/muertos_gracias_final.png')} style={{width: '100%', height: '100%'}} />
+        <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(LENTO.from)} playbackRate={LENTO.rate} muted style={{width: '100%', height: '100%'}} />
       </Sequence>
       <Sequence from={NEGRO_F + CUENTA_F + durResto - sec(RESTO_FIN - REANUDA) + FOTOS_F} durationInFrames={sec(RESTO_FIN - REANUDA)}>
         <PrimerLugar />
