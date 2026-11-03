@@ -122,8 +122,15 @@ const CUENTA = 20;
 const CUENTA_DESDE = 1.0; // dentro de cada bloque de 3 s se toma desde aquí…
 const CUENTA_TRAMO = 1.2; // …este tramo, comprimido a un tiempo de la canción
 const RESTO = {from: 60.0, to: 106.5};
-const CUENTA_F = CUENTA * BEAT;
-export const MUERTOS_F = CUENTA_F + sec(RESTO.to - RESTO.from);
+/** Día de Muertos usa "Fantasmas" (instrumental) desde 1:10: lo tranquilo de 70.0 a 75.1 s va bajo la voz en
+ *  negro y el golpe de 75.1 s abre la cuenta regresiva; cada número dura dos tiempos (0.72 s). */
+const FANTASMAS_DESDE = 70.0;
+const NEGRO_F = sec(75.1 - FANTASMAS_DESDE);
+const NUM = 0.72; // segundos por número
+const numIni = (k: number) => NEGRO_F + Math.round(k * NUM * 30);
+const CUENTA_F = numIni(CUENTA) - NEGRO_F;
+const VOZ_AT = 12; // la voz entra poco después del negro
+export const MUERTOS_F = NEGRO_F + CUENTA_F + sec(RESTO.to - RESTO.from);
 export const RECAP_FRAMES = ARRANQUES.fin + MUERTOS_F + FIN_F;
 /** segundo de la canción en que empieza el video: su entrada fuerte (18.0 s) cae en el título */
 const MUSICA_DESDE = 18.0 - FRIO_F / 30;
@@ -190,20 +197,91 @@ const SeccionVid: React.FC<{s: Seccion}> = ({s}) => {
   );
 };
 
+/** Pétalos de cempasúchil que caen despacio sobre el negro */
+const PetalosNegro: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <>
+      {Array.from({length: 16}, (_, i) => {
+        const y = ((f * (1.4 + (i % 4) * 0.4) + i * 197) % 2100) - 120;
+        const x = ((i * 263) % 1000) + 40 + Math.sin(f / (26 + i) + i) * 40;
+        const s = 20 + (i % 3) * 8;
+        return (
+          <svg key={i} width={s} height={s * 1.3} viewBox="-10 -13 20 26" style={{position: 'absolute', left: x, top: y, opacity: 0.45, transform: `rotate(${f * 2 + i * 50}deg) scaleX(${Math.cos(f / 10 + i)})`}}>
+            <path d="M0 -12 C8 -6 8 6 0 12 C-8 6 -8 -6 0 -12 Z" fill={i % 2 ? '#E8811A' : '#F4A93C'} />
+          </svg>
+        );
+      })}
+    </>
+  );
+};
+/** Entrada emotiva: pantalla negra con la voz "México no le teme a la muerte. Le teme al olvido." */
+const LINEA1 = {at: 0.0, to: 1.58};
+const LINEA2 = {at: 2.26, to: 3.12};
+const Subt: React.FC<{at: number; children: React.ReactNode; top: number}> = ({at, children, top}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [at, at + 16], [0, 1]);
+  const out = tw(f, [NEGRO_F - 14, NEGRO_F - 2], [1, 0]);
+  return <div style={{position: 'absolute', top, left: 60, right: 60, textAlign: 'center', opacity: p * out, filter: `blur(${(1 - p) * 10}px)`, transform: `translateY(${(1 - p) * 16}px)`}}>{children}</div>;
+};
+const EntradaMuertos: React.FC = () => {
+  const f = useCurrentFrame();
+  const vela = 0.85 + 0.15 * Math.sin(f * 0.5) + 0.06 * Math.sin(f * 1.7);
+  const a1 = VOZ_AT + sec(LINEA1.at);
+  const a2 = VOZ_AT + sec(LINEA2.at);
+  return (
+    <AbsoluteFill style={{background: '#050304', overflow: 'hidden'}}>
+      <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 100%, rgba(232,129,26,${0.22 * vela}) 0%, rgba(5,3,4,0) 55%)`}} />
+      <PetalosNegro />
+      <Subt at={a1} top={760}>
+        <span style={{fontFamily: F.clasica, fontWeight: 400, fontSize: 50, letterSpacing: 6, color: '#F3E3C8', textShadow: '0 0 18px rgba(232,129,26,0.45)'}}>MÉXICO NO LE TEME</span>
+        <br />
+        <span style={{fontFamily: F.clasica, fontWeight: 400, fontSize: 50, letterSpacing: 6, color: '#F3E3C8', textShadow: '0 0 18px rgba(232,129,26,0.45)'}}>A LA MUERTE.</span>
+      </Subt>
+      <Subt at={a2} top={960}>
+        <span style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 64, color: '#F3E3C8'}}>Le teme al</span>
+        <br />
+        <span
+          style={{
+            fontFamily: F.clasica,
+            fontWeight: 700,
+            fontSize: 150,
+            letterSpacing: 8,
+            backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)',
+            WebkitBackgroundClip: 'text',
+            backgroundClip: 'text',
+            color: 'transparent',
+            filter: `drop-shadow(0 0 ${20 * vela}px rgba(244,169,60,0.7))`,
+          }}
+        >
+          OLVIDO
+        </span>
+      </Subt>
+      <Sequence from={VOZ_AT} layout="none">
+        <Audio src={staticFile('music/voz_muertos.mp3')} volume={1} />
+      </Sequence>
+    </AbsoluteFill>
+  );
+};
 const Muertos: React.FC = () => {
-  const vel = CUENTA_TRAMO / (BEAT / 30);
+  const vel = CUENTA_TRAMO / NUM;
   return (
     <AbsoluteFill style={{background: '#000'}}>
+      <Sequence durationInFrames={NEGRO_F}>
+        <EntradaMuertos />
+      </Sequence>
       {Array.from({length: CUENTA}, (_, k) => (
-        <Sequence key={k} from={k * BEAT} durationInFrames={BEAT}>
+        <Sequence key={k} from={numIni(k)} durationInFrames={numIni(k + 1) - numIni(k)}>
           <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(3 * k + CUENTA_DESDE)} playbackRate={vel} muted style={{width: '100%', height: '100%'}} />
           <Sfx at={0} name="click" volume={0.3} />
         </Sequence>
       ))}
-      <Sequence from={CUENTA_F}>
+      <Sequence from={NEGRO_F + CUENTA_F}>
         <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(RESTO.from)} muted style={{width: '100%', height: '100%'}} />
       </Sequence>
-      <Flash at={0} dur={8} />
+      <Sequence from={NEGRO_F} layout="none">
+        <Flash at={0} dur={8} />
+      </Sequence>
     </AbsoluteFill>
   );
 };
@@ -311,11 +389,22 @@ export const RecapOctubre: React.FC<{music?: boolean}> = ({music = true}) => {
       </Sequence>
       <Grain opacity={0.04} />
       {music && (
-        <Audio
-          src={staticFile('music/recap_octubre.mp3')}
-          startFrom={sec(MUSICA_DESDE)}
-          volume={(fr) => interpolate(fr, [0, 10, FRIO_F - 10, FRIO_F, RECAP_FRAMES - 40, RECAP_FRAMES], [0, 0.18, 0.18, 0.85, 0.85, 0], clamp)}
-        />
+        <Sequence durationInFrames={ARRANQUES.fin + 2}>
+          <Audio
+            src={staticFile('music/recap_octubre.mp3')}
+            startFrom={sec(MUSICA_DESDE)}
+            volume={(fr) => interpolate(fr, [0, 10, FRIO_F - 10, FRIO_F, ARRANQUES.fin - 24, ARRANQUES.fin], [0, 0.18, 0.18, 0.85, 0.85, 0], clamp)}
+          />
+        </Sequence>
+      )}
+      {music && (
+        <Sequence from={ARRANQUES.fin}>
+          <Audio
+            src={staticFile('music/fantasmas.mp3')}
+            startFrom={sec(FANTASMAS_DESDE)}
+            volume={(fr) => interpolate(fr, [0, 12, NEGRO_F, NEGRO_F + 1, RECAP_FRAMES - ARRANQUES.fin - 45, RECAP_FRAMES - ARRANQUES.fin], [0, 0.35, 0.35, 0.85, 0.85, 0], clamp)}
+          />
+        </Sequence>
       )}
     </AbsoluteFill>
   );
