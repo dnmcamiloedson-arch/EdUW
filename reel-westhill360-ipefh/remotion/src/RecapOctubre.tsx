@@ -646,14 +646,14 @@ const TeaserMuertos: React.FC = () => {
     </AbsoluteFill>
   );
 };
-const TeaserFin: React.FC = () => {
+const TeaserFin: React.FC<{dur?: number}> = ({dur = T_FIN}) => {
   const f = useCurrentFrame();
   const r = tw(f, [2, 16], [0, 1]);
   const m = tw(f, [8, 22], [0, 1], ease.back);
   const cta = tw(f, [26, 40], [0, 1]);
   const logo = tw(f, [40, 60], [0, 1]);
   const vela = 0.85 + 0.15 * Math.sin(f * 0.5);
-  const negro = tw(f, [T_FIN - 10, T_FIN], [0, 1]);
+  const negro = tw(f, [dur - 10, dur], [0, 1]);
   return (
     <AbsoluteFill style={{background: '#080405'}}>
       <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 45%, rgba(232,129,26,${0.3 * vela}) 0%, rgba(8,4,5,0) 60%)`}} />
@@ -714,3 +714,90 @@ export const RecapTeaser: React.FC<{music?: boolean}> = ({music = true}) => (
     )}
   </AbsoluteFill>
 );
+
+// ---------------------------------------------------------------------------
+// Teaser B (20 s, historias): todo con "Fantasmas". Abre en negro con una pregunta, luego cortes a 2 tiempos
+// con una palabra grande por evento, y cierra con el título y la llamada a ver el recap.
+// ---------------------------------------------------------------------------
+const TB_BEAT = 22; // dos tiempos de "Fantasmas" (0.72 s)
+const TB_INICIO = 75; // el golpe de 75.1 s cae aquí
+const TB_GRUPOS: {palabra: string; color: string; tomas: [string, number][]}[] = [
+  {palabra: 'BIENVENIDOS', color: C.amarillo, tomas: [['IMG_0574', 0.4], ['v2/IMG_0909', 0.8], ['v2/IMG_1057', 1.8], ['IMG_0596', 0.5]]},
+  {palabra: 'AVENTURA', color: '#7FE0B5', tomas: [['flyover/fly_04', 1.2], ['flyover/fly_03', 1.8], ['flyover/fly_02', 0.8]]},
+  {palabra: 'VOCACIÓN', color: '#9CC9F5', tomas: [['medico/v5', 5.3], ['medico/v2', 13.0], ['recap/feria_salud', 6.5]]},
+  {palabra: 'HISTORIA', color: '#E2C27D', tomas: [['titanic/t10', 0.5], ['titanic/t9', 2.3], ['titanic/t8', 0.3]]},
+  {palabra: 'TRADICIÓN', color: '#F4A93C', tomas: [['recap/muertos_base', 79.5], ['recap/muertos_base', 84.5], ['recap/muertos_base', 92.5]]},
+];
+const TB_CORTES = TB_GRUPOS.reduce((a, g) => a + g.tomas.length, 0) * TB_BEAT;
+const TB_FIN = 600 - TB_INICIO - TB_CORTES;
+export const TEASER_B_FRAMES = TB_INICIO + TB_CORTES + TB_FIN;
+
+const TBPregunta: React.FC = () => {
+  const f = useCurrentFrame();
+  const a = tw(f, [8, 22], [0, 1]);
+  const b = tw(f, [30, 46], [0, 1], ease.back);
+  const luz = 0.6 + 0.4 * Math.sin(f * 0.6) * (f > 30 ? 1 : 0.3);
+  return (
+    <AbsoluteFill style={{background: '#000'}}>
+      <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 55%, rgba(244,169,60,${0.25 * luz * a}) 0%, rgba(0,0,0,0) 55%)`}} />
+      <div style={{position: 'absolute', top: 800, width: '100%', textAlign: 'center'}}>
+        <div style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 70, letterSpacing: 4, color: '#F3E3C8', opacity: a, filter: `blur(${(1 - a) * 10}px)`}}>¿TE PERDISTE</div>
+        <div style={{fontFamily: F.display, fontSize: 210, lineHeight: 1, letterSpacing: 6, color: '#fff', transform: `scale(${b})`, opacity: Math.min(1, b * 2), textShadow: '0 0 34px rgba(244,169,60,0.8)'}}>OCTUBRE?</div>
+      </div>
+      <Sfx at={8} name="flicker" volume={0.35} />
+      <Sfx at={TB_INICIO - 26} name="riser" volume={0.5} />
+    </AbsoluteFill>
+  );
+};
+const TBGrupo: React.FC<{g: (typeof TB_GRUPOS)[number]}> = ({g}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [0, 8], [0, 1], ease.back);
+  return (
+    <AbsoluteFill style={{background: '#000'}}>
+      {g.tomas.map(([src, from], k) => (
+        <Sequence key={k} from={k * TB_BEAT} durationInFrames={TB_BEAT}>
+          {src === `recap/muertos_base` ? (
+            <OffthreadVideo src={staticFile(`proxies/${src}.mp4`)} startFrom={sec(from)} muted style={{width: '100%', height: '100%'}} />
+          ) : (
+            <Clip src={src} from={from} dur={TB_BEAT} k={k} />
+          )}
+          <Flash at={0} dur={5} />
+        </Sequence>
+      ))}
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,0.65) 100%)'}} />
+      <div style={{position: 'absolute', top: g.palabra === 'TRADICIÓN' ? 320 : 1380, width: '100%', textAlign: 'center', transform: `scale(${0.6 + 0.4 * p})`, opacity: Math.min(1, p * 2)}}>
+        <span style={{fontFamily: F.display, fontSize: 150, letterSpacing: 8, color: g.color, textShadow: `0 0 30px ${g.color}99, 0 6px 0 rgba(0,0,0,0.5)`}}>{g.palabra}</span>
+      </div>
+      <Sfx at={0} name="impact" volume={0.45} />
+    </AbsoluteFill>
+  );
+};
+export const RecapTeaserB: React.FC<{music?: boolean}> = ({music = true}) => {
+  let acc = TB_INICIO;
+  return (
+    <AbsoluteFill style={{background: '#000'}}>
+      <Sequence durationInFrames={TB_INICIO}>
+        <TBPregunta />
+      </Sequence>
+      {TB_GRUPOS.map((g, i) => {
+        const d = g.tomas.length * TB_BEAT;
+        const from = acc;
+        acc += d;
+        return (
+          <Sequence key={i} from={from} durationInFrames={d}>
+            <TBGrupo g={g} />
+          </Sequence>
+        );
+      })}
+      <Sequence from={TB_INICIO + TB_CORTES} durationInFrames={TB_FIN}>
+        <TeaserFin dur={TB_FIN} />
+      </Sequence>
+      {/* el recap de Día de Muertos ya trae su propio banderín */}
+      <Sequence from={TB_INICIO} durationInFrames={TB_CORTES - TB_GRUPOS[TB_GRUPOS.length - 1].tomas.length * TB_BEAT}>
+        <Banner />
+      </Sequence>
+      <Grain opacity={0.05} />
+      {music && <Audio src={staticFile('music/fantasmas.mp3')} startFrom={sec(75.1 - TB_INICIO / 30)} volume={(fr) => interpolate(fr, [0, 15, TB_INICIO - 2, TB_INICIO, TEASER_B_FRAMES - 30, TEASER_B_FRAMES], [0, 0.4, 0.4, 0.9, 0.9, 0], clamp)} />}
+    </AbsoluteFill>
+  );
+};

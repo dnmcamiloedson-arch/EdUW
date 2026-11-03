@@ -13,7 +13,7 @@ import {Tdah, TDAH_FRAMES} from './Tdah';
 import {Vacunacion, VACUNA_FRAMES, VAC_H, VAC_W} from './Vacunacion';
 import {DiaMuertos, MUERTOS_FRAMES} from './DiaMuertos';
 import {VacunacionB, VACUNA_B_FRAMES} from './VacunacionB';
-import {RecapOctubre, RECAP_FRAMES, RecapTeaser, TEASER_FRAMES} from './RecapOctubre';
+import {RecapOctubre, RECAP_FRAMES, RecapTeaser, RecapTeaserB, TEASER_B_FRAMES, TEASER_FRAMES} from './RecapOctubre';
 import {RecapPortada} from './RecapPortada';
 import {Chapter, chapterDur, CHAPTERS, CORNHOLE_FRAMES, CornholeStory} from './Stories';
 import {FPS, H, W, loadFonts} from './theme';
@@ -50,6 +50,7 @@ export const Root: React.FC = () => (
     <Composition id="RecapOctubreSinMusica" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="RecapTeaser" component={RecapTeaser} durationInFrames={TEASER_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="RecapPortada" component={RecapPortada} durationInFrames={1} fps={FPS} width={W} height={H} />
+    <Composition id="RecapTeaserB" component={RecapTeaserB} durationInFrames={TEASER_B_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
