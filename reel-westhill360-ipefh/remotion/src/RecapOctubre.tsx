@@ -115,7 +115,16 @@ const ARRANQUES = (() => {
   });
   return {secciones: r, fin: t};
 })();
-export const RECAP_FRAMES = ARRANQUES.fin + FIN_F;
+/** Día de Muertos: recap que hizo el cliente (proxies/recap/muertos_base). Su cuenta regresiva (20 números de 3 s)
+ *  se acelera a un tiempo de la canción por número; lo demás va a velocidad normal. */
+const MUERTOS = 'recap/muertos_base';
+const CUENTA = 20;
+const CUENTA_DESDE = 1.0; // dentro de cada bloque de 3 s se toma desde aquí…
+const CUENTA_TRAMO = 1.2; // …este tramo, comprimido a un tiempo de la canción
+const RESTO = {from: 60.0, to: 106.5};
+const CUENTA_F = CUENTA * BEAT;
+export const MUERTOS_F = CUENTA_F + sec(RESTO.to - RESTO.from);
+export const RECAP_FRAMES = ARRANQUES.fin + MUERTOS_F + FIN_F;
 /** segundo de la canción en que empieza el video: su entrada fuerte (18.0 s) cae en el título */
 const MUSICA_DESDE = 18.0 - FRIO_F / 30;
 
@@ -177,6 +186,24 @@ const SeccionVid: React.FC<{s: Seccion}> = ({s}) => {
       {s.titulo && <Etiqueta titulo={s.titulo} sub={s.sub} dur={Math.min(dur, 6 * BEAT)} />}
       <Flash at={0} dur={8} />
       <Sfx at={0} name="flash" volume={0.45} />
+    </AbsoluteFill>
+  );
+};
+
+const Muertos: React.FC = () => {
+  const vel = CUENTA_TRAMO / (BEAT / 30);
+  return (
+    <AbsoluteFill style={{background: '#000'}}>
+      {Array.from({length: CUENTA}, (_, k) => (
+        <Sequence key={k} from={k * BEAT} durationInFrames={BEAT}>
+          <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(3 * k + CUENTA_DESDE)} playbackRate={vel} muted style={{width: '100%', height: '100%'}} />
+          <Sfx at={0} name="click" volume={0.3} />
+        </Sequence>
+      ))}
+      <Sequence from={CUENTA_F}>
+        <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(RESTO.from)} muted style={{width: '100%', height: '100%'}} />
+      </Sequence>
+      <Flash at={0} dur={8} />
     </AbsoluteFill>
   );
 };
@@ -269,7 +296,10 @@ export const RecapOctubre: React.FC<{music?: boolean}> = ({music = true}) => {
           <SeccionVid s={s} />
         </Sequence>
       ))}
-      <Sequence from={ARRANQUES.fin} durationInFrames={FIN_F}>
+      <Sequence from={ARRANQUES.fin} durationInFrames={MUERTOS_F}>
+        <Muertos />
+      </Sequence>
+      <Sequence from={ARRANQUES.fin + MUERTOS_F} durationInFrames={FIN_F}>
         <Fin />
       </Sequence>
       {/* banderín: se oculta durante la foto de bienvenida, que ya trae su propio título arriba */}
