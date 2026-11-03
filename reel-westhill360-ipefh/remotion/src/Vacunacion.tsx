@@ -14,14 +14,14 @@ import {F, ease, tw} from './theme';
 // El video tiene las mismas proporciones que el póster (1080x1672), así que nada se recorre ni se recorta.
 // ---------------------------------------------------------------------------
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
-const CREMA = '#F5F2EA';
-const NAVY = '#043971';
-const AZUL = '#1565B5';
-const AMARILLO = '#F7C531';
-const capa = (n: string) => staticFile(`photos/vacuna/${n}.png`);
+export const CREMA = '#F5F2EA';
+export const NAVY = '#043971';
+export const AZUL = '#1565B5';
+export const AMARILLO = '#F7C531';
+export const capa = (n: string) => staticFile(`photos/vacuna/${n}.png`);
 
 type Caja = {x: number; y: number; w: number; h: number};
-const P: Record<string, Caja> = {
+export const P: Record<string, Caja> = {
   cuidarte: {x: 231, y: 272, w: 831, h: 79},
   jornada: {x: 216, y: 376, w: 877, h: 142},
   cinta: {x: 0, y: 523, w: 1292, h: 278},
@@ -48,13 +48,13 @@ const OX = 0;
 const OY = 0;
 const EXTRA = 0;
 /** piezas recortadas del original (caja en coordenadas del póster) */
-const RECORTE: Record<string, Caja> = {
+export const RECORTE: Record<string, Caja> = {
   logo: {x: 400, y: 25, w: 495, h: 207},
   contra: {x: 66, y: 812, w: 742, h: 74},
   tusalud: {x: 140, y: 1670, w: 532, h: 106},
   redes: {x: 760, y: 1914, w: 512, h: 76},
 };
-const Recorte: React.FC<{n: string; style?: React.CSSProperties}> = ({n, style}) => {
+export const Recorte: React.FC<{n: string; style?: React.CSSProperties}> = ({n, style}) => {
   const c = RECORTE[n];
   return (
     <div style={{position: 'absolute', left: c.x, top: c.y, width: c.w, height: c.h, ...style}}>
@@ -63,7 +63,7 @@ const Recorte: React.FC<{n: string; style?: React.CSSProperties}> = ({n, style})
   );
 };
 
-const Pieza: React.FC<{n: string; dy?: number; style?: React.CSSProperties; img?: React.CSSProperties}> = ({n, dy = 0, style, img}) => {
+export const Pieza: React.FC<{n: string; dy?: number; style?: React.CSSProperties; img?: React.CSSProperties}> = ({n, dy = 0, style, img}) => {
   const c = P[n];
   return (
     <div style={{position: 'absolute', left: c.x, top: c.y + dy, width: c.w, height: c.h, ...style}}>
@@ -76,13 +76,13 @@ const Pieza: React.FC<{n: string; dy?: number; style?: React.CSSProperties; img?
 // 1. Intro
 // ---------------------------------------------------------------------------
 export const INTRO_F = 300;
-const Papel: React.FC = () => (
+export const Papel: React.FC = () => (
   <AbsoluteFill style={{background: CREMA}}>
     <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 60%, rgba(150,130,90,0.12) 100%)'}} />
   </AbsoluteFill>
 );
 /** Texto sobre una tira de papel rasgado (las capas del póster) */
-const Tira: React.FC<{texto: string; at: number; tipo: 'cinta' | 'parche'; top: number; size?: number; color?: string}> = ({texto, at, tipo, top, size = 110, color}) => {
+export const Tira: React.FC<{texto: string; at: number; tipo: 'cinta' | 'parche'; top: number; size?: number; color?: string}> = ({texto, at, tipo, top, size = 110, color}) => {
   const f = useCurrentFrame();
   const abre = tw(f, [at, at + 12], [0, 100], ease.inOut);
   const t = tw(f, [at + 6, at + 18], [0, 1], ease.back);
@@ -94,7 +94,7 @@ const Tira: React.FC<{texto: string; at: number; tipo: 'cinta' | 'parche'; top: 
     </div>
   );
 };
-const Linea: React.FC<{texto: string; at: number; top: number; size?: number; peso?: number; color?: string}> = ({texto, at, top, size = 64, peso = 800, color = NAVY}) => {
+export const Linea: React.FC<{texto: string; at: number; top: number; size?: number; peso?: number; color?: string}> = ({texto, at, top, size = 64, peso = 800, color = NAVY}) => {
   const f = useCurrentFrame();
   const p = tw(f, [at, at + 14], [0, 1]);
   return (
@@ -148,7 +148,7 @@ const Cronometro: React.FC<{at: number}> = ({at}) => {
   );
 };
 /** Escudo que se dibuja con palomita */
-const Escudo: React.FC<{at: number}> = ({at}) => {
+export const Escudo: React.FC<{at: number}> = ({at}) => {
   const f = useCurrentFrame();
   const p = tw(f, [at, at + 22], [0, 1], ease.inOut);
   const ok = tw(f, [at + 18, at + 30], [0, 1], ease.inOut);
@@ -160,7 +160,7 @@ const Escudo: React.FC<{at: number}> = ({at}) => {
     </svg>
   );
 };
-const Escena: React.FC<{from: number; dur: number; children: React.ReactNode}> = ({from, dur, children}) => {
+export const Escena: React.FC<{from: number; dur: number; children: React.ReactNode}> = ({from, dur, children}) => {
   const f = useCurrentFrame();
   const o = interpolate(f, [from, from + 8, from + dur - 8, from + dur], [0, 1, 1, 0], clamp);
   const s = interpolate(f, [from, from + dur], [1.04, 1], clamp);
@@ -322,8 +322,8 @@ const Barrido: React.FC<{alto: number}> = ({alto}) => {
 export const VACUNA_FRAMES = INTRO_F + POSTER_F;
 /** Historia de IG (9:16): el póster completo al centro, un poco más chico para librar las barras de Instagram,
  *  sobre una versión desenfocada del mismo póster */
-const ESCALA_HISTORIA = 0.86;
-const FondoDifuso: React.FC = () => {
+export const ESCALA_HISTORIA = 0.86;
+export const FondoDifuso: React.FC = () => {
   const f = useCurrentFrame();
   return (
     <AbsoluteFill style={{opacity: tw(f, [0, 20], [0, 1])}}>

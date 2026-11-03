@@ -113,6 +113,9 @@ def crash():
 
 # ---------- armonía: Am – F – C – G (1 acorde por compás) ----------
 PROG = [(57, [57, 60, 64, 69]), (53, [53, 57, 60, 65]), (48, [55, 60, 64, 67]), (55, [55, 59, 62, 67])]
+import os
+if os.environ.get('MUSICA_ALT'):  # variante más luminosa: Do – Sol – Lam – Fa
+    PROG = [(48, [55, 60, 64, 67]), (55, [55, 59, 62, 67]), (57, [57, 60, 64, 69]), (53, [53, 57, 60, 65])]
 BAR = 4 * BEAT
 n_bars = int(np.ceil(DUR / BAR))
 DROP = float(sys.argv[5]) if len(sys.argv) > 5 else 6.0  # segundo del drop (múltiplo de 2 s = 1 compás)

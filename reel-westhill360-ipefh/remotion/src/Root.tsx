@@ -12,6 +12,7 @@ import {OfrendasDebate, OFRENDAS_FRAMES} from './OfrendasDebate';
 import {Tdah, TDAH_FRAMES} from './Tdah';
 import {Vacunacion, VACUNA_FRAMES, VAC_H, VAC_W} from './Vacunacion';
 import {DiaMuertos, MUERTOS_FRAMES} from './DiaMuertos';
+import {VacunacionB, VACUNA_B_FRAMES} from './VacunacionB';
 import {Chapter, chapterDur, CHAPTERS, CORNHOLE_FRAMES, CornholeStory} from './Stories';
 import {FPS, H, W, loadFonts} from './theme';
 
@@ -42,6 +43,7 @@ export const Root: React.FC = () => (
     <Composition id="Vacunacion" component={Vacunacion} durationInFrames={VACUNA_FRAMES} fps={FPS} width={VAC_W} height={VAC_H} defaultProps={{music: true}} />
     <Composition id="VacunacionHistoria" component={Vacunacion} durationInFrames={VACUNA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true, historia: true}} />
     <Composition id="DiaMuertos" component={DiaMuertos} durationInFrames={MUERTOS_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
+    <Composition id="VacunacionB" component={VacunacionB} durationInFrames={VACUNA_B_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
