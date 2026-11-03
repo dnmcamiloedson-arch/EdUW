@@ -122,6 +122,13 @@ const CUENTA = 20;
 const CUENTA_DESDE = 1.0; // dentro de cada bloque de 3 s se toma desde aquí…
 const CUENTA_TRAMO = 1.2; // …este tramo, comprimido a un tiempo de la canción
 const RESTO = {from: 60.0, to: 106.5};
+/** Las fotos del momento entran entre los altares y el 1er lugar del recap del cliente */
+const CORTE_FOTOS = 95.9;
+const FOTO_CAM = ['f1', 'f2', 'f6'];
+const FOTO_POL = ['f3', 'f4', 'f5', 'f7'];
+const T_CAM = 43; // dos tiempos de "Fantasmas" por foto de cámara
+const T_POL = 22; // un tiempo por polaroid
+const FOTOS_F = FOTO_CAM.length * T_CAM + FOTO_POL.length * T_POL + 2 * T_CAM;
 /** Día de Muertos usa "Fantasmas" (instrumental) desde 1:10: lo tranquilo de 70.0 a 75.1 s va bajo la voz en
  *  negro y el golpe de 75.1 s abre la cuenta regresiva; cada número dura dos tiempos (0.72 s). */
 const FANTASMAS_DESDE = 70.0;
@@ -130,7 +137,7 @@ const NUM = 0.72; // segundos por número
 const numIni = (k: number) => NEGRO_F + Math.round(k * NUM * 30);
 const CUENTA_F = numIni(CUENTA) - NEGRO_F;
 const VOZ_AT = 12; // la voz entra poco después del negro
-export const MUERTOS_F = NEGRO_F + CUENTA_F + sec(RESTO.to - RESTO.from);
+export const MUERTOS_F = NEGRO_F + CUENTA_F + sec(RESTO.to - RESTO.from) + FOTOS_F;
 export const RECAP_FRAMES = ARRANQUES.fin + MUERTOS_F + FIN_F;
 /** segundo de la canción en que empieza el video: su entrada fuerte (18.0 s) cae en el título */
 const MUSICA_DESDE = 18.0 - FRIO_F / 30;
@@ -263,6 +270,75 @@ const EntradaMuertos: React.FC = () => {
     </AbsoluteFill>
   );
 };
+const fotoSrc = (n: string) => staticFile(`photos/muertos_fotos/${n}.jpg`);
+/** Visor de cámara: esquinas, REC parpadeando y destello con obturador al disparar */
+const FotoCamara: React.FC<{n: string}> = ({n}) => {
+  const f = useCurrentFrame();
+  const enfoca = tw(f, [0, 8], [1.12, 1], ease.out);
+  const blur = (1 - tw(f, [0, 8], [0, 1])) * 10;
+  const disparo = interpolate(f, [10, 11, 18], [0, 1, 0], clamp);
+  const rec = Math.floor(f / 8) % 2 === 0;
+  const esq = (st: React.CSSProperties) => <div style={{position: 'absolute', width: 90, height: 90, borderColor: 'rgba(255,255,255,0.9)', borderStyle: 'solid', borderWidth: 0, ...st}} />;
+  return (
+    <AbsoluteFill style={{background: '#000', overflow: 'hidden'}}>
+      <Img src={fotoSrc(n)} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${enfoca * (1 + 0.03 * (f / T_CAM))})`, filter: `blur(${blur}px)`}} />
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.55) 100%)'}} />
+      {esq({left: 70, top: 230, borderTopWidth: 6, borderLeftWidth: 6})}
+      {esq({right: 70, top: 230, borderTopWidth: 6, borderRightWidth: 6})}
+      {esq({left: 70, bottom: 260, borderBottomWidth: 6, borderLeftWidth: 6})}
+      {esq({right: 70, bottom: 260, borderBottomWidth: 6, borderRightWidth: 6})}
+      <div style={{position: 'absolute', left: 510, top: 930, width: 60, height: 60, border: '3px solid rgba(255,255,255,0.75)', borderRadius: 8, transform: `scale(${1.5 - 0.5 * tw(f, [0, 8], [0, 1])})`}} />
+      <div style={{position: 'absolute', left: 100, top: 270, display: 'flex', alignItems: 'center', gap: 12, fontFamily: F.sans, fontWeight: 800, fontSize: 32, color: '#fff'}}>
+        <div style={{width: 22, height: 22, borderRadius: 11, background: '#E8333C', opacity: rec ? 1 : 0.2}} />
+        REC
+      </div>
+      <AbsoluteFill style={{background: '#fff', opacity: disparo}} />
+      <Sfx at={10} name="shutter" volume={0.7} />
+    </AbsoluteFill>
+  );
+};
+/** Polaroids que caen y se apilan sobre fondo oscuro con pétalos */
+const POL_POS = [
+  {x: 90, y: 260, r: -8},
+  {x: 470, y: 330, r: 7},
+  {x: 120, y: 920, r: 5},
+  {x: 480, y: 980, r: -6},
+];
+const Polaroids: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, #2A1408 0%, #080405 75%)', overflow: 'hidden'}}>
+      <PetalosNegro />
+      {FOTO_POL.map((n, i) => {
+        const at = i * T_POL;
+        const p = tw(f, [at, at + 12], [0, 1], ease.back);
+        const pos = POL_POS[i];
+        if (f < at) return null;
+        return (
+          <div key={n} style={{position: 'absolute', left: pos.x, top: pos.y, width: 500, padding: '22px 22px 90px', background: '#F7F2E8', boxShadow: '0 24px 50px rgba(0,0,0,0.6)', transform: `translateY(${(1 - p) * -900}px) rotate(${pos.r + (1 - p) * 30}deg) scale(${1.3 - 0.3 * p})`}}>
+            <Img src={fotoSrc(n)} style={{width: 456, height: 600, objectFit: 'cover', display: 'block'}} />
+            <Sfx at={at} name="shutter" volume={0.55} />
+          </div>
+        );
+      })}
+      <div style={{position: 'absolute', top: 1630, width: '100%', textAlign: 'center', opacity: tw(f, [FOTO_POL.length * T_POL, FOTO_POL.length * T_POL + 14], [0, 1])}}>
+        <span style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 78, letterSpacing: 6, backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>ASÍ LO VIVIMOS</span>
+      </div>
+    </AbsoluteFill>
+  );
+};
+const FotosMuertos: React.FC = () => (
+  <AbsoluteFill style={{background: '#000'}}>
+    {FOTO_CAM.map((n, i) => (
+      <Sequence key={n} from={i * T_CAM} durationInFrames={T_CAM}>
+        <FotoCamara n={n} />
+      </Sequence>
+    ))}
+    <Sequence from={FOTO_CAM.length * T_CAM}>
+      <Polaroids />
+    </Sequence>
+  </AbsoluteFill>
+);
 const Muertos: React.FC = () => {
   const vel = CUENTA_TRAMO / NUM;
   return (
@@ -276,8 +352,14 @@ const Muertos: React.FC = () => {
           <Sfx at={0} name="click" volume={0.3} />
         </Sequence>
       ))}
-      <Sequence from={NEGRO_F + CUENTA_F}>
+      <Sequence from={NEGRO_F + CUENTA_F} durationInFrames={sec(CORTE_FOTOS - RESTO.from)}>
         <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(RESTO.from)} muted style={{width: '100%', height: '100%'}} />
+      </Sequence>
+      <Sequence from={NEGRO_F + CUENTA_F + sec(CORTE_FOTOS - RESTO.from)} durationInFrames={FOTOS_F}>
+        <FotosMuertos />
+      </Sequence>
+      <Sequence from={NEGRO_F + CUENTA_F + sec(CORTE_FOTOS - RESTO.from) + FOTOS_F}>
+        <OffthreadVideo src={staticFile(`proxies/${MUERTOS}.mp4`)} startFrom={sec(CORTE_FOTOS)} muted style={{width: '100%', height: '100%'}} />
       </Sequence>
       <Sequence from={NEGRO_F} layout="none">
         <Flash at={0} dur={8} />
