@@ -8,7 +8,7 @@ import {AMARILLO, AZUL, capa, CREMA, ESCALA_HISTORIA, FondoDifuso, NAVY, Pieza, 
 // ---------------------------------------------------------------------------
 // Jornada de Vacunación, versión B (historia 9:16). Misma meta que la versión A (termina en el póster
 // original), pero con otra narrativa:
-//  1. Intro en azul: West pregunta "¿Ya te vacunaste?", tres razones en tarjetas y un calendario que
+//  1. Intro en azul: "¿Estás listo para vacunarte?", tres razones en tarjetas y un calendario que
 //     cae en el 5 de noviembre.
 //  2. El póster se arma igual que en la versión A (Poster de Vacunacion.tsx). PosterB (cámara que se aleja
 //     de West) se conserva como alternativa.
@@ -40,13 +40,14 @@ const Pregunta: React.FC = () => {
   const sale = tw(f, [70, 84], [0, 1], ease.in);
   return (
     <AbsoluteFill style={{opacity: 1 - sale, transform: `scale(${1 + sale * 0.15})`}}>
-      <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center'}}>
+      <div style={{position: 'absolute', top: 470, width: '100%', textAlign: 'center'}}>
         <div style={{position: 'relative', display: 'inline-block', transform: `scale(${ya}) rotate(-3deg)`}}>
-          <Img src={capa('parche')} style={{position: 'absolute', left: -50, top: -30, width: 640, height: 220}} />
-          <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 140, color: NAVY, letterSpacing: -3}}>¿Ya te</span>
+          <Img src={capa('parche')} style={{position: 'absolute', left: -55, top: -28, width: 'calc(100% + 110px)', height: 200}} />
+          <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 118, color: NAVY, letterSpacing: -3}}>¿Estás listo</span>
         </div>
-        <div style={{marginTop: 10, fontFamily: F.sans, fontWeight: 900, fontSize: 168, lineHeight: 1, color: '#fff', letterSpacing: -5, transform: `translateY(${(1 - vac) * 160}px) scale(${0.7 + 0.3 * vac})`, opacity: Math.min(1, vac * 2), textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>vacunaste</div>
-        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 300, lineHeight: 0.9, color: AMARILLO, transform: `scale(${q}) rotate(${(1 - q) * 60 + Math.sin(f / 6) * 5}deg)`, textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>?</div>
+        <div style={{marginTop: 24, fontFamily: F.sans, fontWeight: 800, fontSize: 92, lineHeight: 1, color: '#fff', opacity: Math.min(1, vac * 2), transform: `translateY(${(1 - vac) * 80}px)`}}>para</div>
+        <div style={{marginTop: 6, fontFamily: F.sans, fontWeight: 900, fontSize: 158, lineHeight: 1, color: '#fff', letterSpacing: -5, transform: `translateY(${(1 - vac) * 160}px) scale(${0.7 + 0.3 * vac})`, opacity: Math.min(1, vac * 2), textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>vacunarte</div>
+        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 280, lineHeight: 0.9, color: AMARILLO, transform: `scale(${q}) rotate(${(1 - q) * 60 + Math.sin(f / 6) * 5}deg)`, textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>?</div>
       </div>
       <Sfx at={8} name="hist_paper" volume={0.6} />
       <Sfx at={20} name="whoosh" volume={0.4} />
