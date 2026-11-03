@@ -17,3 +17,5 @@ public/recap/*.wav
 public/recap/*.m4a
 public/recap/recap.json
 public/audio/dosnov/
+out/recap-base/
+out/recap-base.zip
