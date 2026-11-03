@@ -695,8 +695,21 @@ export const RecapTeaser: React.FC<{music?: boolean}> = ({music = true}) => (
       <Banner />
     </Sequence>
     <Grain opacity={0.04} />
+    {/* transición Drake → Fantasmas: Drake baja, entra un "down bass" y Fantasmas arranca en su golpe con la cuenta */}
     {music && (
-      <Audio src={staticFile('music/recap_octubre.mp3')} startFrom={sec(18.0 - T_CORTES / 30)} volume={(fr) => interpolate(fr, [0, 8, TEASER_FRAMES - 30, TEASER_FRAMES], [0, 0.85, 0.85, 0], clamp)} />
+      <Sequence durationInFrames={T_CORTES + TITULO_F + 4}>
+        <Audio src={staticFile('music/recap_octubre.mp3')} startFrom={sec(18.0 - T_CORTES / 30)} volume={(fr) => interpolate(fr, [0, 8, T_CORTES + TITULO_F - 20, T_CORTES + TITULO_F], [0, 0.85, 0.85, 0], clamp)} />
+      </Sequence>
+    )}
+    {music && (
+      <Sequence from={T_CORTES + TITULO_F - 6}>
+        <Audio src={staticFile('sfx/down_bass.wav')} volume={0.9} />
+      </Sequence>
+    )}
+    {music && (
+      <Sequence from={T_CORTES + TITULO_F}>
+        <Audio src={staticFile('music/fantasmas.mp3')} startFrom={sec(75.1)} volume={(fr) => interpolate(fr, [0, 2, T_MUERTOS + T_FIN - 30, T_MUERTOS + T_FIN], [0, 0.85, 0.85, 0], clamp)} />
+      </Sequence>
     )}
   </AbsoluteFill>
 );
