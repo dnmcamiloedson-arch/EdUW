@@ -511,7 +511,6 @@ const Fin: React.FC = () => {
   const entra = tw(f, [0, 16], [0, 1]);
   const logo = tw(f, [10, 34], [0, 1]);
   const t = tw(f, [32, 48], [0, 1]);
-  const h = tw(f, [46, 60], [0, 1]);
   const vela = 0.85 + 0.15 * Math.sin(f * 0.5) + 0.06 * Math.sin(f * 1.7);
   const negro = tw(f, [FIN_F - 26, FIN_F], [0, 1]);
   return (
@@ -521,10 +520,9 @@ const Fin: React.FC = () => {
       <div style={{position: 'absolute', left: 240, top: 660, width: 600, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`, transform: `translateY(${(1 - logo) * 30}px)`, filter: `drop-shadow(0 0 ${16 * vela}px rgba(244,169,60,0.55))`}}>
         <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
       </div>
-      <div style={{position: 'absolute', top: 990, width: '100%', textAlign: 'center', opacity: t, transform: `translateY(${(1 - t) * 20}px)`}}>
-        <span style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 58, letterSpacing: 4, backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>¡Nos vemos en noviembre!</span>
+      <div style={{position: 'absolute', top: 1000, width: '100%', textAlign: 'center', opacity: t, transform: `translateY(${(1 - t) * 20}px)`}}>
+        <span style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 44, letterSpacing: 10, backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>#SOMOSWESTHILL</span>
       </div>
-      <div style={{position: 'absolute', top: 1100, width: '100%', textAlign: 'center', opacity: h, fontFamily: F.sans, fontWeight: 800, fontSize: 30, letterSpacing: 8, color: '#F3E3C8'}}>#SOMOSWESTHILL</div>
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
       <Sfx at={10} name="whoosh_largo" volume={0.35} />
     </AbsoluteFill>
