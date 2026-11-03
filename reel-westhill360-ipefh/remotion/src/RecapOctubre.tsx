@@ -18,7 +18,8 @@ const BEAT = 18;
 const sec = (s: number) => Math.round(s * 30);
 
 type Toma = [src: string, from: number, beats: number];
-type Seccion = {titulo: string; sub?: string; tomas: Toma[]};
+/** foto: tomas que son una imagen fija; recorteArriba: clips exportados de Instagram (se sube el encuadre para ocultar su barra) */
+type Seccion = {titulo?: string; sub?: string; tomas: Toma[]; foto?: string; recorteArriba?: boolean};
 
 /** Arranque en frío: "si usara tres palabras… pero bueno, no son más de tres palabras" */
 const FRIO = {src: 'medico/v3_limpio', from: 5.0, to: 14.9};
@@ -27,6 +28,7 @@ export const TITULO_F = 8 * BEAT;
 export const FIN_F = 8 * BEAT;
 
 const SECCIONES: Seccion[] = [
+  {tomas: [['', 0, 4]], foto: 'photos/experiencia_westhill.jpg'},
   {
     titulo: 'Experiencia Westhill 360',
     sub: 'Visitas de IPEFH',
@@ -74,6 +76,19 @@ const SECCIONES: Seccion[] = [
     ],
   },
   {
+    titulo: 'Feria de la Salud',
+    recorteArriba: true,
+    tomas: [
+      ['recap/feria_salud', 3.6, 2],
+      ['recap/feria_salud', 5.4, 1],
+      ['recap/feria_salud', 6.3, 2],
+      ['recap/feria_salud', 7.6, 2],
+      ['recap/feria_salud', 9.0, 1],
+      ['recap/feria_salud', 9.7, 2],
+      ['recap/feria_salud', 10.9, 1],
+    ],
+  },
+  {
     titulo: 'Un viaje por el Titanic',
     sub: 'Coordinación de Inclusión',
     tomas: [
@@ -104,16 +119,26 @@ export const RECAP_FRAMES = ARRANQUES.fin + FIN_F;
 /** segundo de la canción en que empieza el video: su entrada fuerte (18.0 s) cae en el título */
 const MUSICA_DESDE = 18.0 - FRIO_F / 30;
 
-const Clip: React.FC<{src: string; from: number; dur: number; k: number}> = ({src, from, dur, k}) => {
+const Clip: React.FC<{src: string; from: number; dur: number; k: number; recorte?: boolean}> = ({src, from, dur, k, recorte}) => {
   const f = useCurrentFrame();
   const golpe = 1.08 - 0.08 * tw(f, [0, 6], [0, 1], ease.out);
-  const z = golpe + 0.04 * (f / dur);
+  const z = golpe + 0.04 * (f / dur) + (recorte ? 0.18 : 0);
   const x = (k % 2 ? 1 : -1) * 12 * (f / dur);
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
-      <AbsoluteFill style={{transform: `scale(${z}) translateX(${x}px)`}}>
+      <AbsoluteFill style={{transform: `scale(${z}) translateX(${x}px)`, transformOrigin: recorte ? '50% 100%' : '50% 50%'}}>
         <OffthreadVideo src={staticFile(`proxies/${src}.mp4`)} startFrom={sec(from)} muted style={{width: '100%', height: '100%', objectFit: 'cover'}} />
       </AbsoluteFill>
+    </AbsoluteFill>
+  );
+};
+
+/** Foto fija con acercamiento lento */
+const Foto: React.FC<{src: string; dur: number}> = ({src, dur}) => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill style={{overflow: 'hidden', background: '#000'}}>
+      <Img src={staticFile(src)} style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.04 + 0.06 * (f / dur)})`}} />
     </AbsoluteFill>
   );
 };
@@ -144,12 +169,12 @@ const SeccionVid: React.FC<{s: Seccion}> = ({s}) => {
         acc += d;
         return (
           <Sequence key={k} from={at} durationInFrames={d}>
-            <Clip src={src} from={from} dur={d} k={k} />
+            {s.foto ? <Foto src={s.foto} dur={d} /> : <Clip src={src} from={from} dur={d} k={k} recorte={s.recorteArriba} />}
           </Sequence>
         );
       })}
       <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0) 22%)'}} />
-      <Etiqueta titulo={s.titulo} sub={s.sub} dur={Math.min(dur, 6 * BEAT)} />
+      {s.titulo && <Etiqueta titulo={s.titulo} sub={s.sub} dur={Math.min(dur, 6 * BEAT)} />}
       <Flash at={0} dur={8} />
       <Sfx at={0} name="flash" volume={0.45} />
     </AbsoluteFill>
@@ -247,7 +272,11 @@ export const RecapOctubre: React.FC<{music?: boolean}> = ({music = true}) => {
       <Sequence from={ARRANQUES.fin} durationInFrames={FIN_F}>
         <Fin />
       </Sequence>
-      <Sequence from={inicioTitulo} durationInFrames={ARRANQUES.fin - inicioTitulo}>
+      {/* banderín: se oculta durante la foto de bienvenida, que ya trae su propio título arriba */}
+      <Sequence from={inicioTitulo} durationInFrames={ARRANQUES.secciones[0] - inicioTitulo}>
+        <Banner />
+      </Sequence>
+      <Sequence from={ARRANQUES.secciones[1]} durationInFrames={ARRANQUES.fin - ARRANQUES.secciones[1]}>
         <Banner />
       </Sequence>
       <Grain opacity={0.04} />
