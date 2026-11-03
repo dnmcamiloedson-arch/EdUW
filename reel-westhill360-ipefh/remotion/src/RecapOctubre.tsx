@@ -299,10 +299,10 @@ const FotoCamara: React.FC<{n: string}> = ({n}) => {
 };
 /** Polaroids que caen y se apilan sobre fondo oscuro con pétalos */
 const POL_POS = [
-  {x: 90, y: 260, r: -8},
-  {x: 470, y: 330, r: 7},
-  {x: 120, y: 920, r: 5},
-  {x: 480, y: 980, r: -6},
+  {x: 110, y: 240, r: -8},
+  {x: 540, y: 300, r: 7},
+  {x: 130, y: 880, r: 5},
+  {x: 530, y: 930, r: -6},
 ];
 const Polaroids: React.FC = () => {
   const f = useCurrentFrame();
@@ -315,13 +315,13 @@ const Polaroids: React.FC = () => {
         const pos = POL_POS[i];
         if (f < at) return null;
         return (
-          <div key={n} style={{position: 'absolute', left: pos.x, top: pos.y, width: 500, padding: '22px 22px 90px', background: '#F7F2E8', boxShadow: '0 24px 50px rgba(0,0,0,0.6)', transform: `translateY(${(1 - p) * -900}px) rotate(${pos.r + (1 - p) * 30}deg) scale(${1.3 - 0.3 * p})`}}>
-            <Img src={fotoSrc(n)} style={{width: 456, height: 600, objectFit: 'cover', display: 'block'}} />
+          <div key={n} style={{position: 'absolute', left: pos.x, top: pos.y, width: 430, padding: '20px 20px 80px', background: '#F7F2E8', boxShadow: '0 24px 50px rgba(0,0,0,0.6)', transform: `translateY(${(1 - p) * -900}px) rotate(${pos.r + (1 - p) * 30}deg) scale(${1.3 - 0.3 * p})`}}>
+            <Img src={fotoSrc(n)} style={{width: 390, height: 520, objectFit: 'cover', display: 'block'}} />
             <Sfx at={at} name="shutter" volume={0.55} />
           </div>
         );
       })}
-      <div style={{position: 'absolute', top: 1630, width: '100%', textAlign: 'center', opacity: tw(f, [FOTO_POL.length * T_POL, FOTO_POL.length * T_POL + 14], [0, 1])}}>
+      <div style={{position: 'absolute', top: 1620, width: '100%', textAlign: 'center', opacity: tw(f, [FOTO_POL.length * T_POL, FOTO_POL.length * T_POL + 14], [0, 1])}}>
         <span style={{fontFamily: F.clasica, fontWeight: 700, fontSize: 78, letterSpacing: 6, backgroundImage: 'linear-gradient(180deg, #FFE3A3 0%, #F4A93C 50%, #C25A12 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent'}}>ASÍ LO VIVIMOS</span>
       </div>
     </AbsoluteFill>
