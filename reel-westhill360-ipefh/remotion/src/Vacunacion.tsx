@@ -215,7 +215,7 @@ const Intro: React.FC = () => {
 // 2. El póster se arma
 // ---------------------------------------------------------------------------
 export const POSTER_F = 360;
-const Poster: React.FC = () => {
+export const Poster: React.FC = () => {
   const f = useCurrentFrame();
   const t = (a: number, b: number, e = ease.out) => tw(f, [a, b], [0, 1], e);
   // decoración

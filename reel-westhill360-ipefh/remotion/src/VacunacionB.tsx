@@ -3,15 +3,15 @@ import {AbsoluteFill, Audio, Img, interpolate, Sequence, staticFile, useCurrentF
 import {Grain} from './components';
 import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
-import {AMARILLO, AZUL, capa, CREMA, ESCALA_HISTORIA, FondoDifuso, NAVY, Pieza, Recorte, VAC_H, VAC_W} from './Vacunacion';
+import {AMARILLO, AZUL, capa, CREMA, ESCALA_HISTORIA, FondoDifuso, NAVY, Pieza, Poster, POSTER_F, Recorte, VAC_H, VAC_W} from './Vacunacion';
 
 // ---------------------------------------------------------------------------
 // Jornada de Vacunación, versión B (historia 9:16). Misma meta que la versión A (termina en el póster
 // original), pero con otra narrativa:
 //  1. Intro en azul: West pregunta "¿Ya te vacunaste?", tres razones en tarjetas y un calendario que
 //     cae en el 5 de noviembre.
-//  2. El póster se revela con la "cámara": empieza muy cerca de la cara de West y se aleja en tres
-//     golpes al ritmo de la música mientras las piezas entran de golpe desde todos lados.
+//  2. El póster se arma igual que en la versión A (Poster de Vacunacion.tsx). PosterB (cámara que se aleja
+//     de West) se conserva como alternativa.
 // Reutiliza las capas y posiciones de Vacunacion.tsx (coordenadas del póster de 1292x2000).
 // ---------------------------------------------------------------------------
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
@@ -34,30 +34,23 @@ const FondoAzul: React.FC = () => {
 /** Escena 1: West entra y pregunta */
 const Pregunta: React.FC = () => {
   const f = useCurrentFrame();
-  const west = tw(f, [6, 30], [0, 1], ease.back);
-  const ya = tw(f, [22, 34], [0, 1], ease.back);
-  const vac = tw(f, [32, 46], [0, 1], ease.back);
-  const q = tw(f, [44, 56], [0, 1], ease.back);
+  const ya = tw(f, [8, 20], [0, 1], ease.back);
+  const vac = tw(f, [20, 34], [0, 1], ease.back);
+  const q = tw(f, [32, 46], [0, 1], ease.back);
   const sale = tw(f, [70, 84], [0, 1], ease.in);
-  const tilt = Math.sin(f / 10) * 2;
   return (
     <AbsoluteFill style={{opacity: 1 - sale, transform: `scale(${1 + sale * 0.15})`}}>
-      {/* West asomándose desde la derecha */}
-      <div style={{position: 'absolute', left: 420 + (1 - west) * 700, top: 690, width: 760, height: 1178, transformOrigin: '40% 100%', transform: `rotate(${tilt - (1 - west) * 12}deg)`}}>
-        <Img src={capa('lince')} style={{width: '100%', height: '100%'}} />
-      </div>
-      <div style={{position: 'absolute', left: 110, top: 300}}>
-        <div style={{position: 'relative', display: 'inline-block', transform: `scale(${ya}) rotate(-3deg)`, transformOrigin: '0 50%'}}>
-          <Img src={capa('parche')} style={{position: 'absolute', left: -40, top: -26, width: 560, height: 190}} />
-          <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 120, color: NAVY, letterSpacing: -3}}>¿Ya te</span>
+      <div style={{position: 'absolute', top: 560, width: '100%', textAlign: 'center'}}>
+        <div style={{position: 'relative', display: 'inline-block', transform: `scale(${ya}) rotate(-3deg)`}}>
+          <Img src={capa('parche')} style={{position: 'absolute', left: -50, top: -30, width: 640, height: 220}} />
+          <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 140, color: NAVY, letterSpacing: -3}}>¿Ya te</span>
         </div>
-        <div style={{marginTop: 4, fontFamily: F.sans, fontWeight: 900, fontSize: 132, lineHeight: 1, color: '#fff', letterSpacing: -4, transform: `translateX(${(1 - vac) * -500}px)`, opacity: Math.min(1, vac * 2), textShadow: '0 8px 0 rgba(4,57,113,0.35)'}}>vacunaste</div>
-        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 260, lineHeight: 0.9, color: AMARILLO, transform: `scale(${q}) rotate(${(1 - q) * 60 + Math.sin(f / 6) * 4}deg)`, transformOrigin: '20% 60%', textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>?</div>
+        <div style={{marginTop: 10, fontFamily: F.sans, fontWeight: 900, fontSize: 168, lineHeight: 1, color: '#fff', letterSpacing: -5, transform: `translateY(${(1 - vac) * 160}px) scale(${0.7 + 0.3 * vac})`, opacity: Math.min(1, vac * 2), textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>vacunaste</div>
+        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 300, lineHeight: 0.9, color: AMARILLO, transform: `scale(${q}) rotate(${(1 - q) * 60 + Math.sin(f / 6) * 5}deg)`, textShadow: '0 10px 0 rgba(4,57,113,0.35)'}}>?</div>
       </div>
-      <Sfx at={6} name="whoosh_largo" volume={0.45} />
-      <Sfx at={22} name="hist_paper" volume={0.6} />
-      <Sfx at={32} name="whoosh" volume={0.4} />
-      <Sfx at={44} name="pop" volume={0.6} />
+      <Sfx at={8} name="hist_paper" volume={0.6} />
+      <Sfx at={20} name="whoosh" volume={0.4} />
+      <Sfx at={32} name="pop" volume={0.6} />
     </AbsoluteFill>
   );
 };
@@ -235,7 +228,9 @@ const PosterB: React.FC = () => {
   );
 };
 
-export const VACUNA_B_FRAMES = INTRO_B + POSTER_B;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const _PosterB = () => PosterB;
+export const VACUNA_B_FRAMES = INTRO_B + POSTER_F;
 export const VacunacionB: React.FC<{music?: boolean}> = ({music = true}) => {
   const s = ESCALA_HISTORIA;
   return (
@@ -247,7 +242,7 @@ export const VacunacionB: React.FC<{music?: boolean}> = ({music = true}) => {
         <AbsoluteFill style={{background: CREMA}} />
         <FondoDifuso />
         <div style={{position: 'absolute', left: (VAC_W - VAC_W * s) / 2, top: (1920 - VAC_H * s) / 2, width: VAC_W, height: VAC_H, transformOrigin: '0 0', transform: `scale(${s})`, overflow: 'hidden', borderRadius: 28, boxShadow: '0 30px 80px rgba(0,0,0,0.35)'}}>
-          <PosterB />
+          <Poster />
         </div>
       </Sequence>
       <Grain opacity={0.035} />
