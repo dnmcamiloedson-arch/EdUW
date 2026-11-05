@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Audio, Img, interpolate, Sequence, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Audio, Img, interpolate, random, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Grain} from './components';
 import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
@@ -79,8 +79,8 @@ export const VOZ_DESDE = 30;
 
 // ---------------------------------------------------------------------------
 // Sincronía con la canción: tramos con bajo fuerte ("drops") y golpes donde arranca cada uno.
-// En los drops las fotos salen con barrido o atravesando y laten con el ritmo; en las partes tranquilas
-// se revelan y salen con un destello de luz cálida.
+// En los drops las fotos salen con barrido o atravesando y un brillo de luz las recorre a tiempo con la música;
+// en las partes tranquilas se revelan y salen con un destello de luz cálida. Nada de rebotes ni sacudidas.
 // ---------------------------------------------------------------------------
 const DROPS: [number, number][] = [
   [30.4, 38.0],
@@ -94,7 +94,7 @@ const DROPS: [number, number][] = [
 const GOLPES = [30.5, 59.2, 116.7, 143.2, 181.3];
 const enDrop = (t: number) => DROPS.some(([a, b]) => t >= a && t < b);
 const esGolpe = (t: number) => GOLPES.some((g) => Math.abs(g - t) < 0.5);
-type Entra = 'sube' | 'zoom' | 'cae' | 'lado' | 'revela';
+type Entra = 'sube' | 'zoom' | 'baja' | 'enfoca' | 'lado' | 'revela';
 type Sale = 'fade' | 'barrido' | 'atraviesa' | 'luz';
 type Estilo = {entra: Entra; sale: Sale; drop: boolean; golpe: boolean};
 /** estilo de cada espacio de fotos según dónde cae en la canción; la entrada combina con la salida anterior */
@@ -105,20 +105,26 @@ const ESTILOS: Estilo[] = (() => {
   ITEMS.forEach((it, i) => {
     const t = beatF(ARRANQUES[i]) / 30;
     const drop = enDrop(t);
+    const golpe = esGolpe(t);
     let sale: Sale;
     let entra: Entra;
     if (drop) {
       sale = n % 2 ? 'atraviesa' : 'barrido';
-      entra = prev === 'barrido' ? 'lado' : prev === 'atraviesa' ? 'zoom' : 'cae';
+      entra = prev === 'barrido' ? 'lado' : prev === 'atraviesa' ? 'zoom' : golpe ? 'enfoca' : 'baja';
     } else {
       sale = n % 2 ? 'fade' : 'luz';
       entra = n % 2 ? 'sube' : 'revela';
     }
-    r.push({entra, sale, drop, golpe: esGolpe(t)});
+    r.push({entra, sale, drop, golpe});
     prev = it.k === 'fotos' ? sale : 'fade';
     n += 1;
   });
   return r;
+})();
+/** número de tira de película (para alternar su sentido y altura) */
+const TIRA_IDX: number[] = (() => {
+  let n = 0;
+  return ITEMS.map((it) => (it.k === 'fotos' && it.tipo === 'strip' ? n++ : -1));
 })();
 
 // ---------------------------------------------------------------------------
@@ -139,15 +145,20 @@ const Fondo: React.FC = () => {
   );
 };
 
-/** Foto con marco blanco, sombra y un leve movimiento; la entrada cambia según el momento de la canción */
-const Marco: React.FC<{src: string; w: number; h: number; x: number; y: number; maxW: number; maxH: number; r?: number; at?: number; dur: number; entra: Entra; lado?: number}> = ({src, w, h, x, y, maxW, maxH, r = 0, at = 0, dur, entra, lado = 1}) => {
+/**
+ * Foto con marco blanco y sombra. Adentro la foto se acerca despacio (Ken Burns) y, en los drops,
+ * un brillo de luz la cruza como reflejo de papel fotográfico. La entrada cambia según el momento de la canción.
+ */
+const Marco: React.FC<{src: string; w: number; h: number; x: number; y: number; maxW: number; maxH: number; r?: number; at?: number; dur: number; entra: Entra; lado?: number; brillo?: number}> = ({src, w, h, x, y, maxW, maxH, r = 0, at = 0, dur, entra, lado = 1, brillo}) => {
   const f = useCurrentFrame();
   const s = Math.min(maxW / w, maxH / h);
   const fw = w * s;
   const fh = h * s;
-  const p = tw(f, [at, at + 12], [0, 1], entra === 'cae' ? ease.back : ease.out);
+  const suave = entra === 'baja' || entra === 'enfoca';
+  const p = tw(f, [at, at + (suave ? 18 : 12)], [0, 1], ease.out);
   const q = 1 - p;
-  const deriva = 1 + 0.03 * ((f - at) / dur);
+  const avance = interpolate(f, [at, at + dur], [0, 1], clamp);
+  const deriva = 1 + 0.025 * avance;
   let t = '';
   let filtro = 'none';
   let op = Math.min(1, p * 1.5);
@@ -156,7 +167,12 @@ const Marco: React.FC<{src: string; w: number; h: number; x: number; y: number; 
     t = `scale(${1 + q * 0.45})`;
     filtro = `blur(${q * 14}px)`;
   }
-  if (entra === 'cae') t = `translateY(${q * -760}px) rotate(${q * 14}deg)`;
+  if (entra === 'baja') t = `translateY(${q * -90}px) scale(${0.97 + 0.03 * p})`;
+  if (entra === 'enfoca') {
+    t = `scale(${1 + q * 0.12})`;
+    filtro = `blur(${q * 10}px) brightness(${1 + q * 1.4})`;
+    op = Math.min(1, p * 2.5);
+  }
   if (entra === 'lado') {
     t = `translateX(${q * 1500 * lado}px)`;
     filtro = `blur(${q * 18}px)`;
@@ -167,11 +183,20 @@ const Marco: React.FC<{src: string; w: number; h: number; x: number; y: number; 
     t = `scale(${0.96 + 0.04 * p})`;
     filtro = `brightness(${2.4 - 1.4 * rev}) sepia(${0.6 * (1 - rev)}) contrast(${0.7 + 0.3 * rev})`;
   }
+  // brillo: una franja de luz que cruza toda la pantalla de izquierda a derecha; cada foto lo recibe al pasar
+  const izq = x - fw / 2 - 14;
+  let reflejo: React.ReactNode = null;
+  if (brillo !== undefined && f >= brillo && f <= brillo + 24) {
+    const cx = interpolate(f, [brillo, brillo + 24], [-500, W + 500], {easing: ease.inOut}) - izq;
+    reflejo = (
+      <div style={{position: 'absolute', top: -200, bottom: -200, left: cx - 180, width: 360, transform: 'skewX(-18deg)', background: 'linear-gradient(90deg, rgba(255,250,235,0) 0%, rgba(255,250,235,0.22) 35%, rgba(255,255,255,0.55) 50%, rgba(255,250,235,0.22) 65%, rgba(255,250,235,0) 100%)', mixBlendMode: 'screen'}} />
+    );
+  }
   return (
     <div
       style={{
         position: 'absolute',
-        left: x - fw / 2 - 14,
+        left: izq,
         top: y - fh / 2 - 14,
         padding: 14,
         background: '#FDFBF6',
@@ -179,16 +204,21 @@ const Marco: React.FC<{src: string; w: number; h: number; x: number; y: number; 
         transform: `${t} rotate(${r * Math.min(1, p)}deg) scale(${deriva})`,
         filter: filtro,
         opacity: op,
+        overflow: 'hidden',
       }}
     >
-      <Img src={src} style={{width: fw, height: fh, objectFit: 'cover', display: 'block'}} />
+      <div style={{width: fw, height: fh, overflow: 'hidden'}}>
+        <Img src={src} style={{width: fw, height: fh, objectFit: 'cover', display: 'block', transform: `scale(${1.06 + 0.06 * avance}) translateX(${(avance - 0.5) * 10 * lado}px)`}} />
+      </div>
+      {reflejo}
     </div>
   );
 };
 
 /** Rollo de película de 35 mm: base café oscuro, perforaciones a contraluz, números de cuadro y destello de luz */
 const PERF = 52;
-const Pelicula: React.FC<{fac: string; fotos: [string, number, number][]; dur: number}> = ({fac, fotos, dur}) => {
+type TiraProps = {fac: string; fotos: [string, number, number][]; dur: number; dir?: number; y?: number; rot?: number; escala?: number; desde?: number; hasta?: number};
+const Pelicula: React.FC<TiraProps> = ({fac, fotos, dur, dir = 1, y = H / 2, rot = -4, escala = 1, desde = -380, hasta = -1764}) => {
   const f = useCurrentFrame();
   const FW = 640;
   const FH = 480;
@@ -196,13 +226,14 @@ const Pelicula: React.FC<{fac: string; fotos: [string, number, number][]; dur: n
   const BANDA = 78;
   const cuadros: (string | null)[] = [null, ...fotos.map((x) => x[0]), null];
   const ancho = cuadros.length * (FW + GAP) + GAP;
-  const x = interpolate(f, [0, dur], [-380, -380 - (ancho - W - 760) * 1], {...clamp, easing: (k) => k});
+  // dir 1: el rollo corre hacia la izquierda; dir -1: hacia la derecha
+  const x = interpolate(f, [0, dur], dir > 0 ? [desde, hasta] : [hasta, desde], clamp);
   const vaiven = Math.sin(f / 3.1) * 1.4;
-  const fuga = interpolate(f, [0, dur], [-600, ancho + 200], clamp);
+  const fuga = interpolate(f, [0, dur], dir > 0 ? [-600, ancho + 200] : [ancho + 200, -600], clamp);
   const perforaciones = Array.from({length: Math.ceil(ancho / PERF)}, (_, i) => i);
   const hoyo: React.CSSProperties = {position: 'absolute', width: 30, height: 21, borderRadius: 5, background: 'linear-gradient(180deg, #FFF6E6, #E9DCC4)', boxShadow: 'inset 0 2px 3px rgba(0,0,0,0.45), 0 0 6px rgba(255,236,200,0.35)'};
   return (
-    <div style={{position: 'absolute', left: x, top: H / 2 - (FH + 2 * BANDA) / 2 + vaiven, width: ancho, height: FH + 2 * BANDA, transform: 'rotate(-4deg)', transformOrigin: '50% 50%'}}>
+    <div style={{position: 'absolute', left: x, top: y - (FH + 2 * BANDA) / 2 + vaiven, width: ancho, height: FH + 2 * BANDA, transform: `rotate(${rot}deg) scale(${escala})`, transformOrigin: `${W / 2 - x}px 50%`}}>
       <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(180deg, #2B1A10 0%, #140C07 18%, #0E0805 50%, #140C07 82%, #2B1A10 100%)', boxShadow: '0 50px 90px rgba(0,0,0,0.65)', borderTop: '2px solid #3A2617', borderBottom: '2px solid #3A2617'}} />
       {perforaciones.map((i) => (
         <React.Fragment key={i}>
@@ -232,7 +263,20 @@ const Pelicula: React.FC<{fac: string; fotos: [string, number, number][]; dur: n
   );
 };
 
-const FotosSlot: React.FC<{it: Extract<Item, {k: 'fotos'}>; est: Estilo}> = ({it, est}) => {
+/**
+ * Variantes de la tira de película: cada una cambia de sentido y de altura (centro, arriba, abajo) con su inclinación.
+ * Arriba y abajo llevan además un rollo pequeño y desenfocado en sentido contrario en el espacio libre (profundidad).
+ */
+const TIRAS: {y: number; rot: number; dir: number; escala: number; eco?: number}[] = [
+  {y: H / 2, rot: -4, dir: 1, escala: 1},
+  {y: 360, rot: 3, dir: -1, escala: 0.86, eco: 885},
+  {y: 720, rot: -3, dir: 1, escala: 0.86, eco: 195},
+  {y: H / 2, rot: 4, dir: -1, escala: 1},
+  {y: 360, rot: -3, dir: 1, escala: 0.86, eco: 885},
+  {y: 720, rot: 3, dir: -1, escala: 0.86, eco: 195},
+];
+
+const FotosSlot: React.FC<{it: Extract<Item, {k: 'fotos'}>; est: Estilo; tira: number}> = ({it, est, tira}) => {
   const f = useCurrentFrame();
   const dur = Math.round(it.beats * BEAT);
   const SAL = est.sale === 'luz' ? 14 : 9;
@@ -240,16 +284,15 @@ const FotosSlot: React.FC<{it: Extract<Item, {k: 'fotos'}>; est: Estilo}> = ({it
   const [p0] = it.fotos;
   const b = (k: number) => Math.round(k * BEAT);
   const e = est.entra;
-  // en los drops el contenido late en cada tiempo
-  const latido = est.drop ? 1 + 0.018 * Math.max(0, 1 - ((f % BEAT) / BEAT) * 3) : 1;
-  // golpe de entrada en el arranque de un drop
-  const golpe = est.golpe ? interpolate(f, [0, 2, 12], [0, 0.75, 0], clamp) : 0;
-  const sacude = est.golpe && f < 12 ? (12 - f) * 2.2 : 0;
+  // en los drops un brillo cruza las fotos en el tercer tiempo (sin latidos ni sacudidas)
+  const brillo = est.drop ? b(2) + 2 : undefined;
+  // destello suave en el arranque de un drop
+  const golpe = est.golpe ? interpolate(f, [0, 3, 20], [0, 0.5, 0], clamp) : 0;
   let contenido: React.ReactNode = null;
   if (it.tipo === 'single') {
-    contenido = <Marco src={foto(it.fac, p0[0])} w={p0[1]} h={p0[2]} x={W / 2} y={H / 2} maxW={1300} maxH={860} r={-1.5} dur={dur} entra={e} />;
+    contenido = <Marco src={foto(it.fac, p0[0])} w={p0[1]} h={p0[2]} x={W / 2} y={H / 2} maxW={1300} maxH={860} r={-1.5} dur={dur} entra={e} brillo={brillo} />;
   } else if (it.tipo === 'trio') {
-    contenido = it.fotos.map(([n, w, h], i) => <Marco key={n} src={foto(it.fac, n)} w={w} h={h} x={360 + i * 600} y={H / 2 + (i === 1 ? -20 : 20)} maxW={540} maxH={760} r={[-4, 2, 5][i]} at={b(i)} dur={dur} entra={e} lado={i % 2 ? -1 : 1} />);
+    contenido = it.fotos.map(([n, w, h], i) => <Marco key={n} src={foto(it.fac, n)} w={w} h={h} x={360 + i * 600} y={H / 2 + (i === 1 ? -20 : 20)} maxW={540} maxH={760} r={[-4, 2, 5][i]} at={b(i)} dur={dur} entra={e} lado={i % 2 ? -1 : 1} brillo={brillo} />);
   } else if (it.tipo === 'quad') {
     const pos = [
       [600, 290],
@@ -257,12 +300,18 @@ const FotosSlot: React.FC<{it: Extract<Item, {k: 'fotos'}>; est: Estilo}> = ({it
       [620, 790],
       [1300, 780],
     ];
-    contenido = it.fotos.map(([n, w, h], i) => <Marco key={n} src={foto(it.fac, n)} w={w} h={h} x={pos[i][0]} y={pos[i][1]} maxW={760} maxH={470} r={[-3, 3, 2, -2][i]} at={b(i * 0.75)} dur={dur} entra={e} lado={i % 2 ? -1 : 1} />);
+    contenido = it.fotos.map(([n, w, h], i) => <Marco key={n} src={foto(it.fac, n)} w={w} h={h} x={pos[i][0]} y={pos[i][1]} maxW={760} maxH={470} r={[-3, 3, 2, -2][i]} at={b(i * 0.75)} dur={dur} entra={e} lado={i % 2 ? -1 : 1} brillo={brillo} />);
   } else {
     const ent = tw(f, [0, 10], [0, 1], ease.out);
+    const v = TIRAS[Math.max(0, tira) % TIRAS.length];
     contenido = (
       <AbsoluteFill style={{opacity: ent, transform: `scale(${1.08 - 0.08 * ent})`}}>
-        <Pelicula fac={it.fac} fotos={it.fotos} dur={dur} />
+        {v.eco !== undefined && (
+          <AbsoluteFill style={{opacity: 0.5, filter: 'blur(3px) brightness(0.8)'}}>
+            <Pelicula fac={it.fac} fotos={[...it.fotos].reverse().concat(it.fotos)} dur={dur} dir={-v.dir} y={v.eco} rot={-v.rot * 0.6} escala={0.42} desde={-1400} hasta={-3400} />
+          </AbsoluteFill>
+        )}
+        <Pelicula fac={it.fac} fotos={it.fotos} dur={dur} dir={v.dir} y={v.y} rot={v.rot} escala={v.escala} />
       </AbsoluteFill>
     );
   }
@@ -276,7 +325,7 @@ const FotosSlot: React.FC<{it: Extract<Item, {k: 'fotos'}>; est: Estilo}> = ({it
         <AbsoluteFill style={{opacity: 0.35}}>
           <Img src={foto(it.fac, p0[0])} style={{width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(40px) brightness(0.6)', transform: 'scale(1.2)'}} />
         </AbsoluteFill>
-        <AbsoluteFill style={{transform: `translate(${Math.sin(f * 3) * sacude}px, ${Math.cos(f * 4) * sacude}px) scale(${latido})`}}>{contenido}</AbsoluteFill>
+        <AbsoluteFill>{contenido}</AbsoluteFill>
       </AbsoluteFill>
       {/* destello de luz cálida al salir en las partes tranquilas */}
       {est.sale === 'luz' && (
@@ -366,16 +415,180 @@ const Intro: React.FC = () => {
   );
 };
 
+/**
+ * Fuegos artificiales: un cohete sube y estalla en estelas doradas, blancas o azul claro que caen con la gravedad.
+ * Las explosiones caen en los tiempos de la canción mientras sigue el drop; al aparecer el logo, una "palmera" dorada
+ * lenta que gotea luz detrás de él.
+ */
+type Estallido = {at: number; x: number; y: number; r: number; n: number; vida: number; col: string[]; palmera?: boolean};
+const COLOR_FUEGO = {
+  oro: ['#FFE3A3', '#E9C27A'],
+  blanco: ['#FFFFFF', '#FFF1D2'],
+  champan: ['#F6E3B0', '#FFFFFF'],
+  azul: ['#B7DCFF', '#FFFFFF'],
+};
+const SUBE = 22;
+const Fuego: React.FC<{e: Estallido; id: number}> = ({e, id}) => {
+  const f = useCurrentFrame();
+  const t = f - e.at;
+  if (t < -SUBE || t > e.vida) return null;
+  if (t < 0) {
+    // cohete subiendo
+    const k = (t + SUBE) / SUBE;
+    const c = 1 - Math.pow(1 - k, 2);
+    const x0 = e.x + (id % 2 ? 70 : -70);
+    const x = x0 + (e.x - x0) * c;
+    const y = H + 40 + (e.y - H - 40) * c;
+    const ang = (Math.atan2(e.y - H - 40, e.x - x0) * 180) / Math.PI;
+    return (
+      <div style={{position: 'absolute', left: x, top: y, width: 110 * (1 - k * 0.6), height: 4, borderRadius: 2, transformOrigin: '0 50%', transform: `rotate(${ang + 180}deg)`, background: 'linear-gradient(90deg, rgba(255,244,214,1) 0%, rgba(255,196,110,0.5) 40%, rgba(255,196,110,0) 100%)'}} />
+    );
+  }
+  const g = e.palmera ? 300 : 110;
+  const expande = e.vida * (e.palmera ? 0.4 : 0.5);
+  const pos = (i: number, tt: number): [number, number] => {
+    const ang = (i / e.n) * Math.PI * 2 + (random(`a${id}-${i}`) - 0.5) * 0.3;
+    const vel = e.r * (0.62 + 0.38 * random(`v${id}-${i}`));
+    const d = vel * (1 - Math.pow(1 - Math.min(1, tt / expande), 3));
+    const u = tt / e.vida;
+    return [e.x + Math.cos(ang) * d, e.y + Math.sin(ang) * d + g * u * u];
+  };
+  const u = t / e.vida;
+  const flash = interpolate(t, [0, 2, 12], [0, 0.55, 0], clamp);
+  return (
+    <>
+      <div style={{position: 'absolute', left: e.x - e.r * 0.6, top: e.y - e.r * 0.6, width: e.r * 1.2, height: e.r * 1.2, borderRadius: '50%', background: 'radial-gradient(circle, rgba(255,240,205,0.9) 0%, rgba(255,200,120,0.35) 30%, rgba(255,200,120,0) 70%)', opacity: flash}} />
+      {Array.from({length: e.n}, (_, i) => {
+        const [hx, hy] = pos(i, t);
+        const [cx, cy] = pos(i, Math.max(0, t - (e.palmera ? 12 : 8)));
+        const largo = Math.hypot(hx - cx, hy - cy);
+        const ang = (Math.atan2(hy - cy, hx - cx) * 180) / Math.PI;
+        const titila = u > 0.5 ? 0.55 + 0.45 * Math.abs(Math.sin(t * 0.9 + i * 1.7)) : 1;
+        const op = interpolate(u, [0, 0.55, 1], [1, 1, 0], clamp) * titila;
+        const col = e.col[i % e.col.length];
+        return (
+          <div key={i} style={{position: 'absolute', left: cx, top: cy - 1.5, width: largo + 4, height: e.palmera ? 3 : 3.5, borderRadius: 2, transformOrigin: '0 50%', transform: `rotate(${ang}deg)`, opacity: op, background: `linear-gradient(90deg, rgba(255,255,255,0) 0%, ${col} 85%, #FFFFFF 100%)`}} />
+        );
+      })}
+    </>
+  );
+};
+const FIN_DROP = Math.round(210.0 * 30) - FIN_DESDE; // dónde termina el último drop dentro del cierre
+const LOGO_F = CIERRE_F - 260;
+const ESTALLIDOS: Estallido[] = (() => {
+  const r: Estallido[] = [];
+  const puntos: [number, number][] = [
+    [340, 210],
+    [1580, 190],
+    [700, 120],
+    [1240, 130],
+    [170, 640],
+    [1750, 620],
+    [960, 110],
+    [1480, 230],
+    [450, 160],
+  ];
+  const pal = [COLOR_FUEGO.oro, COLOR_FUEGO.blanco, COLOR_FUEGO.champan, COLOR_FUEGO.azul];
+  let j = 0;
+  for (let k = 2; Math.round(k * BEAT) < FIN_DROP - 20; k += 2) {
+    const [x, y] = puntos[j % puntos.length];
+    r.push({at: Math.round(k * BEAT), x, y, r: 300 + (j % 3) * 55, n: 76, vida: 58, col: pal[j % pal.length]});
+    // cada 4 compases, doble
+    if (k % 8 === 0) r.push({at: Math.round(k * BEAT) + 3, x: W - x, y: y + 40, r: 260, n: 64, vida: 54, col: pal[(j + 2) % pal.length]});
+    j += 1;
+  }
+  // final: palmera dorada detrás del logo y dos a los lados
+  r.push({at: LOGO_F + 8, x: W / 2, y: 250, r: 460, n: 96, vida: 130, col: COLOR_FUEGO.oro, palmera: true});
+  r.push({at: LOGO_F + 30, x: 360, y: 300, r: 280, n: 64, vida: 110, col: COLOR_FUEGO.champan, palmera: true});
+  r.push({at: LOGO_F + 46, x: W - 360, y: 280, r: 280, n: 64, vida: 110, col: COLOR_FUEGO.champan, palmera: true});
+  return r;
+})();
+const Fuegos: React.FC = () => (
+  <AbsoluteFill style={{mixBlendMode: 'screen', filter: 'drop-shadow(0 0 6px rgba(255,214,150,0.9))'}}>
+    {ESTALLIDOS.map((e, i) => (
+      <Fuego key={i} e={e} id={i} />
+    ))}
+  </AbsoluteFill>
+);
+
+/**
+ * Huellas de caracal (West): dos caminos entran desde las esquinas de abajo, un paso por tiempo de la canción,
+ * alternando pata izquierda y derecha, y se encuentran en el centro: ahí se estampa una huella grande, justo cuando
+ * la palabra "huella" se enciende. Cada paso se marca con un brillo dorado, una onda y chispas, y queda encendido.
+ */
+const HUELLA_ORO = staticFile('logos/huella_caracal_oro.png');
+const HUELLA_LUZ = staticFile('logos/huella_caracal.png');
+const PASOS = 8;
+const HUELLA_GRANDE = PASOS + 1; // tiempo (desde el primer paso) en que cae la huella grande
+type Pisada = {x: number; y: number; rot: number; at: number; S: number; k: number};
+const pisadas = (desde: number): Pisada[] => {
+  const r: Pisada[] = [];
+  [-1, 1].forEach((lado) => {
+    // curva de la esquina inferior hacia el centro (bezier cuadrática)
+    const p0 = [W / 2 + lado * 1010, 1050];
+    const c = [W / 2 + lado * 560, 1010];
+    const p1 = [W / 2 + lado * 150, 885];
+    for (let k = 0; k < PASOS; k++) {
+      const u = (k + 0.5) / PASOS;
+      const bx = (1 - u) * (1 - u) * p0[0] + 2 * u * (1 - u) * c[0] + u * u * p1[0];
+      const by = (1 - u) * (1 - u) * p0[1] + 2 * u * (1 - u) * c[1] + u * u * p1[1];
+      const dx = 2 * (1 - u) * (c[0] - p0[0]) + 2 * u * (p1[0] - c[0]);
+      const dy = 2 * (1 - u) * (c[1] - p0[1]) + 2 * u * (p1[1] - c[1]);
+      const ang = Math.atan2(dy, dx);
+      const pie = k % 2 ? 1 : -1;
+      r.push({x: bx - Math.sin(ang) * 24 * pie, y: by + Math.cos(ang) * 24 * pie, rot: (ang * 180) / Math.PI + 90 + pie * 6, at: desde + Math.round(k * BEAT), S: 70, k: k + (lado > 0 ? 50 : 0)});
+    }
+  });
+  r.push({x: W / 2, y: 868, rot: 0, at: desde + Math.round(HUELLA_GRANDE * BEAT), S: 150, k: 99});
+  return r;
+};
+const Huellas: React.FC<{desde: number; atenua: number}> = ({desde, atenua}) => {
+  const f = useCurrentFrame();
+  return (
+    <AbsoluteFill>
+      {pisadas(desde).map(({x, y, rot, at, S, k}) => {
+        const a = f - at;
+        if (a < 0) return null;
+        const grande = S > 100;
+        const e = tw(a, [0, grande ? 18 : 12], [0, 1]);
+        const luz = interpolate(a, [0, 3, grande ? 60 : 36], [0, 1, grande ? 0.35 : 0], clamp);
+        const onda = tw(a, [0, grande ? 40 : 28], [0, 1]);
+        const ondaR = grande ? 240 : 90;
+        const brilla = 0.88 + 0.12 * Math.sin(f / 11 + k);
+        const chispas = grande ? 16 : 6;
+        return (
+          <React.Fragment key={k}>
+            <div style={{position: 'absolute', left: x - S / 3 - ondaR * onda, top: y - S / 3 - ondaR * onda, width: (2 * S) / 3 + 2 * ondaR * onda, height: (2 * S) / 3 + 2 * ondaR * onda, borderRadius: '50%', border: `${grande ? 3 : 2}px solid #F6E3B0`, opacity: 0.75 * (1 - onda) * atenua}} />
+            {Array.from({length: chispas}, (_, c) => {
+              const ca = random(`ch${k}-${c}`) * Math.PI * 2;
+              const cd = (grande ? 90 : 30) + (grande ? 120 : 40) * random(`cd${k}-${c}`);
+              const cv = tw(a, [0, grande ? 34 : 22], [0, 1]);
+              return <div key={c} style={{position: 'absolute', left: x + Math.cos(ca) * cd * cv - 2.5, top: y + Math.sin(ca) * cd * cv - 2.5 - 14 * cv, width: 5, height: 5, borderRadius: '50%', background: '#FFF3D0', boxShadow: '0 0 8px #F6E3B0', opacity: (1 - cv) * atenua}} />;
+            })}
+            <div style={{position: 'absolute', left: x - S / 2, top: y - S / 2, width: S, height: S, opacity: Math.min(1, a / 4) * atenua * brilla, transform: `rotate(${rot}deg) scale(${(grande ? 1.5 : 1.3) - (grande ? 0.5 : 0.3) * e})`, filter: `drop-shadow(0 0 ${6 + (grande ? 26 : 16) * luz}px rgba(255,206,125,${0.5 + 0.45 * luz}))`}}>
+              <Img src={HUELLA_ORO} style={{position: 'absolute', inset: 0, width: '100%', height: '100%'}} />
+              <Img src={HUELLA_LUZ} style={{position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.85 * luz}} />
+            </div>
+          </React.Fragment>
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
 /** Cierre: tira de todas las fotos de fondo, "¡Felicidades, Generación 2026!" y el logo */
 const TODAS = FACULTADES.flatMap(({key}) => (FOTOS[key] ?? []).map(([n, w, h]) => ({fac: key, n, w, h})));
+const HUELLAS_DESDE = 124;
 const Cierre: React.FC = () => {
   const f = useCurrentFrame();
   const t1 = tw(f, [10, 36], [0, 1]);
-  const t2 = tw(f, [40, 66], [0, 1], ease.back);
+  const t2 = tw(f, [40, 70], [0, 1]);
   const t3 = tw(f, [90, 116], [0, 1]);
-  const logo = tw(f, [CIERRE_F - 260, CIERRE_F - 220], [0, 1]);
+  const logo = tw(f, [LOGO_F, LOGO_F + 40], [0, 1]);
   const ocultaTexto = tw(f, [CIERRE_F - 280, CIERRE_F - 250], [0, 1]);
   const negro = tw(f, [CIERRE_F - 40, CIERRE_F], [0, 1]);
+  // la palabra "huella" se enciende cuando cae la huella grande
+  const enciende = interpolate(f - (HUELLAS_DESDE + Math.round(HUELLA_GRANDE * BEAT)), [0, 4, 50], [0, 1, 0.35], clamp);
   const filas = [0, 1, 2];
   return (
     <AbsoluteFill style={{background: NAVY, overflow: 'hidden'}}>
@@ -394,14 +607,19 @@ const Cierre: React.FC = () => {
         })}
       </AbsoluteFill>
       <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(11,27,51,0.92) 0%, rgba(11,27,51,0.7) 45%, rgba(11,27,51,0.35) 100%)'}} />
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(11,27,51,0) 58%, rgba(11,27,51,0.8) 100%)'}} />
+      <Fuegos />
+      <Huellas desde={HUELLAS_DESDE} atenua={1 - 0.4 * logo} />
       <div style={{position: 'absolute', top: 330, width: '100%', textAlign: 'center', opacity: 1 - ocultaTexto}}>
         <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 90, color: CREMA, opacity: t1, filter: `blur(${(1 - t1) * 10}px)`}}>¡Felicidades,</div>
-        <div style={{marginTop: 6, transform: `scale(${t2})`, opacity: Math.min(1, t2 * 2)}}>
+        <div style={{marginTop: 6, transform: `scale(${0.9 + 0.1 * t2})`, opacity: t2, filter: `blur(${(1 - t2) * 10}px)`}}>
           <Dorado size={130} spacing={10}>
             GENERACIÓN 2026!
           </Dorado>
         </div>
-        <div style={{marginTop: 40, fontFamily: F.sans, fontWeight: 600, fontSize: 40, letterSpacing: 4, color: CREMA, opacity: t3}}>Gracias por dejar huella en Westhill.</div>
+        <div style={{marginTop: 40, fontFamily: F.sans, fontWeight: 600, fontSize: 40, letterSpacing: 4, color: CREMA, opacity: t3}}>
+          Gracias por dejar <span style={{fontFamily: F.serif, fontStyle: 'italic', fontSize: 50, letterSpacing: 1, color: ORO, textShadow: `0 0 ${24 * enciende}px rgba(255,214,140,${enciende})`}}>huella</span> en Westhill.
+        </div>
       </div>
       <div style={{position: 'absolute', left: W / 2 - 330, top: 330, width: 660, opacity: logo, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`}}>
         <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
@@ -432,7 +650,7 @@ export const Graduacion: React.FC<{music?: boolean; voz?: string; vozDur?: numbe
         const dur = beatF(ARRANQUES[i] + it.beats) - from;
         return (
           <Sequence key={i} from={from} durationInFrames={dur}>
-            {it.k === 'portada' ? <Portada it={it} /> : it.k === 'frase' ? <Frase arriba={it.arriba} grande={it.grande} dur={dur} /> : <FotosSlot it={it} est={ESTILOS[i]} />}
+            {it.k === 'portada' ? <Portada it={it} /> : it.k === 'frase' ? <Frase arriba={it.arriba} grande={it.grande} dur={dur} /> : <FotosSlot it={it} est={ESTILOS[i]} tira={TIRA_IDX[i]} />}
           </Sequence>
         );
       })}
