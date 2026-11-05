@@ -59,7 +59,7 @@ const EscenaA: React.FC = () => {
   return (
     <AbsoluteFill>
       <Clip n={1} capa="rgba(4,57,113,0.58)" />
-      <Sello at={4} x={540} y={430} texto="¡ÚLTIMO AVISO!" size={64} rot={-4} />
+      <Sello at={4} x={540} y={430} texto="🗣️ ¡ÚLTIMO AVISO!" size={64} rot={-4} />
       <Linea texto="Solo quedan" at={12} top={560} size={96} color="#fff" />
       {f >= CONT_A - 2 && <Numero valor={valorCont(f)} top={680} size={480} escala={llega} />}
       <Tira texto="VACUNAS" at={54} tipo="cinta" top={1150} size={150} />
@@ -74,15 +74,29 @@ const EscenaA: React.FC = () => {
   );
 };
 
+/** Emoji grande como sticker (borde blanco y sombra), entra girando suave y flota */
+const Sticker: React.FC<{emoji: string; at: number; x: number; y: number; size: number}> = ({emoji, at, x, y, size}) => {
+  const f = useCurrentFrame();
+  const p = tw(f, [at, at + 12], [0, 1]);
+  if (f < at) return null;
+  return (
+    <div style={{position: 'absolute', left: x, top: y, fontSize: size, lineHeight: 1, transform: `translate(-50%, -50%) translateY(${Math.sin((f - at) / 9) * 8}px) scale(${0.4 + 0.6 * p}) rotate(${(1 - p) * -25}deg)`, opacity: Math.min(1, p * 2), filter: 'drop-shadow(0 0 4px #fff) drop-shadow(0 0 4px #fff) drop-shadow(0 14px 0 rgba(4,57,113,0.35))'}}>
+      {emoji}
+    </div>
+  );
+};
+
 // B. ¿aún no te vacunas?
 const EscenaB: React.FC = () => (
   <Corte>
     <Clip n={2} />
     <Tira texto="¿Aún no te vacunas?" at={6} tipo="parche" top={330} size={74} />
+    <Sticker emoji="🫵🏼" at={20} x={830} y={610} size={250} />
     <Linea texto="¡No te quedes" at={34} top={1250} size={92} color="#fff" />
     <Tira texto="SIN LA TUYA!" at={42} tipo="cinta" top={1370} size={124} />
     <Sfx at={0} name="whoosh" volume={0.4} />
     <Sfx at={6} name="hist_paper" volume={0.55} />
+    <Sfx at={20} name="pop" volume={0.5} />
     <Sfx at={42} name="hist_paper" volume={0.55} />
   </Corte>
 );
@@ -122,7 +136,7 @@ const EscenaD: React.FC = () => {
           </div>
         );
       })}
-      <Tira texto="¿y tú?" at={50} tipo="cinta" top={1440} size={150} />
+      <Tira texto="¿y tú? 🫵🏼" at={50} tipo="cinta" top={1440} size={150} />
       {TARJETAS.map((t) => (
         <Sfx key={t.n} at={t.at} name="shutter" volume={0.45} />
       ))}
@@ -173,7 +187,7 @@ const EscenaE: React.FC = () => {
         <br />
         de la Universidad
       </div>
-      <Sello at={84} x={540} y={1610} texto="¡CORRE, SE ACABAN!" size={54} rot={-3} />
+      <Sello at={84} x={540} y={1610} texto="🗣️ ¡CORRE, SE ACABAN!" size={54} rot={-3} />
       <Sfx at={0} name="whoosh" volume={0.4} />
       <Sfx at={10} name="hist_paper" volume={0.55} />
       <Sfx at={18} name="impact" volume={0.6} />
