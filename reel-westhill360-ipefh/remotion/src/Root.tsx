@@ -13,6 +13,7 @@ import {Tdah, TDAH_FRAMES} from './Tdah';
 import {Vacunacion, VACUNA_FRAMES, VAC_H, VAC_W} from './Vacunacion';
 import {DiaMuertos, MUERTOS_FRAMES} from './DiaMuertos';
 import {VacunacionB, VACUNA_B_FRAMES} from './VacunacionB';
+import {VacunacionYa, VACUNA_YA_FRAMES} from './VacunacionYa';
 import {RecapOctubre, RECAP_FRAMES, RecapTeaser, RecapTeaserB, TEASER_B_FRAMES, TEASER_FRAMES} from './RecapOctubre';
 import {RecapPortada} from './RecapPortada';
 import {Graduacion, GRAD_FRAMES, GRAD_H, GRAD_W} from './Graduacion';
@@ -47,6 +48,7 @@ export const Root: React.FC = () => (
     <Composition id="VacunacionHistoria" component={Vacunacion} durationInFrames={VACUNA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true, historia: true}} />
     <Composition id="DiaMuertos" component={DiaMuertos} durationInFrames={MUERTOS_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="VacunacionB" component={VacunacionB} durationInFrames={VACUNA_B_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
+    <Composition id="VacunacionYa" component={VacunacionYa} durationInFrames={VACUNA_YA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="RecapOctubre" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="RecapOctubreSinMusica" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="RecapTeaser" component={RecapTeaser} durationInFrames={TEASER_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
