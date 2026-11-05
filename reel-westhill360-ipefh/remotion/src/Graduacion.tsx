@@ -1,9 +1,10 @@
-import React from 'react';
+import React, {useLayoutEffect, useRef} from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, random, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Grain} from './components';
 import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
 import {FOTOS} from './gradFotos';
+import {LOGO_PNG, LOGO_PUNTOS} from './gradLogoPuntos';
 
 // ---------------------------------------------------------------------------
 // Video interno de graduación (1920x1080, para proyector) con "Happier" (Marshmello ft. Bastille, 100 BPM).
@@ -72,7 +73,7 @@ const beatF = (b: number) => Math.round(INICIO + b * BEAT);
 const ARRANQUES = ITEMS.reduce<number[]>((a, it, i) => [...a, i === 0 ? 0 : a[i - 1] + ITEMS[i - 1].beats], []);
 const BEATS_TOTAL = ARRANQUES[ARRANQUES.length - 1] + ITEMS[ITEMS.length - 1].beats;
 const FIN_DESDE = beatF(BEATS_TOTAL);
-export const CIERRE_F = Math.round(46 * BEAT); // termina con la canción (~221 s)
+export const CIERRE_F = Math.round(220.8 * 30) - FIN_DESDE; // el cierre dura lo necesario para terminar con la canción (220.8 s)
 export const GRAD_FRAMES = FIN_DESDE + CIERRE_F;
 /** voz en off opcional: entra aquí (segundo 1 del video) */
 export const VOZ_DESDE = 30;
@@ -96,12 +97,13 @@ const enDrop = (t: number) => DROPS.some(([a, b]) => t >= a && t < b);
 const esGolpe = (t: number) => GOLPES.some((g) => Math.abs(g - t) < 0.5);
 type Entra = 'sube' | 'zoom' | 'baja' | 'enfoca' | 'lado' | 'revela';
 type Sale = 'fade' | 'barrido' | 'atraviesa' | 'luz';
-type Estilo = {entra: Entra; sale: Sale; drop: boolean; golpe: boolean};
+type Estilo = {entra: Entra; sale: Sale; drop: boolean; golpe: boolean; brillo: boolean};
 /** estilo de cada espacio de fotos según dónde cae en la canción; la entrada combina con la salida anterior */
 const ESTILOS: Estilo[] = (() => {
   const r: Estilo[] = [];
   let prev: Sale = 'fade';
   let n = 0;
+  let sueltas = 0; // fotos solas en drops: solo una de cada tres lleva el brillo
   ITEMS.forEach((it, i) => {
     const t = beatF(ARRANQUES[i]) / 30;
     const drop = enDrop(t);
@@ -115,7 +117,8 @@ const ESTILOS: Estilo[] = (() => {
       sale = n % 2 ? 'fade' : 'luz';
       entra = n % 2 ? 'sube' : 'revela';
     }
-    r.push({entra, sale, drop, golpe});
+    const brillo = drop && it.k === 'fotos' && it.tipo === 'single' && sueltas++ % 3 === 0;
+    r.push({entra, sale, drop, golpe, brillo});
     prev = it.k === 'fotos' ? sale : 'fade';
     n += 1;
   });
@@ -284,8 +287,8 @@ const FotosSlot: React.FC<{it: Extract<Item, {k: 'fotos'}>; est: Estilo; tira: n
   const [p0] = it.fotos;
   const b = (k: number) => Math.round(k * BEAT);
   const e = est.entra;
-  // en los drops un brillo cruza las fotos en el tercer tiempo (sin latidos ni sacudidas)
-  const brillo = est.drop ? b(2) + 2 : undefined;
+  // en algunas fotos solas de los drops un brillo las cruza en el tercer tiempo (sin latidos ni sacudidas)
+  const brillo = est.brillo ? b(2) + 2 : undefined;
   // destello suave en el arranque de un drop
   const golpe = est.golpe ? interpolate(f, [0, 3, 20], [0, 0.5, 0], clamp) : 0;
   let contenido: React.ReactNode = null;
@@ -473,8 +476,10 @@ const Fuego: React.FC<{e: Estallido; id: number}> = ({e, id}) => {
     </>
   );
 };
-const FIN_DROP = Math.round(210.0 * 30) - FIN_DESDE; // dónde termina el último drop dentro del cierre
-const LOGO_F = CIERRE_F - 260;
+// final: un cohete sube, estalla y sus chispas forman el logo; luego el logo real aparece encima, suave
+const COHETE_F = CIERRE_F - 330;
+const EXPLOTA_F = COHETE_F + 30;
+const FORMA_F = EXPLOTA_F + 92; // las chispas ya dibujan el logo; de aquí se funde con el logo real
 const ESTALLIDOS: Estallido[] = (() => {
   const r: Estallido[] = [];
   const puntos: [number, number][] = [
@@ -490,17 +495,26 @@ const ESTALLIDOS: Estallido[] = (() => {
   ];
   const pal = [COLOR_FUEGO.oro, COLOR_FUEGO.blanco, COLOR_FUEGO.champan, COLOR_FUEGO.azul];
   let j = 0;
-  for (let k = 2; Math.round(k * BEAT) < FIN_DROP - 20; k += 2) {
+  for (let k = 2; Math.round(k * BEAT) < COHETE_F - 40; k += 2) {
     const [x, y] = puntos[j % puntos.length];
     r.push({at: Math.round(k * BEAT), x, y, r: 300 + (j % 3) * 55, n: 76, vida: 58, col: pal[j % pal.length]});
     // cada 4 compases, doble
     if (k % 8 === 0) r.push({at: Math.round(k * BEAT) + 3, x: W - x, y: y + 40, r: 260, n: 64, vida: 54, col: pal[(j + 2) % pal.length]});
     j += 1;
   }
-  // final: palmera dorada detrás del logo y dos a los lados
-  r.push({at: LOGO_F + 8, x: W / 2, y: 250, r: 460, n: 96, vida: 130, col: COLOR_FUEGO.oro, palmera: true});
-  r.push({at: LOGO_F + 30, x: 360, y: 300, r: 280, n: 64, vida: 110, col: COLOR_FUEGO.champan, palmera: true});
-  r.push({at: LOGO_F + 46, x: W - 360, y: 280, r: 280, n: 64, vida: 110, col: COLOR_FUEGO.champan, palmera: true});
+  // ya con el logo: fuegos alrededor, sin tocarlo
+  const alrededor: [number, number][] = [
+    [330, 280],
+    [1590, 250],
+    [240, 600],
+    [1690, 580],
+    [600, 150],
+    [1330, 140],
+    [360, 330],
+    [1560, 330],
+  ];
+  const pal2 = [COLOR_FUEGO.oro, COLOR_FUEGO.champan, COLOR_FUEGO.blanco, COLOR_FUEGO.oro];
+  alrededor.forEach(([x, y], i) => r.push({at: FORMA_F + 6 + i * 22, x, y, r: 250 + (i % 2) * 40, n: 64, vida: 96, col: pal2[i % pal2.length], palmera: true}));
   return r;
 })();
 const Fuegos: React.FC = () => (
@@ -510,6 +524,111 @@ const Fuegos: React.FC = () => (
     ))}
   </AbsoluteFill>
 );
+
+/**
+ * Fuego artificial que forma el logo: el cohete sube al centro, estalla y cada chispa, después de salir volando,
+ * cae hacia un punto del logo dejando su estela (puntos en gradLogoPuntos.ts). Ya formado, titila y se funde con
+ * el logo real; unas cuantas chispas se quedan brillando un poco más.
+ */
+const LOGO_W = 660;
+const LOGO_X = W / 2 - LOGO_W / 2;
+const LOGO_Y = 330;
+const LOGO_K = LOGO_W / LOGO_PNG.w;
+const CENTRO_LOGO = {x: W / 2, y: LOGO_Y + (LOGO_PNG.h * LOGO_K) / 2};
+const CHISPA_COL = ['255,236,190', '255,255,255', '246,214,140', '255,246,222'];
+const CHISPAS = Array.from({length: LOGO_PUNTOS.length / 2}, (_, i) => ({
+  tx: LOGO_X + LOGO_PUNTOS[2 * i] * LOGO_K,
+  ty: LOGO_Y + LOGO_PUNTOS[2 * i + 1] * LOGO_K,
+  ang: random(`la${i}`) * Math.PI * 2,
+  vel: 220 + 480 * Math.sqrt(random(`lv${i}`)),
+  espera: 22 + 18 * random(`le${i}`),
+  viaje: 32 + 18 * random(`lj${i}`),
+  fase: random(`lf${i}`) * Math.PI * 2,
+  col: CHISPA_COL[i % CHISPA_COL.length],
+  queda: i % 7 === 0,
+}));
+const posChispa = (c: (typeof CHISPAS)[number], t: number): [number, number, number] => {
+  const e = 1 - Math.pow(1 - Math.min(1, Math.max(0, t) / 24), 3);
+  const libre = Math.max(0, t) / 40;
+  const ex = CENTRO_LOGO.x + Math.cos(c.ang) * c.vel * e;
+  const ey = CENTRO_LOGO.y + Math.sin(c.ang) * c.vel * e + 70 * libre * libre;
+  const k = Math.min(1, Math.max(0, (t - c.espera) / c.viaje));
+  const s = k * k * (3 - 2 * k);
+  return [ex + (c.tx - ex) * s, ey + (c.ty - ey) * s, k];
+};
+const LogoFuego: React.FC = () => {
+  const f = useCurrentFrame();
+  const ref = useRef<HTMLCanvasElement>(null);
+  const t = f - EXPLOTA_F;
+  const funde = tw(f, [FORMA_F, FORMA_F + 50], [0, 1], ease.inOut);
+  const resto = 1 - tw(f, [FORMA_F + 30, FORMA_F + 130], [0, 1]);
+  useLayoutEffect(() => {
+    const cv = ref.current;
+    if (!cv) return;
+    const ctx = cv.getContext('2d');
+    if (!ctx) return;
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.lineCap = 'round';
+    if (t < 0) {
+      // cohete subiendo con chispas que se le desprenden
+      const k = (t + 30) / 30;
+      const pos = (kk: number): [number, number] => {
+        const c = 1 - Math.pow(1 - Math.max(0, kk), 2);
+        return [CENTRO_LOGO.x + 40 * (1 - c), H + 40 + (CENTRO_LOGO.y - H - 40) * c];
+      };
+      const [hx, hy] = pos(k);
+      const [cx, cy] = pos(k - 0.22);
+      const g = ctx.createLinearGradient(cx, cy, hx, hy);
+      g.addColorStop(0, 'rgba(255,200,120,0)');
+      g.addColorStop(1, 'rgba(255,246,222,1)');
+      ctx.strokeStyle = g;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(hx, hy);
+      ctx.stroke();
+      for (let j = 0; j < 10; j++) {
+        const kk = k - j * 0.025;
+        const [sx, sy] = pos(kk);
+        ctx.fillStyle = `rgba(255,214,150,${0.6 * (1 - j / 10)})`;
+        ctx.beginPath();
+        ctx.arc(sx + (random(`rs${j}${f}`) - 0.5) * 10, sy + j * 2, 1.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      return;
+    }
+    // destello del estallido
+    const fl = interpolate(t, [0, 2, 14], [0, 0.8, 0], clamp);
+    if (fl > 0) {
+      const g = ctx.createRadialGradient(CENTRO_LOGO.x, CENTRO_LOGO.y, 0, CENTRO_LOGO.x, CENTRO_LOGO.y, 320);
+      g.addColorStop(0, `rgba(255,240,205,${fl})`);
+      g.addColorStop(1, 'rgba(255,200,120,0)');
+      ctx.fillStyle = g;
+      ctx.fillRect(CENTRO_LOGO.x - 320, CENTRO_LOGO.y - 320, 640, 640);
+    }
+    for (const c of CHISPAS) {
+      const [hx, hy, k] = posChispa(c, t);
+      const [cx, cy] = posChispa(c, t - (k < 1 ? 5 : 1));
+      const titila = k >= 1 ? 0.7 + 0.3 * Math.sin(f * 0.35 + c.fase) : 1;
+      const vivo = c.queda ? Math.max(1 - funde, resto * 0.8) : 1 - funde;
+      const a = Math.min(1, t / 3) * titila * vivo;
+      if (a <= 0.01) continue;
+      ctx.strokeStyle = `rgba(${c.col},${a * (k < 1 ? 0.55 : 0.5)})`;
+      ctx.lineWidth = k < 1 ? 1.5 : 1.6;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(hx + 0.01, hy);
+      ctx.stroke();
+      ctx.fillStyle = `rgba(${c.col},${a})`;
+      ctx.beginPath();
+      ctx.arc(hx, hy, k < 1 ? 1.9 : 1.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }, [f, t, funde, resto]);
+  if (t < -30 || f > FORMA_F + 140) return null;
+  return <canvas ref={ref} width={W} height={H} style={{position: 'absolute', inset: 0, filter: 'drop-shadow(0 0 5px rgba(255,214,150,0.85))'}} />;
+};
 
 /**
  * Huellas de caracal (West): dos caminos entran desde las esquinas de abajo, un paso por tiempo de la canción,
@@ -584,8 +703,8 @@ const Cierre: React.FC = () => {
   const t1 = tw(f, [10, 36], [0, 1]);
   const t2 = tw(f, [40, 70], [0, 1]);
   const t3 = tw(f, [90, 116], [0, 1]);
-  const logo = tw(f, [LOGO_F, LOGO_F + 40], [0, 1]);
-  const ocultaTexto = tw(f, [CIERRE_F - 280, CIERRE_F - 250], [0, 1]);
+  const logo = tw(f, [FORMA_F, FORMA_F + 50], [0, 1], ease.inOut);
+  const ocultaTexto = tw(f, [COHETE_F - 6, COHETE_F + 22], [0, 1]);
   const negro = tw(f, [CIERRE_F - 40, CIERRE_F], [0, 1]);
   // la palabra "huella" se enciende cuando cae la huella grande
   const enciende = interpolate(f - (HUELLAS_DESDE + Math.round(HUELLA_GRANDE * BEAT)), [0, 4, 50], [0, 1, 0.35], clamp);
@@ -621,9 +740,12 @@ const Cierre: React.FC = () => {
           Gracias por dejar <span style={{fontFamily: F.serif, fontStyle: 'italic', fontSize: 50, letterSpacing: 1, color: ORO, textShadow: `0 0 ${24 * enciende}px rgba(255,214,140,${enciende})`}}>huella</span> en Westhill.
         </div>
       </div>
-      <div style={{position: 'absolute', left: W / 2 - 330, top: 330, width: 660, opacity: logo, clipPath: `inset(0 0 ${(1 - logo) * 100}% 0)`}}>
-        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
+      <LogoFuego />
+      <div style={{position: 'absolute', left: LOGO_X, top: LOGO_Y, width: LOGO_W, opacity: logo, filter: `drop-shadow(0 0 ${6 + 18 * (1 - logo)}px rgba(255,214,150,${0.35 + 0.4 * (1 - logo)}))`}}>
+        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%', display: 'block'}} />
       </div>
+      <Sfx at={COHETE_F} name="whoosh_largo" volume={0.25} />
+      <Sfx at={EXPLOTA_F} name="impact" volume={0.3} />
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
     </AbsoluteFill>
   );
