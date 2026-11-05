@@ -5,6 +5,7 @@ import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
 import {FOTOS} from './gradFotos';
 import {LOGO_PNG, LOGO_PUNTOS} from './gradLogoPuntos';
+import {FOCO} from './gradFoco';
 
 // ---------------------------------------------------------------------------
 // Video interno de graduación (1920x1080, para proyector) con "Happier" (Marshmello ft. Bastille, 100 BPM).
@@ -218,6 +219,18 @@ const Marco: React.FC<{src: string; w: number; h: number; x: number; y: number; 
   );
 };
 
+/**
+ * Posición vertical del recorte (object-position en %) para que las caras queden dentro de un cuadro de fw x fh:
+ * el centro de las caras (gradFoco.ts) queda al 42 % de la altura del cuadro. Sin caras detectadas, 35 %.
+ */
+const encuadre = (fac: string, n: string, w: number, h: number, fw: number, fh: number) => {
+  const fy = FOCO[`${fac}/${n}`];
+  const alto = h * Math.max(fw / w, fh / h);
+  const sobra = alto - fh;
+  if (fy === undefined || sobra <= 1) return 35;
+  return Math.round(Math.min(1, Math.max(0, (fy * alto - 0.42 * fh) / sobra)) * 100);
+};
+
 /** Rollo de película de 35 mm: base café oscuro, perforaciones a contraluz, números de cuadro y destello de luz */
 const PERF = 52;
 type TiraProps = {fac: string; fotos: [string, number, number][]; dur: number; dir?: number; y?: number; rot?: number; escala?: number; desde?: number; hasta?: number};
@@ -228,6 +241,7 @@ const Pelicula: React.FC<TiraProps> = ({fac, fotos, dur, dir = 1, y = H / 2, rot
   const GAP = 32;
   const BANDA = 78;
   const cuadros: (string | null)[] = [null, ...fotos.map((x) => x[0]), null];
+  const pos: Record<string, number> = Object.fromEntries(fotos.map(([n, w, h]) => [n, encuadre(fac, n, w, h, FW, FH)]));
   const ancho = cuadros.length * (FW + GAP) + GAP;
   // dir 1: el rollo corre hacia la izquierda; dir -1: hacia la derecha
   const x = interpolate(f, [0, dur], dir > 0 ? [desde, hasta] : [hasta, desde], clamp);
@@ -254,7 +268,7 @@ const Pelicula: React.FC<TiraProps> = ({fac, fotos, dur, dir = 1, y = H / 2, rot
             </div>
             <div style={{position: 'absolute', left: left + FW - 60, bottom: BANDA - 22, fontFamily: F.sans, fontWeight: 700, fontSize: 15, letterSpacing: 2, color: '#E59B3C', opacity: 0.7}}>{num}</div>
             <div style={{position: 'absolute', left, top: BANDA, width: FW, height: FH, borderRadius: 6, overflow: 'hidden', background: '#060403', boxShadow: 'inset 0 0 0 2px rgba(0,0,0,0.6)'}}>
-              {n && <Img src={foto(fac, n)} style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 35%', filter: 'contrast(1.06) saturate(1.05) sepia(0.06)'}} />}
+              {n && <Img src={foto(fac, n)} style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: `50% ${pos[n] ?? 35}%`, filter: 'contrast(1.06) saturate(1.05) sepia(0.06)'}} />}
               <div style={{position: 'absolute', inset: 0, boxShadow: 'inset 0 0 40px rgba(0,0,0,0.55)'}} />
             </div>
           </React.Fragment>
@@ -479,7 +493,7 @@ const Fuego: React.FC<{e: Estallido; id: number}> = ({e, id}) => {
 // final: un cohete sube, estalla y sus chispas forman el logo; luego el logo real aparece encima, suave
 const COHETE_F = CIERRE_F - 330;
 const EXPLOTA_F = COHETE_F + 30;
-const FORMA_F = EXPLOTA_F + 92; // las chispas ya dibujan el logo; de aquí se funde con el logo real
+const FORMA_F = EXPLOTA_F + 118; // las chispas ya dibujan el logo; de aquí se funde con el logo real
 const ESTALLIDOS: Estallido[] = (() => {
   const r: Estallido[] = [];
   const puntos: [number, number][] = [
@@ -541,8 +555,8 @@ const CHISPAS = Array.from({length: LOGO_PUNTOS.length / 2}, (_, i) => ({
   ty: LOGO_Y + LOGO_PUNTOS[2 * i + 1] * LOGO_K,
   ang: random(`la${i}`) * Math.PI * 2,
   vel: 220 + 480 * Math.sqrt(random(`lv${i}`)),
-  espera: 22 + 18 * random(`le${i}`),
-  viaje: 32 + 18 * random(`lj${i}`),
+  espera: 26 + 20 * random(`le${i}`),
+  viaje: 46 + 24 * random(`lj${i}`),
   fase: random(`lf${i}`) * Math.PI * 2,
   col: CHISPA_COL[i % CHISPA_COL.length],
   queda: i % 7 === 0,
