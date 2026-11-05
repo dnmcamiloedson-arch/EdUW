@@ -16,7 +16,7 @@ const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 export const VACUNA_YA_FRAMES = 330;
 
 /** Sello de "HOY" que se estampa */
-const Sello: React.FC<{at: number; x: number; y: number; texto: string; size?: number; rot?: number}> = ({at, x, y, texto, size = 70, rot = -8}) => {
+export const Sello: React.FC<{at: number; x: number; y: number; texto: string; size?: number; rot?: number}> = ({at, x, y, texto, size = 70, rot = -8}) => {
   const f = useCurrentFrame();
   const p = tw(f, [at, at + 8], [0, 1], ease.out);
   if (f < at) return null;
@@ -28,7 +28,7 @@ const Sello: React.FC<{at: number; x: number; y: number; texto: string; size?: n
 };
 
 /** Pin de ubicación que cae y marca el lugar */
-const Pin: React.FC<{at: number; x: number; y: number; s?: number}> = ({at, x, y, s = 1}) => {
+export const Pin: React.FC<{at: number; x: number; y: number; s?: number}> = ({at, x, y, s = 1}) => {
   const f = useCurrentFrame();
   const p = tw(f, [at, at + 14], [0, 1], ease.out);
   const onda = tw(f, [at + 10, at + 40], [0, 1]);
@@ -46,7 +46,7 @@ const Pin: React.FC<{at: number; x: number; y: number; s?: number}> = ({at, x, y
 };
 
 /** Decoración de las esquinas como en el póster */
-const Esquinas: React.FC<{at: number}> = ({at}) => {
+export const Esquinas: React.FC<{at: number}> = ({at}) => {
   const f = useCurrentFrame();
   const p = tw(f, [at, at + 16], [0, 1]);
   return (
