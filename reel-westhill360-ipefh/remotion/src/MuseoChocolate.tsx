@@ -156,11 +156,11 @@ const Cierre: React.FC = () => {
     <AbsoluteFill style={{background: CHOCO}}>
       <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 45%, ${LECHE} 0%, ${CHOCO} 70%)`}} />
       <Chocolate y={-60} gota={1.4} />
-      <div style={{position: 'absolute', top: 760, width: '100%', textAlign: 'center'}}>
-        <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 70, color: CARAMELO, opacity: a, transform: `translateY(${(1 - a) * 24}px)`}}>Coordinación de</div>
-        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 116, color: CREMA, letterSpacing: 3, opacity: a, transform: `translateY(${(1 - a) * 34}px)`}}>INCLUSIÓN</div>
+      <div style={{position: 'absolute', top: 700, width: '100%', textAlign: 'center'}}>
+        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: 520, opacity: a, transform: `translateY(${(1 - a) * 24}px)`}} />
         <div style={{width: 360 * b, height: 4, background: CARAMELO, margin: '40px auto', borderRadius: 2}} />
-        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: 520, opacity: b}} />
+        <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 70, color: CARAMELO, opacity: b, transform: `translateY(${(1 - b) * 24}px)`}}>Coordinación de</div>
+        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 116, color: CREMA, letterSpacing: 3, opacity: b, transform: `translateY(${(1 - b) * 34}px)`}}>INCLUSIÓN</div>
       </div>
       <Sfx at={8} name="ding" volume={0.3} />
     </AbsoluteFill>
