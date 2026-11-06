@@ -10,7 +10,7 @@ import {F, SAFE_X, ease, tw} from './theme';
 //  2. Montaje de los clips de la visita, cortado al compás de la música (120 BPM, 1 compás = 2 s),
 //     con cortinas de chocolate derretido entre bloques.
 //  3. Cierre: "Coordinación de Inclusión" y el logo.
-// El banderín UW cuelga desde el borde de arriba, a la derecha, durante toda la historia.
+// El banderín UW va arriba a la derecha durante toda la historia.
 // Los clips se funden uno con otro (sin rebote) y los textos cuentan lo que hicieron en la visita.
 // Clips en public/proxies/choco (sin audio); música original en public/music/chocolate.mp3.
 // ---------------------------------------------------------------------------
@@ -116,13 +116,13 @@ const Texto: React.FC<{lineas: {at: number; partes: Parte[]}[]; dur: number}> = 
   );
 };
 
-/** Banderín UW colgando desde el borde superior (versión alargada del banderín) */
+/** Banderín UW (versión completa, con el azul de arriba) en la esquina superior derecha; entra suave */
 const Banderin: React.FC = () => {
   const f = useCurrentFrame();
-  const baja = tw(f, [0, 22], [-230, 0]);
+  const p = tw(f, [0, 20], [0, 1]);
   return (
-    <div style={{position: 'absolute', right: SAFE_X, top: 0, width: 150, transform: `translateY(${baja}px)`, filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.35))'}}>
-      <Img src={staticFile('logos/banderin_uw_largo.png')} style={{width: '100%', display: 'block'}} />
+    <div style={{position: 'absolute', right: SAFE_X, top: 130, width: 150, opacity: p, transform: `translateY(${(1 - p) * -30}px)`, filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.35))'}}>
+      <Img src={staticFile('logos/banderin_uw.png')} style={{width: '100%', display: 'block'}} />
     </div>
   );
 };
