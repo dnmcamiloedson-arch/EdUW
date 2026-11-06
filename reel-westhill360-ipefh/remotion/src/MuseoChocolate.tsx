@@ -24,43 +24,106 @@ const CREMA = '#F6E9D7';
 const COMPAS = 60;
 const vid = (n: number) => staticFile(`proxies/choco/v${n}.mp4`);
 
-/** Capa de chocolate derretido: un borde ondulado con gotas que cuelgan (y = dónde termina el chocolate) */
-const GOTAS = [
-  [60, 120, 46],
-  [190, 260, 60],
-  [330, 90, 40],
-  [450, 330, 70],
-  [600, 150, 50],
-  [720, 240, 58],
-  [850, 110, 44],
-  [990, 290, 64],
+/**
+ * Capa de chocolate derretido (y = dónde termina el chocolate). Cada gota es una sola forma orgánica:
+ * nace del borde con una curva suave, se adelgaza al bajar y termina en una gota más gruesa, como el chocolate
+ * real. Lleva brillo especular a un lado, reflejo en la gota, borde brillante y sombra suave. Las gotas crecen
+ * despacio y cada una a su ritmo (nada de vaivén).
+ */
+// [x del centro, largo, medio ancho del cuello, retraso]
+const GOTAS: [number, number, number, number][] = [
+  [38, 70, 11, 0.3],
+  [118, 190, 22, 0],
+  [205, 105, 15, 0.5],
+  [282, 290, 27, 0.15],
+  [365, 60, 9, 0.7],
+  [430, 170, 19, 0.35],
+  [520, 340, 31, 0.05],
+  [612, 120, 14, 0.6],
+  [690, 230, 24, 0.2],
+  [775, 80, 10, 0.8],
+  [845, 300, 28, 0.1],
+  [935, 140, 16, 0.45],
+  [1025, 220, 21, 0.25],
 ];
+let idChoco = 0;
 const Chocolate: React.FC<{y: number; gota?: number; brillo?: boolean}> = ({y, gota = 1, brillo = true}) => {
   const f = useCurrentFrame();
-  const borde = Array.from({length: 13}, (_, i) => {
-    const x = (i / 12) * W;
-    return `${x},${y + Math.sin(i * 1.7 + f / 9) * 14}`;
-  }).join(' L');
+  const id = React.useMemo(() => `choco${idChoco++}`, []);
+  const ola = (x: number) => y + Math.sin(x / 140 + 1.3) * 7 + Math.sin(x / 61) * 3;
+  // largo de cada gota: crece despacio con su propio retraso
+  const gotas = GOTAS.map(([c, largo, w, d]) => {
+    const crece = interpolate(f, [d * 40, d * 40 + 90], [0.55, 1], {...clamp, easing: ease.out});
+    const L = Math.max(4, largo * gota * crece);
+    return {c, L, w, r: w * 1.25, fil: w * 1.7};
+  });
+  let d = `M-20,-20 L${W + 20},-20 L${W + 20},${ola(W + 20)}`;
+  // borde de derecha a izquierda, interrumpido por las gotas
+  let x = W + 20;
+  for (const g of [...gotas].reverse()) {
+    const xd = g.c + g.w + g.fil;
+    for (let xx = x - 24; xx > xd; xx -= 24) d += ` L${xx},${ola(xx)}`;
+    const yb = ola(g.c);
+    const fondo = yb + g.L;
+    d += ` L${xd},${ola(xd)}`;
+    d += ` Q${g.c + g.w},${yb} ${g.c + g.w},${yb + g.fil}`; // curva de unión con el borde
+    d += ` C${g.c + g.w * 0.78},${yb + g.L * 0.4} ${g.c + g.w * 0.6},${fondo - g.r * 1.5} ${g.c + g.w * 0.74},${fondo - g.r * 0.55}`; // se adelgaza
+    d += ` C${g.c + g.r * 1.1},${fondo + g.r * 0.05} ${g.c + g.r * 0.64},${fondo + g.r} ${g.c},${fondo + g.r}`; // gota
+    d += ` C${g.c - g.r * 0.64},${fondo + g.r} ${g.c - g.r * 1.1},${fondo + g.r * 0.05} ${g.c - g.w * 0.74},${fondo - g.r * 0.55}`;
+    d += ` C${g.c - g.w * 0.6},${fondo - g.r * 1.5} ${g.c - g.w * 0.78},${yb + g.L * 0.4} ${g.c - g.w},${yb + g.fil}`;
+    d += ` Q${g.c - g.w},${yb} ${g.c - g.w - g.fil},${ola(g.c - g.w - g.fil)}`;
+    x = g.c - g.w - g.fil;
+  }
+  for (let xx = x - 24; xx > -20; xx -= 24) d += ` L${xx},${ola(xx)}`;
+  d += ` L-20,${ola(-20)} Z`;
+  // borde brillante (sin pasar por las gotas)
+  const bordeBrillo = Array.from({length: 46}, (_, i) => {
+    const xx = (i / 45) * W;
+    return `${i ? 'L' : 'M'}${xx},${ola(xx) - 9}`;
+  }).join(' ');
   return (
-    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute', inset: 0}}>
+    <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} style={{position: 'absolute', inset: 0, overflow: 'visible'}}>
       <defs>
-        <linearGradient id="choco" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#2E190F" />
-          <stop offset="0.5" stopColor={LECHE} />
-          <stop offset="1" stopColor="#2E190F" />
+        <linearGradient id={`${id}g`} gradientUnits="userSpaceOnUse" x1="0" y1={y - 500} x2="0" y2={y + 380}>
+          <stop offset="0" stopColor="#24120A" />
+          <stop offset="0.55" stopColor="#3A1F12" />
+          <stop offset="0.8" stopColor="#4D2B19" />
+          <stop offset="1" stopColor="#3A1F12" />
         </linearGradient>
+        <linearGradient id={`${id}s`} x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="rgba(255,235,210,0)" />
+          <stop offset="0.35" stopColor="rgba(255,235,210,0.10)" />
+          <stop offset="0.5" stopColor="rgba(255,235,210,0.20)" />
+          <stop offset="0.65" stopColor="rgba(255,235,210,0.10)" />
+          <stop offset="1" stopColor="rgba(255,235,210,0)" />
+        </linearGradient>
+        <filter id={`${id}f`} x="-10%" y="-10%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="10" stdDeviation="9" floodColor="#1A0C05" floodOpacity="0.45" />
+        </filter>
+        <clipPath id={`${id}c`}>
+          <path d={d} />
+        </clipPath>
       </defs>
-      <path d={`M0,-10 L${W},-10 L${W},${y} L${borde.split(' L').reverse().join(' L')} Z`} fill="url(#choco)" />
-      {GOTAS.map(([x, largo, ancho], i) => {
-        const l = largo * gota * (0.8 + 0.2 * Math.sin(f / 13 + i));
-        return (
-          <g key={i}>
-            <rect x={x - ancho / 2} y={y - 20} width={ancho} height={l + 20} fill="url(#choco)" />
-            <circle cx={x} cy={y + l} r={ancho / 2} fill="url(#choco)" />
-            {brillo && <rect x={x - ancho / 2 + ancho * 0.2} y={y} width={ancho * 0.14} height={Math.max(0, l - 10)} rx={ancho * 0.07} fill="rgba(255,226,190,0.22)" />}
-          </g>
-        );
-      })}
+      <path d={d} fill={`url(#${id}g)`} filter={`url(#${id}f)`} />
+      {brillo && (
+        <g clipPath={`url(#${id}c)`}>
+          <path d={bordeBrillo} stroke="rgba(255,228,196,0.28)" strokeWidth={4} fill="none" strokeLinecap="round" />
+          {gotas.map((g, i) => {
+            const yb = ola(g.c);
+            const fondo = yb + g.L;
+            return (
+              <g key={i}>
+                {/* brillo especular a lo largo de la gota */}
+                <path d={`M${g.c - g.w * 0.42},${yb + g.fil * 0.6} C${g.c - g.w * 0.4},${yb + g.L * 0.5} ${g.c - g.w * 0.36},${fondo - g.r * 1.2} ${g.c - g.w * 0.38},${fondo - g.r * 0.3}`} stroke="rgba(255,232,205,0.34)" strokeWidth={Math.max(2, g.w * 0.22)} strokeLinecap="round" fill="none" />
+                {/* reflejo en la gota */}
+                <ellipse cx={g.c - g.r * 0.36} cy={fondo + g.r * 0.15} rx={g.r * 0.2} ry={g.r * 0.32} fill="rgba(255,240,220,0.5)" transform={`rotate(18 ${g.c - g.r * 0.36} ${fondo + g.r * 0.15})`} />
+                {/* sombra del lado derecho para dar volumen */}
+                <path d={`M${g.c + g.w * 0.55},${yb + g.fil} C${g.c + g.w * 0.5},${yb + g.L * 0.5} ${g.c + g.w * 0.45},${fondo - g.r} ${g.c + g.r * 0.6},${fondo + g.r * 0.4}`} stroke="rgba(20,8,3,0.35)" strokeWidth={Math.max(2, g.w * 0.35)} strokeLinecap="round" fill="none" />
+              </g>
+            );
+          })}
+        </g>
+      )}
     </svg>
   );
 };
