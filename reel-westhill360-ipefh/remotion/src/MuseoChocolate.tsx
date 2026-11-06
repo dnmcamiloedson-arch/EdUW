@@ -119,9 +119,9 @@ const Texto: React.FC<{lineas: {at: number; partes: Parte[]}[]; dur: number}> = 
 /** Banderín UW colgando desde el borde superior (versión alargada del banderín) */
 const Banderin: React.FC = () => {
   const f = useCurrentFrame();
-  const baja = tw(f, [0, 22], [-340, 0]);
+  const baja = tw(f, [0, 22], [-230, 0]);
   return (
-    <div style={{position: 'absolute', right: SAFE_X, top: -10, width: 160, transform: `translateY(${baja}px)`, filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.35))'}}>
+    <div style={{position: 'absolute', right: SAFE_X, top: 0, width: 150, transform: `translateY(${baja}px)`, filter: 'drop-shadow(0 8px 14px rgba(0,0,0,0.35))'}}>
       <Img src={staticFile('logos/banderin_uw_largo.png')} style={{width: '100%', display: 'block'}} />
     </div>
   );
