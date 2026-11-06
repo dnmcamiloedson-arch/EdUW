@@ -95,7 +95,7 @@ const Etiqueta: React.FC<{dur: number}> = ({dur}) => {
   const p = tw(f, [10, 26], [0, 1]) * (1 - tw(f, [dur - 12, dur], [0, 1]));
   return (
     <div style={{position: 'absolute', top: 1560, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: p, transform: `translateY(${(1 - p) * 20}px)`}}>
-      <div style={{padding: '14px 34px', borderRadius: 60, background: 'rgba(59,33,22,0.82)', border: `3px solid ${CARAMELO}`, fontFamily: F.sans, fontWeight: 800, fontSize: 44, color: CREMA, letterSpacing: 1}}>🍫 Museo del Chocolate</div>
+      <div style={{padding: '14px 34px', borderRadius: 60, background: 'rgba(59,33,22,0.82)', border: `3px solid ${CARAMELO}`, fontFamily: F.sans, fontWeight: 800, fontSize: 44, color: CREMA, letterSpacing: 1}}>Museo del Chocolate</div>
     </div>
   );
 };
@@ -114,7 +114,6 @@ const Intro: React.FC = () => {
         <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 92, color: LECHE, opacity: a, transform: `translateY(${(1 - a) * 30}px)`}}>Hoy fuimos al</div>
         <div style={{marginTop: 10, fontFamily: F.sans, fontWeight: 900, fontSize: 104, lineHeight: 1, color: CHOCO, letterSpacing: 2, opacity: b, transform: `translateY(${(1 - b) * 40}px)`}}>MUSEO DEL</div>
         <div style={{marginTop: 6, fontFamily: F.sans, fontWeight: 900, fontSize: 150, lineHeight: 1, letterSpacing: 2, backgroundImage: `linear-gradient(180deg, ${LECHE} 0%, ${CHOCO} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', opacity: c, transform: `scale(${0.85 + 0.15 * c})`, filter: `blur(${(1 - c) * 8}px)`}}>CHOCOLATE</div>
-        <div style={{marginTop: 26, fontSize: 130, opacity: c, transform: `rotate(${(1 - c) * -30}deg) scale(${0.5 + 0.5 * c})`}}>🍫</div>
       </div>
       <Sfx at={2} name="whoosh" volume={0.35} />
       <Sfx at={50} name="pop" volume={0.45} />
@@ -155,8 +154,7 @@ const TOMAS: [number, number, number][] = [
   [22, 3.0, COMPAS],
   [23, 2.5, COMPAS / 2],
   [17, 1.0, COMPAS / 2],
-  [24, 4.6, COMPAS],
-  [27, 4.0, COMPAS],
+  [27, 3.2, 108], // el chico saluda/despide al final de la toma
 ];
 const INTRO = 2 * COMPAS;
 const MONTAJE = TOMAS.reduce((a, t) => a + t[2], 0);
