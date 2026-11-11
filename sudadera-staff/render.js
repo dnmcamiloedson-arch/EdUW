@@ -5,7 +5,7 @@ const fs = require('fs');
 (async () => {
   const b = await chromium.launch();
   const pg = await b.newPage({viewport: {width: 1920, height: 1060}, deviceScaleFactor: 2});
-  const dir = path.join(__dirname, 'propuestas');
+  const dir = path.join(__dirname, process.argv[2] || 'propuestas');
   for (const f of fs.readdirSync(dir).filter((x) => x.endsWith('.html')).sort()) {
     await pg.goto('file://' + path.join(dir, f));
     await pg.evaluate(() => document.fonts.ready);
