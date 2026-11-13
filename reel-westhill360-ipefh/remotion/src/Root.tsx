@@ -17,6 +17,7 @@ import {VacunacionYa, VACUNA_YA_FRAMES} from './VacunacionYa';
 import {VacunacionUltimas, VACUNA_8_FRAMES} from './VacunacionUltimas';
 import {MuseoChocolate, CHOCO_FRAMES} from './MuseoChocolate';
 import {Comaem, COMAEM_FRAMES, COMAEM_H, COMAEM_W} from './Comaem';
+import {CongresoDerecho, CONGRESO_FRAMES} from './CongresoDerecho';
 import {RecapOctubre, RECAP_FRAMES, RecapTeaser, RecapTeaserB, TEASER_B_FRAMES, TEASER_FRAMES} from './RecapOctubre';
 import {RecapPortada} from './RecapPortada';
 import {Graduacion, GRAD_FRAMES, GRAD_H, GRAD_W} from './Graduacion';
@@ -61,6 +62,7 @@ export const Root: React.FC = () => (
     <Composition id="RecapTeaserB" component={RecapTeaserB} durationInFrames={TEASER_B_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Graduacion" component={Graduacion} durationInFrames={GRAD_FRAMES} fps={FPS} width={GRAD_W} height={GRAD_H} defaultProps={{music: true}} />
     <Composition id="Comaem" component={Comaem} durationInFrames={COMAEM_FRAMES} fps={FPS} width={COMAEM_W} height={COMAEM_H} />
+    <Composition id="CongresoDerecho" component={CongresoDerecho} durationInFrames={CONGRESO_FRAMES} fps={FPS} width={1080} height={1920} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />
     {CHAPTERS.map((c) => (
       <Composition
