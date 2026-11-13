@@ -7,3 +7,4 @@ remotion/public/proxies
 remotion/public/seg/
 remotion/public/music/
 remotion/public/comaem/voz/
+__pycache__/
