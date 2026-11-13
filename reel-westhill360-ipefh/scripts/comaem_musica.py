@@ -26,20 +26,18 @@ SRC = 'remotion/public/music/time.mp3'
 
 
 def plan(fin_rector):
-    # cuántas frases repetir antes del clímax para que el clímax caiga en fin_rector sin empezar antes de 0 s
+    # k = frases que se repiten antes del clímax. Se prefiere empezar con hasta 3 s de silencio (inicio negativo)
+    # antes que recortar la intro de piano.
     k = 0
-    while C + k * P - fin_rector < 0:
+    while C + k * P - fin_rector < -3:
         k += 1
-    inicio = C + k * P - fin_rector  # se recorta este tanto del inicio de la intro (siempre < 1 frase)
-    if inicio > 14:  # si se recortaría demasiado de la intro, se repite una frase menos y se alarga la intro
-        k -= 1
-        inicio = C + k * P - fin_rector
+    inicio = C + k * P - fin_rector
     seg = []
     if k > 0:
         inicio -= CROSS  # el fundido del corte de repetición adelanta todo lo que sigue
     t1 = 30.75 + 2 * P  # repeticiones durante los docentes (zona media que crece despacio)
-    if k > 0 and inicio >= 0:
-        seg.append((inicio, t1 + k * P))
+    if k > 0:
+        seg.append((max(0, inicio), t1 + k * P))
         seg.append((t1, C + P / 2))
     else:
         seg.append((max(0, inicio), C + P / 2))
