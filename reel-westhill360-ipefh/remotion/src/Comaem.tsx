@@ -19,7 +19,7 @@ import {F, ease, tw} from './theme';
 // Entre escenas cruza un "pulso": dos paneles azules se cierran sobre una línea de electrocardiograma con chispas
 // y se abren hacia la escena siguiente (sin texto). Entre personas cruza un barrido de luz dorada con chispas.
 // Sobre todas las tomas flota polvo dorado muy tenue. Las tomas de apoyo del cliente traen varios planos
-// pegados; aquí cada toma usa un solo plano (ver PLANOS).
+// pegados; aquí cada toma usa un solo plano (ver PLANOS) y ningún plano se repite en todo el video.
 // Por indicación del cliente: sin rótulos de nombre, sin subtítulos y sin logo de la Facultad de Medicina.
 // ---------------------------------------------------------------------------
 const W = 1920;
@@ -59,6 +59,8 @@ export const COMAEM_FRAMES = s(FIN);
 //   b2: 0–7.2 dos alumnos de perfil · 7.2–15.3 alumnas con tableta · 15.3–22.4 alumna junto a la ventana · 22.4–29.8 salón abierto
 //   b3: 0–4.0 docente con proyector · 4.0–11.6 alumnas con tableta · 11.6–17.3 docente presentando · 17.3–24.5 docente, otro ángulo
 //   b4: 0–6.6 clase desde atrás · 6.6–11.3 docente junto a la puerta · 11.3–17.0 alumnos atentos
+//   b14 placa de COMAEM · b15 reanimación en simulación · b16 grupo en quirófano · b17 enfermería · b18 Westhill Hospital
+//   (b6, la simulación de parto, no se usa: al fondo se asoma una persona por la puerta)
 // ---------------------------------------------------------------------------
 type Entrada = 'corte' | 'fundido' | 'barrido' | 'lento';
 type Toma = {src: string; at: number; dur: number; desde: number; entra?: Entrada; sale?: boolean; zoom?: [number, number]; rate?: number};
@@ -73,7 +75,7 @@ const TOMAS: Toma[] = [
   {src: 'b1', at: 22.8, dur: 3.0, desde: 12.0, entra: 'fundido'},
   {src: 'b5', at: 25.6, dur: 2.1, desde: 0.05, entra: 'fundido', rate: 0.9},
   {src: 'b4', at: 27.5, dur: 2.5, desde: 11.7, entra: 'fundido'},
-  {src: 'b10', at: 29.8, dur: 3.4, desde: 1.5, entra: 'fundido'},
+  {src: 'b14', at: 29.8, dur: 3.4, desde: 0.4, entra: 'fundido', zoom: [1.0, 1.08]}, // placa de COMAEM, cuando dice "…por COMAEM"
   // Dr. Alan
   {src: 'alan', at: 37.2, dur: 13.6, desde: 0},
   // docentes
@@ -81,24 +83,24 @@ const TOMAS: Toma[] = [
   {src: 'loera', at: 53.0, dur: 6.3, desde: 1.6, entra: 'barrido'},
   {src: 'bonilla', at: 58.9, dur: 10.8, desde: 4.9, entra: 'barrido'},
   // Dra. Yarim: solo su voz, sobre clases y prácticas
-  {src: 'b3', at: 69.5, dur: 3.6, desde: 4.5, entra: 'barrido'},
-  {src: 'b7', at: 72.9, dur: 3.4, desde: 0.3, entra: 'fundido'},
-  {src: 'b2', at: 76.1, dur: 4.0, desde: 0.8, entra: 'fundido'},
+  {src: 'b3', at: 69.5, dur: 3.6, desde: 0.2, entra: 'barrido'},
+  {src: 'b7', at: 72.9, dur: 2.5, desde: 3.0, entra: 'fundido'}, // quirófano: desde que le pasan el instrumental
+  {src: 'b2', at: 75.3, dur: 4.8, desde: 0.8, entra: 'fundido'},
   {src: 'perez', at: 79.9, dur: 5.9, desde: 0.7, entra: 'barrido'},
-  {src: 'b6', at: 85.6, dur: 3.8, desde: 3.0, entra: 'fundido'},
+  {src: 'b15', at: 85.6, dur: 3.8, desde: 0.6, entra: 'fundido'},
   // alumnos
   {src: 'b2', at: 89.4, dur: 2.8, desde: 23.0, rate: 0.85},
   {src: 'frida', at: 92.0, dur: 10.9, desde: 3.5, entra: 'barrido'},
   {src: 'alexa', at: 102.5, dur: 8.8, desde: 3.2, entra: 'barrido'},
   {src: 'jorge', at: 110.9, dur: 11.5, desde: 2.2, entra: 'barrido'},
   // Dr. Asisclo y sus tomas de apoyo
-  {src: 'b1', at: 122.4, dur: 2.8, desde: 1.0, rate: 0.85},
+  {src: 'b10', at: 122.4, dur: 2.8, desde: 1.5},
   {src: 'asisclo', at: A, dur: 41.3, desde: 0, entra: 'barrido', zoom: [1.0, 1.04]},
   {src: 'b3', at: A + 9.0, dur: 3.2, desde: 12.0, entra: 'fundido'},
   {src: 'b4', at: A + 12.0, dur: 3.1, desde: 2.0, entra: 'fundido'},
-  {src: 'b7', at: A + 14.9, dur: 3.1, desde: 0.2, entra: 'fundido', sale: true},
-  {src: 'b6', at: A + 26.4, dur: 3.5, desde: 0.5, entra: 'fundido'},
-  {src: 'b1', at: A + 29.7, dur: 3.5, desde: 22.3, entra: 'fundido'},
+  {src: 'b1', at: A + 14.9, dur: 3.1, desde: 22.3, entra: 'fundido', sale: true},
+  {src: 'b1', at: A + 26.4, dur: 3.5, desde: 1.0, entra: 'fundido'},
+  {src: 'b17', at: A + 29.7, dur: 3.5, desde: 0.05, entra: 'fundido', rate: 0.74},
   {src: 'b2', at: A + 33.0, dur: 3.6, desde: 16.0, entra: 'fundido', sale: true},
 ];
 
@@ -397,11 +399,11 @@ const Apertura: React.FC = () => {
 
 /** Montaje del clímax: cinco tomas al ritmo de la música, cada una con una palabra clave */
 const MONTAJE: [string, number, string][] = [
-  ['bonilla', 1.0, 'Calidad'],
-  ['b6', 0.6, 'Formación'],
-  ['jorge', 2.3, 'Orgullo'],
-  ['b1', 14.0, 'Comunidad'],
-  ['b9', 1.6, 'Legado'],
+  ['b1', 6.2, 'Calidad'],
+  ['b4', 7.0, 'Formación'],
+  ['b16', 0.03, 'Orgullo'],
+  ['b3', 5.0, 'Comunidad'],
+  ['b18', 0.5, 'Legado'],
 ];
 const Montaje: React.FC = () => {
   const f = useCurrentFrame();

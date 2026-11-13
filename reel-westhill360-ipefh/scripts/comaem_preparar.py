@@ -34,7 +34,17 @@ HABLAN = {
 }
 # solo voz (su toma no se usa a cuadro)
 SOLO_VOZ = {'yarim': ('yarim.mov', (4.2, 14.3))}
-APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.mp4', 'apoyo4.mp4', 'apoyo5.MOV', 'apoyo6.MP4', 'apoyo7.MP4', 'apoyo8.MP4', 'apoyo9.mp4', 'apoyo10.mp4', 'apoyo11.mp4', 'apoyo12.mp4', 'apoyo13.mp4'], 1)}
+APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.mp4', 'apoyo4.mp4', 'apoyo5.MOV', 'apoyo6.MP4', 'apoyo7.MP4', 'apoyo8.MP4', 'apoyo9.mp4', 'apoyo10.mp4', 'apoyo11.mp4', 'apoyo12.mp4', 'apoyo13.mp4', 'apoyo14.mp4', 'apoyo15.mp4', 'apoyo16.mp4', 'apoyo17.mp4', 'apoyo18.mp4'], 1)}
+# Ajustes por voz. La grabación de la Mtra. Elvia casi no trae agudos (suena apagada) y tiene poco ruido:
+# en vez de la reducción de ruido fuerte (que le quitaba las consonantes) lleva una reducción suave con el
+# perfil de ruido de un silencio suyo y una ecualización que le devuelve claridad (2–7 kHz) y le quita graves.
+ESPECIAL = {
+    'elvia': {
+        'ruido': (16.45, 17.2),
+        'fuerza': 0.5,
+        'af': 'highpass=f=110,lowshelf=f=260:g=-5,equalizer=f=450:t=q:w=1.2:g=-3,equalizer=f=2400:t=q:w=0.9:g=6,highshelf=f=3200:g=11,lowpass=f=9500,acompressor=threshold=-24dB:ratio=2.5:attack=10:release=160:makeup=2',
+    },
+}
 HDR = 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,'
 
 
@@ -58,9 +68,15 @@ def voz():
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', os.path.join(SRC, f), '-vn', '-ac', '1', '-ar', '48000', tmp + '_raw.wav'], check=True)
         sr, x = wavfile.read(tmp + '_raw.wav')
         x = x.astype(np.float32) / 32768
-        y = nr.reduce_noise(y=x, sr=sr, stationary=False, prop_decrease=0.8, n_fft=2048)
+        esp = ESPECIAL.get(nombre)
+        if esp:
+            n0, n1 = esp['ruido']
+            y = nr.reduce_noise(y=x, sr=sr, y_noise=x[int(n0 * sr):int(n1 * sr)], stationary=True, prop_decrease=esp['fuerza'], n_fft=2048)
+            af = esp['af']
+        else:
+            y = nr.reduce_noise(y=x, sr=sr, stationary=False, prop_decrease=0.8, n_fft=2048)
+            af = 'highpass=f=90,lowpass=f=9000,equalizer=f=250:t=q:w=1:g=-2,equalizer=f=3000:t=q:w=1.2:g=2.5,acompressor=threshold=-26dB:ratio=3:attack=8:release=140:makeup=2'
         wavfile.write(tmp + '_den.wav', sr, (np.clip(y, -1, 1) * 32767).astype(np.int16))
-        af = 'highpass=f=90,lowpass=f=9000,equalizer=f=250:t=q:w=1:g=-2,equalizer=f=3000:t=q:w=1.2:g=2.5,acompressor=threshold=-26dB:ratio=3:attack=8:release=140:makeup=2'
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', tmp + '_den.wav', '-af', af, tmp + '_eq.wav'], check=True)
         # sonoridad medida solo donde habla
         out = subprocess.run(['ffmpeg', '-ss', str(a), '-t', str(b - a), '-i', tmp + '_eq.wav', '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr
