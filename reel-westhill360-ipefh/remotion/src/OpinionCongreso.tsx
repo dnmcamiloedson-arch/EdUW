@@ -3,6 +3,7 @@ import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticF
 import {Grain} from './components';
 import {Banner, Sfx} from './shots';
 import {C, F, SAFE_X, ease, tw} from './theme';
+import {VOZ_TRAMOS} from './preguntasVoz';
 
 // ---------------------------------------------------------------------------
 // Reel (9:16): opiniones de los estudiantes sobre el Onceavo Congreso Académico de Derecho.
@@ -45,13 +46,13 @@ const Q1: Resp[] = [
   {
     n: 'e2',
     segs: [[1.4, 8.2]],
-    texto: ['Creo que está súper bien que hagan estos congresos, porque así podemos *conectar* con los *ministros* que vienen, con las personas de la fiscalía.'],
+    texto: ['Creo que está súper bien que hagan esta parte de los congresos, porque así podemos *conectar* con los *ministros* que vienen, con las personas de la fiscalía.'],
     cubre: [[2.4, 3.6, 'a4', 1.5]],
   },
   {
     n: 'e4',
     segs: [[3.2, 8.98], [9.4, 17.2]],
-    texto: ['Hola, mi nombre es Susan, soy estudiante de Derecho, y mi opinión general del Congreso es que fue un Congreso bastante *enriquecedor*.', 'Trajeron ponentes bastante buenos, y la verdad fue una *experiencia* muy grata para mí poder convivir con personalidades tan *importantes* y relevantes.'],
+    texto: ['Hola, mi nombre es Susan, soy estudiante de Derecho, y mi opinión general del Congreso fue que fue un Congreso bastante *enriquecedor*.', 'Trajeron ponentes bastante buenos, y la verdad es que fue una *experiencia* muy grata para mí el poder convivir con personalidades tan *importantes* y relevantes.'],
     cubre: [[7.0, 4.4, 'a7', 0.4]],
   },
   {
@@ -62,8 +63,8 @@ const Q1: Resp[] = [
   },
   {
     n: 'e5',
-    segs: [[12.7, 16.5], [28.95, 32.4]],
-    texto: ['El *conocimiento* hace la diferencia para tu nivel académico…', 'y poder obtener opiniones de *ministros* es súper fundamental.'],
+    segs: [[12.7, 16.5], [28.95, 33.0]],
+    texto: ['El *conocimiento* hace la diferencia para tu nivel académico…', 'y puedes obtener opiniones de *ministros*, es súper fundamental.'],
     cubre: [[3.0, 4.0, 'a1', 0.3]],
   },
 ];
@@ -89,19 +90,19 @@ const Q2: Resp[] = [
   {
     n: 'e5',
     segs: [[33.5, 37.0], [40.2, 47.85]],
-    texto: ['Y la parte que más me gustó fue la *inteligencia artificial*…', 'y la parte de la *inclusión*, los diferentes tipos de *discapacidad* que puede haber a nivel derecho.'],
+    texto: ['Y pues, la parte que más me gustó fue esta parte de la *inteligencia artificial*…', 'la parte de la *inclusión*, y los diferentes tipos de *discapacidad* que puede tener a nivel del derecho.'],
     cubre: [[3.6, 3.8, 'a4', 4.5]],
   },
   {
     n: 'e4',
     segs: [[21.75, 27.7], [28.15, 33.1]],
-    texto: ['Y mi parte favorita… es difícil poder elegir alguna, ya que las ponencias fueron bastante…', 'bastante buenas, y yo me quedo muy satisfecha y *agradecida* con mi institución por habernos traído este Congreso.'],
+    texto: ['Y mi parte favorita… es difícil el poder elegir alguna parte favorita, ya que las ponencias fueron bastante…', 'bastante buenas, y yo me quedo muy satisfecha y *agradecida* con mi institución por habernos traído este Congreso.'],
     cubre: [[5.4, 4.0, 'a1', 6.0]],
   },
   {
     n: 'miguel',
     segs: [[3.25, 5.95], [6.75, 14.7], [15.0, 17.5]],
-    texto: ['Escoger una parte favorita fue muy *difícil*, sin duda.', 'Mi parte favorita fue la ponencia del ministro Arístides Guerrero García, sobre la *inteligencia artificial*, así como la del ministro Giovanni Azael Mejía…', 'en *igualdad* y no discriminación.'],
+    texto: ['Escoger una parte favorita fue muy *difícil*, sin duda.', 'Mi parte favorita fue la ponencia del ministro Arístides Guerrero García, la *inteligencia artificial*, así como del ministro Giovanni Azael Mejía…', 'en *igualdad* y no discriminación.'],
     cubre: [[4.3, 4.6, 'a2', 4.6]],
   },
 ];
@@ -109,7 +110,7 @@ const Q3: Resp[] = [
   {
     n: 'miguel',
     segs: [[17.6, 31.95]],
-    texto: ['*Recomiendo* mucho este Congreso, el Congreso de Derecho de Universidad Westhill, porque permite que diferentes puntos de vista del más alto nivel converjan en un solo espacio, para permitirnos tener una visión más *holística* sobre el derecho en México y en el mundo.'],
+    texto: ['*Recomiendo* mucho este Congreso, el Congreso Nacional de Derecho de Universidad Westhill, porque permite que diferentes puntos de vista del más alto nivel converjan en un solo espacio, para permitirnos tener una visión más *holística* sobre el derecho en México y en el mundo.'],
   },
 ];
 
@@ -117,8 +118,10 @@ const durResp = (r: Resp) => r.segs.reduce((a, [x, y]) => a + sec(y - x), 0);
 const durLista = (l: Resp[]) => l.reduce((a, r) => a + durResp(r), 0);
 
 // ---------------------------------------------------------------------------
-// Subtítulos animados: cada tramo reparte sus palabras según su largo; se muestran de 3 en 3 (o hasta una
-// pausa de puntuación), la palabra que se está diciendo sube y se ilumina, y las palabras clave van en amarillo.
+// Subtítulos: cada palabra se reparte solo dentro de los tramos con voz de su grabación (preguntasVoz.ts),
+// así entra justo cuando se dice. Se muestran en frases de hasta dos renglones; cada palabra sube desde abajo
+// con un desvanecido suave al decirse, y al pasar a la siguiente frase la anterior sube y se desvanece.
+// Las palabras clave van en amarillo.
 // ---------------------------------------------------------------------------
 type Palabra = {w: string; t0: number; t1: number; clave: boolean};
 const palabras = (r: Resp): Palabra[] => {
@@ -126,73 +129,94 @@ const palabras = (r: Resp): Palabra[] => {
   let base = 0;
   r.segs.forEach(([a, b], j) => {
     const d = sec(b - a);
+    // tramos con voz dentro de este segmento, en cuadros relativos a la respuesta
+    const voz = (VOZ_TRAMOS[r.n] ?? [])
+      .map(([x, y]) => [Math.max(x, a), Math.min(y, b)] as [number, number])
+      .filter(([x, y]) => y - x > 0.04)
+      .map(([x, y]) => [base + (x - a) * FPS, base + (y - a) * FPS] as [number, number]);
+    const tramos = voz.length ? voz : [[base + 2, base + d - 2] as [number, number]];
+    const totalVoz = tramos.reduce((acc, [x, y]) => acc + (y - x), 0);
+    // posición dentro del habla (0..totalVoz) → cuadro
+    const aCuadro = (u: number) => {
+      let resto = u;
+      for (const [x, y] of tramos) {
+        if (resto <= y - x) return x + resto;
+        resto -= y - x;
+      }
+      return tramos[tramos.length - 1][1];
+    };
     const ws = r.texto[j].split(' ').filter(Boolean);
-    const pesos = ws.map((w) => w.replace(/\*/g, '').length + 2);
+    const pesos = ws.map((w) => w.replace(/[*,.…?!]/g, '').length + 1.5);
     const total = pesos.reduce((x, y) => x + y, 0);
     let acc = 0;
     ws.forEach((w, k) => {
-      const t0 = base + 2 + (acc / total) * (d - 4);
+      const t0 = aCuadro((acc / total) * totalVoz);
       acc += pesos[k];
-      const t1 = base + 2 + (acc / total) * (d - 4);
+      const t1 = aCuadro((acc / total) * totalVoz);
       out.push({w: w.replace(/\*/g, ''), t0, t1, clave: w.includes('*')});
     });
     base += d;
   });
   return out;
 };
-const grupos = (ps: Palabra[]): Palabra[][] => {
+/** frases de hasta ~26 letras por renglón y dos renglones; corta también en la puntuación */
+const frases = (ps: Palabra[]): Palabra[][] => {
   const g: Palabra[][] = [];
   let cur: Palabra[] = [];
   ps.forEach((p, i) => {
     cur.push(p);
-    const pausa = /[,.…?!]$/.test(p.w);
-    const largo = cur.reduce((a, x) => a + x.w.length, 0);
-    if (cur.length >= 3 || pausa || largo > 16 || i === ps.length - 1) {
+    const letras = cur.reduce((a, x) => a + x.w.length + 1, 0);
+    const sig = ps[i + 1];
+    const pausa = /[.…?!]$/.test(p.w) || (/,$/.test(p.w) && letras > 18);
+    const lleno = sig ? letras + sig.w.length > 40 : true;
+    if (pausa || lleno) {
       g.push(cur);
       cur = [];
     }
   });
+  if (cur.length) g.push(cur);
   return g;
 };
 const Subtitulos: React.FC<{r: Resp}> = ({r}) => {
   const f = useCurrentFrame();
-  const gs = grupos(palabras(r));
-  const i = gs.findIndex((g, k) => f >= g[0].t0 - 1 && (k === gs.length - 1 || f < gs[k + 1][0].t0 - 1));
-  if (i < 0) return null;
-  const g = gs[i];
-  const entra = tw(f, [g[0].t0 - 1, g[0].t0 + 4], [0, 1], ease.out);
+  const gs = frases(palabras(r));
   return (
-    <div style={{position: 'absolute', top: 1290, left: SAFE_X - 20, right: SAFE_X - 20, textAlign: 'center', opacity: entra, transform: `translateY(${(1 - entra) * 18}px)`}}>
-      {g.map((p, j) => {
-        const activa = f >= p.t0 - 1 && f < p.t1 + 1;
-        const dicha = f >= p.t0 - 1;
-        // la palabra que se dice se levanta un poco; la escala crece menos en palabras largas para no encimarse
-        const s = activa ? 1 + (p.w.length > 8 ? 0.02 : 0.06) * tw(f, [p.t0 - 1, p.t0 + 3], [0, 1], ease.out) : 1;
+    <>
+      {gs.map((g, k) => {
+        const ini = g[0].t0 - 2;
+        // la frase sale (sube y se desvanece) justo antes de que entre la siguiente, para no encimarse
+        const fin = k < gs.length - 1 ? gs[k + 1][0].t0 - 9 : durResp(r);
+        if (f < ini || f > fin + 7) return null;
+        const sale = tw(f, [fin, fin + 7], [0, 1], ease.inOut);
         return (
-          <span
-            key={j}
-            style={{
-              display: 'inline-block',
-              margin: '0 0.3em',
-              fontFamily: F.sans,
-              fontWeight: 900,
-              fontSize: 70,
-              lineHeight: 1.18,
-              textTransform: 'uppercase',
-              color: p.clave ? AMARILLO : '#FFFFFF',
-              opacity: dicha ? 1 : 0.55,
-              transform: `translateY(${activa ? -6 : 0}px) scale(${s})`,
-              transformOrigin: '50% 100%',
-              WebkitTextStroke: '3px rgba(0,0,0,0.55)',
-              paintOrder: 'stroke fill',
-              textShadow: `0 6px 0 rgba(0,0,0,0.5), 0 0 24px rgba(0,0,0,0.45)${activa && p.clave ? ', 0 0 26px rgba(240,200,74,0.75)' : ''}`,
-            }}
-          >
-            {p.w}
-          </span>
+          <div key={k} style={{position: 'absolute', top: 1270, left: SAFE_X - 10, right: SAFE_X - 10, textAlign: 'center', opacity: 1 - sale, transform: `translateY(${-sale * 46}px)`, filter: sale > 0 ? `blur(${sale * 4}px)` : undefined}}>
+            {g.map((p, j) => {
+              const e = tw(f, [p.t0 - 3, p.t0 + 5], [0, 1], ease.out);
+              const dicha = f >= p.t0 - 1;
+              return (
+                <span key={j} style={{display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', padding: '4px 9px 12px', margin: '-4px 0 -12px'}}>
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      fontFamily: F.sans,
+                      fontWeight: 800,
+                      fontSize: 62,
+                      lineHeight: 1.22,
+                      color: p.clave ? AMARILLO : '#FFFFFF',
+                      opacity: e * (dicha ? 1 : 0.9),
+                      transform: `translateY(${(1 - e) * 72}px)`,
+                      textShadow: '0 3px 0 rgba(0,0,0,0.35), 0 4px 22px rgba(0,0,0,0.75)',
+                    }}
+                  >
+                    {p.w}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
         );
       })}
-    </div>
+    </>
   );
 };
 
@@ -379,44 +403,86 @@ const Seccion: React.FC<{num: string; titulo: string}> = ({num, titulo}) => {
         <div style={{display: 'inline-block', background: AMARILLO, color: MARINO, fontFamily: F.display, fontSize: 92, padding: '0 34px', borderRadius: 20, opacity: n, transform: `translateY(${(1 - n) * 40}px)`}}>{num}</div>
         <div style={{marginTop: 34, fontFamily: F.display, fontSize: 112, lineHeight: 1.05, color: '#fff', opacity: t, transform: `translateY(${(1 - t) * 50}px)`}}>{titulo}</div>
       </div>
-      <Sfx at={0} name="whoosh" volume={0.4} />
-      <Sfx at={PRE} name="pop" volume={0.4} />
+      <Sfx at={PRE} name="whoosh" volume={0.3} />
+      <Sfx at={PRE + 4} name="pop" volume={0.3} />
     </AbsoluteFill>
   );
 };
 
-/** Cierre: auditorio lleno con "¡Gracias a todos los que asistieron!" y el logo */
-export const OUTRO_F = sec(7.2);
+/**
+ * Cierre (8 s) sobre el auditorio lleno: logo de la universidad arriba al centro, "¡GRACIAS!" en dorado con
+ * brillo, "a todos los que fueron parte del" + el arte del Onceavo Congreso, fecha y lugar, polvo dorado y una
+ * luz que barre la pantalla; al final todo se funde a negro.
+ */
+export const OUTRO_F = sec(8.0);
 const Outro: React.FC = () => {
   const f = useCurrentFrame();
-  const a = tw(f, [10, 28], [0, 1]);
-  const b = tw(f, [20, 40], [0, 1]);
-  const logo = tw(f, [70, 96], [0, 1]);
-  const pie = tw(f, [90, 110], [0, 1]);
-  const negro = tw(f, [OUTRO_F - 24, OUTRO_F], [0, 1]);
+  const oscuro = tw(f, [0, 24], [0, 1], ease.inOut);
+  const logo = tw(f, [6, 30], [0, 1]);
+  const g = tw(f, [16, 36], [0, 1]);
+  const brillo = interpolate(f, [40, 72], [0, 1], clamp);
+  const a = tw(f, [30, 48], [0, 1]);
+  const lin = tw(f, [40, 64], [0, 1], ease.inOut);
+  const c1 = tw(f, [44, 62], [0, 1]);
+  const c2 = tw(f, [50, 68], [0, 1]);
+  const d = tw(f, [56, 76], [0, 1]);
+  const pie = tw(f, [80, 100], [0, 1]);
+  const tag = tw(f, [96, 116], [0, 1]);
+  const barre = interpolate(f, [70, 120], [-0.3, 1.3], clamp);
+  const negro = tw(f, [OUTRO_F - 26, OUTRO_F], [0, 1], ease.inOut);
+  const sube = (p: number, dist = 36): React.CSSProperties => ({transform: `translateY(${(1 - p) * dist}px)`, opacity: Math.min(1, p * 1.5)});
+  const mask = `linear-gradient(105deg, rgba(0,0,0,0) ${brillo * 140 - 30}%, rgba(0,0,0,1) ${brillo * 140 - 20}%, rgba(0,0,0,0) ${brillo * 140 - 10}%)`;
   return (
     <AbsoluteFill style={{background: '#000'}}>
       <AbsoluteFill style={{overflow: 'hidden'}}>
-        <OffthreadVideo src={vid('a9')} startFrom={0} muted style={{width: W, height: H, objectFit: 'cover', transform: `scale(${1.02 + 0.05 * (f / OUTRO_F)})`}} />
+        <OffthreadVideo src={vid('a9')} startFrom={0} muted style={{width: W, height: H, objectFit: 'cover', transform: `scale(${1.04 + 0.07 * (f / OUTRO_F)})`, filter: `blur(${oscuro * 3}px)`}} />
       </AbsoluteFill>
-      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(8,16,34,0.15) 0%, rgba(8,16,34,0.55) 40%, rgba(8,16,34,0.88) 100%)', opacity: a}} />
-      <div style={{position: 'absolute', top: 820, left: SAFE_X, right: SAFE_X, textAlign: 'center'}}>
-        <div style={{fontFamily: F.display, fontSize: 150, lineHeight: 1, color: AMARILLO, opacity: a, transform: `translateY(${(1 - a) * 40}px)`, textShadow: '0 8px 30px rgba(0,0,0,0.5)'}}>¡GRACIAS!</div>
-        <div style={{marginTop: 20, fontFamily: F.sans, fontWeight: 800, fontSize: 46, lineHeight: 1.2, color: '#fff', opacity: b, transform: `translateY(${(1 - b) * 24}px)`, textShadow: '0 4px 18px rgba(0,0,0,0.6)'}}>
-          a todos los que asistieron al
-          <br />
-          Onceavo Congreso Académico
-          <br />
-          de Derecho
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(6,12,28,0.92) 0%, rgba(6,12,28,0.62) 30%, rgba(6,12,28,0.7) 62%, rgba(6,12,28,0.95) 100%)', opacity: oscuro}} />
+      <AbsoluteFill style={{opacity: oscuro}}>
+        <Polvo />
+      </AbsoluteFill>
+      {/* logo arriba al centro */}
+      <div style={{position: 'absolute', left: W / 2 - 230, top: 210, width: 460, ...sube(logo, 24), filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))'}}>
+        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%', display: 'block'}} />
+      </div>
+      {/* ¡GRACIAS! */}
+      <div style={{position: 'absolute', left: 0, width: W, top: 560, textAlign: 'center', overflow: 'hidden', padding: '10px 0'}}>
+        <div style={{transform: `translateY(${(1 - g) * 110}%)`, opacity: Math.min(1, g * 1.6)}}>
+          <span style={{position: 'relative', display: 'inline-block', fontFamily: F.display, fontSize: 196, lineHeight: 1, letterSpacing: 4, backgroundImage: 'linear-gradient(180deg, #FFF1C2 0%, #F0C84A 55%, #B98A1E 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', filter: 'drop-shadow(0 8px 28px rgba(0,0,0,0.55))'}}>
+            ¡GRACIAS!
+            {brillo > 0 && brillo < 1 && <span style={{position: 'absolute', inset: 0, color: '#FFFFFF', WebkitMaskImage: mask, maskImage: mask}}>¡GRACIAS!</span>}
+          </span>
         </div>
       </div>
-      <div style={{position: 'absolute', left: 290, top: 1230, width: 500, opacity: logo, transform: `translateY(${(1 - logo) * 20}px)`}}>
-        <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{width: '100%'}} />
+      <div style={{position: 'absolute', left: 0, width: W, top: 800, textAlign: 'center', fontFamily: F.sans, fontWeight: 700, fontSize: 42, color: '#FFFFFF', ...sube(a, 24)}}>a todos los que fueron parte del</div>
+      {/* arte del Onceavo Congreso */}
+      {/* el arte del PNG está en las filas 722–1060; se baja 150 px para quedar bajo el texto */}
+      <AbsoluteFill style={{transform: 'translateY(150px) scale(0.92)', transformOrigin: '540px 722px'}}>
+        <Franja y0={722} y1={760} x0={223 + (1 - lin) * 152} x1={376} />
+        <Franja y0={722} y1={760} x0={716} x1={869 - (1 - lin) * 152} />
+        <div style={{position: 'absolute', left: 376, width: 340, top: 724, textAlign: 'center', fontFamily: F.sans, fontWeight: 800, fontSize: 30, letterSpacing: 10, color: AMARILLO, ...sube(lin, 14)}}>ONCEAVO</div>
+        <div style={{position: 'absolute', inset: 0, clipPath: 'inset(780px 0 1052px 0)'}}>
+          <Franja y0={780} y1={868} style={{transform: `translateY(${(1 - c1) * 90}px)`}} />
+        </div>
+        <div style={{position: 'absolute', inset: 0, clipPath: 'inset(864px 0 976px 0)'}}>
+          <Franja y0={864} y1={944} style={{transform: `translateY(${(1 - c2) * 84}px)`}} />
+        </div>
+        <div style={{position: 'absolute', inset: 0, clipPath: 'inset(952px 0 860px 0)'}}>
+          <Franja y0={952} y1={1060} style={{transform: `translateY(${(1 - d) * 110}px)`, filter: 'drop-shadow(0 0 18px rgba(240,200,74,0.35))'}} />
+        </div>
+      </AbsoluteFill>
+      <div style={{position: 'absolute', left: 0, width: W, top: 1268, textAlign: 'center', ...sube(pie, 20)}}>
+        <div style={{width: 120, height: 3, background: AMARILLO, margin: '0 auto 22px', borderRadius: 2}} />
+        <div style={{fontFamily: F.sans, fontWeight: 700, fontSize: 32, letterSpacing: 2, color: '#E6ECF3'}}>13 de noviembre · Auditorio de la Universidad</div>
       </div>
-      <div style={{position: 'absolute', top: 1460, width: '100%', textAlign: 'center', opacity: pie, fontFamily: F.sans, fontWeight: 800, fontSize: 30, letterSpacing: 8, color: AMARILLO}}>#SOMOSWESTHILL</div>
+      <div style={{position: 'absolute', left: 0, width: W, top: 1360, textAlign: 'center', fontFamily: F.sans, fontWeight: 800, fontSize: 30, letterSpacing: 10, color: AMARILLO, ...sube(tag, 16)}}>#SOMOSWESTHILL</div>
+      {/* luz que barre la pantalla */}
+      <AbsoluteFill style={{background: `linear-gradient(105deg, rgba(255,240,200,0) ${barre * 100 - 18}%, rgba(255,240,200,0.14) ${barre * 100}%, rgba(255,240,200,0) ${barre * 100 + 18}%)`, mixBlendMode: 'screen'}} />
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
-      <Sfx at={10} name="whoosh" volume={0.35} />
-      <Sfx at={70} name="ding" volume={0.3} />
+      <Sfx at={2} name="whoosh_largo" volume={0.3} />
+      <Sfx at={16} name="impact" volume={0.4} />
+      <Sfx at={44} name="whoosh" volume={0.25} />
+      <Sfx at={80} name="ding" volume={0.25} />
     </AbsoluteFill>
   );
 };
@@ -448,7 +514,7 @@ export const OpinionCongreso: React.FC<{music?: boolean}> = ({music = true}) => 
     const i = STARTS.findIndex((s, k) => fr >= s && fr < s + PIEZAS[k].dur);
     const nivel = (k: number) => (k >= 0 && PIEZAS[k].voz ? 0.12 : 0.5);
     const s = STARTS[Math.max(0, i)];
-    return interpolate(fr, [s - 8, s + 8], [nivel(i - 1), nivel(i)], clamp) * interpolate(fr, [0, 10, OPINION_FRAMES - 40, OPINION_FRAMES], [0, 1, 1, 0], clamp);
+    return interpolate(fr, [s, s + 10], [nivel(i - 1), nivel(i)], clamp) * interpolate(fr, [0, 10, OPINION_FRAMES - 40, OPINION_FRAMES], [0, 1, 1, 0], clamp);
   };
   return (
     <AbsoluteFill style={{background: '#000'}}>
