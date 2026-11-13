@@ -62,6 +62,8 @@ export const COMAEM_FRAMES = s(FIN);
 //   b14 placa de COMAEM · b15 reanimación en simulación · b16 grupo en quirófano · b17 enfermería · b18 Westhill Hospital
 //   (b6, la simulación de parto, no se usa: al fondo se asoma una persona por la puerta)
 // ---------------------------------------------------------------------------
+// Regla: la toma anterior debe durar al menos 0.2 s después de que empieza un fundido y 0.5 s después de
+// que empieza un barrido; si se acaba antes, se ve negro durante la transición.
 type Entrada = 'corte' | 'fundido' | 'barrido' | 'lento';
 type Toma = {src: string; at: number; dur: number; desde: number; entra?: Entrada; sale?: boolean; zoom?: [number, number]; rate?: number};
 const TOMAS: Toma[] = [
@@ -79,22 +81,22 @@ const TOMAS: Toma[] = [
   // Dr. Alan
   {src: 'alan', at: 37.2, dur: 13.6, desde: 0},
   // docentes
-  {src: 'b8', at: 50.8, dur: 2.4, desde: 2.0},
-  {src: 'loera', at: 53.0, dur: 6.3, desde: 1.6, entra: 'barrido'},
-  {src: 'bonilla', at: 58.9, dur: 10.8, desde: 4.9, entra: 'barrido'},
+  {src: 'b8', at: 50.8, dur: 2.8, desde: 2.0},
+  {src: 'loera', at: 53.0, dur: 6.4, desde: 1.6, entra: 'barrido'},
+  {src: 'bonilla', at: 58.9, dur: 11.1, desde: 4.9, entra: 'barrido'},
   // Dra. Yarim: solo su voz, sobre clases y prácticas
   {src: 'b3', at: 69.5, dur: 3.6, desde: 0.2, entra: 'barrido'},
   {src: 'b7', at: 72.9, dur: 2.5, desde: 3.0, entra: 'fundido'}, // quirófano: desde que le pasan el instrumental
-  {src: 'b2', at: 75.3, dur: 4.8, desde: 0.8, entra: 'fundido'},
+  {src: 'b2', at: 75.1, dur: 5.4, desde: 0.8, entra: 'fundido'},
   {src: 'perez', at: 79.9, dur: 5.9, desde: 0.7, entra: 'barrido'},
   {src: 'b15', at: 85.6, dur: 3.8, desde: 0.6, entra: 'fundido'},
   // alumnos
-  {src: 'b2', at: 89.4, dur: 2.8, desde: 23.0, rate: 0.85},
-  {src: 'frida', at: 92.0, dur: 10.9, desde: 3.5, entra: 'barrido'},
-  {src: 'alexa', at: 102.5, dur: 8.8, desde: 3.2, entra: 'barrido'},
+  {src: 'b2', at: 89.4, dur: 3.2, desde: 23.0, rate: 0.85},
+  {src: 'frida', at: 92.0, dur: 11.0, desde: 3.5, entra: 'barrido'},
+  {src: 'alexa', at: 102.5, dur: 8.9, desde: 3.2, entra: 'barrido'},
   {src: 'jorge', at: 110.9, dur: 11.5, desde: 2.2, entra: 'barrido'},
   // Dr. Asisclo y sus tomas de apoyo
-  {src: 'b10', at: 122.4, dur: 2.8, desde: 1.5},
+  {src: 'b10', at: 122.4, dur: 3.2, desde: 1.5},
   {src: 'asisclo', at: A, dur: 41.3, desde: 0, entra: 'barrido', zoom: [1.0, 1.04]},
   {src: 'b3', at: A + 9.0, dur: 3.2, desde: 12.0, entra: 'fundido'},
   {src: 'b4', at: A + 12.0, dur: 3.1, desde: 2.0, entra: 'fundido'},
@@ -254,7 +256,7 @@ const Clip: React.FC<{t: Toma; i: number}> = ({t, i}) => {
   let linea: React.ReactNode = null;
   let fuga = 0;
   if (t.entra === 'fundido') {
-    op *= tw(f, [0, 7], [0, 1], ease.inOut);
+    op *= tw(f, [0, 6], [0, 1], ease.inOut);
     fuga = interpolate(f, [0, 5, 16], [0, 0.16, 0], clamp); // fuga de luz cálida muy breve en cada cambio
   }
   if (t.entra === 'lento') op *= tw(f, [0, 36], [0, 1], ease.inOut);
