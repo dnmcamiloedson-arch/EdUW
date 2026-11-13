@@ -32,6 +32,8 @@ HABLAN = {
     'alexa': ('alumno3.mp4', (3.5, 11.6)),
     'asisclo': ('asisclo.mov', (0.2, 41.3)),
 }
+# solo voz (su toma no se usa a cuadro)
+SOLO_VOZ = {'yarim': ('yarim.mov', (4.2, 14.3))}
 APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.mp4', 'apoyo4.mp4', 'apoyo5.MOV', 'apoyo6.MP4', 'apoyo7.MP4', 'apoyo8.MP4', 'apoyo9.mp4', 'apoyo10.mp4', 'apoyo11.mp4', 'apoyo12.mp4', 'apoyo13.mp4'], 1)}
 HDR = 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,'
 
@@ -51,7 +53,7 @@ def video():
 
 def voz():
     os.makedirs(VOZ, exist_ok=True)
-    for nombre, (f, (a, b)) in HABLAN.items():
+    for nombre, (f, (a, b)) in {**HABLAN, **SOLO_VOZ}.items():
         tmp = f'/tmp/comaem_{nombre}'
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', os.path.join(SRC, f), '-vn', '-ac', '1', '-ar', '48000', tmp + '_raw.wav'], check=True)
         sr, x = wavfile.read(tmp + '_raw.wav')
