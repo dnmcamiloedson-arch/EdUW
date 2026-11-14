@@ -36,80 +36,98 @@ type Cubre = [number, number, string, number];
 /** texto: uno por tramo; *palabra* = palabra clave en amarillo */
 type Resp = {n: string; segs: Tramo[]; texto: string[]; cubre?: Cubre[]};
 
+// Respuestas completas. Se quitan muletillas y tropiezos ("este", "pues", "bueno", "eh", "y nada", "¿no?",
+// "y así", palabras repetidas) cortando entre palabras; los cortes se midieron con tiempos por palabra
+// (Parakeet v3) y la energía de la voz para no cortar sílabas.
 const Q1: Resp[] = [
   {
     n: 'e1',
-    segs: [[0.55, 5.15], [5.65, 9.3]],
-    texto: ['A mí lo que me gustó en general fue la actitud de todos los *ponentes*.', 'Su manera de explicar fue bastante *entretenida*, la verdad.'],
-    cubre: [[3.6, 3.4, 'a2', 0.5]],
+    segs: [[0.35, 2.52], [3.24, 9.26], [9.9, 11.62], [13.14, 14.04], [14.6, 19.12]],
+    texto: [
+      'A mí lo que me gustó en general fue',
+      'la actitud de todos los *ponentes*. Su manera de explicar fue bastante *entretenida*, y la verdad,',
+      'son personas con mucho *conocimiento*.',
+      'Es la primera vez,',
+      'y la verdad fue *maravilloso* para mí estar en el Congreso el día de hoy.',
+    ],
+    cubre: [[2.6, 3.0, 'a2', 0.3], [8.0, 2.6, 'a5', 0.2]],
   },
   {
     n: 'e2',
-    segs: [[1.4, 8.2]],
-    texto: ['Creo que está súper bien que hagan esta parte de los congresos, porque así podemos *conectar* con los *ministros* que vienen, con las personas de la fiscalía.'],
-    cubre: [[2.4, 3.6, 'a4', 1.5]],
+    segs: [[0.43, 17.17], [18.27, 28.88], [29.7, 36.8]],
+    texto: [
+      'En mi opinión, creo que está súper bien que hagan esta parte de los congresos, porque así podemos *conectar* con los *ministros* que vienen, con las personas de la fiscalía. Nos ayuda a integrarnos un poco más con ellos, a ampliar nuestro mundo *laboral* y nuestras mentes, obviamente, para que',
+      'podamos conectar un poco más con las personas, con los fiscales, con los docentes. Entonces siento que está súper bien que hagan esto, y con las personas que también vienen de afuera, los exteriores.',
+      'A mí la verdad me gustó mucho. Es la primera vez que estoy en un Congreso, y lo *repetiría* otra vez, sin duda.',
+    ],
+    cubre: [[3.5, 3.4, 'a4', 0.3], [17.0, 2.7, 'a7', 0.3], [26.5, 3.4, 'a1', 8.0]],
   },
   {
     n: 'e4',
-    segs: [[3.2, 8.98], [9.4, 17.2]],
-    texto: ['Hola, mi nombre es Susan, soy estudiante de Derecho, y mi opinión general del Congreso fue que fue un Congreso bastante *enriquecedor*.', 'Trajeron ponentes bastante buenos, y la verdad es que fue una *experiencia* muy grata para mí el poder convivir con personalidades tan *importantes* y relevantes.'],
-    cubre: [[7.0, 4.4, 'a7', 0.4]],
+    segs: [[2.92, 21.12]],
+    texto: [
+      'Hola, mi nombre es Susan, soy estudiante de Derecho, y mi opinión general del Congreso fue que fue un Congreso bastante *enriquecedor*. Trajeron ponentes bastante buenos, y la verdad es que fue una *experiencia* muy grata para mí el poder convivir con personalidades tan *importantes* y relevantes, y que nos han aportado bastante conocimiento en este día.',
+    ],
+    cubre: [[10.6, 2.7, 'a7', 3.2], [15.0, 3.0, 'a1', 4.0]],
   },
   {
     n: 'e3',
-    segs: [[13.45, 20.5]],
-    texto: ['Y en general siento que es una muy buena conferencia, un Congreso muy bueno. Cada una de las conferencias estuvo *increíble*.'],
-    cubre: [[3.0, 3.6, 'a6', 0.0]],
+    segs: [[13.45, 18.45], [18.69, 21.63]],
+    texto: ['Y en general, siento que es una muy buena conferencia, un Congreso muy bueno.', 'Cada una de las conferencias estuvo *increíble*, y me encanta, chicos.'],
+    cubre: [[4.4, 3.0, 'a6', 0.0]],
   },
   {
     n: 'e5',
-    segs: [[12.7, 16.5], [28.95, 33.0]],
-    texto: ['El *conocimiento* hace la diferencia para tu nivel académico…', 'y puedes obtener opiniones de *ministros*, es súper fundamental.'],
-    cubre: [[3.0, 4.0, 'a1', 0.3]],
+    segs: [[2.62, 11.99], [12.7, 28.62], [29.3, 32.74]],
+    texto: [
+      'Hola, mi nombre es Emily, y yo creo que mi parte general del Congreso fue que llevamos *conocimiento* de los diferentes ministros, porque',
+      'el conocimiento hace la *diferencia* para tu nivel académico y tu formación académica día a día, porque no nos estancamos solamente en temas generales, sino tenemos más conocimiento contundente de las diferentes ramas.',
+      'Obtener opiniones de *ministros* es súper fundamental.',
+    ],
+    cubre: [[6.0, 3.4, 'a1', 0.3], [15.5, 3.0, 'a2', 3.5], [25.2, 3.4, 'a4', 4.4]],
   },
 ];
 const Q2: Resp[] = [
   {
     n: 'e1',
-    segs: [[20.6, 27.5], [28.2, 32.2]],
-    texto: ['Bueno, mi parte favorita en el Congreso fue la última *conferencia* que tuvimos con el doctor que es ministro.', 'Y nada, siento que *conectó* bien con el público, y eso lo hizo más entretenido.'],
-    cubre: [[7.0, 3.8, 'a8', 0.0]],
+    segs: [[20.62, 27.46], [28.96, 32.16]],
+    texto: ['Mi parte favorita en el Congreso fue la última *conferencia* que tuvimos con el doctor que es ministro.', 'Siento que *conectó* bien con el público, y eso lo hizo más entretenido.'],
+    cubre: [[6.5, 3.5, 'a8', 0.0]],
   },
   {
     n: 'e2',
-    segs: [[38.3, 42.45], [53.95, 55.9]],
-    texto: ['Mi parte favorita del Congreso fue sobre la *inteligencia artificial*.', 'En general estuvo muy padre y *divertido*.'],
-    cubre: [[1.6, 4.0, 'a5', 2.0]],
+    segs: [[38.18, 45.08], [48.73, 55.86]],
+    texto: ['Mi parte favorita del Congreso fue sobre la *inteligencia artificial*. Me gustó mucho la interacción que tuvo', 'el ministro con todos los presentes, cómo lo explicó, los videos. En general estuvo muy padre y *divertido*.'],
+    cubre: [[1.5, 3.0, 'a5', 3.6], [8.5, 3.0, 'a3', 5.0]],
   },
   {
     n: 'e3',
-    segs: [[0.1, 7.85]],
-    texto: ['Hola, yo soy Emily. La verdad, mi parte favorita del Congreso fue lo de la *inteligencia artificial*, ya que yo sí lo utilizo.'],
-    cubre: [[4.1, 3.5, 'a3', 1.0]],
+    segs: [[0.1, 1.36], [1.88, 6.67], [6.8, 7.82], [8.84, 12.47]],
+    texto: ['Hola, yo soy Emily.', 'La verdad, mi parte favorita del Congreso fue lo de la *inteligencia artificial*, ya que', 'yo sí lo utilizo.', 'Sí me ayudó un poco a comprender un poco de los *datos personales*.'],
+    cubre: [[4.6, 3.4, 'a3', 0.5]],
   },
   {
     n: 'e5',
-    segs: [[33.5, 37.0], [40.2, 47.85]],
-    texto: ['Y pues, la parte que más me gustó fue esta parte de la *inteligencia artificial*…', 'la parte de la *inclusión*, y los diferentes tipos de *discapacidad* que puede tener a nivel del derecho.'],
-    cubre: [[3.6, 3.8, 'a4', 4.5]],
+    segs: [[33.86, 37.22], [40.2, 47.7]],
+    texto: ['La parte que más me gustó fue esta parte de la *inteligencia artificial*…', 'la parte de la *inclusión*, y los diferentes tipos de *discapacidades* que puede tener a nivel del derecho.'],
+    cubre: [[2.4, 3.0, 'a2', 6.7]],
   },
   {
     n: 'e4',
-    segs: [[21.75, 27.7], [28.15, 33.1]],
-    texto: ['Y mi parte favorita… es difícil el poder elegir alguna parte favorita, ya que las ponencias fueron bastante…', 'bastante buenas, y yo me quedo muy satisfecha y *agradecida* con mi institución por habernos traído este Congreso.'],
-    cubre: [[5.4, 4.0, 'a1', 6.0]],
+    segs: [[21.55, 27.25], [28.12, 33.1]],
+    texto: ['Y mi parte favorita… es difícil el poder elegir alguna parte favorita, ya que las ponencias fueron', 'bastante buenas, y yo me quedo muy satisfecha y *agradecida* con mi institución por habernos traído este Congreso.'],
   },
   {
     n: 'miguel',
-    segs: [[3.25, 5.95], [6.75, 14.7], [15.0, 17.5]],
-    texto: ['Escoger una parte favorita fue muy *difícil*, sin duda.', 'Mi parte favorita fue la ponencia del ministro Arístides Guerrero García, la *inteligencia artificial*, así como del ministro Giovanni Azael Mejía…', 'en *igualdad* y no discriminación.'],
-    cubre: [[4.3, 4.6, 'a2', 4.6]],
+    segs: [[2.9, 15.31], [16.03, 17.36]],
+    texto: ['Escoger mi parte favorita fue muy *difícil*, sin duda. Mi parte favorita fue la ponencia del ministro Arístides Guerrero García, la *inteligencia artificial*, así como del ministro Giovanni Azael Mejía, en', '*igualdad* y no discriminación.'],
+    cubre: [[5.2, 2.0, 'a5', 6.8]],
   },
 ];
 const Q3: Resp[] = [
   {
     n: 'miguel',
-    segs: [[17.6, 31.95]],
+    segs: [[17.58, 31.7]],
     texto: ['*Recomiendo* mucho este Congreso, el Congreso Nacional de Derecho de Universidad Westhill, porque permite que diferentes puntos de vista del más alto nivel converjan en un solo espacio, para permitirnos tener una visión más *holística* sobre el derecho en México y en el mundo.'],
   },
 ];
