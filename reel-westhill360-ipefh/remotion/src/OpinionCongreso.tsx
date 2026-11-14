@@ -8,7 +8,7 @@ import {VOZ_TRAMOS} from './preguntasVoz';
 // ---------------------------------------------------------------------------
 // Reel (9:16): opiniones de los estudiantes sobre el Onceavo Congreso Académico de Derecho.
 //  Intro con el arte del congreso → 01 ¿Qué te pareció el Congreso? → 02 ¿Qué fue lo que más te gustó?
-//  (cierra Miguel) → 03 ¿Por qué recomendarías venir al Congreso? (Miguel) → agradecimiento sobre el
+//  → 03 ¿Por qué recomendarías venir al Congreso? (Miguel) → agradecimiento sobre el
 //  auditorio lleno y logo.
 // Las respuestas se aprietan quitando pausas y muletillas; algunas partes van en voz en off sobre tomas del
 // congreso (el ponente de inteligencia artificial, el público, el break, los reconocimientos).
@@ -102,26 +102,22 @@ const Q2: Resp[] = [
   },
   {
     n: 'e3',
-    segs: [[0.1, 1.36], [1.88, 6.67], [6.8, 7.82], [8.84, 12.47]],
-    texto: ['Hola, yo soy Emily.', 'La verdad, mi parte favorita del Congreso fue lo de la *inteligencia artificial*, ya que', 'yo sí lo utilizo.', 'Sí me ayudó un poco a comprender un poco de los *datos personales*.'],
-    cubre: [[4.6, 3.4, 'a3', 0.5]],
+    // sin cortes internos: solo se quita "Hola, yo soy Emily"
+    segs: [[1.44, 12.86]],
+    texto: ['Y pues la verdad, mi parte favorita del Congreso fue lo de la *inteligencia artificial*, ya que pues yo sí lo utilizo. Y pues sí me ayudó un poco a comprender un poco de los *datos personales* y así.'],
+    cubre: [[5.4, 3.4, 'a3', 0.5]],
   },
   {
     n: 'e5',
-    segs: [[33.86, 37.22], [40.2, 47.7]],
-    texto: ['La parte que más me gustó fue esta parte de la *inteligencia artificial*…', 'la parte de la *inclusión*, y los diferentes tipos de *discapacidades* que puede tener a nivel del derecho.'],
-    cubre: [[2.4, 3.0, 'a2', 6.7]],
+    // respuesta completa, sin cortes internos
+    segs: [[33.06, 47.7]],
+    texto: ['Y pues la parte que más me gustó fue esta parte de la *inteligencia artificial*, y como también, este… la parte de la *inclusión*, y los diferentes tipos de *discapacidades* que puede tener a nivel del derecho.'],
+    cubre: [[3.2, 3.0, 'a2', 6.7]],
   },
   {
     n: 'e4',
     segs: [[21.55, 27.25], [28.12, 33.1]],
     texto: ['Y mi parte favorita… es difícil el poder elegir alguna parte favorita, ya que las ponencias fueron', 'bastante buenas, y yo me quedo muy satisfecha y *agradecida* con mi institución por habernos traído este Congreso.'],
-  },
-  {
-    n: 'miguel',
-    segs: [[2.9, 15.31], [16.03, 17.36]],
-    texto: ['Escoger mi parte favorita fue muy *difícil*, sin duda. Mi parte favorita fue la ponencia del ministro Arístides Guerrero García, la *inteligencia artificial*, así como del ministro Giovanni Azael Mejía, en', '*igualdad* y no discriminación.'],
-    cubre: [[5.2, 2.0, 'a5', 6.8]],
   },
 ];
 const Q3: Resp[] = [
