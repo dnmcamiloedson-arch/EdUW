@@ -72,8 +72,8 @@ const Q1: Resp[] = [
   },
   {
     n: 'e3',
-    segs: [[13.45, 18.45], [18.69, 21.63]],
-    texto: ['Y en general, siento que es una muy buena conferencia, un Congreso muy bueno.', 'Cada una de las conferencias estuvo *increíble*, y me encanta, chicos.'],
+    segs: [[13.45, 18.45], [18.69, 23.5]],
+    texto: ['Y en general, siento que es una muy buena conferencia, un Congreso muy bueno.', 'Cada una de las conferencias estuvo *increíble*, y me encanta, chicos. ¡Muchas *gracias*, adiós!'],
     cubre: [[4.4, 3.0, 'a6', 0.0]],
   },
   {
