@@ -3,17 +3,15 @@
 - Video: pasa cada toma de media/comaem/fuente a 1920x1080, 30 fps, H.264 (remotion/public/proxies/comaem).
   La toma del Dr. Asisclo viene en HDR (HLG, bt2020) y se convierte a color normal (bt709) con mapeo de tonos.
   Las tomas de 720p se escalan con un poco de nitidez.
-- Voz: reduce ruido (noisereduce), ecualiza, comprime y nivela cada voz a -16 LUFS medidos solo en el tramo
-  donde habla (remotion/public/comaem/voz/<nombre>.wav, misma línea de tiempo que su video).
+- Voz: sonido natural, tal como viene en la grabación (sin reducción de ruido, ecualización ni compresión, que
+  la hacían sonar peor que el original). Solo se quita el retumbe por debajo de 70 Hz y se nivela cada voz a
+  -16 LUFS medidos solo en el tramo donde habla, con un limitador suave para los picos (remotion/public/comaem/voz/<nombre>.wav, misma línea de tiempo que su video).
 Uso: python3 scripts/comaem_preparar.py [video|voz]
 """
 import os
 import subprocess
 import sys
 
-import noisereduce as nr
-import numpy as np
-from scipy.io import wavfile
 
 BASE = os.path.join(os.path.dirname(__file__), '..')
 SRC = os.path.join(BASE, 'media/comaem/fuente')
@@ -36,16 +34,6 @@ HABLAN = {
 # solo voz (su toma no se usa a cuadro)
 SOLO_VOZ = {'yarim': ('yarim.mp4', (0.4, 10.5))}
 APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.mp4', 'apoyo4.mp4', 'apoyo5.MOV', 'apoyo6.MP4', 'apoyo7.MP4', 'apoyo8.MP4', 'apoyo9.mp4', 'apoyo10.mp4', 'apoyo11.mp4', 'apoyo12.mp4', 'apoyo13.mp4', 'apoyo14.mp4', 'apoyo15.mp4', 'apoyo16.mp4', 'apoyo17.mp4', 'apoyo18.mp4', 'apoyo19.mp4'], 1)}
-# Ajustes por voz. La grabación de la Mtra. Elvia casi no trae agudos (suena apagada) y tiene poco ruido:
-# en vez de la reducción de ruido fuerte (que le quitaba las consonantes) lleva una reducción suave con el
-# perfil de ruido de un silencio suyo y una ecualización que le devuelve claridad (2–7 kHz) y le quita graves.
-ESPECIAL = {
-    'elvia': {
-        'ruido': (16.45, 17.2),
-        'fuerza': 0.5,
-        'af': 'highpass=f=110,lowshelf=f=260:g=-5,equalizer=f=450:t=q:w=1.2:g=-3,equalizer=f=2400:t=q:w=0.9:g=6,highshelf=f=3200:g=11,lowpass=f=9500,acompressor=threshold=-24dB:ratio=2.5:attack=10:release=160:makeup=2',
-    },
-}
 HDR = 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,'
 
 
@@ -70,24 +58,13 @@ def voz():
     for nombre, (f, (a, b)) in {**HABLAN, **SOLO_VOZ}.items():
         tmp = f'/tmp/comaem_{nombre}'
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', os.path.join(SRC, f), '-vn', '-ac', '1', '-ar', '48000', tmp + '_raw.wav'], check=True)
-        sr, x = wavfile.read(tmp + '_raw.wav')
-        x = x.astype(np.float32) / 32768
-        esp = ESPECIAL.get(nombre)
-        if esp:
-            n0, n1 = esp['ruido']
-            y = nr.reduce_noise(y=x, sr=sr, y_noise=x[int(n0 * sr):int(n1 * sr)], stationary=True, prop_decrease=esp['fuerza'], n_fft=2048)
-            af = esp['af']
-        else:
-            y = nr.reduce_noise(y=x, sr=sr, stationary=False, prop_decrease=0.8, n_fft=2048)
-            af = 'highpass=f=90,lowpass=f=9000,equalizer=f=250:t=q:w=1:g=-2,equalizer=f=3000:t=q:w=1.2:g=2.5,acompressor=threshold=-26dB:ratio=3:attack=8:release=140:makeup=2'
-        wavfile.write(tmp + '_den.wav', sr, (np.clip(y, -1, 1) * 32767).astype(np.int16))
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', tmp + '_den.wav', '-af', af, tmp + '_eq.wav'], check=True)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', tmp + '_raw.wav', '-af', 'highpass=f=70', tmp + '_eq.wav'], check=True)
         # sonoridad medida solo donde habla
         out = subprocess.run(['ffmpeg', '-ss', str(a), '-t', str(b - a), '-i', tmp + '_eq.wav', '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr
         lufs = float([l for l in out.split('\n') if l.strip().startswith('I:')][-1].split()[1])
         gan = -16.0 - lufs
         subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', tmp + '_eq.wav', '-af', f'volume={gan}dB,alimiter=limit=0.89:attack=3:release=60', '-ar', '48000', os.path.join(VOZ, nombre + '.wav')], check=True)
-        for s in ('_raw.wav', '_den.wav', '_eq.wav'):
+        for s in ('_raw.wav', '_eq.wav'):
             os.remove(tmp + s)
         print(f'voz {nombre}: {lufs:.1f} LUFS, ganancia {gan:+.1f} dB', flush=True)
 
