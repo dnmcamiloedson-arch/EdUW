@@ -18,8 +18,26 @@ window.PERDON = {
     mp3: "musica/si-es-posible.mp3",
     youtube: "",            // ej. "https://www.youtube.com/watch?v=XXXXXXXXXXX"
     inicioSegundos: 0,      // en qué segundo quieres que empiece
-    momentoSi: 216,         // cuando ella toca "Sí", la canción salta a este segundo (3:36, el momento más intenso)
+    momentoSi: 83.4,        // al tocar "Sí" la canción salta aquí: "si tuviera un genio…" (1:24)
     volumenTiempo: 0.45,    // si toca "Necesito tiempo", la música baja suavemente a este volumen (0 a 1)
+
+    // Remix por secciones: al llegar a cada parte de la página, la canción
+    // cambia (con transición) a la parte que le corresponde. Tiempos en segundos.
+    partes: {
+      hero:      { desde: 0,     hasta: 29 },    // 0:00 el inicio
+      letra:     { desde: 28.9,  hasta: 58 },    // 0:29 primera estrofa
+      momentos:  { desde: 57.8,  hasta: 135 },   // 0:58 los momentos que guardamos → el genio → coro
+      confesion: { desde: 175.8, hasta: 193 },   // 2:56
+      promesas:  { desde: 134.6, hasta: 176 },   // 2:15 volver a ser los dos juntos felices
+      carta:     { desde: 192.2, hasta: 210 },   // 3:12 antes del segundo coro
+      final:     { desde: 210.1, hasta: 256 },   // 3:30 hasta el final
+    },
+
+    // Frases que aparecen en pantalla justo cuando se cantan (en cualquier sección)
+    frases: [
+      { desde: 84.2, hasta: 88.4, texto: "Si tuviera un genio y le pido un deseo" },
+      { desde: 88.4, hasta: 92.9, texto: "es que seas mi amor eterno" },
+    ],
   },
 
   // ---- Portada -------------------------------------------------------------

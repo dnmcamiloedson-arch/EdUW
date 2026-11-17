@@ -133,6 +133,19 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .disco__estado { font-size: .58rem; color: var(--sello-fecha); min-width: 4.5em; text-align: right; }
 .disco__eq { display: flex; align-items: center; gap: 2px; height: 18px; }
 .disco__eq i { width: 2px; height: 100%; background: var(--sello-fecha); border-radius: 1px; transform: scaleY(.15); transform-origin: 50% 50%; }
+/* Frase sincronizada con la canción */
+.subtitulo {
+  position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 22px); z-index: 85;
+  width: max-content; max-width: calc(100vw - 32px); margin: 0; translate: -50% 0;
+  padding: .7rem 1.4rem; border-radius: 14px; text-align: center;
+  background: rgba(22, 19, 17, .72); color: var(--papel);
+  box-shadow: inset 0 1px 0 rgba(239, 232, 221, .08);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  font-family: var(--serif); font-style: italic; font-size: clamp(1.3rem, 3.4vw, 2.2rem); line-height: 1.15;
+  opacity: 0; transform: translateY(-14px); filter: blur(6px); pointer-events: none;
+  transition: opacity .6s var(--ease-out), transform .8s var(--ease-out), filter .6s var(--ease-out);
+}
+.subtitulo.is-on { opacity: 1; transform: none; filter: none; }
 #yt-host { position: fixed; left: -9999px; top: 0; width: 200px; height: 200px; overflow: hidden; }
 
 /* ---------- Encabezados de sección ---------- */
@@ -384,6 +397,7 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 
 /* ---------- Movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
+  .subtitulo { transition: opacity .3s linear; transform: none; filter: none; }
   .grano, .sello svg, .hero__scroll-linea, .disco__cinta i { animation: none; }
   .estrofa .pal, .carta__cuerpo .pal { opacity: 1 !important; }
 }

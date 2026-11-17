@@ -258,54 +258,103 @@
       }
     });
   }
-  // Grafo de audio: la canción pasa por un analizador (para que la página
-  // "escuche" la música) y por una ganancia (para los fundidos, también en iPhone).
-  var actx = null, analizador = null, ganancia = null, datosFrec = null;
-  var volumen = { v: 0 };
-  var VOL_NORMAL = 0.85;
+  // ---- Motor de dos "tornamesas" (como un DJ) ----------------------------
+  // Dos reproductores con la misma canción. Para cambiar de parte, el que
+  // suena se apaga con un filtro que lo deja "bajo el agua" y el otro entra
+  // ya en la parte nueva. Todo pasa por un analizador para que la página
+  // "escuche" la música.
+  var pistas = [audio, audio.cloneNode()];
+  pistas[1].removeAttribute('id');
+  audio.parentNode.insertBefore(pistas[1], audio.nextSibling);
+  var iActiva = 0;
+  function pista() { return pistas[iActiva]; }
+
+  var actx = null, analizador = null, datosFrec = null, cadenas = [];
+  var VOL_NORMAL = 0.85, CORTE_ABIERTO = 14.3;          // log2(20000 Hz)
+  var vols = [{ v: 0 }, { v: 0 }];
+  var cortes = [{ l: CORTE_ABIERTO }, { l: CORTE_ABIERTO }];
+  var desbloqueado = false;
+
   function prepararGrafo() {
     if (actx || fuente !== 'mp3') return;
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return;
     try {
       actx = new AC();
-      var src = actx.createMediaElementSource(audio);
       analizador = actx.createAnalyser();
       analizador.fftSize = 512;
       analizador.smoothingTimeConstant = 0.78;
-      ganancia = actx.createGain();
-      ganancia.gain.value = 0;
-      src.connect(analizador);
-      analizador.connect(ganancia);
-      ganancia.connect(actx.destination);
+      analizador.connect(actx.destination);
+      pistas.forEach(function (p) {
+        var src = actx.createMediaElementSource(p);
+        var f = actx.createBiquadFilter();
+        f.type = 'lowpass'; f.Q.value = 0.9; f.frequency.value = 20000;
+        var g = actx.createGain(); g.gain.value = 0;
+        src.connect(f); f.connect(g); g.connect(analizador);
+        cadenas.push({ f: f, g: g });
+      });
       datosFrec = new Uint8Array(analizador.frequencyBinCount);
-    } catch (e) { actx = null; analizador = null; ganancia = null; }
+    } catch (e) { actx = null; analizador = null; cadenas = []; }
   }
-  function aplicarVolumen() {
-    if (ganancia) ganancia.gain.value = volumen.v;
-    else audio.volume = Math.max(0, Math.min(1, volumen.v));
+  function aplicar(i) {
+    var c = cadenas[i];
+    if (c) {
+      c.g.gain.value = vols[i].v;
+      c.f.frequency.value = Math.pow(2, cortes[i].l);
+    } else {
+      pistas[i].volume = Math.max(0, Math.min(1, vols[i].v));
+    }
   }
-  function fundir(destino, dur, alTerminar) {
-    if (!window.gsap) { volumen.v = destino; aplicarVolumen(); if (alTerminar) alTerminar(); return; }
-    gsap.to(volumen, { v: destino, duration: dur, ease: 'power1.inOut', overwrite: true, onUpdate: aplicarVolumen, onComplete: alTerminar });
+  function fundirPista(i, destino, dur, alTerminar) {
+    if (!window.gsap) { vols[i].v = destino; aplicar(i); if (alTerminar) alTerminar(); return; }
+    gsap.to(vols[i], { v: destino, duration: dur, ease: 'power1.inOut', overwrite: true, onUpdate: function () { aplicar(i); }, onComplete: alTerminar });
   }
-  // Salta a otro momento de la canción con un fundido suave
-  function saltarA(segundo) {
-    if (fuente !== 'mp3' || segundo == null || !isFinite(audio.duration)) return;
-    fundir(0, 0.7, function () {
-      audio.currentTime = Math.min(segundo, audio.duration - 1);
-      if (audio.paused) reproducir(); else fundir(VOL_NORMAL, 2.4);
-    });
+  function barrer(i, hasta, dur, ease) {
+    if (!window.gsap) { cortes[i].l = hasta; aplicar(i); return; }
+    gsap.to(cortes[i], { l: hasta, duration: dur, ease: ease || 'sine.inOut', overwrite: true, onUpdate: function () { aplicar(i); } });
+  }
+  // iPhone solo deja sonar un reproductor si se activó con un toque: activamos los dos
+  function desbloquear() {
+    if (desbloqueado) return;
+    desbloqueado = true;
+    var otra = pistas[1 - iActiva];
+    var p = otra.play();
+    if (p && p.then) p.then(function () { otra.pause(); }).catch(function () {});
+  }
+  // Pasa a otro momento de la canción con transición de DJ
+  function transicion(segundo, rapido) {
+    if (fuente !== 'mp3' || segundo == null) return;
+    var sale = iActiva, entra = 1 - iActiva;
+    var ps = pistas[sale], pe = pistas[entra];
+    if (isFinite(pe.duration)) segundo = Math.min(segundo, pe.duration - 2);
+    try { pe.currentTime = segundo; } catch (e) {}
+    vols[entra].v = 0;
+    cortes[entra].l = rapido ? CORTE_ABIERTO : 10.4;     // entra filtrada y se abre
+    aplicar(entra);
+    var p = pe.play();
+    if (p && p.catch) p.catch(function () {});
+    iActiva = entra;
+    fundirPista(entra, VOL_NORMAL, rapido ? 0.5 : 1.6);
+    barrer(entra, CORTE_ABIERTO, rapido ? 0.3 : 1.8, 'sine.out');
+    barrer(sale, 9.2, rapido ? 0.5 : 1.5, 'sine.in');      // la que sale se va "bajo el agua"
+    fundirPista(sale, 0, rapido ? 0.6 : 1.6, function () { ps.pause(); cortes[sale].l = CORTE_ABIERTO; aplicar(sale); });
+  }
+  function saltarA(segundo, rapido) {
+    if (fuente !== 'mp3' || segundo == null) return;
+    if (sonando) transicion(segundo, rapido);
+    else { try { pista().currentTime = segundo; } catch (e) {} reproducir(); }
   }
   function reproducir() {
     quiereSonar = true;
     if (fuente === 'mp3') {
       prepararGrafo();
       if (actx && actx.state === 'suspended') actx.resume();
-      volumen.v = 0; aplicarVolumen();
-      var p = audio.play();
+      var i = iActiva;
+      vols[i].v = 0; cortes[i].l = CORTE_ABIERTO; aplicar(i);
+      var p = pistas[i].play();
+      desbloquear();
       if (p && p.then) {
-        p.then(function () { setEstado(true); fundir(VOL_NORMAL, 3); })
+        p.then(function () { setEstado(true); fundirPista(i, VOL_NORMAL, 3); })
          .catch(function () { setEstado(false); });
       }
     } else if (fuente === 'yt' && ytListo) {
@@ -315,7 +364,9 @@
   function pausar() {
     quiereSonar = false;
     if (fuente === 'mp3') {
-      fundir(0, 0.5, function () { audio.pause(); });
+      var i = iActiva;
+      fundirPista(i, 0, 0.5, function () { pistas[i].pause(); });
+      fundirPista(1 - i, 0, 0.3, function () { pistas[1 - i].pause(); });
       setEstado(false);
     } else if (fuente === 'yt' && ytListo) {
       yt.pauseVideo();
@@ -337,13 +388,33 @@
     var visible = !document.body.classList.contains('is-locked') && fuente !== null;
     disco.classList.toggle('is-visible', visible);
   }
+
+  // ---- Remix por secciones -----------------------------------------------
+  // Al entrar a una sección, si la canción no está ya en la parte de esa
+  // sección, hace la transición a esa parte.
+  var partes = cancion.partes || {};
+  var remixActivo = true, esperaParte = null;
+  function irAParte(nombre) {
+    var s = partes[nombre];
+    if (!remixActivo || !s || fuente !== 'mp3' || !sonando) return;
+    clearTimeout(esperaParte);
+    esperaParte = setTimeout(function () {
+      var t = pista().currentTime;
+      if (t >= s.desde - 1.5 && t < s.hasta) return;   // ya está sonando su parte
+      transicion(s.desde);
+    }, 450);                                          // evita saltos si pasa rápido
+  }
+
   if (cancion.mp3) {
     fuente = 'mp3';
     audio.addEventListener('error', cargarYoutube, { once: true });
-    audio.addEventListener('loadedmetadata', function () {
-      if (cancion.inicioSegundos) audio.currentTime = cancion.inicioSegundos;
-    }, { once: true });
-    audio.src = cancion.mp3;
+    pistas.forEach(function (p) {
+      p.addEventListener('loadedmetadata', function () {
+        if (cancion.inicioSegundos && p === audio) p.currentTime = cancion.inicioSegundos;
+      }, { once: true });
+      p.preload = 'auto';
+      p.src = cancion.mp3;
+    });
   } else {
     cargarYoutube();
   }
@@ -474,11 +545,11 @@
     huella.hidden = false;
 
     function buscar(clientX) {
-      if (!isFinite(audio.duration)) return;
+      if (!isFinite(pista().duration)) return;
       var r = huellaOndas.getBoundingClientRect();
       var p = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
-      audio.currentTime = p * audio.duration;
-      if (audio.paused) reproducir();
+      pista().currentTime = p * pista().duration;
+      if (!sonando) reproducir();
     }
     var arrastrando = false;
     huellaOndas.addEventListener('pointerdown', function (e) { arrastrando = true; huellaOndas.setPointerCapture(e.pointerId); buscar(e.clientX); });
@@ -486,15 +557,30 @@
     huellaOndas.addEventListener('pointerup', function () { arrastrando = false; });
     huellaOndas.addEventListener('pointercancel', function () { arrastrando = false; });
     huellaOndas.addEventListener('keydown', function (e) {
-      if (!isFinite(audio.duration)) return;
-      if (e.key === 'ArrowRight') { audio.currentTime = Math.min(audio.duration, audio.currentTime + 5); e.preventDefault(); }
-      if (e.key === 'ArrowLeft') { audio.currentTime = Math.max(0, audio.currentTime - 5); e.preventDefault(); }
+      if (!isFinite(pista().duration)) return;
+      if (e.key === 'ArrowRight') { pista().currentTime = Math.min(pista().duration, pista().currentTime + 5); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { pista().currentTime = Math.max(0, pista().currentTime - 5); e.preventDefault(); }
     });
   })();
 
   var ultimoReloj = '';
+  var frases = (cancion.frases || []).slice().sort(function (a, b) { return a.desde - b.desde; });
+  var subtitulo = $('#subtitulo'), subTexto = $('#subtitulo-texto'), fraseActual = -1;
+  function actualizarFrase() {
+    if (!frases.length || fuente !== 'mp3') return;
+    var t = sonando ? pista().currentTime : -1, idx = -1;
+    for (var i = 0; i < frases.length; i++) if (t >= frases[i].desde && t < frases[i].hasta) { idx = i; break; }
+    if (idx === fraseActual) return;
+    fraseActual = idx;
+    if (idx < 0) { subtitulo.classList.remove('is-on'); return; }
+    subTexto.textContent = frases[idx].texto;
+    subtitulo.classList.remove('is-on');
+    void subtitulo.offsetWidth;            // reinicia la animación de entrada
+    subtitulo.classList.add('is-on');
+  }
   gsap.ticker.add(function () {
     var n = leerNivel();
+    actualizarFrase();
     // Ecualizador del reproductor
     if (analizador && sonando) {
       for (var i = 0; i < eqBarras.length; i++) {
@@ -505,10 +591,10 @@
     // El corazón final respira con los graves
     if (!reduce && corazonSvg) corazonSvg.style.transform = 'scale(' + (1 + n.graves * 0.1).toFixed(4) + ')';
     // Avance de la huella
-    if (!huella.hidden && isFinite(audio.duration) && audio.duration > 0) {
-      var pct = audio.currentTime / audio.duration;
+    if (!huella.hidden && isFinite(pista().duration) && pista().duration > 0) {
+      var pct = pista().currentTime / pista().duration;
       huellaSonado.style.clipPath = 'inset(0 ' + ((1 - pct) * 100).toFixed(2) + '% 0 0)';
-      var t = reloj(audio.currentTime) + ' / ' + reloj(audio.duration);
+      var t = reloj(pista().currentTime) + ' / ' + reloj(pista().duration);
       if (t !== ultimoReloj) {
         huellaTiempo.textContent = t;
         huellaOndas.setAttribute('aria-valuenow', Math.round(pct * 100));
@@ -634,9 +720,9 @@
     }
 
     // --- Confesión: scroll horizontal
-    var pista = $('#pista');
-    var distancia = function () { return Math.max(0, pista.scrollWidth - window.innerWidth); };
-    var horizontal = gsap.to(pista, {
+    var pistaConf = $('#pista');
+    var distancia = function () { return Math.max(0, pistaConf.scrollWidth - window.innerWidth); };
+    var horizontal = gsap.to(pistaConf, {
       x: function () { return -distancia(); }, ease: 'none',
       scrollTrigger: {
         trigger: '#confesion', start: 'top top', end: function () { return '+=' + distancia(); },
@@ -724,10 +810,25 @@
     var meta = $('meta[name="theme-color"]');
     if (meta) meta.setAttribute('content', t['--bg']);
   }
+  // Si la sección está fijada (pin), su zona dura todo el recorrido fijado
+  var finSeccion = function (el, fraccion, normal) {
+    var pin = ScrollTrigger.getAll().filter(function (t) { return t.pin === el; })[0];
+    if (!pin) return normal;
+    return function () { return pin.end + window.innerHeight * fraccion; };
+  };
   $$('[data-tema]').forEach(function (s) {
     ScrollTrigger.create({
-      trigger: s, start: 'top 50%', end: 'bottom 50%',
+      trigger: s, start: 'top 50%', end: finSeccion(s, 0.5, 'bottom 50%'), refreshPriority: -1,
       onToggle: function (self) { if (self.isActive) ponerTema(s.getAttribute('data-tema')); }
+    });
+  });
+  // Cada sección pide su parte de la canción
+  Object.keys(partes).forEach(function (id) {
+    var sec = document.getElementById(id);
+    if (!sec) return;
+    ScrollTrigger.create({
+      trigger: sec, start: 'top 55%', end: finSeccion(sec, 0.55, 'bottom 45%'), refreshPriority: -1,
+      onToggle: function (self) { if (self.isActive) irAParte(id); }
     });
   });
 
@@ -783,11 +884,15 @@
   }
   $('#btn-si').addEventListener('click', function () {
     responder(C.respuestaSi, C.mensajeSi, true);
-    saltarA(cancion.momentoSi);           // la canción salta a su momento más intenso
+    remixActivo = false;                  // desde aquí la canción ya no cambia por secciones
+    clearTimeout(esperaParte);
+    saltarA(cancion.momentoSi, true);     // salta a la parte del genio
   });
   $('#btn-tiempo').addEventListener('click', function () {
     responder(C.respuestaTiempo, C.mensajeTiempo, false);
-    if (fuente === 'mp3' && sonando) fundir(cancion.volumenTiempo == null ? 0.45 : cancion.volumenTiempo, 4);
+    remixActivo = false;
+    clearTimeout(esperaParte);
+    if (fuente === 'mp3' && sonando) fundirPista(iActiva, cancion.volumenTiempo == null ? 0.45 : cancion.volumenTiempo, 4);
   });
 
   /* ------------------------------------------------------------------
