@@ -8,7 +8,7 @@
   -16 LUFS medidos solo en el tramo donde habla, con un limitador suave para los picos (remotion/public/comaem/voz/<nombre>.wav, misma línea de tiempo que su video).
 - Voz corregida (`voz corregidas`): usa las voces que editó el equipo (media/comaem/corregidas/<nombre>.wav, ver
   scripts/comaem_corregidas.py) en vez del audio de la grabación; no se les aplica ningún filtro, solo la nivelación.
-Uso: python3 scripts/comaem_preparar.py [video|voz] [corregidas]
+Uso: python3 scripts/comaem_preparar.py voz [corregidas]  |  video [nombre]
 """
 import os
 import subprocess
@@ -31,7 +31,7 @@ HABLAN = {
     'jorge': ('alumno2.MOV', (4.8, 13.6)),
     'alexa': ('alumno3.mp4', (3.5, 11.6)),
     'asisclo': ('asisclo.mov', (0.2, 41.3)),
-    'rector': ('rector.mov', (2.8, 38.9)),
+    'rector': ('rector.mov', (3.2, 41.2)),  # toma completa, hasta "Muchísimas gracias"
 }
 # solo voz (su toma no se usa a cuadro)
 SOLO_VOZ = {'yarim': ('yarim.mp4', (0.4, 10.5))}
@@ -39,9 +39,11 @@ APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.m
 HDR = 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=hable:desat=0,zscale=t=bt709:m=bt709:r=tv,format=yuv420p,'
 
 
-def video():
+def video(solo=None):
     os.makedirs(PROXY, exist_ok=True)
     for nombre, f in list({k: v[0] for k, v in HABLAN.items()}.items()) + list(APOYO.items()):
+        if solo and nombre != solo:
+            continue
         if not os.path.exists(os.path.join(SRC, f)):
             print('falta', f, '(se omite)', flush=True)
             continue
@@ -77,4 +79,4 @@ if __name__ == '__main__':
     if que in ('voz', 'todo'):
         voz(corregidas=len(sys.argv) > 2 and sys.argv[2] == 'corregidas')
     if que in ('video', 'todo'):
-        video()
+        video(sys.argv[2] if que == 'video' and len(sys.argv) > 2 else None)

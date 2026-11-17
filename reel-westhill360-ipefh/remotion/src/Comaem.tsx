@@ -51,21 +51,24 @@ const CLIMAX = TITULO + 122 + 3 * FRASE;
 const A = 125.0; // inicio del Dr. Asisclo
 const RECTOR_DESDE = A + 41.4;
 /**
- * Tramos de la toma del Rector [inicio, fin], de "Soy el ingeniero…" hasta "Muchísimas gracias" (la grabación
- * termina a media palabra; el clímax entra justo ahí). Para que sume CLIMAX - RECTOR_DESDE se acortan cinco
- * pausas largas (la de "comunidad" a 0.5 s, las demás a ~0.5 s); el cuarto tramo absorbe el ajuste fino.
+ * Tramos de la toma completa del Rector [inicio, fin] (IMG_2891_1_1), de "Soy el ingeniero…" hasta "Muchísimas
+ * gracias" completo. Para que sume CLIMAX - RECTOR_DESDE y el "gracias" caiga en el clímax se acortan las pausas
+ * largas a ~0.3–0.5 s (tras "Westhill", "especial", "médica", "orgullo", "comunidad", "intervinieron" y
+ * "separado"); el tramo que empieza en "Y cada uno…" absorbe el ajuste fino.
  */
 const RECTOR_FIJOS: [number, number][] = [
-  [2.86, 7.78],
-  [8.34, 15.41],
-  [15.87, 30.06],
+  [3.218, 8.06],
+  [8.698, 15.768],
+  [16.228, 22.7],
+  [23.14, 26.42],
+  [26.76, 30.418],
 ];
 const RECTOR_FINAL: [number, number][] = [
-  [35.33, 38.98],
-  [39.38, 40.18],
+  [35.688, 39.338],
+  [39.738, 41.2],
 ];
 const largo = (l: [number, number][]) => l.reduce((x, [a, b]) => x + b - a, 0);
-const RECTOR: [number, number][] = [...RECTOR_FIJOS, [35.13 - (CLIMAX - RECTOR_DESDE - largo(RECTOR_FIJOS) - largo(RECTOR_FINAL)), 35.13], ...RECTOR_FINAL];
+const RECTOR: [number, number][] = [...RECTOR_FIJOS, [35.488 - (CLIMAX - RECTOR_DESDE - largo(RECTOR_FIJOS) - largo(RECTOR_FINAL)), 35.488], ...RECTOR_FINAL];
 const FIN = CLIMAX + FRASE + 10.5;
 export const COMAEM_FRAMES = s(FIN);
 

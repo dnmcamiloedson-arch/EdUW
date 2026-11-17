@@ -21,6 +21,26 @@ from comaem_preparar import HABLAN, SOLO_VOZ, SRC  # noqa: E402
 BASE = os.path.join(os.path.dirname(__file__), '..')
 DEST = os.path.join(BASE, 'media/comaem/corregidas')
 SR = 8000  # para buscar; el corte final se hace a 48 kHz
+# Voces cuya versión corregida se hizo sobre una grabación más corta: desde ese segundo (en una pausa) se completa
+# con el audio de la grabación, al mismo volumen. El Rector se corrigió sobre la toma que se cortaba en "grac-";
+# su "Muchísimas gracias" completo sale de la toma nueva.
+COMPLETAR = {'rector': 39.6}
+
+
+def completar(dest, src, t):
+    with tempfile.TemporaryDirectory() as d:
+        c = leer(dest, 48000, os.path.join(d, 'c.wav'))
+        o = leer(src, 48000, os.path.join(d, 'o.wav'))
+    i = int(t * 48000)
+    ref = slice(int((t - 9) * 48000), int((t - 0.5) * 48000))
+    gan = np.sqrt(np.mean(c[ref] ** 2)) / (np.sqrt(np.mean(o[ref] ** 2)) + 1e-9)
+    x = c[:len(o)].copy()
+    f = 2400  # 50 ms de fundido
+    w = np.linspace(0, 1, f)
+    x[i:i + f] = x[i:i + f] * (1 - w) + o[i:i + f] * gan * w
+    x[i + f:] = o[i + f:len(x)] * gan
+    wavfile.write(dest, 48000, np.clip(x, -32768, 32767).astype(np.int16))
+    return 20 * np.log10(gan)
 
 
 def leer(src, sr, tmp):
@@ -45,6 +65,9 @@ def main(archivo):
             subprocess.run(['ffmpeg', '-v', 'error', '-y', '-ss', f'{max(0.0, ini):.4f}', '-t', f'{dur - pre:.4f}', '-i', archivo, '-vn', '-ar', '48000',
                             '-af', f'adelay={int(pre * 1000)}:all=1,apad', '-t', f'{dur:.4f}', '-c:a', 'pcm_s16le', os.path.join(DEST, nombre + '.wav')], check=True)
             print(f'{nombre}: en {ini:.3f} s, {dur:.2f} s, parecido {parecido:.2f}', flush=True)
+            if nombre in COMPLETAR:
+                g = completar(os.path.join(DEST, nombre + '.wav'), os.path.join(SRC, f), COMPLETAR[nombre])
+                print(f'  {nombre}: desde {COMPLETAR[nombre]} s con la grabación ({g:+.1f} dB)', flush=True)
 
 
 if __name__ == '__main__':
