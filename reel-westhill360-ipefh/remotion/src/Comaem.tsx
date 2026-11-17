@@ -527,7 +527,7 @@ const PLACAS: [number, number, string, string?][] = [
   [92.7, 4.0, 'Estudiante de Medicina'],
   [103.2, 4.0, 'Estudiante de Medicina'],
   [111.6, 4.0, 'Estudiante de Medicina'],
-  [A + 0.8, 5.0, 'Dr. Asisclo de Jesús Villagómez Ortiz'],
+  [A + 0.8, 5.0, 'Dr. Asisclo de Jesús Villagómez Ortiz', 'Director de la Facultad de Medicina'],
   [RECTOR_DESDE + 0.9, 5.5, 'Mtro. en Ed. e Ing. José María Rioboo Martín', 'Rector de la Universidad'],
 ];
 
