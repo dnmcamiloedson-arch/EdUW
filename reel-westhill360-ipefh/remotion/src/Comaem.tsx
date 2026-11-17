@@ -509,7 +509,9 @@ const musicaVol = (fr: number) => {
     const k = interpolate(fr, [a - 12, a, b, b + 18], [0, 1, 1, 0], clamp);
     duck = Math.min(duck, 1 - k * (t < 33 ? 0.35 : 0.68));
   }
-  return base * duck;
+  // en pasos de 0.5 dB: ffmpeg no acepta una expresión de volumen con demasiados niveles distintos
+  const db = Math.round(20 * Math.log10(base * duck) * 2) / 2;
+  return Math.pow(10, db / 20);
 };
 
 /** Logo Westhill pequeño en la esquina durante las tomas */
