@@ -501,12 +501,13 @@ const Cortinilla: React.FC<{dur: number}> = ({dur}) => {
 const TRAMOS_VOZ: [number, number][] = VOCES.map(([, at, a, b]) => [s(at) + 6, s(at + (b - a)) - 4]);
 const musicaVol = (fr: number) => {
   const t = fr / FPS;
-  // nivel base según la parte de la canción (la intro de piano viene muy baja; el final, muy alto)
-  const base = interpolate(t, [0, 30, 34, 110, 160, CLIMAX - 0.5, CLIMAX + 0.3, FIN], [1.5, 1.5, 0.95, 0.85, 0.8, 0.8, 1, 1], clamp);
+  // nivel base según la parte de la canción (la intro de piano viene muy baja; el final, muy alto). Al inicio va
+  // un poco más arriba (~+1.6 dB sola y ~+2.6 dB bajo la voz de la Mtra. Elvia) para que se escuche
+  const base = interpolate(t, [0, 30, 34, 110, 160, CLIMAX - 0.5, CLIMAX + 0.3, FIN], [1.8, 1.8, 0.95, 0.85, 0.8, 0.8, 1, 1], clamp);
   let duck = 1;
   for (const [a, b] of TRAMOS_VOZ) {
     const k = interpolate(fr, [a - 12, a, b, b + 18], [0, 1, 1, 0], clamp);
-    duck = Math.min(duck, 1 - k * (t < 33 ? 0.42 : 0.68));
+    duck = Math.min(duck, 1 - k * (t < 33 ? 0.35 : 0.68));
   }
   return base * duck;
 };
