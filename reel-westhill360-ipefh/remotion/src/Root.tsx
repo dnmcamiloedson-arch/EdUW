@@ -63,6 +63,7 @@ export const Root: React.FC = () => (
     <Composition id="RecapTeaserB" component={RecapTeaserB} durationInFrames={TEASER_B_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Graduacion" component={Graduacion} durationInFrames={GRAD_FRAMES} fps={FPS} width={GRAD_W} height={GRAD_H} defaultProps={{music: true}} />
     <Composition id="Comaem" component={Comaem} durationInFrames={COMAEM_FRAMES} fps={FPS} width={COMAEM_W} height={COMAEM_H} />
+    <Composition id="ComaemSub" component={Comaem} durationInFrames={COMAEM_FRAMES} fps={FPS} width={COMAEM_W} height={COMAEM_H} defaultProps={{subtitulos: true}} />
     <Composition id="CongresoDerecho" component={CongresoDerecho} durationInFrames={CONGRESO_FRAMES} fps={FPS} width={1080} height={1920} />
     <Composition id="OpinionCongreso" component={OpinionCongreso} durationInFrames={OPINION_FRAMES} fps={FPS} width={1080} height={1920} defaultProps={{music: true}} />
     <Composition id="Historia3-Cornhole" component={CornholeStory} durationInFrames={CORNHOLE_FRAMES} fps={FPS} width={W} height={H} />

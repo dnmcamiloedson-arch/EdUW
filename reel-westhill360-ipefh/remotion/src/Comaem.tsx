@@ -2,6 +2,7 @@ import React, {useLayoutEffect, useRef} from 'react';
 import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Grain} from './components';
 import {F, ease, tw} from './theme';
+import {PALABRAS} from './comaemSubs';
 
 // ---------------------------------------------------------------------------
 // Video institucional: Reacreditación COMAEM de la Facultad de Medicina (1920x1080, uso interno).
@@ -535,7 +536,7 @@ const PLACAS: [number, number, string, string?][] = [
  * Placa abajo a la izquierda: una barra dorada crece, se abre una banda azul translúcida y el nombre y el cargo
  * suben desde una máscara; al salir, todo se recoge hacia la barra.
  */
-const Placa: React.FC<{dur: number; nombre: string; cargo?: string}> = ({dur, nombre, cargo}) => {
+const Placa: React.FC<{dur: number; nombre: string; cargo?: string; alta?: boolean}> = ({dur, nombre, cargo, alta}) => {
   const f = useCurrentFrame();
   const d = s(dur);
   const fuera = tw(f, [d - 14, d], [0, 1], ease.in);
@@ -545,7 +546,8 @@ const Placa: React.FC<{dur: number; nombre: string; cargo?: string}> = ({dur, no
   const t2 = tw(f, [14, 32], [0, 1]);
   const linea = tw(f, [18, 40], [0, 1], ease.inOut);
   const alto = cargo ? 128 : 92;
-  const top = H - 150 - alto;
+  // con subtítulos la placa sube para dejarles espacio abajo
+  const top = H - (alta ? 222 : 150) - alto;
   return (
     <AbsoluteFill>
       <div style={{position: 'absolute', left: 96, top: top - 14, width: 1120, height: alto + 28, background: 'linear-gradient(90deg, rgba(6,16,31,0.82) 0%, rgba(6,16,31,0.62) 55%, rgba(6,16,31,0) 100%)', clipPath: `inset(0 ${(1 - banda) * 100}% 0 0)`}} />
@@ -567,13 +569,112 @@ const Placa: React.FC<{dur: number; nombre: string; cargo?: string}> = ({dur, no
   );
 };
 
+/**
+ * Subtítulos (solo en la versión ComaemSub). Las palabras de cada voz (comaemSubs.ts, en segundos de su grabación)
+ * se pasan al tiempo del video con VOCES (así siguen los recortes del Rector). Se separan en frases (punto final,
+ * cambio de persona o pausa larga) y cada frase larga se reparte en líneas parejas de hasta SUB_MAX letras,
+ * de preferencia después de una coma y nunca terminando en "de", "la", "que"…
+ */
+const SUB_MAX = 48;
+const DEBILES = new Set(['de', 'la', 'el', 'los', 'las', 'que', 'y', 'a', 'en', 'un', 'una', 'con', 'por', 'del', 'su', 'sus', 'nuestra', 'nuestros', 'nuestras', 'nuestro', 'para', 'se', 'es', 'nos', 'como', 'al', 'este', 'esta', 'ese', 'muy', 'hay']);
+type Pal = {w: string; v0: number; v1: number; voz: number};
+const repartir = (f: Pal[]): Pal[][] => {
+  const n = f.length;
+  const lon = (a: number, b: number) => f.slice(a, b).map((x) => x.w).join(' ').length;
+  const total = lon(0, n);
+  if (total <= SUB_MAX) return [f];
+  // se prueba con el mínimo de líneas y con una más; gana la repartición más pareja y con mejores cortes
+  let elegida: Pal[][] = [f];
+  let costo = Infinity;
+  const k0 = Math.ceil(total / SUB_MAX);
+  for (let k = k0; k <= Math.min(n, k0 + 1); k++) {
+    const meta = total / k;
+    // mejor[j][i]: costo mínimo de repartir las primeras i palabras en j líneas
+    const mejor = Array.from({length: k + 1}, () => new Array(n + 1).fill(Infinity));
+    const desde = Array.from({length: k + 1}, () => new Array(n + 1).fill(-1));
+    mejor[0][0] = 0;
+    for (let j = 1; j <= k; j++) {
+      for (let i = 1; i <= n; i++) {
+        for (let a = j - 1; a < i; a++) {
+          if (mejor[j - 1][a] === Infinity) continue;
+          const L = lon(a, i);
+          if (L > SUB_MAX) continue;
+          const ult = f[i - 1].w;
+          const pena = i === n ? 0 : (/[,;:]$/.test(ult) ? 0 : 30) + (DEBILES.has(ult.toLowerCase()) ? 400 : 0);
+          const c = mejor[j - 1][a] + (L - meta) ** 2 / 4 + pena;
+          if (c < mejor[j][i]) {
+            mejor[j][i] = c;
+            desde[j][i] = a;
+          }
+        }
+      }
+    }
+    if (mejor[k][n] === Infinity || mejor[k][n] + 60 * k >= costo) continue;
+    costo = mejor[k][n] + 60 * k;
+    elegida = [];
+    for (let j = k, i = n; j > 0; j--) {
+      const a = desde[j][i];
+      elegida.unshift(f.slice(a, i));
+      i = a;
+    }
+  }
+  return elegida;
+};
+export const LINEAS: {t0: number; t1: number; texto: string}[] = (() => {
+  const pal: Pal[] = [];
+  let voz = -1;
+  let prev = '';
+  for (const [n, at, a, b] of VOCES) {
+    if (n !== prev) voz++;
+    prev = n;
+    for (const [w, t0, t1] of PALABRAS[n] ?? []) {
+      // el reconocedor marca el inicio de cada palabra un poco antes de tiempo
+      if (t0 < a - 0.3 || t0 >= b - 0.05) continue;
+      const v0 = at + Math.max(t0, a) - a;
+      pal.push({w, v0, v1: Math.min(at + Math.min(t1, b) - a, v0 + 0.25 + 0.075 * w.length), voz});
+    }
+  }
+  const frases: Pal[][] = [];
+  let g: Pal[] = [];
+  for (const p of pal) {
+    const u = g[g.length - 1];
+    if (u && (p.voz !== u.voz || p.v0 - u.v1 > 0.7 || /[.?!]$/.test(u.w))) {
+      frases.push(g);
+      g = [];
+    }
+    g.push(p);
+  }
+  if (g.length) frases.push(g);
+  const grupos = frases.flatMap(repartir);
+  return grupos.map((x, i) => {
+    const sig = grupos[i + 1];
+    const fin = x[x.length - 1].v1 + 0.3;
+    const t0 = x[0].v0 - 0.05;
+    const tope = sig ? sig[0].v0 - 0.1 : fin + 0.6;
+    return {t0, t1: Math.min(Math.max(fin, t0 + 1.2), sig && sig[0].voz === x[0].voz ? tope : Math.min(fin + 0.6, tope)), texto: x.map((y) => y.w).join(' ')};
+  });
+})();
+
+const Subtitulos: React.FC = () => {
+  const f = useCurrentFrame();
+  const t = f / FPS;
+  const l = LINEAS.find((x) => t >= x.t0 && t < x.t1);
+  if (!l) return null;
+  const op = Math.min(c01((t - l.t0) * 7.5), c01((l.t1 - t) * 7.5));
+  return (
+    <div style={{position: 'absolute', left: 0, width: W, bottom: 58, display: 'flex', justifyContent: 'center', opacity: op}}>
+      <div style={{fontFamily: F.sans, fontWeight: 600, fontSize: 40, lineHeight: 1.25, color: '#FFFFFF', whiteSpace: 'nowrap', padding: '10px 24px 11px', borderRadius: 6, background: 'rgba(6,16,31,0.62)', textShadow: '0 1px 4px rgba(0,0,0,0.5)', transform: `translateY(${(1 - c01((t - l.t0) * 7.5)) * 6}px)`}}>{l.texto}</div>
+    </div>
+  );
+};
+
 /** Logo Westhill pequeño en la esquina durante las tomas */
 const Mosca: React.FC = () => {
   const f = useCurrentFrame();
   return <Img src={LOGO_UW} style={{position: 'absolute', right: 64, top: 52, width: 190, opacity: 0.6 * tw(f, [20, 60], [0, 1]), filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.55))'}} />;
 };
 
-export const Comaem: React.FC = () => {
+export const Comaem: React.FC<{subtitulos?: boolean}> = ({subtitulos = false}) => {
   return (
     <AbsoluteFill style={{background: '#000'}}>
       <Sequence durationInFrames={s(6.0)}>
@@ -592,9 +693,14 @@ export const Comaem: React.FC = () => {
         </AbsoluteFill>
         <Mosca />
       </Sequence>
+      {subtitulos && (
+        <Sequence durationInFrames={s(CLIMAX)}>
+          <Subtitulos />
+        </Sequence>
+      )}
       {PLACAS.map(([at, dur, nombre, cargo]) => (
         <Sequence key={at} from={s(at)} durationInFrames={s(dur)}>
-          <Placa dur={dur} nombre={nombre} cargo={cargo} />
+          <Placa dur={dur} nombre={nombre} cargo={cargo} alta={subtitulos} />
         </Sequence>
       ))}
       {/* título después de la Mtra. Elvia */}
