@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Para ti</title>
+  <meta name="description" content="Algo que necesitaba decirte.">
+  <meta name="theme-color" content="#161311">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23a3354a'/%3E%3Cpath fill='none' stroke='%23efe8dd' stroke-width='1.6' d='M16 23s-6.5-3.9-6.5-8.4c0-2.3 1.8-4 3.9-4 1.2 0 2 .6 2.6 1.4.6-.8 1.4-1.4 2.6-1.4 2.1 0 3.9 1.7 3.9 4C22.5 19.1 16 23 16 23z'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500&family=Geist+Mono:wght@400;500&family=La+Belle+Aurore&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body class="is-locked">
+
+  <div class="grano" aria-hidden="true"></div>
+  <canvas id="papelitos" aria-hidden="true"></canvas>
+  <div class="progreso" aria-hidden="true"><span></span></div>
+
+  <!-- ============ PORTAL: sobre sellado + telón ============ -->
+  <section id="portal" aria-label="Entrada">
+    <div class="telon telon--izq" aria-hidden="true"></div>
+    <div class="telon telon--der" aria-hidden="true"></div>
+    <div class="portal__contenido">
+      <p class="mono portal__meta"><span>N.º 001</span><span>Entrega personal</span></p>
+      <p class="portal__para">Para <em data-ella></em></p>
+      <button class="sello" id="entrar" type="button" aria-label="Abrir">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <defs><path id="circ" d="M60 60 m-41 0 a41 41 0 1 1 82 0 a41 41 0 1 1 -82 0"/></defs>
+          <path class="sello__cera" d="M60 6c8 0 11 6 18 7s13-2 17 5 0 12 3 18 9 9 8 17-8 10-9 17 4 13-2 18-12 1-18 5-8 11-17 11-10-7-17-10-14 1-18-5-1-12-5-18-11-8-10-16 7-10 8-17-5-12 0-18 12-2 17-6S52 6 60 6z"/>
+          <text class="sello__texto"><textPath href="#circ" startOffset="0">ábrelo despacio · ábrelo despacio · ábrelo despacio ·</textPath></text>
+          <path class="sello__corazon" d="M60 76s-14-8.4-14-18c0-4.9 3.8-8.6 8.4-8.6 2.6 0 4.4 1.3 5.6 3 1.2-1.7 3-3 5.6-3 4.6 0 8.4 3.7 8.4 8.6 0 9.6-14 18-14 18z"/>
+        </svg>
+      </button>
+      <p class="mono portal__nota">Ponte audífonos · toca el sello</p>
+    </div>
+  </section>
+
+  <!-- ============ REPRODUCTOR ============ -->
+  <audio id="musica" preload="auto" loop playsinline></audio>
+  <div id="yt-host" aria-hidden="true"><div id="yt-player"></div></div>
+  <button class="disco" id="disco" type="button" aria-label="Pausar o reproducir la canción">
+    <span class="disco__cinta" aria-hidden="true"><i></i><i></i></span>
+    <span class="disco__info">
+      <span class="disco__titulo" data-cancion-titulo></span>
+      <span class="mono disco__artista" data-cancion-artista></span>
+    </span>
+    <span class="disco__estado mono" data-estado>pausa</span>
+  </button>
+
+  <main id="contenido">
+
+    <!-- ============ 1. HERO ============ -->
+    <section class="hero" id="hero" data-tema="oscuro">
+      <div class="hero__rejilla">
+        <div class="hero__texto">
+          <p class="mono hero__kicker"><span data-ella></span> <span class="raya"></span> antes de que te vayas</p>
+          <h1 class="hero__titulo" data-portada-titulo></h1>
+          <p class="hero__sub" data-portada-sub></p>
+        </div>
+        <div class="hero__fotos" id="hero-fotos" aria-hidden="true"></div>
+      </div>
+      <div class="cinta" aria-hidden="true"><div class="cinta__pista" id="cinta"></div></div>
+      <p class="mono hero__scroll" aria-hidden="true">desliza despacio <span class="hero__scroll-linea"></span></p>
+    </section>
+
+    <!-- ============ 2. LETRA ============ -->
+    <section class="letra" id="letra" data-tema="claro" aria-label="Nuestra canción">
+      <div class="letra__escena">
+        <aside class="letra__lado">
+          <p class="mono letra__etiqueta">Mientras suena<br>nuestra canción</p>
+          <p class="mono letra__contador"><span id="estrofa-actual">01</span> / <span id="estrofa-total">04</span></p>
+          <div class="letra__barra"><span id="letra-barra"></span></div>
+        </aside>
+        <div class="letra__estrofas" id="estrofas"></div>
+      </div>
+    </section>
+
+    <!-- ============ 3. MOMENTOS ============ -->
+    <section class="momentos" id="momentos" data-tema="oscuro" aria-label="Nuestros momentos">
+      <header class="cabeza">
+        <p class="mono cabeza__num">I. <span class="raya"></span> Nuestros momentos</p>
+        <h2 class="cabeza__titulo" data-split>Los días que me recuerdan por qué vale la pena.</h2>
+      </header>
+      <div id="escenas"></div>
+    </section>
+
+    <section class="pelicula" id="pelicula" data-tema="oscuro" aria-hidden="true">
+      <div class="pelicula__tira" data-dir="-1"><div class="pelicula__fila" id="fila-1"></div></div>
+      <p class="pelicula__frase" data-frase-tira></p>
+      <div class="pelicula__tira" data-dir="1"><div class="pelicula__fila" id="fila-2"></div></div>
+    </section>
+
+    <!-- ============ 4. CONFESIÓN (horizontal) ============ -->
+    <section class="confesion" id="confesion" data-tema="vino" aria-label="Lo que hice mal">
+      <div class="confesion__pista" id="pista">
+        <div class="confesion__intro">
+          <p class="mono cabeza__num">II. <span class="raya"></span> Sin excusas</p>
+          <h2 class="confesion__titulo">Antes de pedirte nada, necesito reconocer lo que hice.</h2>
+        </div>
+        <ol class="confesion__lista" id="lista-confesion"></ol>
+      </div>
+    </section>
+
+    <!-- ============ 5. PROMESAS ============ -->
+    <section class="promesas" id="promesas" data-tema="claro" aria-label="Lo que te prometo">
+      <header class="cabeza cabeza--derecha">
+        <p class="mono cabeza__num">III. <span class="raya"></span> Lo que te prometo</p>
+        <h2 class="cabeza__titulo" data-split>No como palabras bonitas. Como compromiso.</h2>
+      </header>
+      <div class="promesas__pila" id="pila"></div>
+    </section>
+
+    <!-- ============ 6. CARTA ============ -->
+    <section class="carta" id="carta" data-tema="oscuro" aria-label="Carta">
+      <article class="carta__papel">
+        <header class="carta__cabeza mono"><span>Carta</span><span id="carta-fecha"></span></header>
+        <p class="carta__saludo"><span data-ella></span>,</p>
+        <div class="carta__cuerpo" id="carta-cuerpo"></div>
+        <p class="carta__firma">Con todo lo que soy,<br><span data-el></span></p>
+      </article>
+    </section>
+
+    <!-- ============ 7. PREGUNTA ============ -->
+    <section class="final" id="final" data-tema="oscuro" aria-label="Pregunta final">
+      <svg class="final__corazon" viewBox="0 0 240 220" aria-hidden="true">
+        <path id="trazo-corazon" d="M120 204 C 92 182, 22 140, 14 86 C 8 46, 34 16, 70 16 C 96 16, 112 32, 120 52 C 128 32, 144 16, 170 16 C 206 16, 232 46, 226 86 C 218 140, 148 182, 120 204"/>
+      </svg>
+      <h2 class="final__pregunta" data-pregunta></h2>
+      <div class="final__botones" id="botones">
+        <button type="button" class="btn btn--si" id="btn-si"><span>Sí, inténtalo</span></button>
+        <button type="button" class="btn btn--tiempo" id="btn-tiempo"><span>Necesito tiempo</span></button>
+      </div>
+      <p class="final__respuesta" id="respuesta" role="status" aria-live="polite"></p>
+      <a class="btn btn--wa" id="btn-wa" target="_blank" rel="noopener" hidden><span>Díselo</span></a>
+      <p class="mono final__pie">Hecho a mano · <span id="anio"></span></p>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script src="vendor/gsap.min.js"></script>
+  <script src="vendor/ScrollTrigger.min.js"></script>
+  <script src="vendor/lenis.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
