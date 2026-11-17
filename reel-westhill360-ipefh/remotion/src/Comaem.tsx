@@ -14,7 +14,7 @@ import {F, ease, tw} from './theme';
 //   32.6     título "REACREDITACIÓN COMAEM" (aquí la canción empieza a crecer)
 //   37.2     Dr. Alan · 50.8 docentes (Loera, Bonilla, Dra. Yarim en voz en off, Pérez Peláez)
 //   89.4     alumnos (Frida, Alexa, Jorge) · 122.4 Dr. Asisclo con tomas de apoyo en dos tramos
-//   166.4    Rector (sin el "Buenos días" y con dos pausas largas acortadas, cortes tapados con laboratorio)
+//   166.4    Rector hasta "Muchísimas gracias" (sin el "Buenos días"; pausas largas acortadas, sin tomas de apoyo)
 //   CLIMAX   "REACREDITACIÓN COMAEM" con fuegos dorados (5.7 s), montaje de cinco palabras clave y cortinilla con el piano
 // Entre escenas cruza un "pulso": dos paneles azules se cierran sobre una línea de electrocardiograma con chispas
 // y se abren hacia la escena siguiente (sin texto). Entre personas cruza un barrido de luz dorada con chispas.
@@ -50,12 +50,22 @@ const TITULO = 32.6; // la canción empieza a crecer aquí (segundo 30.75 de la 
 const CLIMAX = TITULO + 122 + 3 * FRASE;
 const A = 125.0; // inicio del Dr. Asisclo
 const RECTOR_DESDE = A + 41.4;
-/** tramos de la toma del Rector [inicio, fin] (deben sumar CLIMAX - RECTOR_DESDE) */
-const RECTOR: [number, number][] = [
-  [2.82, 7.62],
-  [8.02, 29.86],
-  [31.57, 31.57 + (CLIMAX - RECTOR_DESDE) - (7.62 - 2.82) - (29.86 - 8.02)],
+/**
+ * Tramos de la toma del Rector [inicio, fin], de "Soy el ingeniero…" hasta "Muchísimas gracias" (la grabación
+ * termina a media palabra; el clímax entra justo ahí). Para que sume CLIMAX - RECTOR_DESDE se acortan cinco
+ * pausas largas (la de "comunidad" a 0.5 s, las demás a ~0.5 s); el cuarto tramo absorbe el ajuste fino.
+ */
+const RECTOR_FIJOS: [number, number][] = [
+  [2.86, 7.78],
+  [8.34, 15.41],
+  [15.87, 30.06],
 ];
+const RECTOR_FINAL: [number, number][] = [
+  [35.33, 38.98],
+  [39.38, 40.18],
+];
+const largo = (l: [number, number][]) => l.reduce((x, [a, b]) => x + b - a, 0);
+const RECTOR: [number, number][] = [...RECTOR_FIJOS, [35.13 - (CLIMAX - RECTOR_DESDE - largo(RECTOR_FIJOS) - largo(RECTOR_FINAL)), 35.13], ...RECTOR_FINAL];
 const FIN = CLIMAX + FRASE + 10.5;
 export const COMAEM_FRAMES = s(FIN);
 
@@ -111,11 +121,8 @@ const TOMAS: Toma[] = [
   {src: 'b1', at: A + 26.4, dur: 3.5, desde: 1.0, entra: 'fundido'},
   {src: 'b17', at: A + 29.7, dur: 3.5, desde: 0.05, entra: 'fundido', rate: 0.74},
   {src: 'b2', at: A + 33.0, dur: 3.6, desde: 16.0, entra: 'fundido', sale: true},
-  // Rector: tres tramos de su toma (se quitó "Buenos días" y se acortaron las pausas tras "Westhill" y
-  // "comunidad"); cada corte va tapado con una toma de laboratorio (b19)
-  ...RECTOR.map(([a, b], i) => ({src: 'rector', at: RECTOR_DESDE + RECTOR.slice(0, i).reduce((x, [p, q]) => x + q - p, 0), dur: b - a + 0.5, desde: a, zoom: [1.0, 1.02] as [number, number]})),
-  {src: 'b19', at: RECTOR_DESDE + 3.9, dur: 2.6, desde: 0.3, entra: 'fundido', sale: true},
-  {src: 'b19', at: RECTOR_DESDE + 25.7, dur: 2.8, desde: 14.0, entra: 'fundido', sale: true},
+  // Rector, limpio y sin tomas de apoyo: sus tramos se unen con un fundido corto sobre él mismo (está quieto)
+  ...RECTOR.map(([a, b], i): Toma => ({src: 'rector', at: RECTOR_DESDE + largo(RECTOR.slice(0, i)), dur: b - a + (i < RECTOR.length - 1 ? 0.5 : 0.2), desde: a, entra: i ? 'fundido' : undefined, zoom: [1.0, 1.0]})),
 ];
 
 // Voces: [archivo, segundo del video, segundo de la toma donde empieza, segundo de la toma donde termina]
@@ -130,7 +137,7 @@ const VOCES: [string, number, number, number][] = [
   ['alexa', 102.5, 3.2, 11.8],
   ['jorge', 113.4, 4.7, 13.2],
   ['asisclo', A, 0.0, 41.3],
-  ...RECTOR.map(([a, b], i) => ['rector', RECTOR_DESDE + RECTOR.slice(0, i).reduce((x, [p, q]) => x + q - p, 0), a, b] as [string, number, number, number]),
+  ...RECTOR.map(([a, b], i) => ['rector', RECTOR_DESDE + largo(RECTOR.slice(0, i)), a, b] as [string, number, number, number]),
 ];
 
 /** segundos del video donde cambia la escena con el pulso (el corte cae en PULSO_CORTE) */
