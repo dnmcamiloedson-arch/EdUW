@@ -31,10 +31,11 @@ HABLAN = {
     'jorge': ('alumno2.MOV', (4.8, 13.6)),
     'alexa': ('alumno3.mp4', (3.5, 11.6)),
     'asisclo': ('asisclo.mov', (0.2, 41.3)),
+    'rector': ('rector.mov', (2.8, 38.9)),
 }
 # solo voz (su toma no se usa a cuadro)
-SOLO_VOZ = {'yarim': ('yarim.mov', (4.2, 14.3))}
-APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.mp4', 'apoyo4.mp4', 'apoyo5.MOV', 'apoyo6.MP4', 'apoyo7.MP4', 'apoyo8.MP4', 'apoyo9.mp4', 'apoyo10.mp4', 'apoyo11.mp4', 'apoyo12.mp4', 'apoyo13.mp4', 'apoyo14.mp4', 'apoyo15.mp4', 'apoyo16.mp4', 'apoyo17.mp4', 'apoyo18.mp4'], 1)}
+SOLO_VOZ = {'yarim': ('yarim.mp4', (0.4, 10.5))}
+APOYO = {f'b{i}': f for i, f in enumerate(['apoyo1.mp4', 'apoyo2.mp4', 'apoyo3.mp4', 'apoyo4.mp4', 'apoyo5.MOV', 'apoyo6.MP4', 'apoyo7.MP4', 'apoyo8.MP4', 'apoyo9.mp4', 'apoyo10.mp4', 'apoyo11.mp4', 'apoyo12.mp4', 'apoyo13.mp4', 'apoyo14.mp4', 'apoyo15.mp4', 'apoyo16.mp4', 'apoyo17.mp4', 'apoyo18.mp4', 'apoyo19.mp4'], 1)}
 # Ajustes por voz. La grabación de la Mtra. Elvia casi no trae agudos (suena apagada) y tiene poco ruido:
 # en vez de la reducción de ruido fuerte (que le quitaba las consonantes) lleva una reducción suave con el
 # perfil de ruido de un silencio suyo y una ecualización que le devuelve claridad (2–7 kHz) y le quita graves.
@@ -51,6 +52,9 @@ HDR = 'zscale=t=linear:npl=100,format=gbrpf32le,zscale=p=bt709,tonemap=tonemap=h
 def video():
     os.makedirs(PROXY, exist_ok=True)
     for nombre, f in list({k: v[0] for k, v in HABLAN.items()}.items()) + list(APOYO.items()):
+        if not os.path.exists(os.path.join(SRC, f)):
+            print('falta', f, '(se omite)', flush=True)
+            continue
         src = os.path.join(SRC, f)
         info = subprocess.run(['ffprobe', '-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=height,color_transfer', '-of', 'csv=p=0', src], capture_output=True, text=True).stdout
         vf = (HDR if 'arib' in info else '') + 'scale=1920:1080:flags=lanczos'

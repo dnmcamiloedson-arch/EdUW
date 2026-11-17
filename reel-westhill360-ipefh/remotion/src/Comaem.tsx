@@ -14,7 +14,7 @@ import {F, ease, tw} from './theme';
 //   32.6     título "REACREDITACIÓN COMAEM" (aquí la canción empieza a crecer)
 //   37.2     Dr. Alan · 50.8 docentes (Loera, Bonilla, Dra. Yarim en voz en off, Pérez Peláez)
 //   89.4     alumnos (Frida, Alexa, Jorge) · 122.4 Dr. Asisclo con tomas de apoyo en dos tramos
-//   166.4    espacio en negro para el Rector (falta su toma) hasta CLIMAX
+//   166.4    Rector (sin el "Buenos días" y con dos pausas largas acortadas, cortes tapados con laboratorio)
 //   CLIMAX   "REACREDITACIÓN COMAEM" con fuegos dorados (5.7 s), montaje de cinco palabras clave y cortinilla con el piano
 // Entre escenas cruza un "pulso": dos paneles azules se cierran sobre una línea de electrocardiograma con chispas
 // y se abren hacia la escena siguiente (sin texto). Entre personas cruza un barrido de luz dorada con chispas.
@@ -47,9 +47,15 @@ const FRASE = (60 / 63) * 16; // frase musical de 4 compases (15.24 s)
 const COMPAS2 = (60 / 63) * 2; // dos tiempos (1.9 s): ritmo del montaje final
 const TITULO = 32.6; // la canción empieza a crecer aquí (segundo 30.75 de la pista + 1.85 s de silencio inicial)
 /** segundo del video en que termina el Rector y entra el clímax: título + 8 frases de la canción + 2 repetidas */
-const CLIMAX = TITULO + 122 + 2 * FRASE;
+const CLIMAX = TITULO + 122 + 3 * FRASE;
 const A = 125.0; // inicio del Dr. Asisclo
 const RECTOR_DESDE = A + 41.4;
+/** tramos de la toma del Rector [inicio, fin] (deben sumar CLIMAX - RECTOR_DESDE) */
+const RECTOR: [number, number][] = [
+  [2.82, 7.62],
+  [8.02, 29.86],
+  [31.57, 31.57 + (CLIMAX - RECTOR_DESDE) - (7.62 - 2.82) - (29.86 - 8.02)],
+];
 const FIN = CLIMAX + FRASE + 10.5;
 export const COMAEM_FRAMES = s(FIN);
 
@@ -104,6 +110,11 @@ const TOMAS: Toma[] = [
   {src: 'b1', at: A + 26.4, dur: 3.5, desde: 1.0, entra: 'fundido'},
   {src: 'b17', at: A + 29.7, dur: 3.5, desde: 0.05, entra: 'fundido', rate: 0.74},
   {src: 'b2', at: A + 33.0, dur: 3.6, desde: 16.0, entra: 'fundido', sale: true},
+  // Rector: tres tramos de su toma (se quitó "Buenos días" y se acortaron las pausas tras "Westhill" y
+  // "comunidad"); cada corte va tapado con una toma de laboratorio (b19)
+  ...RECTOR.map(([a, b], i) => ({src: 'rector', at: RECTOR_DESDE + RECTOR.slice(0, i).reduce((x, [p, q]) => x + q - p, 0), dur: b - a + 0.5, desde: a, zoom: [1.0, 1.02] as [number, number]})),
+  {src: 'b19', at: RECTOR_DESDE + 3.9, dur: 2.6, desde: 0.3, entra: 'fundido', sale: true},
+  {src: 'b19', at: RECTOR_DESDE + 25.7, dur: 2.8, desde: 14.0, entra: 'fundido', sale: true},
 ];
 
 // Voces: [archivo, segundo del video, segundo de la toma donde empieza, segundo de la toma donde termina]
@@ -112,12 +123,13 @@ const VOCES: [string, number, number, number][] = [
   ['alan', 37.2, 0.0, 13.3],
   ['loera', 53.0, 1.6, 7.7],
   ['bonilla', 61.3, 7.3, 15.4],
-  ['yarim', 69.5, 4.1, 14.7],
+  ['yarim', 69.5, 0.31, 10.91],
   ['perez', 79.9, 0.7, 10.0],
   ['frida', 92.0, 3.5, 14.2],
   ['alexa', 102.5, 3.2, 11.8],
   ['jorge', 113.4, 4.7, 13.2],
   ['asisclo', A, 0.0, 41.3],
+  ...RECTOR.map(([a, b], i) => ['rector', RECTOR_DESDE + RECTOR.slice(0, i).reduce((x, [p, q]) => x + q - p, 0), a, b] as [string, number, number, number]),
 ];
 
 /** segundos del video donde cambia la escena con el pulso (el corte cae en PULSO_CORTE) */
@@ -488,9 +500,7 @@ const musicaVol = (fr: number) => {
     const k = interpolate(fr, [a - 12, a, b, b + 18], [0, 1, 1, 0], clamp);
     duck = Math.min(duck, 1 - k * (t < 33 ? 0.42 : 0.68));
   }
-  // espacio del Rector: se deja como sonará bajo su voz
-  const rector = interpolate(t, [RECTOR_DESDE + 0.4, RECTOR_DESDE + 1.4, CLIMAX - 0.8, CLIMAX], [1, 0.42, 0.42, 1], clamp);
-  return base * duck * rector;
+  return base * duck;
 };
 
 /** Logo Westhill pequeño en la esquina durante las tomas */
@@ -511,7 +521,7 @@ export const Comaem: React.FC = () => {
         </Sequence>
       ))}
       {/* sobre las tomas: viñeta, polvo dorado muy tenue y el logo en la esquina */}
-      <Sequence from={s(4.4)} durationInFrames={s(RECTOR_DESDE - 4.4)}>
+      <Sequence from={s(4.4)} durationInFrames={s(CLIMAX - 4.4)}>
         <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 58%, rgba(0,0,0,0.42) 100%)'}} />
         <AbsoluteFill style={{mixBlendMode: 'screen'}}>
           <Particulas n={34} op={0.75} semilla={11} vel={0.8} />
@@ -542,7 +552,7 @@ export const Comaem: React.FC = () => {
       {VOCES.map(([n, at, a, b]) => {
         const d = s(b - a);
         return (
-          <Sequence key={n} from={s(at)} durationInFrames={d}>
+          <Sequence key={`${n}-${at}`} from={s(at)} durationInFrames={d}>
             <Audio src={voz(n)} startFrom={s(a)} volume={(fr) => interpolate(fr, [0, 4, d - 5, d], [0, 1, 1, 0], clamp)} />
           </Sequence>
         );
