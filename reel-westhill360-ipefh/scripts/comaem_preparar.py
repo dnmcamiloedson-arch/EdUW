@@ -6,7 +6,9 @@
 - Voz: sonido natural, tal como viene en la grabación (sin reducción de ruido, ecualización ni compresión, que
   la hacían sonar peor que el original). Solo se quita el retumbe por debajo de 70 Hz y se nivela cada voz a
   -16 LUFS medidos solo en el tramo donde habla, con un limitador suave para los picos (remotion/public/comaem/voz/<nombre>.wav, misma línea de tiempo que su video).
-Uso: python3 scripts/comaem_preparar.py [video|voz]
+- Voz corregida (`voz corregidas`): usa las voces que editó el equipo (media/comaem/corregidas/<nombre>.wav, ver
+  scripts/comaem_corregidas.py) en vez del audio de la grabación; no se les aplica ningún filtro, solo la nivelación.
+Uso: python3 scripts/comaem_preparar.py [video|voz] [corregidas]
 """
 import os
 import subprocess
@@ -53,12 +55,13 @@ def video():
         print('video', nombre, flush=True)
 
 
-def voz():
+def voz(corregidas=False):
     os.makedirs(VOZ, exist_ok=True)
     for nombre, (f, (a, b)) in {**HABLAN, **SOLO_VOZ}.items():
         tmp = f'/tmp/comaem_{nombre}'
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', os.path.join(SRC, f), '-vn', '-ac', '1', '-ar', '48000', tmp + '_raw.wav'], check=True)
-        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', tmp + '_raw.wav', '-af', 'highpass=f=70', tmp + '_eq.wav'], check=True)
+        src = os.path.join(BASE, 'media/comaem/corregidas', nombre + '.wav') if corregidas else os.path.join(SRC, f)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', src, '-vn', '-ac', '1', '-ar', '48000', tmp + '_raw.wav'], check=True)
+        subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', tmp + '_raw.wav', '-af', 'anull' if corregidas else 'highpass=f=70', tmp + '_eq.wav'], check=True)
         # sonoridad medida solo donde habla
         out = subprocess.run(['ffmpeg', '-ss', str(a), '-t', str(b - a), '-i', tmp + '_eq.wav', '-af', 'ebur128', '-f', 'null', '-'], capture_output=True, text=True).stderr
         lufs = float([l for l in out.split('\n') if l.strip().startswith('I:')][-1].split()[1])
@@ -72,6 +75,6 @@ def voz():
 if __name__ == '__main__':
     que = sys.argv[1] if len(sys.argv) > 1 else 'todo'
     if que in ('voz', 'todo'):
-        voz()
+        voz(corregidas=len(sys.argv) > 2 and sys.argv[2] == 'corregidas')
     if que in ('video', 'todo'):
         video()
