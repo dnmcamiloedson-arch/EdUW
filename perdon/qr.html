@@ -46,7 +46,9 @@
     .t-para { font-family: var(--serif); font-size: 6.4mm; line-height: 1; margin: 3.2mm 0 3mm; letter-spacing: -.01em; }
     .t-para em { color: var(--vino); }
     .t-qr { display: grid; place-items: center; }
-    .t-qr svg { width: 40mm; height: 40mm; display: block; }
+    .t-qr svg { width: 38mm; height: 38mm; display: block; }
+    .t-onda { display: block; width: 44mm; height: 5mm; margin: 0 auto 2.4mm; }
+    .t-onda rect { fill: var(--vino); }
     .t-pie { display: grid; gap: 1.2mm; text-align: center; }
     .t-escanea { font-family: var(--mono); font-size: 2.1mm; letter-spacing: .3em; text-transform: uppercase; color: var(--vino); }
     .t-dedicatoria { font-family: var(--mano); font-size: 4.2mm; line-height: 1.2; }
@@ -85,6 +87,7 @@
   <div class="hoja" id="hoja" aria-hidden="true"></div>
 
   <script src="config.js"></script>
+  <script src="musica/ondas.js"></script>
   <script src="vendor/qrcode.js"></script>
   <script>
   (function () {
@@ -109,6 +112,24 @@
       for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) if (qr.isDark(r, c)) d += 'M' + c + ' ' + r + 'h1v1h-1z';
       return '<svg viewBox="0 0 ' + n + ' ' + n + '" shape-rendering="crispEdges" role="img" aria-label="Código QR"><path fill="#1d1815" d="' + d + '"/></svg>';
     }
+    // Huella de la canción en 48 barras
+    function barrasOnda(n) {
+      var o = (window.ONDAS && window.ONDAS.ondas) || [];
+      if (!o.length) return [];
+      var paso = o.length / n, r = [];
+      for (var i = 0; i < n; i++) {
+        var m = 0;
+        for (var k = Math.floor(i * paso); k < Math.floor((i + 1) * paso); k++) m = Math.max(m, o[k] || 0);
+        r.push(Math.max(0.12, m));
+      }
+      return r;
+    }
+    function svgOnda() {
+      var b = barrasOnda(48);
+      if (!b.length) return '';
+      var rects = b.map(function (v, i) { var h = v * 10; return '<rect x="' + (i * 2) + '" y="' + (5 - h / 2).toFixed(2) + '" width="1.1" height="' + h.toFixed(2) + '" rx=".4"/>'; }).join('');
+      return '<svg class="t-onda" viewBox="0 0 96 10" preserveAspectRatio="none" aria-hidden="true">' + rects + '</svg>';
+    }
     function escapar(t) { return String(t || '').replace(/[&<>"]/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]; }); }
     function tarjetaHTML(qr) {
       var c = C.cancion || {};
@@ -116,7 +137,7 @@
         '<div class="t-cabeza"><span>N.º 001</span><span>' + escapar(c.titulo || '') + '</span></div>' +
         '<p class="t-para">Para <em>' + escapar(C.ella || 'ti') + '</em></p>' +
         '<div class="t-qr">' + svgQR(qr) + '</div>' +
-        '<div class="t-pie"><span class="t-escanea">' + escapar(C.textoTarjeta || 'Escanéame') + '</span>' +
+        '<div class="t-pie">' + svgOnda() + '<span class="t-escanea">' + escapar(C.textoTarjeta || 'Escanéame') + '</span>' +
         '<span class="t-dedicatoria">' + escapar(C.dedicatoriaTarjeta || '') + '</span></div>' +
         '</article>';
     }
@@ -160,9 +181,12 @@
         x.fillStyle = '#a3354a'; x.font = 'italic ' + (6.4 * mm) + 'px "Instrument Serif"';
         x.font = (6.4 * mm) + 'px "Instrument Serif"'; var w0 = x.measureText(para).width;
         x.font = 'italic ' + (6.4 * mm) + 'px "Instrument Serif"'; x.fillText(C.ella || 'ti', 6 * mm + w0, 10.6 * mm);
-        var n = qrActual.getModuleCount(), lado = 40 * mm, cel = lado / n, ox = (W - lado) / 2, oy = 22 * mm;
+        var n = qrActual.getModuleCount(), lado = 38 * mm, cel = lado / n, ox = (W - lado) / 2, oy = 21 * mm;
         x.fillStyle = '#1d1815';
         for (var r = 0; r < n; r++) for (var k = 0; k < n; k++) if (qrActual.isDark(r, k)) x.fillRect(Math.floor(ox + k * cel), Math.floor(oy + r * cel), Math.ceil(cel), Math.ceil(cel));
+        var ob = barrasOnda(48), anchoOnda = 44 * mm, pasoOnda = anchoOnda / 48, cyOnda = 63.5 * mm;
+        x.fillStyle = '#a3354a';
+        ob.forEach(function (v, i) { var hh = v * 5 * mm; x.fillRect(Math.round((W - anchoOnda) / 2 + i * pasoOnda), Math.round(cyOnda - hh / 2), Math.max(2, Math.round(pasoOnda * 0.55)), Math.round(hh)); });
         x.textAlign = 'center'; x.fillStyle = '#a3354a'; x.font = (2.1 * mm) + 'px "Geist Mono"';
         if ('letterSpacing' in x) x.letterSpacing = (0.63 * mm) + 'px';
         x.fillText(String(C.textoTarjeta || 'Escanéame').toUpperCase(), W / 2, 70 * mm);

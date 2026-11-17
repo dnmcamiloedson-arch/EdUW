@@ -18,6 +18,8 @@ window.PERDON = {
     mp3: "musica/si-es-posible.mp3",
     youtube: "",            // ej. "https://www.youtube.com/watch?v=XXXXXXXXXXX"
     inicioSegundos: 0,      // en qué segundo quieres que empiece
+    momentoSi: 216,         // cuando ella toca "Sí", la canción salta a este segundo (3:36, el momento más intenso)
+    volumenTiempo: 0.45,    // si toca "Necesito tiempo", la música baja suavemente a este volumen (0 a 1)
   },
 
   // ---- Portada -------------------------------------------------------------
@@ -90,7 +92,7 @@ window.PERDON = {
 
   // ---- Tarjeta QR para el dulce (abre qr.html) ------------------------------
   // Si dejas "urlPagina" vacío, el QR apunta solo a esta página una vez publicada.
-  urlPagina: "",
+  urlPagina: "https://claude.ai/artifact/LHauiuDT4gxjpJLi87Z2D7",
   textoTarjeta: "Escanéame",
   dedicatoriaTarjeta: "Para ti, otra vez.",
 };

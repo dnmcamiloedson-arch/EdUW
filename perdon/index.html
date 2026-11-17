@@ -47,6 +47,7 @@
       <span class="disco__titulo" data-cancion-titulo></span>
       <span class="mono disco__artista" data-cancion-artista></span>
     </span>
+    <span class="disco__eq" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
     <span class="disco__estado mono" data-estado>pausa</span>
   </button>
 
@@ -135,12 +136,23 @@
       </div>
       <p class="final__respuesta" id="respuesta" role="status" aria-live="polite"></p>
       <a class="btn btn--wa" id="btn-wa" target="_blank" rel="noopener" hidden><span>Díselo</span></a>
+      <figure class="huella" id="huella" hidden>
+        <figcaption class="huella__cabeza mono">
+          <span><span data-cancion-titulo></span> · <span data-cancion-artista></span></span>
+          <span class="huella__tiempo" id="huella-tiempo">0:00 / 0:00</span>
+        </figcaption>
+        <div class="huella__ondas" id="huella-ondas" role="slider" tabindex="0" aria-label="Posición de la canción" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <div class="huella__capa huella__capa--base" id="huella-base"></div>
+          <div class="huella__capa huella__capa--sonado" id="huella-sonado"></div>
+        </div>
+      </figure>
       <p class="mono final__pie">Hecho a mano · <span id="anio"></span></p>
     </section>
 
   </main>
 
   <script src="config.js"></script>
+  <script src="musica/ondas.js"></script>
   <script src="vendor/gsap.min.js"></script>
   <script src="vendor/ScrollTrigger.min.js"></script>
   <script src="vendor/lenis.min.js"></script>

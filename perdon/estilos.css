@@ -131,6 +131,8 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .disco__titulo { font-family: var(--serif); font-style: italic; font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .disco__artista { font-size: .6rem; color: rgba(239, 232, 221, .55); white-space: nowrap; }
 .disco__estado { font-size: .58rem; color: var(--sello-fecha); min-width: 4.5em; text-align: right; }
+.disco__eq { display: flex; align-items: center; gap: 2px; height: 18px; }
+.disco__eq i { width: 2px; height: 100%; background: var(--sello-fecha); border-radius: 1px; transform: scaleY(.15); transform-origin: 50% 50%; }
 #yt-host { position: fixed; left: -9999px; top: 0; width: 200px; height: 200px; overflow: hidden; }
 
 /* ---------- Encabezados de sección ---------- */
@@ -331,7 +333,22 @@ button { font: inherit; color: inherit; cursor: pointer; background: none; borde
 .btn--tiempo:hover, .btn--wa:hover { color: var(--bg); }
 .btn--wa { margin-top: 2rem; }
 .final__respuesta { font-family: var(--serif); font-style: italic; font-size: clamp(1.6rem, 4vw, 2.6rem); line-height: 1.15; max-width: 22ch; margin: 0; }
-.final__pie { margin: 14vh 0 0; color: var(--fg-soft); }
+.final__pie { margin: 8vh 0 0; color: var(--fg-soft); }
+.final__corazon { will-change: transform; }
+.final__corazon.late path { animation-duration: var(--latido, 1.2s); }
+
+/* Huella de la canción */
+.huella[hidden] { display: none; }
+.huella { width: min(980px, 100%); margin: 14vh 0 0; display: grid; gap: 14px; }
+.huella__cabeza { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; color: var(--fg-soft); }
+.huella__tiempo { font-variant-numeric: tabular-nums; color: var(--fg); }
+.huella__ondas { position: relative; height: 72px; cursor: pointer; touch-action: none; }
+.huella__ondas:focus-visible { outline: 1px solid var(--fg); outline-offset: 6px; }
+.huella__capa { position: absolute; inset: 0; display: flex; align-items: center; gap: 2px; }
+.huella__capa i { flex: 1; min-width: 1px; border-radius: 1px; }
+.huella__capa--base i { background: var(--fg-line); }
+.huella__capa--sonado { clip-path: inset(0 100% 0 0); }
+.huella__capa--sonado i { background: var(--vino); }
 
 /* ---------- Móvil ---------- */
 @media (max-width: 767px) {

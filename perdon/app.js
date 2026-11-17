@@ -238,6 +238,8 @@
     estado.textContent = on ? 'sonando' : 'pausa';
   }
   function cargarYoutube() {
+    var hu = document.getElementById('huella');
+    if (hu) hu.hidden = true;
     if (!ytId) { fuente = null; actualizarDisco(); return; }
     fuente = 'yt';
     if (window.YT && window.YT.Player) return crearYoutube();
@@ -256,13 +258,54 @@
       }
     });
   }
+  // Grafo de audio: la canción pasa por un analizador (para que la página
+  // "escuche" la música) y por una ganancia (para los fundidos, también en iPhone).
+  var actx = null, analizador = null, ganancia = null, datosFrec = null;
+  var volumen = { v: 0 };
+  var VOL_NORMAL = 0.85;
+  function prepararGrafo() {
+    if (actx || fuente !== 'mp3') return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    try {
+      actx = new AC();
+      var src = actx.createMediaElementSource(audio);
+      analizador = actx.createAnalyser();
+      analizador.fftSize = 512;
+      analizador.smoothingTimeConstant = 0.78;
+      ganancia = actx.createGain();
+      ganancia.gain.value = 0;
+      src.connect(analizador);
+      analizador.connect(ganancia);
+      ganancia.connect(actx.destination);
+      datosFrec = new Uint8Array(analizador.frequencyBinCount);
+    } catch (e) { actx = null; analizador = null; ganancia = null; }
+  }
+  function aplicarVolumen() {
+    if (ganancia) ganancia.gain.value = volumen.v;
+    else audio.volume = Math.max(0, Math.min(1, volumen.v));
+  }
+  function fundir(destino, dur, alTerminar) {
+    if (!window.gsap) { volumen.v = destino; aplicarVolumen(); if (alTerminar) alTerminar(); return; }
+    gsap.to(volumen, { v: destino, duration: dur, ease: 'power1.inOut', overwrite: true, onUpdate: aplicarVolumen, onComplete: alTerminar });
+  }
+  // Salta a otro momento de la canción con un fundido suave
+  function saltarA(segundo) {
+    if (fuente !== 'mp3' || segundo == null || !isFinite(audio.duration)) return;
+    fundir(0, 0.7, function () {
+      audio.currentTime = Math.min(segundo, audio.duration - 1);
+      if (audio.paused) reproducir(); else fundir(VOL_NORMAL, 2.4);
+    });
+  }
   function reproducir() {
     quiereSonar = true;
     if (fuente === 'mp3') {
-      audio.volume = 0;
+      prepararGrafo();
+      if (actx && actx.state === 'suspended') actx.resume();
+      volumen.v = 0; aplicarVolumen();
       var p = audio.play();
       if (p && p.then) {
-        p.then(function () { setEstado(true); gsap.to(audio, { volume: 0.85, duration: 3, ease: 'power1.out' }); })
+        p.then(function () { setEstado(true); fundir(VOL_NORMAL, 3); })
          .catch(function () { setEstado(false); });
       }
     } else if (fuente === 'yt' && ytListo) {
@@ -272,11 +315,23 @@
   function pausar() {
     quiereSonar = false;
     if (fuente === 'mp3') {
-      gsap.to(audio, { volume: 0, duration: 0.5, onComplete: function () { audio.pause(); } });
+      fundir(0, 0.5, function () { audio.pause(); });
       setEstado(false);
     } else if (fuente === 'yt' && ytListo) {
       yt.pauseVideo();
     }
+  }
+  // Nivel de la música en este instante (0 a 1): graves y general
+  var nivel = { graves: 0, total: 0 };
+  function leerNivel() {
+    if (!analizador || !sonando) { nivel.graves *= 0.9; nivel.total *= 0.9; return nivel; }
+    analizador.getByteFrequencyData(datosFrec);
+    var g = 0, t = 0, i;
+    for (i = 1; i < 9; i++) g += datosFrec[i];
+    for (i = 1; i < 120; i++) t += datosFrec[i];
+    nivel.graves = nivel.graves * 0.6 + (g / (8 * 255)) * 0.4;
+    nivel.total = nivel.total * 0.6 + (t / (119 * 255)) * 0.4;
+    return nivel;
   }
   function actualizarDisco() {
     var visible = !document.body.classList.contains('is-locked') && fuente !== null;
@@ -380,6 +435,89 @@
   }, { once: true });
 
   /* ------------------------------------------------------------------
+     5b. La página escucha la canción
+     ------------------------------------------------------------------ */
+  var ONDAS = window.ONDAS || null;
+  if (ONDAS && ONDAS.bpm) {
+    // Un latido del corazón final por cada dos tiempos de la canción
+    document.documentElement.style.setProperty('--latido', (120 / ONDAS.bpm).toFixed(3) + 's');
+  }
+
+  var eqBarras = $$('.disco__eq i');
+  var corazonSvg = $('.final__corazon');
+  var huella = $('#huella');
+  var huellaOndas = $('#huella-ondas');
+  var huellaSonado = $('#huella-sonado');
+  var huellaTiempo = $('#huella-tiempo');
+  var reloj = function (s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + pad(s % 60); };
+
+  // Huella de la canción: la forma real del audio, que se va llenando mientras suena
+  (function () {
+    if (!ONDAS || !ONDAS.ondas || fuente !== 'mp3') return;
+    function pintarBarras() {
+      var n = esMovil() ? 80 : 160;
+      var src = ONDAS.ondas, paso = src.length / n;
+      [$('#huella-base'), huellaSonado].forEach(function (capa) {
+        capa.textContent = '';
+        for (var i = 0; i < n; i++) {
+          var a = Math.floor(i * paso), b = Math.max(a + 1, Math.floor((i + 1) * paso)), m = 0;
+          for (var k = a; k < b; k++) m = Math.max(m, src[k] || 0);
+          var barra = document.createElement('i');
+          barra.style.height = Math.max(4, Math.round(m * 100)) + '%';
+          capa.appendChild(barra);
+        }
+      });
+    }
+    pintarBarras();
+    var antes = esMovil();
+    window.addEventListener('resize', function () { if (esMovil() !== antes) { antes = esMovil(); pintarBarras(); } });
+    huella.hidden = false;
+
+    function buscar(clientX) {
+      if (!isFinite(audio.duration)) return;
+      var r = huellaOndas.getBoundingClientRect();
+      var p = Math.max(0, Math.min(1, (clientX - r.left) / r.width));
+      audio.currentTime = p * audio.duration;
+      if (audio.paused) reproducir();
+    }
+    var arrastrando = false;
+    huellaOndas.addEventListener('pointerdown', function (e) { arrastrando = true; huellaOndas.setPointerCapture(e.pointerId); buscar(e.clientX); });
+    huellaOndas.addEventListener('pointermove', function (e) { if (arrastrando) buscar(e.clientX); });
+    huellaOndas.addEventListener('pointerup', function () { arrastrando = false; });
+    huellaOndas.addEventListener('pointercancel', function () { arrastrando = false; });
+    huellaOndas.addEventListener('keydown', function (e) {
+      if (!isFinite(audio.duration)) return;
+      if (e.key === 'ArrowRight') { audio.currentTime = Math.min(audio.duration, audio.currentTime + 5); e.preventDefault(); }
+      if (e.key === 'ArrowLeft') { audio.currentTime = Math.max(0, audio.currentTime - 5); e.preventDefault(); }
+    });
+  })();
+
+  var ultimoReloj = '';
+  gsap.ticker.add(function () {
+    var n = leerNivel();
+    // Ecualizador del reproductor
+    if (analizador && sonando) {
+      for (var i = 0; i < eqBarras.length; i++) {
+        var v = datosFrec[2 + i * 9] / 255;
+        eqBarras[i].style.transform = 'scaleY(' + (0.15 + v * 0.85).toFixed(3) + ')';
+      }
+    }
+    // El corazón final respira con los graves
+    if (!reduce && corazonSvg) corazonSvg.style.transform = 'scale(' + (1 + n.graves * 0.1).toFixed(4) + ')';
+    // Avance de la huella
+    if (!huella.hidden && isFinite(audio.duration) && audio.duration > 0) {
+      var pct = audio.currentTime / audio.duration;
+      huellaSonado.style.clipPath = 'inset(0 ' + ((1 - pct) * 100).toFixed(2) + '% 0 0)';
+      var t = reloj(audio.currentTime) + ' / ' + reloj(audio.duration);
+      if (t !== ultimoReloj) {
+        huellaTiempo.textContent = t;
+        huellaOndas.setAttribute('aria-valuenow', Math.round(pct * 100));
+        ultimoReloj = t;
+      }
+    }
+  });
+
+  /* ------------------------------------------------------------------
      6. Cinta que responde a la velocidad del scroll
      ------------------------------------------------------------------ */
   (function () {
@@ -387,7 +525,7 @@
     gsap.ticker.add(function (t, dt) {
       var mitad = cinta.scrollWidth / 2;
       if (!mitad) return;
-      var v = reduce ? 0.02 : 0.045 + Math.min(Math.abs(velocidad), 60) * 0.012;
+      var v = reduce ? 0.02 : 0.045 + Math.min(Math.abs(velocidad), 60) * 0.012 + nivel.total * 0.14;
       x -= v * dt * direccion;
       if (x <= -mitad) x += mitad;
       if (x > 0) x -= mitad;
@@ -643,8 +781,14 @@
     }
     ScrollTrigger.refresh();
   }
-  $('#btn-si').addEventListener('click', function () { responder(C.respuestaSi, C.mensajeSi, true); });
-  $('#btn-tiempo').addEventListener('click', function () { responder(C.respuestaTiempo, C.mensajeTiempo, false); });
+  $('#btn-si').addEventListener('click', function () {
+    responder(C.respuestaSi, C.mensajeSi, true);
+    saltarA(cancion.momentoSi);           // la canción salta a su momento más intenso
+  });
+  $('#btn-tiempo').addEventListener('click', function () {
+    responder(C.respuestaTiempo, C.mensajeTiempo, false);
+    if (fuente === 'mp3' && sonando) fundir(cancion.volumenTiempo == null ? 0.45 : cancion.volumenTiempo, 4);
+  });
 
   /* ------------------------------------------------------------------
      11. Papelitos: confeti de papel y corazones pequeños
