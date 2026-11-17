@@ -65,6 +65,7 @@ export const COMAEM_FRAMES = s(FIN);
 //   b2: 0–7.2 dos alumnos de perfil · 7.2–15.3 alumnas con tableta · 15.3–22.4 alumna junto a la ventana · 22.4–29.8 salón abierto
 //   b3: 0–4.0 docente con proyector · 4.0–11.6 alumnas con tableta · 11.6–17.3 docente presentando · 17.3–24.5 docente, otro ángulo
 //   b4: 0–6.6 clase desde atrás · 6.6–11.3 docente junto a la puerta · 11.3–17.0 alumnos atentos
+//   b8: alumna en la pantalla de anatomía (C004; la C008 original ya no se tenía)
 //   b14 placa de COMAEM · b15 reanimación en simulación · b16 grupo en quirófano · b17 enfermería · b18 Westhill Hospital
 //   (b6, la simulación de parto, no se usa: al fondo se asoma una persona por la puerta)
 // ---------------------------------------------------------------------------
