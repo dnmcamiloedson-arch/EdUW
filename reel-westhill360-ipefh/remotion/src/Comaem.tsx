@@ -20,7 +20,8 @@ import {F, ease, tw} from './theme';
 // y se abren hacia la escena siguiente (sin texto). Entre personas cruza un barrido de luz dorada con chispas.
 // Sobre todas las tomas flota polvo dorado muy tenue. Las tomas de apoyo del cliente traen varios planos
 // pegados; aquí cada toma usa un solo plano (ver PLANOS) y ningún plano se repite en todo el video.
-// Por indicación del cliente: sin rótulos de nombre, sin subtítulos y sin logo de la Facultad de Medicina.
+// Placas de nombre (PLACAS) en la primera toma a cuadro de cada persona; a los alumnos sin nombre, solo
+// "Estudiante de Medicina". Por indicación del cliente: sin subtítulos y sin logo de la Facultad de Medicina.
 // ---------------------------------------------------------------------------
 const W = 1920;
 const H = 1080;
@@ -517,6 +518,55 @@ const musicaVol = (fr: number) => {
   return Math.pow(10, db / 20);
 };
 
+/** Placas de nombre: [segundo del video, duración, nombre, cargo] (solo en la primera toma a cuadro de cada persona) */
+const PLACAS: [number, number, string, string?][] = [
+  [8.45, 3.25, 'Mtra. Elvia Macedo de la Concha', 'Directora de Planeación y Calidad Institucional'],
+  [38.3, 5.0, 'Dr. Alan Maximiliano De los Santos Bernal', 'Coordinación de Acreditación y Calidad FMUW'],
+  [53.7, 4.4, 'Dr. Juan José Loera Pineda', 'Docente'],
+  [59.7, 4.8, 'Dr. Guillermo Daniel Bonilla Castillo', 'Docente'],
+  [92.7, 4.0, 'Estudiante de Medicina'],
+  [103.2, 4.0, 'Estudiante de Medicina'],
+  [111.6, 4.0, 'Estudiante de Medicina'],
+  [A + 0.8, 5.0, 'Dr. Asisclo de Jesús Villagómez Ortiz'],
+  [RECTOR_DESDE + 0.9, 5.5, 'Mtro. en Ed. e Ing. José María Rioboo Martín', 'Rector de la Universidad'],
+];
+
+/**
+ * Placa abajo a la izquierda: una barra dorada crece, se abre una banda azul translúcida y el nombre y el cargo
+ * suben desde una máscara; al salir, todo se recoge hacia la barra.
+ */
+const Placa: React.FC<{dur: number; nombre: string; cargo?: string}> = ({dur, nombre, cargo}) => {
+  const f = useCurrentFrame();
+  const d = s(dur);
+  const fuera = tw(f, [d - 14, d], [0, 1], ease.in);
+  const barra = tw(f, [0, 12], [0, 1]) * (1 - tw(f, [d - 6, d], [0, 1]));
+  const banda = tw(f, [4, 22], [0, 1]) * (1 - fuera);
+  const t1 = tw(f, [8, 26], [0, 1]);
+  const t2 = tw(f, [14, 32], [0, 1]);
+  const linea = tw(f, [18, 40], [0, 1], ease.inOut);
+  const alto = cargo ? 128 : 92;
+  const top = H - 150 - alto;
+  return (
+    <AbsoluteFill>
+      <div style={{position: 'absolute', left: 96, top: top - 14, width: 1120, height: alto + 28, background: 'linear-gradient(90deg, rgba(6,16,31,0.82) 0%, rgba(6,16,31,0.62) 55%, rgba(6,16,31,0) 100%)', clipPath: `inset(0 ${(1 - banda) * 100}% 0 0)`}} />
+      <div style={{position: 'absolute', left: 96, top: top - 14, width: 5, height: alto + 28, background: ORO_GRAD, transform: `scaleY(${barra})`, transformOrigin: '50% 100%', boxShadow: '0 0 12px rgba(246,214,150,0.45)'}} />
+      <div style={{position: 'absolute', left: 134, top, clipPath: `inset(-10% ${fuera * 100}% -10% 0)`}}>
+        <div style={{overflow: 'hidden', paddingBottom: 6}}>
+          <div style={{fontFamily: F.sans, fontWeight: 700, fontSize: 46, color: CREMA, letterSpacing: 0.3, whiteSpace: 'nowrap', transform: `translateY(${(1 - t1) * 105}%)`, textShadow: '0 2px 10px rgba(0,0,0,0.45)'}}>{nombre}</div>
+        </div>
+        {cargo && (
+          <>
+            <div style={{width: 120, height: 2, margin: '8px 0 12px', background: `linear-gradient(90deg, ${ORO}, rgba(217,183,106,0))`, transform: `scaleX(${linea})`, transformOrigin: '0 50%'}} />
+            <div style={{overflow: 'hidden'}}>
+              <div style={{fontFamily: F.sans, fontWeight: 600, fontSize: 24, color: ORO, letterSpacing: 3.2, textTransform: 'uppercase', whiteSpace: 'nowrap', transform: `translateY(${(1 - t2) * 110}%)`}}>{cargo}</div>
+            </div>
+          </>
+        )}
+      </div>
+    </AbsoluteFill>
+  );
+};
+
 /** Logo Westhill pequeño en la esquina durante las tomas */
 const Mosca: React.FC = () => {
   const f = useCurrentFrame();
@@ -542,6 +592,11 @@ export const Comaem: React.FC = () => {
         </AbsoluteFill>
         <Mosca />
       </Sequence>
+      {PLACAS.map(([at, dur, nombre, cargo]) => (
+        <Sequence key={at} from={s(at)} durationInFrames={s(dur)}>
+          <Placa dur={dur} nombre={nombre} cargo={cargo} />
+        </Sequence>
+      ))}
       {/* título después de la Mtra. Elvia */}
       <Sequence from={s(TITULO)} durationInFrames={s(37.2 - TITULO)}>
         <TituloComaem dur={37.2 - TITULO} frase="Un compromiso que se demuestra todos los días" />
