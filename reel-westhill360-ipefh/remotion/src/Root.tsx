@@ -22,7 +22,7 @@ import {OpinionCongreso, OPINION_FRAMES} from './OpinionCongreso';
 import {RecapOctubre, RECAP_FRAMES, RecapTeaser, RecapTeaserB, TEASER_B_FRAMES, TEASER_FRAMES} from './RecapOctubre';
 import {RecapPortada} from './RecapPortada';
 import {Graduacion, GRAD_FRAMES, GRAD_H, GRAD_W} from './Graduacion';
-import {GradVertical, GRADV_FRAMES, GRADV_H, GRADV_W} from './GradVertical';
+import {GradTrailer, GradVertical, GRADV_FRAMES, GRADV_H, GRADV_TRAILER_FRAMES, GRADV_W} from './GradVertical';
 import {Chapter, chapterDur, CHAPTERS, CORNHOLE_FRAMES, CornholeStory} from './Stories';
 import {FPS, H, W, loadFonts} from './theme';
 
@@ -64,6 +64,7 @@ export const Root: React.FC = () => (
     <Composition id="RecapTeaserB" component={RecapTeaserB} durationInFrames={TEASER_B_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Graduacion" component={Graduacion} durationInFrames={GRAD_FRAMES} fps={FPS} width={GRAD_W} height={GRAD_H} defaultProps={{music: true}} />
     <Composition id="GradVertical" component={GradVertical} durationInFrames={GRADV_FRAMES} fps={FPS} width={GRADV_W} height={GRADV_H} />
+    <Composition id="GradTrailer" component={GradTrailer} durationInFrames={GRADV_TRAILER_FRAMES} fps={FPS} width={GRADV_W} height={GRADV_H} />
     <Composition id="Comaem" component={Comaem} durationInFrames={COMAEM_FRAMES} fps={FPS} width={COMAEM_W} height={COMAEM_H} />
     <Composition id="ComaemSub" component={Comaem} durationInFrames={COMAEM_FRAMES} fps={FPS} width={COMAEM_W} height={COMAEM_H} defaultProps={{subtitulos: true}} />
     <Composition id="CongresoDerecho" component={CongresoDerecho} durationInFrames={CONGRESO_FRAMES} fps={FPS} width={1080} height={1920} />

@@ -4,7 +4,7 @@ import {Grain} from './components';
 import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
 import {DUR} from './grad2Info';
-import {CierreVertical} from './gradCierreVertical';
+import {CierreVertical, Dorado} from './gradCierreVertical';
 
 // ---------------------------------------------------------------------------
 // Reel vertical (1080x1920) de la graduación de la Generación 2026 (Arquitectura y Diseño del Espacio, Negocios,
@@ -496,4 +496,107 @@ const Entrada: React.FC = () => {
 const Destellazo: React.FC = () => {
   const f = useCurrentFrame();
   return <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, #FFFDF4 0%, #FFE6B0 60%, #F2C77A 100%)', opacity: interpolate(f, [0, 1, 14], [1, 0.95, 0], clamp)}} />;
+};
+
+// ---------------------------------------------------------------------------
+// Tráiler para historias (~20 s): la subida y el drop de la canción con los mejores momentos, "¡LO LOGRARON!",
+// los birretes en cámara lenta y una tarjeta final. Usa las mismas piezas del reel completo.
+// ---------------------------------------------------------------------------
+const TR0 = 144; // tiempo de la canción donde arranca el tráiler
+const TR_FIN = 184;
+const tf = (n: number) => fb(n) - fb(TR0);
+export const GRADV_TRAILER_FRAMES = tf(TR_FIN);
+const TRAILER: Toma[] = [
+  {n: 144, beats: 1, src: 'v:fila_saludos_1118_2', desde: 0.6, entra: 'corte'},
+  {n: 145, beats: 1, src: 'v:regina_psicologia', desde: 7.6, entra: 'zoom'},
+  {n: 146, beats: 1, src: 'v:IMG_4268', desde: 3.6, entra: 'whip'},
+  {n: 147, beats: 1, src: 'v:IMG_4254', desde: 3.4, entra: 'zoom'},
+  {n: 148, beats: 1, src: 'v:IMG_4266', desde: 4.0, entra: 'whipX'},
+  {n: 149, beats: 1, src: 'v:IMG_4328', desde: 2.0, entra: 'zoom'},
+  {n: 150, beats: 1, src: 'v:IMG_4252', desde: 6.4, entra: 'whip'},
+  {n: 151, beats: 1, src: 'v:IMG_4277', desde: 0.8, entra: 'zoom'},
+  {n: 152, beats: 8, src: 'f:IMG_4327', entra: 'flash', zoom: [1.0, 1.22], foco: '50% 50%'},
+  {n: 160, beats: 6, src: 'v:birretes_1118_1', desde: 0.5, rate: 0.5, entra: 'flash', zoom: [1.1, 1.0], foco: '50% 40%'},
+  {n: 166, beats: 2, src: 'v:IMG_4343', desde: 0.6, entra: 'zoom'},
+  {n: 168, beats: 2, src: 'v:IMG_4256', desde: 3.4, entra: 'whip'},
+  {n: 170, beats: 2, src: 'v:IMG_4342', desde: 2.4, entra: 'zoom'},
+  {n: 172, beats: 2, src: 'v:IMG_4208', desde: 0.3, entra: 'whipX', foco: '50% 40%'},
+  {n: 174, beats: 2, src: 'v:IMG_4347', desde: 0.8, entra: 'zoom'},
+];
+
+const TarjetaFinal: React.FC<{dur: number}> = ({dur}) => {
+  const f = useCurrentFrame();
+  const logo = tw(f, [4, 22], [0, 1], ease.out);
+  const t1 = tw(f, [12, 30], [0, 1], ease.out);
+  const t2 = tw(f, [22, 40], [0, 1], ease.out);
+  const t3 = tw(f, [36, 52], [0, 1], ease.out);
+  const negro = tw(f, [dur - 14, dur], [0, 1]);
+  return (
+    <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 42%, #17406F 0%, #0B1B33 55%, #06101F 100%)'}}>
+      <Img src={staticFile('logos/logo_westhill_blanco_total.png')} style={{position: 'absolute', left: W / 2 - 330, top: 520, width: 660, opacity: logo, transform: `translateY(${(1 - logo) * 30}px) scale(${0.94 + 0.06 * logo})`, filter: 'drop-shadow(0 0 18px rgba(255,214,150,0.45))'}} />
+      <div style={{position: 'absolute', top: 870, width: '100%', textAlign: 'center'}}>
+        <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 84, color: '#F4EEE2', opacity: t1, transform: `translateY(${(1 - t1) * 24}px)`}}>¡Felicidades,</div>
+        <div style={{marginTop: 10, opacity: t2, transform: `scale(${0.92 + 0.08 * t2})`}}>
+          <Dorado size={80} spacing={3} luz={interpolate(f, [40, 76], [0, 1], clamp)}>
+            GENERACIÓN 2026!
+          </Dorado>
+        </div>
+      </div>
+      <div style={{position: 'absolute', top: 1180, left: 0, opacity: t3, transform: `translateX(${(t3 - 1) * 100}%)`}}>
+        <div style={{position: 'absolute', left: 0, top: 14, right: -18, bottom: -14, background: VERDE, borderRadius: '0 40px 40px 0'}} />
+        <div style={{position: 'relative', background: `linear-gradient(135deg, #2F72AC 0%, ${AZUL} 52%, #1D4C78 100%)`, borderRadius: '0 40px 40px 0', padding: '22px 52px 24px 44px', fontFamily: F.sans, fontWeight: 800, fontSize: 44, color: '#fff'}}>Muy pronto, el video completo.</div>
+      </div>
+      <AbsoluteFill style={{background: '#000', opacity: negro}} />
+    </AbsoluteFill>
+  );
+};
+
+export const GradTrailer: React.FC = () => {
+  const finCard = tf(176);
+  const volumen = (fr: number) => interpolate(fr, [0, 4, GRADV_TRAILER_FRAMES - 30, GRADV_TRAILER_FRAMES], [0, 0.88, 0.88, 0], clamp);
+  return (
+    <AbsoluteFill style={{background: '#000'}}>
+      {TRAILER.map((t, i) => {
+        const from = tf(t.n);
+        const sig = TRAILER[i + 1];
+        const hasta = tf(t.n + t.beats);
+        const dur = hasta - from + (sig && tf(sig.n) === hasta ? SOLAPA : 0);
+        return (
+          <Sequence key={i} from={from} durationInFrames={dur}>
+            <Plano t={t} dur={dur} />
+          </Sequence>
+        );
+      })}
+      <Sequence from={tf(152)} durationInFrames={tf(160) - tf(152)}>
+        <Lograron />
+      </Sequence>
+      <Sequence from={tf(160)} durationInFrames={110}>
+        <Confeti />
+      </Sequence>
+      <AbsoluteFill style={{background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0) 60%, rgba(0,0,0,0.35) 100%)', pointerEvents: 'none'}} />
+      <Sequence durationInFrames={finCard}>
+        <Banderin hasta={finCard} />
+      </Sequence>
+      <Sequence from={finCard} durationInFrames={GRADV_TRAILER_FRAMES - finCard}>
+        <TarjetaFinal dur={GRADV_TRAILER_FRAMES - finCard} />
+      </Sequence>
+      <Sequence from={finCard} durationInFrames={12}>
+        <Destellazo />
+      </Sequence>
+      <Grain opacity={0.03} />
+      {TRAILER.filter((t) => t.entra === 'whip' || t.entra === 'whipX').map((t, i) => (
+        <Sfx key={`w${i}`} at={tf(t.n) - 2} name="ref_swoosh_short" volume={0.28} />
+      ))}
+      <Sfx at={tf(152)} name="ref_charge_swoosh" volume={0.35} />
+      <Sfx at={tf(156)} name="impact" volume={0.32} />
+      <Sfx at={tf(158)} name="impact" volume={0.42} />
+      <Sfx at={tf(160) - 48} name="riser" volume={0.55} />
+      <Sfx at={tf(160)} name="down_bass" volume={1.0} />
+      <Sfx at={tf(160)} name="impact" volume={0.6} />
+      <Sfx at={tf(160)} name="fw_boom" volume={0.22} />
+      <Sfx at={finCard - 10} name="whoosh_largo" volume={0.35} />
+      <Sfx at={finCard} name="down_bass" volume={0.85} />
+      <Audio src={staticFile('music/desire_gryffin.mp3')} startFrom={fb(TR0)} volume={volumen} />
+    </AbsoluteFill>
+  );
 };
