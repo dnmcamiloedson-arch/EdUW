@@ -68,12 +68,23 @@ type Toma = {
 };
 const SOLAPA = 8; // cuadros que cada toma sigue debajo de la siguiente (para barridos y fundidos)
 
+const SAL = 'v:fila_saludos_1118_2';
 const TOMAS: Toma[] = [
+  // intro: todos saludando (el clip trae tres planos: 0–4.67, 4.67–9.93 y 9.93–14.2 s)
+  {n: 0, beats: 8, src: SAL, desde: 0.0, rate: 0.6, entra: 'corte', zoom: [1.12, 1.0]},
+  {n: 8, beats: 4, src: SAL, desde: 2.4, rate: 1.15, entra: 'zoom'},
+  {n: 12, beats: 2, src: SAL, desde: 4.75, entra: 'whip'},
+  {n: 14, beats: 2, src: SAL, desde: 5.8, entra: 'whipX'},
+  {n: 16, beats: 4, src: SAL, desde: 6.9, rate: 0.75, entra: 'zoom', zoom: [1.0, 1.1]},
+  {n: 20, beats: 2, src: SAL, desde: 8.45, rate: 1.3, entra: 'whip'},
+  {n: 22, beats: 4, src: SAL, desde: 10.0, entra: 'whipX'},
+  {n: 26, beats: 2, src: SAL, desde: 12.0, entra: 'zoom'},
+  {n: 28, beats: 4, src: SAL, desde: 13.0, rate: 0.55, entra: 'flash', zoom: [1.0, 1.12]},
   // camino al auditorio, presídium y discursos
   {n: 32, beats: 4, src: 'f:IMG_4209', entra: 'luz', bn: true, zoom: [1.12, 1.0], foco: '50% 40%'},
   {n: 36, beats: 4, src: 'v:IMG_4203', desde: 0.6, entra: 'whip'},
   {n: 40, beats: 4, src: 'v:IMG_4271', desde: 0.4, entra: 'zoom'},
-  {n: 44, beats: 4, src: 'f:IMG_4224', entra: 'foto', foco: '55% 50%', zoom: [1.0, 1.1]},
+  {n: 44, beats: 4, src: 'v:IMG_4249', desde: 0.6, entra: 'whipX'},
   {n: 48, beats: 4, src: 'v:IMG_4323', desde: 0.3, entra: 'whip'},
   {n: 52, beats: 4, src: 'v:IMG_4324', desde: 2.0, entra: 'zoom'},
   {n: 56, beats: 4, src: 'v:IMG_4325', desde: 1.5, entra: 'whip'},
@@ -83,7 +94,7 @@ const TOMAS: Toma[] = [
   {n: 68, beats: 4, src: 'v:IMG_4266', desde: 3.3, entra: 'whip'},
   {n: 72, beats: 4, src: 'f:IMG_4229', entra: 'foto', foco: '45% 40%'},
   {n: 76, beats: 4, src: 'v:IMG_4252', desde: 4.2, entra: 'zoom'},
-  {n: 80, beats: 4, src: 'f:diploma_psicologia', entra: 'foto', foco: '50% 40%'},
+  {n: 80, beats: 4, src: 'v:regina_psicologia', desde: 7.0, entra: 'whip'},
   {n: 84, beats: 4, src: 'v:IMG_4254', desde: 2.6, entra: 'whip'},
   {n: 88, beats: 4, src: 'f:IMG_4240', entra: 'foto', foco: '35% 40%'},
   {n: 92, beats: 4, src: 'v:IMG_4248', desde: 1.6, entra: 'zoom'},
@@ -214,38 +225,90 @@ const Plano: React.FC<{t: Toma; dur: number}> = ({t, dur}) => {
 };
 
 // ---------------------------------------------------------------------------
-// Texto en el estilo del reel de Medicina: caja azul pegada a la izquierda con sombra verde desplazada
+// Tarjetas de texto (la idea del reel de Medicina, mejorada, con los mismos colores): una franja verde crece en el
+// borde, el panel azul se despliega desde la izquierda con su capa verde desfasada detrás, las palabras suben
+// una por una y las palabras clave (**así**) se subrayan con un marcador verde. Al salir, el texto sube y las
+// capas se recogen hacia la izquierda, la verde al último.
 // ---------------------------------------------------------------------------
 type Texto = {a: number; z: number; lineas: string[]; top?: number};
 const TEXTOS: Texto[] = [
-  {a: 4, z: 28, lineas: ['Hoy se graduó la', 'Generación del cambio.']},
-  {a: 33, z: 46, lineas: ['El último camino como estudiantes.', 'El primero como profesionistas.']},
-  {a: 49, z: 62, lineas: ['Frente a sus familias, cerraron', 'un capítulo que les tomó años', 'escribir.']},
-  {a: 65, z: 79, lineas: ['Años de esfuerzo, desvelos', 'y sacrificio…']},
-  {a: 97, z: 111, lineas: ['…que hoy tienen nombre,', 'apellido y diploma.']},
-  {a: 129, z: 150, lineas: ['Hoy se comprometieron a poner', 'su talento al servicio de los demás.']},
-  {a: 177, z: 190, lineas: ['Detrás de cada logro, una familia', 'que nunca dejó de creer.']},
-  {a: 205, z: 219, lineas: ['Con orgullo,', 'Universidad Westhill.']},
+  {a: 4, z: 28, lineas: ['Hoy se graduó la', '**Generación del cambio.**']},
+  {a: 33, z: 46, lineas: ['El último camino como **estudiantes.**', 'El primero como **profesionistas.**']},
+  {a: 49, z: 62, lineas: ['Frente a sus **familias**, cerraron', 'un capítulo que les tomó', 'años escribir.']},
+  {a: 65, z: 79, lineas: ['Años de **esfuerzo**, **desvelos**', 'y **sacrificio**…']},
+  {a: 97, z: 111, lineas: ['…que hoy tienen nombre,', 'apellido y **diploma.**']},
+  {a: 129, z: 150, lineas: ['Hoy se comprometieron a poner', 'su talento al **servicio**', '**de los demás.**']},
+  {a: 177, z: 190, lineas: ['Detrás de cada logro, una', '**familia** que nunca dejó de creer.']},
+  {a: 205, z: 219, lineas: ['Con orgullo,', '**Universidad Westhill.**']},
 ];
+/** separa una línea en palabras, marcando las que van entre ** ** */
+const palabras = (l: string) => {
+  const r: {w: string; clave: boolean; suf: string}[] = [];
+  l.split(/(\*\*[^*]+\*\*)/).forEach((trozo) => {
+    const clave = trozo.startsWith('**');
+    trozo
+      .replace(/\*\*/g, '')
+      .split(' ')
+      .forEach((w, i) => {
+        if (!w) return;
+        // puntuación pegada a la palabra clave anterior (", " o "…"): va junto, sin marcador
+        if (i === 0 && !clave && /^[,.;:…!?]+$/.test(w) && r.length) r[r.length - 1].suf += w;
+        else if (i === 0 && !clave && /^[,.;:…!?]/.test(w) && r.length) {
+          const m = w.match(/^[,.;:…!?]+/)![0];
+          r[r.length - 1].suf += m;
+          r.push({w: w.slice(m.length), clave, suf: ''});
+        } else r.push({w, clave, suf: ''});
+      });
+  });
+  return r;
+};
 const Caja: React.FC<{tx: Texto; dur: number}> = ({tx, dur}) => {
   const f = useCurrentFrame();
-  const entra = tw(f, [0, 12], [0, 1], ease.out);
-  const sale = tw(f, [dur - 10, dur], [0, 1], ease.in);
-  const sombra = tw(f, [5, 16], [0, 1], ease.out);
   const top = tx.top ?? 330;
+  // entrada
+  const franja = tw(f, [0, 8], [0, 1], ease.out);
+  const verde = tw(f, [3, 16], [0, 1], ease.out);
+  const azul = tw(f, [0, 11], [0, 1], ease.out);
+  const brillo = interpolate(f, [12, 34], [-0.3, 1.3], clamp);
+  // salida
+  const sAzul = tw(f, [dur - 11, dur - 2], [0, 1], ease.in);
+  const sVerde = tw(f, [dur - 7, dur], [0, 1], ease.in);
+  const abreAzul = azul * (1 - sAzul);
+  const abreVerde = verde * (1 - sVerde);
+  let k = 0;
   return (
-    <div style={{position: 'absolute', left: 0, top, transform: `translateX(${(-1 + entra - sale) * 105}%)`}}>
-      <div style={{position: 'absolute', left: 0, top: 18 * sombra, right: -22 * sombra, bottom: -18 * sombra, background: VERDE, borderRadius: '0 46px 46px 0'}} />
-      <div style={{position: 'relative', background: AZUL, borderRadius: '0 46px 46px 0', padding: '26px 52px 28px 34px', boxShadow: '0 10px 30px rgba(0,0,0,0.25)'}}>
-        {tx.lineas.map((l, i) => {
-          const p = tw(f, [6 + i * 4, 18 + i * 4], [0, 1], ease.out);
-          return (
-            <div key={i} style={{overflow: 'hidden', paddingBottom: 2}}>
-              <div style={{fontFamily: F.sans, fontWeight: 700, fontSize: 42, lineHeight: 1.28, color: '#fff', whiteSpace: 'nowrap', transform: `translateY(${(1 - p) * 100}%)`, opacity: p}}>{l}</div>
+    <div style={{position: 'absolute', left: 0, top}}>
+      {/* capa verde desfasada */}
+      <div style={{position: 'absolute', left: 0, top: 18, right: -22, bottom: -18, background: `linear-gradient(135deg, #2FC06C 0%, ${VERDE} 60%, #1F8F4C 100%)`, borderRadius: '0 44px 44px 0', clipPath: `inset(0 ${(1 - abreVerde) * 100}% 0 0 round 0 44px 44px 0)`}} />
+      {/* panel azul */}
+      <div style={{position: 'relative', borderRadius: '0 44px 44px 0', overflow: 'hidden', clipPath: `inset(0 ${(1 - abreAzul) * 100}% 0 0 round 0 44px 44px 0)`, boxShadow: '0 14px 34px rgba(0,0,0,0.28)'}}>
+        <div style={{position: 'absolute', inset: 0, background: `linear-gradient(135deg, #2F72AC 0%, ${AZUL} 52%, #1D4C78 100%)`}} />
+        <div style={{position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(255,255,255,0.13) 0%, rgba(255,255,255,0) 42%)'}} />
+        {/* destello que cruza el panel al abrirse */}
+        <div style={{position: 'absolute', top: 0, bottom: 0, left: `${brillo * 100}%`, width: 160, transform: 'translateX(-50%) skewX(-18deg)', background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0) 100%)'}} />
+        <div style={{position: 'relative', padding: '26px 56px 30px 46px'}}>
+          {tx.lineas.map((l, i) => (
+            <div key={i} style={{whiteSpace: 'nowrap', lineHeight: 1.3}}>
+              {palabras(l).map(({w, clave, suf}, j) => {
+                const at = 1 + 1.1 * k++;
+                const p = tw(f, [at, at + 8], [0, 1], ease.out);
+                const marca = clave ? tw(f, [at + 6, at + 16], [0, 1], ease.out) : 0;
+                return (
+                  <span key={j} style={{display: 'inline-block', overflow: 'hidden', verticalAlign: 'top', padding: '2px 0 6px', marginRight: 12}}>
+                    <span style={{position: 'relative', display: 'inline-block', fontFamily: F.sans, fontWeight: clave ? 800 : 700, fontSize: 44, color: '#fff', transform: `translateY(${(1 - p) * 105}%)`, opacity: Math.min(1, p * 2)}}>
+                      {clave && <span style={{position: 'absolute', left: -4, right: suf ? `${0.3 * suf.length + 0.1}em` : -4, bottom: 4, height: '0.34em', background: VERDE, borderRadius: 3, transformOrigin: '0 50%', transform: `scaleX(${marca})`, opacity: 0.95}} />}
+                      <span style={{position: 'relative'}}>{w}</span>
+                      {suf && <span style={{position: 'relative', fontWeight: 700}}>{suf}</span>}
+                    </span>
+                  </span>
+                );
+              })}
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
+      {/* franja verde del borde */}
+      <div style={{position: 'absolute', left: 0, top: 0, bottom: 0, width: 12, background: VERDE, transformOrigin: '50% 0', transform: `scaleY(${franja * (1 - sAzul)})`}} />
     </div>
   );
 };
@@ -366,14 +429,8 @@ export const GradVertical: React.FC = () => {
   const salto = Math.round(b(SALTO_BEAT) * FPS);
   const volumen = (fr: number) => interpolate(fr, [0, 6], [0, 0.88], clamp);
   const volumen2 = (fr: number) => interpolate(fr, [0, 2, CIERRE_F - 50, CIERRE_F], [0.6, 0.88, 0.88, 0], clamp);
-  const introF = fb(32);
   return (
     <AbsoluteFill style={{background: '#000'}}>
-      {/* intro: todos saludando a la cámara (se estira un poco para llenar la intro de la canción) */}
-      <Sequence durationInFrames={introF + SOLAPA}>
-        <Plano t={{n: 0, beats: 32, src: 'v:fila_saludos_1118_2', entra: 'corte', zoom: [1.0, 1.06]}} dur={introF + SOLAPA} />
-        <Entrada />
-      </Sequence>
       {TOMAS.map((t, i) => {
         const from = fb(t.n);
         const sig = TOMAS[i + 1];
@@ -385,6 +442,9 @@ export const GradVertical: React.FC = () => {
           </Sequence>
         );
       })}
+      <Sequence durationInFrames={14}>
+        <Entrada />
+      </Sequence>
       <Sequence from={fb(152)} durationInFrames={fb(160) - fb(152)}>
         <Lograron />
       </Sequence>

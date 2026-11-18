@@ -51,4 +51,5 @@ export const DUR: Record<string, number> = {
   'IMG_4369': 2.8,
   'IMG_4371': 4.433,
   'fila_saludos_1118_2': 14.2,
+  'regina_psicologia': 10.3,
 };

@@ -26,7 +26,7 @@ FOTOS = ['IMG_4209', 'IMG_4224', 'IMG_4322', 'IMG_4223', 'IMG_4239', 'IMG_4263',
 
 def videos():
     os.makedirs(PROXY, exist_ok=True)
-    fuentes = sorted(glob.glob(os.path.join(SRC, '*.MOV'))) + [os.path.join(SRC, 'fila_saludos_1118_2.mp4')]
+    fuentes = sorted(glob.glob(os.path.join(SRC, '*.MOV')) + glob.glob(os.path.join(SRC, '*.mov'))) + [os.path.join(SRC, 'fila_saludos_1118_2.mp4')]
     info = {}
     for src in fuentes:
         nombre = os.path.basename(src).rsplit('.', 1)[0]
