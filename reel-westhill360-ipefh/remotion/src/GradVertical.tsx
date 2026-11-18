@@ -72,9 +72,9 @@ const SAL = 'v:fila_saludos_1118_2';
 const TOMAS: Toma[] = [
   // intro: todos saludando, en cámara lenta y con acercamiento suave; el clip trae tres planos (0–4.67,
   // 4.67–9.93 y 9.93–14.2 s) que se unen con un destello de luz cálida, sin barridos
-  {n: 0, beats: 11, src: SAL, desde: 0.0, rate: 0.84, entra: 'corte', zoom: [1.12, 1.0]},
-  {n: 11, beats: 11, src: SAL, desde: 4.72, rate: 0.95, entra: 'luz', zoom: [1.1, 1.0]},
-  {n: 22, beats: 10, src: SAL, desde: 9.98, rate: 0.85, entra: 'luz', zoom: [1.1, 1.0]},
+  {n: 0, beats: 11, src: SAL, desde: 0.0, rate: 0.8, entra: 'corte', zoom: [1.12, 1.0]},
+  {n: 11, beats: 11, src: SAL, desde: 4.72, rate: 0.88, entra: 'luz', zoom: [1.1, 1.0]},
+  {n: 22, beats: 10, src: SAL, desde: 9.98, rate: 0.78, entra: 'luz', zoom: [1.1, 1.0]},
   // camino al auditorio, presídium y discursos
   {n: 32, beats: 4, src: 'f:IMG_4209', entra: 'luz', bn: true, zoom: [1.12, 1.0], foco: '50% 40%'},
   {n: 36, beats: 4, src: 'v:IMG_4203', desde: 0.6, entra: 'whip'},
@@ -116,8 +116,8 @@ const TOMAS: Toma[] = [
   // subida al drop: el auditorio de pie, cada vez más oscuro, con "¡LO LOGRARON!"
   {n: 152, beats: 8, src: 'f:IMG_4327', entra: 'corte', zoom: [1.0, 1.22], foco: '50% 50%'},
   // DROP
-  {n: 160, beats: 4, src: 'f:birretes', entra: 'flash', zoom: [1.18, 1.0], foco: '50% 45%'},
-  {n: 164, beats: 4, src: 'v:IMG_4341', desde: 1.0, entra: 'zoom'},
+  {n: 160, beats: 6, src: 'v:birretes_1118_1', desde: 0.5, rate: 0.5, entra: 'flash', zoom: [1.1, 1.0], foco: '50% 40%'},
+  {n: 166, beats: 2, src: 'v:IMG_4341', desde: 1.6, entra: 'zoom'},
   {n: 168, beats: 4, src: 'v:IMG_4342', desde: 2.2, entra: 'whip'},
   {n: 172, beats: 2, src: 'f:IMG_4338', entra: 'foto', foco: '50% 60%'},
   {n: 174, beats: 2, src: 'v:IMG_4347', desde: 0.6, entra: 'zoom'},
