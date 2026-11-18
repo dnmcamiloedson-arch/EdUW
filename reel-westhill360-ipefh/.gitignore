@@ -4,6 +4,7 @@ out/
 node_modules/
 remotion/public/photos/
 remotion/public/proxies
+remotion/public/grad2/
 remotion/public/seg/
 remotion/public/music/
 remotion/public/comaem/voz/
