@@ -70,16 +70,11 @@ const SOLAPA = 8; // cuadros que cada toma sigue debajo de la siguiente (para ba
 
 const SAL = 'v:fila_saludos_1118_2';
 const TOMAS: Toma[] = [
-  // intro: todos saludando (el clip trae tres planos: 0–4.67, 4.67–9.93 y 9.93–14.2 s)
-  {n: 0, beats: 8, src: SAL, desde: 0.0, rate: 0.6, entra: 'corte', zoom: [1.12, 1.0]},
-  {n: 8, beats: 4, src: SAL, desde: 2.4, rate: 1.15, entra: 'zoom'},
-  {n: 12, beats: 2, src: SAL, desde: 4.75, entra: 'whip'},
-  {n: 14, beats: 2, src: SAL, desde: 5.8, entra: 'whipX'},
-  {n: 16, beats: 4, src: SAL, desde: 6.9, rate: 0.75, entra: 'zoom', zoom: [1.0, 1.1]},
-  {n: 20, beats: 2, src: SAL, desde: 8.45, rate: 1.3, entra: 'whip'},
-  {n: 22, beats: 4, src: SAL, desde: 10.0, entra: 'whipX'},
-  {n: 26, beats: 2, src: SAL, desde: 12.0, entra: 'zoom'},
-  {n: 28, beats: 4, src: SAL, desde: 13.0, rate: 0.55, entra: 'flash', zoom: [1.0, 1.12]},
+  // intro: todos saludando, en cámara lenta y con acercamiento suave; el clip trae tres planos (0–4.67,
+  // 4.67–9.93 y 9.93–14.2 s) que se unen con un destello de luz cálida, sin barridos
+  {n: 0, beats: 11, src: SAL, desde: 0.0, rate: 0.84, entra: 'corte', zoom: [1.12, 1.0]},
+  {n: 11, beats: 11, src: SAL, desde: 4.72, rate: 0.95, entra: 'luz', zoom: [1.1, 1.0]},
+  {n: 22, beats: 10, src: SAL, desde: 9.98, rate: 0.85, entra: 'luz', zoom: [1.1, 1.0]},
   // camino al auditorio, presídium y discursos
   {n: 32, beats: 4, src: 'f:IMG_4209', entra: 'luz', bn: true, zoom: [1.12, 1.0], foco: '50% 40%'},
   {n: 36, beats: 4, src: 'v:IMG_4203', desde: 0.6, entra: 'whip'},
@@ -451,7 +446,7 @@ export const GradVertical: React.FC = () => {
       <Sequence from={fb(160)} durationInFrames={110}>
         <Confeti />
       </Sequence>
-      {[32, 136, 144].map((n) => (
+      {[11, 22, 32, 136, 144].map((n) => (
         <Sequence key={n} from={fb(n) - 10} durationInFrames={26}>
           <Luz dur={26} />
         </Sequence>
