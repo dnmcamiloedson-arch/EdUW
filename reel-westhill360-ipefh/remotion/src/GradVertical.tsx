@@ -25,9 +25,22 @@ import {CierreVertical, Dorado} from './gradCierreVertical';
 const W = 1080;
 const H = 1920;
 const FPS = 30;
-const P = 0.4918;
-const PH = 0.304;
-const b = (n: number) => PH + n * P;
+/**
+ * Pistas: la canción original y la versión que preparó el cliente (un poco más rápida). Cada una con su rejilla de
+ * tiempos: b(n) = PH + n * P segundos, y el segundo en que la canción ya se apagó (fin).
+ */
+type Pista = {file: string; P: number; PH: number; fin: number};
+export const PISTAS = {
+  original: {file: 'music/desire_gryffin.mp3', P: 0.4918, PH: 0.304, fin: 264.5},
+  v2: {file: 'music/desire_v2.mp3', P: 0.4775, PH: 0.324, fin: 256.9},
+} satisfies Record<string, Pista>;
+export type PistaId = keyof typeof PISTAS;
+// pista activa: la fija la composición al renderizarse (solo se renderiza una composición a la vez)
+let PI: Pista = PISTAS.original;
+const usaPista = (id: PistaId) => {
+  PI = PISTAS[id];
+};
+const b = (n: number) => PI.PH + n * PI.P;
 const fb = (n: number) => Math.round(b(n) * FPS);
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 const hh = (n: number) => {
@@ -38,10 +51,11 @@ const c01 = (x: number) => Math.max(0, Math.min(1, x));
 
 const CIERRE_BEAT = 224;
 const SALTO_BEAT = 480;
-const CIERRE_DESDE = fb(CIERRE_BEAT);
-const FIN_CANCION = 264.5;
-const CIERRE_F = Math.round((FIN_CANCION - b(SALTO_BEAT)) * FPS);
-export const GRADV_FRAMES = CIERRE_DESDE + CIERRE_F;
+const fbDe = (p: Pista, n: number) => Math.round((p.PH + n * p.P) * FPS);
+const cierreDesde = (p: Pista) => fbDe(p, CIERRE_BEAT);
+const cierreF = (p: Pista) => Math.round((p.fin - (p.PH + SALTO_BEAT * p.P)) * FPS);
+export const gradvFrames = (id: PistaId) => cierreDesde(PISTAS[id]) + cierreF(PISTAS[id]);
+export const GRADV_FRAMES = gradvFrames('original');
 export const GRADV_W = W;
 export const GRADV_H = H;
 
@@ -420,7 +434,10 @@ const sonidos = (): [number, string, number][] => {
   return r;
 };
 
-export const GradVertical: React.FC = () => {
+export const GradVertical: React.FC<{pista?: PistaId}> = ({pista = 'original'}) => {
+  usaPista(pista);
+  const CIERRE_DESDE = cierreDesde(PI);
+  const CIERRE_F = cierreF(PI);
   const salto = Math.round(b(SALTO_BEAT) * FPS);
   const volumen = (fr: number) => interpolate(fr, [0, 6], [0, 0.88], clamp);
   const volumen2 = (fr: number) => interpolate(fr, [0, 2, CIERRE_F - 50, CIERRE_F], [0.6, 0.88, 0.88, 0], clamp);
@@ -467,7 +484,7 @@ export const GradVertical: React.FC = () => {
       </Sequence>
       {/* cierre con pirotecnia; entra con un destello */}
       <Sequence from={CIERRE_DESDE} durationInFrames={CIERRE_F}>
-        <CierreVertical cfg={{beatF: P * FPS, dur: CIERRE_F, explotaBeat: 32, fotos: ['grad2/IMG_4229.jpg', 'grad2/IMG_4240.jpg', 'grad2/diploma_psicologia.jpg', 'grad2/IMG_4245.jpg', 'grad2/IMG_4233.jpg', 'grad2/diploma_pedagogia_k2.jpg', 'grad2/IMG_4246.jpg', 'grad2/IMG_4258.jpg', 'grad2/IMG_4242.jpg', 'grad2/diploma_estola_azul.jpg', 'grad2/IMG_4239.jpg', 'grad2/IMG_4263.jpg', 'grad2/birretes.jpg', 'grad2/IMG_4338.jpg', 'grad2/IMG_4198.jpg']}} />
+        <CierreVertical cfg={{beatF: PI.P * FPS, dur: CIERRE_F, explotaBeat: 32, fotos: ['grad2/IMG_4229.jpg', 'grad2/IMG_4240.jpg', 'grad2/diploma_psicologia.jpg', 'grad2/IMG_4245.jpg', 'grad2/IMG_4233.jpg', 'grad2/diploma_pedagogia_k2.jpg', 'grad2/IMG_4246.jpg', 'grad2/IMG_4258.jpg', 'grad2/IMG_4242.jpg', 'grad2/diploma_estola_azul.jpg', 'grad2/IMG_4239.jpg', 'grad2/IMG_4263.jpg', 'grad2/birretes.jpg', 'grad2/IMG_4338.jpg', 'grad2/IMG_4198.jpg']}} />
       </Sequence>
       <Sequence from={CIERRE_DESDE} durationInFrames={14}>
         <Destellazo />
@@ -477,10 +494,10 @@ export const GradVertical: React.FC = () => {
         <Sfx key={i} at={at} name={name} volume={vol} />
       ))}
       <Sequence durationInFrames={CIERRE_DESDE + 2}>
-        <Audio src={staticFile('music/desire_gryffin.mp3')} volume={volumen} />
+        <Audio src={staticFile(PI.file)} volume={volumen} />
       </Sequence>
       <Sequence from={CIERRE_DESDE} durationInFrames={CIERRE_F}>
-        <Audio src={staticFile('music/desire_gryffin.mp3')} startFrom={salto} volume={volumen2} />
+        <Audio src={staticFile(PI.file)} startFrom={salto} volume={volumen2} />
       </Sequence>
     </AbsoluteFill>
   );
@@ -505,7 +522,8 @@ const Destellazo: React.FC = () => {
 const TR0 = 144; // tiempo de la canción donde arranca el tráiler
 const TR_FIN = 184;
 const tf = (n: number) => fb(n) - fb(TR0);
-export const GRADV_TRAILER_FRAMES = tf(TR_FIN);
+export const gradTrailerFrames = (id: PistaId) => fbDe(PISTAS[id], TR_FIN) - fbDe(PISTAS[id], TR0);
+export const GRADV_TRAILER_FRAMES = gradTrailerFrames('original');
 const TRAILER: Toma[] = [
   {n: 144, beats: 1, src: 'v:fila_saludos_1118_2', desde: 0.6, entra: 'corte'},
   {n: 145, beats: 1, src: 'v:regina_psicologia', desde: 7.6, entra: 'zoom'},
@@ -551,7 +569,9 @@ const TarjetaFinal: React.FC<{dur: number}> = ({dur}) => {
   );
 };
 
-export const GradTrailer: React.FC = () => {
+export const GradTrailer: React.FC<{pista?: PistaId}> = ({pista = 'original'}) => {
+  usaPista(pista);
+  const GRADV_TRAILER_FRAMES = gradTrailerFrames(pista);
   const finCard = tf(176);
   const volumen = (fr: number) => interpolate(fr, [0, 4, GRADV_TRAILER_FRAMES - 30, GRADV_TRAILER_FRAMES], [0, 0.88, 0.88, 0], clamp);
   return (
@@ -596,7 +616,7 @@ export const GradTrailer: React.FC = () => {
       <Sfx at={tf(160)} name="fw_boom" volume={0.22} />
       <Sfx at={finCard - 10} name="whoosh_largo" volume={0.35} />
       <Sfx at={finCard} name="down_bass" volume={0.85} />
-      <Audio src={staticFile('music/desire_gryffin.mp3')} startFrom={fb(TR0)} volume={volumen} />
+      <Audio src={staticFile(PI.file)} startFrom={fb(TR0)} volume={volumen} />
     </AbsoluteFill>
   );
 };
