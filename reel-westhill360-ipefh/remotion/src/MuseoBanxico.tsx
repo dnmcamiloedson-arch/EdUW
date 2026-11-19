@@ -8,7 +8,7 @@ import {F, SAFE_X, ease, tw} from './theme';
 // Historia de IG (9:16, 37 s): Coordinación de Inclusión en el Museo Banco de México.
 // Mismo formato que la historia del Museo del Chocolate (que le gustó al cliente), con monedas de oro en lugar de
 // chocolate:
-//  1. Intro: lluvia de monedas doradas y "Hoy fuimos al Museo Banco de México".
+//  1. Intro: lluvia de monedas doradas y "Inclusión visitó el Museo Banco de México" (la visita no fue el mismo día).
 //  2. Montaje de la visita al compás de la música (120 BPM, 1 compás = 2 s), en el orden del recorrido: historia
 //     del dinero, la bóveda, las primeras monedas, los billetes, el oro y el grupo con la guía. Entre bloques
 //     cruza una cortina de monedas.
@@ -195,7 +195,7 @@ const Intro: React.FC = () => {
     <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 55%, #17406F 0%, ${NAVY} 60%, #06101F 100%)`}}>
       <Monedas lista={LLUVIA_INTRO} p={interpolate(f, [0, 150], [0, 1], clamp)} f={f} alto={1.3} />
       <div style={{position: 'absolute', top: 760, width: '100%', textAlign: 'center'}}>
-        <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 92, color: CREMA, opacity: a, transform: `translateY(${(1 - a) * 30}px)`, textShadow: '0 6px 24px rgba(0,0,0,0.5)'}}>Hoy fuimos al</div>
+        <div style={{fontFamily: F.serif, fontStyle: 'italic', fontWeight: 600, fontSize: 92, color: CREMA, opacity: a, transform: `translateY(${(1 - a) * 30}px)`, textShadow: '0 6px 24px rgba(0,0,0,0.5)'}}>Inclusión visitó el</div>
         <div style={{marginTop: 14, fontFamily: F.sans, fontWeight: 900, fontSize: 124, lineHeight: 1, color: CREMA, letterSpacing: 6, opacity: b, transform: `translateY(${(1 - b) * 40}px)`, textShadow: '0 6px 24px rgba(0,0,0,0.5)'}}>MUSEO</div>
         <div style={{marginTop: 10, opacity: c, transform: `scale(${0.85 + 0.15 * c})`, filter: `blur(${(1 - c) * 8}px) drop-shadow(0 6px 22px rgba(0,0,0,0.55))`}}>
           <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 104, lineHeight: 1.05, letterSpacing: 1, backgroundImage: `linear-gradient(105deg, rgba(255,255,255,0) ${(brillo - 0.08) * 100}%, rgba(255,255,255,0.95) ${brillo * 100}%, rgba(255,255,255,0) ${(brillo + 0.08) * 100}%), linear-gradient(180deg, #FFF1C2 0%, ${ORO} 55%, ${ORO_OSC} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent', display: 'inline-block'}}>
