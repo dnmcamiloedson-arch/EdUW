@@ -16,6 +16,7 @@ import {VacunacionB, VACUNA_B_FRAMES} from './VacunacionB';
 import {VacunacionYa, VACUNA_YA_FRAMES} from './VacunacionYa';
 import {VacunacionUltimas, VACUNA_8_FRAMES} from './VacunacionUltimas';
 import {MuseoChocolate, CHOCO_FRAMES} from './MuseoChocolate';
+import {MuseoBanxico, BANXICO_FRAMES} from './MuseoBanxico';
 import {Comaem, COMAEM_FRAMES, COMAEM_H, COMAEM_W} from './Comaem';
 import {CongresoDerecho, CONGRESO_FRAMES} from './CongresoDerecho';
 import {OpinionCongreso, OPINION_FRAMES} from './OpinionCongreso';
@@ -57,6 +58,7 @@ export const Root: React.FC = () => (
     <Composition id="VacunacionYa" component={VacunacionYa} durationInFrames={VACUNA_YA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="VacunacionUltimas" component={VacunacionUltimas} durationInFrames={VACUNA_8_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="MuseoChocolate" component={MuseoChocolate} durationInFrames={CHOCO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
+    <Composition id="MuseoBanxico" component={MuseoBanxico} durationInFrames={BANXICO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="RecapOctubre" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="RecapOctubreSinMusica" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="RecapTeaser" component={RecapTeaser} durationInFrames={TEASER_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
