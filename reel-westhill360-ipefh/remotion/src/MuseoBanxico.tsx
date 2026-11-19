@@ -14,7 +14,8 @@ import {F, SAFE_X, ease, tw} from './theme';
 //     cruza una cortina de monedas.
 //  3. Cierre: logo y "Coordinación de Inclusión".
 // El banderín UW va arriba a la derecha toda la historia. Los textos salen del copy de Ale (Coordinación).
-// Clips en public/proxies/banxico (scripts/banxico_preparar.py); música original en public/music/banxico.wav.
+// Clips en public/proxies/banxico (scripts/banxico_preparar.py). Música original: banxico_funk.wav (jazz-funk,
+// sfx/generar_musica_funk.py: python3 generar_musica_funk.py <wav> 37 34 4 8,24) o banxico.wav (house, la primera).
 // ---------------------------------------------------------------------------
 const W = 1080;
 const H = 1920;
@@ -274,7 +275,7 @@ const TEXTOS: [number, number, {at: number; partes: Parte[]}[]][] = [
 // cortinas de monedas: al salir de la intro, al entrar a la bóveda, al oro y antes del cierre
 const CORTES_CORTINA = [INTRO, INTRO + 120, INTRO + 600, INTRO + MONTAJE];
 
-export const MuseoBanxico: React.FC<{music?: boolean}> = ({music = true}) => {
+export const MuseoBanxico: React.FC<{music?: boolean; pista?: 'funk' | 'house'}> = ({music = true, pista = 'funk'}) => {
   let t = INTRO;
   return (
     <AbsoluteFill style={{background: NAVY}}>
@@ -308,7 +309,7 @@ export const MuseoBanxico: React.FC<{music?: boolean}> = ({music = true}) => {
       ))}
       <Banderin />
       <Grain opacity={0.04} />
-      {music && <Audio src={staticFile('music/banxico.wav')} volume={(fr) => interpolate(fr, [0, 6, BANXICO_FRAMES - 30, BANXICO_FRAMES], [0, 0.55, 0.55, 0], clamp)} />}
+      {music && <Audio src={staticFile(pista === 'funk' ? 'music/banxico_funk.wav' : 'music/banxico.wav')} volume={(fr) => interpolate(fr, [0, 4, BANXICO_FRAMES - 20, BANXICO_FRAMES], [0, pista === 'funk' ? 0.5 : 0.55, pista === 'funk' ? 0.5 : 0.55, 0], clamp)} />}
     </AbsoluteFill>
   );
 };
