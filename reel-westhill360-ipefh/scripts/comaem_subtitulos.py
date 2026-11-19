@@ -21,7 +21,7 @@ CORRECCIONES = {
     'frida': [('valuada', 'evaluada')],
     'jorge': [('día,', 'día:')],
     'asisclo': [('Comaem', 'COMAEM'), ('Because the', 'Porque la')],
-    'rector': [('contarles', 'comentarles'), ('Riobón', 'Rioboo'), ('Huesquil.', 'Westhill.'), ('Huesquil', 'Westhill'),
+    'rector': [('contarles', 'comentarles'), ('Riobón', 'Riobóo'), ('Huesquil.', 'Westhill.'), ('Huesquil', 'Westhill'),
                ('comunidad.', 'comunidad,'), ('Y cada', 'y cada'), ('separar.', 'separado.')],
 }
 

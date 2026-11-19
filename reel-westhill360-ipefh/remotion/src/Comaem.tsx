@@ -525,11 +525,12 @@ const PLACAS: [number, number, string, string?][] = [
   [38.3, 5.0, 'Dr. Alan Maximiliano De los Santos Bernal', 'Coordinación de Acreditación y Calidad FMUW'],
   [53.7, 4.4, 'Dr. Juan José Loera Pineda', 'Docente'],
   [59.7, 4.8, 'Dr. Guillermo Daniel Bonilla Castillo', 'Docente'],
+  [80.6, 4.4, 'Dr. Emmanuel Melgarejo Estefan'],
   [92.7, 4.0, 'Estudiante de Medicina'],
   [103.2, 4.0, 'Estudiante de Medicina'],
   [111.6, 4.0, 'Estudiante de Medicina'],
   [A + 0.8, 5.0, 'Dr. Asisclo de Jesús Villagómez Ortiz', 'Director de la Facultad de Medicina'],
-  [RECTOR_DESDE + 0.9, 5.5, 'Mtro. en Ed. e Ing. José María Rioboo Martín', 'Rector de la Universidad'],
+  [RECTOR_DESDE + 0.9, 5.5, 'Mtro. en Ed. e Ing. José María Riobóo Martín', 'Rector de la Universidad'],
 ];
 
 /**
