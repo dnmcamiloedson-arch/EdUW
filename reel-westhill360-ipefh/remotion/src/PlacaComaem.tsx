@@ -46,8 +46,8 @@ const TOMAS: Toma[] = [
   {src: '11217', at: 375, dur: 47, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
   {src: '112110', at: 420, dur: 127, desde: 0.0, origen: '50% 40%', zoom: [1.2, 1.3]},
   // comunidad (entra con el corte de la música en 18.16 s)
-  {src: 'IMG_4440', at: 545, dur: 29, desde: 1.0, zoom: [1.1, 1.0]},
-  {src: 'f:foto_60', at: 572, dur: 29, desde: 0, origen: '50% 55%', zoom: [1.0, 1.08]},
+  {src: 'IMG_4440', at: 545, dur: 29, desde: 0.0, zoom: [1.1, 1.0]},
+  {src: 'IMG_4440', at: 572, dur: 29, desde: 2.9, origen: '50% 40%', zoom: [1.0, 1.08]}, // más adelante en la misma toma: el auditorio completo con los estudiantes de bata
   {src: '11216', at: 599, dur: 29, desde: 1.5, origen: '45% 45%', zoom: [1.0, 1.06]},
   {src: '11219', at: 626, dur: 29, desde: 2.5, origen: '45% 45%', zoom: [1.0, 1.06]},
   {src: 'f:foto_59', at: 653, dur: 29, desde: 0, origen: '54% 45%', zoom: [1.0, 1.08]},
