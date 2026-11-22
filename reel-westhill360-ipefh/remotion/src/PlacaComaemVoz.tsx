@@ -494,7 +494,7 @@ export const PlacaComaemVoz: React.FC = () => {
       <Sequence from={108} durationInFrames={192}>
         <Panel dur={192}>
           <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 32, letterSpacing: 2, color: VERDE, marginBottom: 14}}>DISTINCIÓN DE EXCELENCIA COMAEM</div>
-          <Linea texto="El *máximo *reconocimiento que otorga la *COMAEM." at={60} size={64} paso={1.8} />
+          <Linea texto="El *máximo *reconocimiento que otorga *COMAEM." at={60} size={64} paso={1.8} />
         </Panel>
       </Sequence>
       <Sequence from={300} durationInFrames={105}>
