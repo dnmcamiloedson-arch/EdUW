@@ -541,11 +541,13 @@ export const PlacaComaemVoz: React.FC = () => {
       {/* "¿Vas a estudiar Medicina?…" de la primera grabación; la frase de la placa es la que se regrabó
           ("Recibimos la Distinción de Excelencia, el máximo reconocimiento que otorga la COMAEM", sin "en México") */}
       {/* "¿Vas a estudiar Medicina?" entra a los 0.27 s para que la primera sílaba no se pierda al iniciar el video */}
-      <Sequence from={8} durationInFrames={34}>
+      {/* hasta el silencio después de "medicina?" (1.40 s de la voz) */}
+      <Sequence from={8} durationInFrames={42}>
         <Audio src={staticFile('placa/voz_ia.wav')} />
       </Sequence>
-      <Sequence from={42} durationInFrames={66}>
-        <Audio src={staticFile('placa/voz_ia.wav')} startFrom={42} volume={(fr) => interpolate(fr, [58, 66], [1, 0], clamp)} />
+      {/* "Mira lo que acaba de pasar en Westhill." desde el silencio (1.57 s de la voz) */}
+      <Sequence from={50} durationInFrames={60}>
+        <Audio src={staticFile('placa/voz_ia.wav')} startFrom={47} volume={(fr) => interpolate(fr, [54, 60], [1, 0], clamp)} />
       </Sequence>
       <Sequence from={110} durationInFrames={180}>
         <Audio src={staticFile('placa/voz_ia2.wav')} />
