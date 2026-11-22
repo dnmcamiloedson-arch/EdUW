@@ -5,19 +5,21 @@ import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
 
 // ---------------------------------------------------------------------------
-// Anuncio para pauta (9:16, 24 s): develación de las placas COMAEM en la Facultad de Medicina.
+// Anuncio para pauta (9:16, 31.5 s): develación de las placas COMAEM en la Facultad de Medicina.
 // Objetivo: venta (aspirantes a Médico Cirujano). Quien lo ve no sabe qué es COMAEM, así que se explica con lo
 // que significa para el estudiante, con la línea gráfica de las cápsulas del cliente (azul marino, amarillo, verde).
-//  0.0  gancho: "¿Vas a estudiar Medicina?" sobre la develación de la placa
-//  2.0  drop: la placa de Distinción de Excelencia, "el máximo reconocimiento a la calidad de la educación médica"
-//  5.0  "antes solo la tenían la UNAM y la Escuela Militar de Medicina; hoy Westhill es la primera universidad
+//  0.0  gancho: "¿Vas a estudiar Medicina?" y "WESTHILL" en grande sobre la develación de la placa
+//  3.0  la placa de Distinción de Excelencia, "el máximo reconocimiento a la calidad de la educación médica"
+//  6.0  "antes solo la tenían la UNAM y la Escuela Militar de Medicina; hoy Westhill es la primera universidad
 //        privada en recibirla" (de la nota oficial de la universidad)
-//  8.5  qué significa para ti: tres tarjetas
-// 13.0  el Dr. Asisclo: "Estas placas les pertenecen a todos ustedes." (la música respira)
-// 17.0  vigente hasta 2031
-// 20.0  cierre de venta: "Tu vocación merece excelencia" + Solicita información
-// Música original (sfx/generar_musica.py, 120 BPM, 1 tiempo = 15 cuadros); textos siempre en pantalla (se ve sin
-// sonido). Material en public/proxies/placa y public/placa (scripts/placa_preparar.py).
+//  9.5  qué significa para ti: tres tarjetas apiladas
+// 14.0  el Dr. Asisclo: "Estas placas les pertenecen a todos ustedes." (la música baja)
+// 18.2  comunidad: profesores, estudiantes, directivos (entra con el corte de la música y el down bass)
+// 22.7  vigente hasta 2031
+// 25.2  cierre de venta: "Tu vocación merece EXCELENCIA" palabra por palabra + Solicita información
+// Música: "Solace" (Txmy) del video del cliente, alargada a 31.5 s repitiendo una frase con un barrido de filtro
+// (scripts/placa_musica_extendida.py). Textos siempre en pantalla (se ve sin sonido).
+// Material en public/proxies/placa y public/placa (scripts/placa_preparar.py).
 // ---------------------------------------------------------------------------
 const W = 1080;
 const H = 1920;
@@ -30,8 +32,8 @@ const VERDE = '#2BAE66';
 const BLANCO = '#FFFFFF';
 const vid = (n: string) => staticFile(`proxies/placa/${n}.mp4`);
 const LOGO = staticFile('logos/logo_westhill_blanco_total.png');
-export const PLACA_FRAMES = 741; // dura lo mismo que la pista (24.7 s)
-const CIERRE = 585;
+export const PLACA_FRAMES = 945; // dura lo mismo que la pista extendida (31.5 s)
+const CIERRE = 755;
 
 type Toma = {src: string; at: number; dur: number; desde: number; rate?: number; origen?: string; zoom?: [number, number]};
 const TOMAS: Toma[] = [
@@ -39,11 +41,17 @@ const TOMAS: Toma[] = [
   {src: '1126', at: 90, dur: 92, desde: 2.6, zoom: [1.06, 1.16]},
   {src: '1121', at: 180, dur: 52, desde: 1.0, zoom: [1.0, 1.08]},
   {src: '11211', at: 230, dur: 57, desde: 0.6, zoom: [1.04, 1.1]},
-  {src: 'IMG_4448', at: 285, dur: 42, desde: 0.5, zoom: [1.02, 1.1]},
-  {src: 'IMG_4449', at: 325, dur: 42, desde: 0.4, zoom: [1.02, 1.1]},
-  {src: '11217', at: 365, dur: 42, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
-  {src: '112110', at: 405, dur: 122, desde: 0.0, origen: '50% 40%', zoom: [1.2, 1.3]},
-  {src: 'IMG_4526', at: 525, dur: 62, desde: 0.2, zoom: [1.0, 1.08]},
+  {src: 'IMG_4448', at: 285, dur: 47, desde: 0.5, zoom: [1.02, 1.1]},
+  {src: 'IMG_4449', at: 330, dur: 47, desde: 0.4, zoom: [1.02, 1.1]},
+  {src: '11217', at: 375, dur: 47, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
+  {src: '112110', at: 420, dur: 127, desde: 0.0, origen: '50% 40%', zoom: [1.2, 1.3]},
+  // comunidad (entra con el corte de la música en 18.16 s)
+  {src: 'IMG_4440', at: 545, dur: 29, desde: 1.0, zoom: [1.1, 1.0]},
+  {src: 'f:foto_60', at: 572, dur: 29, desde: 0, origen: '50% 55%', zoom: [1.0, 1.08]},
+  {src: '11216', at: 599, dur: 29, desde: 1.5, origen: '45% 45%', zoom: [1.0, 1.06]},
+  {src: '11219', at: 626, dur: 29, desde: 2.5, origen: '45% 45%', zoom: [1.0, 1.06]},
+  {src: 'f:foto_59', at: 653, dur: 29, desde: 0, origen: '54% 45%', zoom: [1.0, 1.08]},
+  {src: 'IMG_4526', at: 680, dur: 77, desde: 0.2, zoom: [1.0, 1.08]},
 ];
 
 const Clip: React.FC<{t: Toma}> = ({t}) => {
@@ -52,7 +60,11 @@ const Clip: React.FC<{t: Toma}> = ({t}) => {
   const entra = tw(f, [0, 6], [0, 1], ease.out);
   return (
     <AbsoluteFill style={{overflow: 'hidden', background: NAVY2}}>
-      <OffthreadVideo src={vid(t.src)} startFrom={Math.round(t.desde * 30)} playbackRate={t.rate ?? 1} muted style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${z * (1.06 - 0.06 * entra)})`, transformOrigin: t.origen ?? '50% 50%', filter: `contrast(1.06) saturate(1.08) blur(${(1 - entra) * 8}px)`}} />
+      {t.src.startsWith('f:') ? (
+        <Img src={staticFile(`placa/${t.src.slice(2)}.jpg`)} style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: t.origen ?? '50% 50%', transform: `scale(${z * (1.06 - 0.06 * entra)})`, filter: `contrast(1.06) saturate(1.08) blur(${(1 - entra) * 8}px)`}} />
+      ) : (
+        <OffthreadVideo src={vid(t.src)} startFrom={Math.round(t.desde * 30)} playbackRate={t.rate ?? 1} muted style={{width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${z * (1.06 - 0.06 * entra)})`, transformOrigin: t.origen ?? '50% 50%', filter: `contrast(1.06) saturate(1.08) blur(${(1 - entra) * 8}px)`}} />
+      )}
       <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(10,33,65,0.55) 0%, rgba(10,33,65,0) 22%, rgba(10,33,65,0) 45%, rgba(10,33,65,0.85) 100%)'}} />
     </AbsoluteFill>
   );
@@ -183,7 +195,7 @@ const TARJETAS: {n: string; tipo: 'check' | 'ciclo' | 'escudo'; titulo: string; 
  * Las tres tarjetas se apilan: cada una entra desde la derecha con su ícono dibujándose y su barra de progreso
  * (1/3, 2/3, 3/3); la anterior sube, se encoge y se queda detrás, como una pila de notificaciones.
  */
-const PASO = 40;
+const PASO = 45;
 const Tarjetas: React.FC<{dur: number}> = ({dur}) => {
   const f = useCurrentFrame();
   const sale = tw(f, [dur - 7, dur], [0, 1], ease.in);
@@ -248,6 +260,31 @@ const Voz: React.FC = () => {
         })}
         <span style={{color: AMARILLO, opacity: tw(t, [3.5, 3.7], [0, 1])}}>”</span>
       </div>
+    </>
+  );
+};
+
+/** Comunidad: una palabra por corte y luego la frase completa */
+const COMUNIDAD = ['Profesores.', 'Estudiantes.', 'Directivos.'];
+const Comunidad: React.FC = () => {
+  const f = useCurrentFrame();
+  return (
+    <>
+      {COMUNIDAD.map((w, i) => {
+        const a = f - i * 27;
+        if (a < 0 || a >= 27) return null;
+        const p = tw(a, [0, 7], [0, 1], ease.out);
+        return (
+          <div key={w} style={{position: 'absolute', left: 0, right: 0, top: 1240, textAlign: 'center', fontFamily: F.sans, fontWeight: 900, fontSize: 132, color: i === 1 ? AMARILLO : BLANCO, transform: `scale(${1.5 - 0.5 * p})`, opacity: p * (1 - tw(a, [22, 27], [0, 1])), filter: p < 1 ? `blur(${(1 - p) * 10}px)` : undefined, textShadow: '0 8px 30px rgba(0,0,0,0.6)'}}>
+            {w}
+          </div>
+        );
+      })}
+      <Sequence from={81} durationInFrames={54} layout="none">
+        <Panel dur={54} top={1200}>
+          <Linea texto="Una comunidad que lo hizo *posible." at={0} size={70} paso={1.5} />
+        </Panel>
+      </Sequence>
     </>
   );
 };
@@ -451,7 +488,7 @@ const Cierre: React.FC = () => {
 export const PlacaComaem: React.FC = () => {
   const musica = (fr: number) => {
     const base = interpolate(fr, [0, 36, PLACA_FRAMES - 14, PLACA_FRAMES], [0, 0.9, 0.9, 0], {...clamp, easing: (x) => x * x * (3 - 2 * x)});
-    const voz = interpolate(fr, [399, 407, 521, 531], [1, 0.3, 0.3, 1], clamp);
+    const voz = interpolate(fr, [414, 422, 538, 545], [1, 0.3, 0.3, 1], clamp);
     return base * voz;
   };
   return (
@@ -480,20 +517,23 @@ export const PlacaComaem: React.FC = () => {
           <Linea texto="Hoy, Westhill es la *primera *universidad *privada en recibirla." at={2} size={66} paso={1.4} />
         </Panel>
       </Sequence>
-      <Sequence from={285} durationInFrames={120}>
+      <Sequence from={285} durationInFrames={135}>
         <div style={{position: 'absolute', left: 72, right: 72, top: 840, textShadow: '0 6px 26px rgba(0,0,0,0.7)'}}>
           <Linea texto="¿Qué significa *para *ti?" at={0} size={76} paso={2} />
         </div>
       </Sequence>
-      <Sequence from={285} durationInFrames={120}>
-        <Tarjetas dur={120} />
+      <Sequence from={285} durationInFrames={135}>
+        <Tarjetas dur={135} />
       </Sequence>
-      <Sequence from={405} durationInFrames={120}>
+      <Sequence from={420} durationInFrames={125}>
         <Voz />
         <Audio src={staticFile('placa/asisclo.wav')} />
       </Sequence>
-      <Sequence from={525} durationInFrames={60}>
-        <Vigencia dur={60} />
+      <Sequence from={545} durationInFrames={135}>
+        <Comunidad />
+      </Sequence>
+      <Sequence from={680} durationInFrames={75}>
+        <Vigencia dur={75} />
       </Sequence>
       <Sequence durationInFrames={CIERRE}>
         <Encabezado />
@@ -502,7 +542,7 @@ export const PlacaComaem: React.FC = () => {
         <Cierre />
       </Sequence>
       {/* destellos de corte */}
-      {[90, CIERRE].map((at) => (
+      {[90, 545, CIERRE].map((at) => (
         <Sequence key={at} from={at} durationInFrames={10}>
           <Flash />
         </Sequence>
@@ -512,13 +552,16 @@ export const PlacaComaem: React.FC = () => {
       <Sfx at={90} name="impact" volume={0.4} />
       <Sfx at={40} name="whoosh" volume={0.3} />
       <Sfx at={52} name="impact" volume={0.45} />
-      {[180, 230, 285, 325, 365, 405, 525].map((at) => (
+      {[180, 230, 285, 330, 375, 420, 572, 599, 626, 653, 680].map((at) => (
         <Sfx key={at} at={at - 3} name="ref_swoosh_short" volume={0.28} />
       ))}
-      {[289, 329, 369].map((at) => (
+      {[289, 334, 379].map((at) => (
         <Sfx key={at} at={at} name="pop" volume={0.35} />
       ))}
-      <Sfx at={551} name="ding" volume={0.3} />
+      <Sfx at={706} name="ding" volume={0.3} />
+      <Sfx at={505} name="riser" volume={0.3} />
+      <Sfx at={545} name="down_bass" volume={0.9} />
+      <Sfx at={545} name="impact" volume={0.4} />
       <Sfx at={CIERRE - 10} name="whoosh_largo" volume={0.35} />
       {[0, 8, 16].map((k) => (
         <Sfx key={k} at={CIERRE + k} name="impact" volume={0.28} />
@@ -528,7 +571,7 @@ export const PlacaComaem: React.FC = () => {
       <Sfx at={CIERRE + 52} name="ref_shutter" volume={0.3} />
       <Sfx at={CIERRE + 74} name="pop" volume={0.35} />
       <Sfx at={CIERRE + 96} name="ding" volume={0.3} />
-      <Audio src={staticFile('placa/solace.wav')} volume={musica} />
+      <Audio src={staticFile('placa/solace_ext.wav')} volume={musica} />
     </AbsoluteFill>
   );
 };
