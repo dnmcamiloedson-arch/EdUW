@@ -10,7 +10,7 @@ import {F, ease, tw} from './theme';
 // que significa para el estudiante, con la línea gráfica de las cápsulas del cliente (azul marino, amarillo, verde).
 //  0.0  gancho: "¿Vas a estudiar Medicina?" sobre la develación de la placa
 //  2.0  drop: la placa de Distinción de Excelencia, "el máximo reconocimiento a la calidad de la educación médica"
-//  5.0  "la única universidad privada en recibirlo" (dato que dio el equipo de la universidad)
+//  5.0  "la primera universidad privada en recibirlo" (dato confirmado por el cliente)
 //  7.0  qué significa para ti: tres tarjetas
 // 13.0  el Dr. Asisclo: "Estas placas les pertenecen a todos ustedes." (la música respira)
 // 17.0  vigente hasta 2031
@@ -249,7 +249,7 @@ export const PlacaComaem: React.FC = () => {
       </Sequence>
       <Sequence from={150} durationInFrames={60}>
         <Panel dur={60}>
-          <Linea texto="Y somos la *única *universidad *privada en recibirlo." at={2} size={66} paso={1.5} />
+          <Linea texto="Somos la *primera *universidad *privada en recibirlo." at={2} size={66} paso={1.5} />
         </Panel>
       </Sequence>
       <Sequence from={210} durationInFrames={180}>
