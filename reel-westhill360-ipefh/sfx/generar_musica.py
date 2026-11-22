@@ -24,8 +24,11 @@ L = np.zeros(N); R = np.zeros(N)
 
 def add(x, t0, gain=1.0, pan=0.0):
     i = int(t0 * SR)
-    if i >= N:
+    if i >= N or i + len(x) <= 0:
         return
+    if i < 0:  # empieza antes del inicio (p. ej. una subida antes de un drop temprano): se recorta
+        x = x[-i:]
+        i = 0
     x = x[: N - i]
     l = np.cos((pan + 1) * np.pi / 4); r = np.sin((pan + 1) * np.pi / 4)
     L[i:i + len(x)] += x * gain * l * 1.414
