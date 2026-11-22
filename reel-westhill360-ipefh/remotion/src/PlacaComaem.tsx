@@ -10,8 +10,9 @@ import {F, ease, tw} from './theme';
 // que significa para el estudiante, con la línea gráfica de las cápsulas del cliente (azul marino, amarillo, verde).
 //  0.0  gancho: "¿Vas a estudiar Medicina?" sobre la develación de la placa
 //  2.0  drop: la placa de Distinción de Excelencia, "el máximo reconocimiento a la calidad de la educación médica"
-//  5.0  "la primera universidad privada en recibirlo" (dato confirmado por el cliente)
-//  7.0  qué significa para ti: tres tarjetas
+//  5.0  "antes solo la tenían la UNAM y la Escuela Militar de Medicina; hoy Westhill es la primera universidad
+//        privada en recibirla" (de la nota oficial de la universidad)
+//  8.5  qué significa para ti: tres tarjetas
 // 13.0  el Dr. Asisclo: "Estas placas les pertenecen a todos ustedes." (la música respira)
 // 17.0  vigente hasta 2031
 // 20.0  cierre de venta: "Tu vocación merece excelencia" + Solicita información
@@ -35,10 +36,11 @@ type Toma = {src: string; at: number; dur: number; desde: number; rate?: number;
 const TOMAS: Toma[] = [
   {src: '11218', at: 0, dur: 62, desde: 0.4, origen: '72% 22%', zoom: [1.0, 1.18]},
   {src: '1126', at: 60, dur: 92, desde: 2.6, zoom: [1.06, 1.16]},
-  {src: '1121', at: 150, dur: 62, desde: 1.0, zoom: [1.0, 1.08]},
-  {src: '11211', at: 210, dur: 62, desde: 0.6, zoom: [1.04, 1.1]},
-  {src: 'IMG_4448', at: 270, dur: 62, desde: 0.5, zoom: [1.02, 1.1]},
-  {src: '11217', at: 330, dur: 62, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
+  {src: '1121', at: 150, dur: 52, desde: 1.0, zoom: [1.0, 1.08]},
+  {src: '11211', at: 200, dur: 57, desde: 0.6, zoom: [1.04, 1.1]},
+  {src: 'IMG_4448', at: 255, dur: 47, desde: 0.5, zoom: [1.02, 1.1]},
+  {src: 'IMG_4449', at: 300, dur: 47, desde: 0.4, zoom: [1.02, 1.1]},
+  {src: '11217', at: 345, dur: 47, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
   {src: '112110', at: 390, dur: 122, desde: 0.0, origen: '50% 40%', zoom: [1.2, 1.3]},
   {src: 'IMG_4526', at: 510, dur: 92, desde: 0.2, zoom: [1.0, 1.08]},
 ];
@@ -247,24 +249,29 @@ export const PlacaComaem: React.FC = () => {
           <Linea texto="El *máximo *reconocimiento a la calidad de la educación médica." at={4} size={64} paso={1.5} />
         </Panel>
       </Sequence>
-      <Sequence from={150} durationInFrames={60}>
-        <Panel dur={60}>
-          <Linea texto="Somos la *primera *universidad *privada en recibirlo." at={2} size={66} paso={1.5} />
+      <Sequence from={150} durationInFrames={50}>
+        <Panel dur={50}>
+          <Linea texto="Antes, solo la tenían la *UNAM y la *Escuela *Militar *de *Medicina." at={2} size={60} paso={1.2} />
         </Panel>
       </Sequence>
-      <Sequence from={210} durationInFrames={180}>
+      <Sequence from={200} durationInFrames={55}>
+        <Panel dur={55}>
+          <Linea texto="Hoy, Westhill es la *primera *universidad *privada en recibirla." at={2} size={66} paso={1.4} />
+        </Panel>
+      </Sequence>
+      <Sequence from={255} durationInFrames={135}>
         <div style={{position: 'absolute', left: 72, right: 72, top: 1050, textShadow: '0 6px 26px rgba(0,0,0,0.7)'}}>
           <Linea texto="¿Qué significa *para *ti?" at={0} size={76} paso={2} />
         </div>
       </Sequence>
-      <Sequence from={210} durationInFrames={60}>
-        <Tarjeta n="01" titulo="Calidad evaluada" texto="Tu programa cumple criterios académicos de acreditación." dur={60} />
+      <Sequence from={255} durationInFrames={45}>
+        <Tarjeta n="01" titulo="Calidad evaluada" texto="Tu programa cumple criterios académicos de acreditación." dur={45} />
       </Sequence>
-      <Sequence from={270} durationInFrames={60}>
-        <Tarjeta n="02" titulo="Mejora continua" texto="Lo que aprendes se revisa y se actualiza." dur={60} />
+      <Sequence from={300} durationInFrames={45}>
+        <Tarjeta n="02" titulo="Mejora continua" texto="Lo que aprendes se revisa y se actualiza." dur={45} />
       </Sequence>
-      <Sequence from={330} durationInFrames={60}>
-        <Tarjeta n="03" titulo="Respaldo externo" texto="Lo avala un organismo acreditador independiente." dur={60} />
+      <Sequence from={345} durationInFrames={45}>
+        <Tarjeta n="03" titulo="Respaldo externo" texto="Lo avala un organismo acreditador independiente." dur={45} />
       </Sequence>
       <Sequence from={390} durationInFrames={120}>
         <Voz />
@@ -289,10 +296,10 @@ export const PlacaComaem: React.FC = () => {
       <Sfx at={0} name="impact" volume={0.35} />
       <Sfx at={60} name="down_bass" volume={0.9} />
       <Sfx at={60} name="impact" volume={0.4} />
-      {[150, 210, 270, 330, 390, 510].map((at) => (
+      {[150, 200, 255, 300, 345, 390, 510].map((at) => (
         <Sfx key={at} at={at - 3} name="ref_swoosh_short" volume={0.28} />
       ))}
-      {[214, 274, 334].map((at) => (
+      {[259, 304, 349].map((at) => (
         <Sfx key={at} at={at} name="pop" volume={0.35} />
       ))}
       <Sfx at={536} name="ding" volume={0.3} />
