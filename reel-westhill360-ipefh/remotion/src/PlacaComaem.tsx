@@ -9,7 +9,7 @@ import {F, ease, tw} from './theme';
 // Objetivo: venta (aspirantes a Médico Cirujano). Quien lo ve no sabe qué es COMAEM, así que se explica con lo
 // que significa para el estudiante, con la línea gráfica de las cápsulas del cliente (azul marino, amarillo, verde).
 //  0.0  gancho: "¿Vas a estudiar Medicina?" y "WESTHILL" en grande sobre la develación de la placa
-//  3.0  la placa de Distinción de Excelencia, "el máximo reconocimiento a la calidad de la educación médica"
+//  3.0  la placa de Distinción de Excelencia, "el máximo reconocimiento que otorga la COMAEM"
 //  6.0  "antes solo la tenían la UNAM y la Escuela Militar de Medicina; hoy Westhill es la primera universidad
 //        privada en recibirla" (de la nota oficial de la universidad)
 //  9.5  qué significa para ti: tres tarjetas apiladas
@@ -504,7 +504,7 @@ export const PlacaComaem: React.FC = () => {
       <Sequence from={90} durationInFrames={90}>
         <Panel dur={90}>
           <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 32, letterSpacing: 2, color: VERDE, marginBottom: 14}}>DISTINCIÓN DE EXCELENCIA COMAEM</div>
-          <Linea texto="El *máximo *reconocimiento a la calidad de la educación médica." at={4} size={64} paso={1.5} />
+          <Linea texto="El *máximo *reconocimiento que otorga la *COMAEM." at={4} size={64} paso={1.5} />
         </Panel>
       </Sequence>
       <Sequence from={180} durationInFrames={50}>

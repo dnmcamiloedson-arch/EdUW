@@ -494,7 +494,7 @@ export const PlacaComaemVoz: React.FC = () => {
       <Sequence from={108} durationInFrames={192}>
         <Panel dur={192}>
           <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 32, letterSpacing: 2, color: VERDE, marginBottom: 14}}>DISTINCIÓN DE EXCELENCIA COMAEM</div>
-          <Linea texto="El *máximo *reconocimiento a la educación médica en México." at={60} size={64} paso={1.8} />
+          <Linea texto="El *máximo *reconocimiento que otorga la *COMAEM." at={60} size={64} paso={1.8} />
         </Panel>
       </Sequence>
       <Sequence from={300} durationInFrames={105}>
@@ -538,8 +538,12 @@ export const PlacaComaemVoz: React.FC = () => {
       ))}
       <Grain opacity={0.03} />
       {/* narración: hasta "…independiente." y, después del Dr. Asisclo, desde "Profesores" */}
-      <Sequence durationInFrames={692}>
+      {/* se quita "en México" de la narración (9.16–9.98 s de la voz): queda "…a la educación médica." */}
+      <Sequence durationInFrames={275}>
         <Audio src={staticFile('placa/voz_ia.wav')} />
+      </Sequence>
+      <Sequence from={299} durationInFrames={393}>
+        <Audio src={staticFile('placa/voz_ia.wav')} startFrom={299} />
       </Sequence>
       <Sequence from={822}>
         <Audio src={staticFile('placa/voz_ia.wav')} startFrom={693} />
