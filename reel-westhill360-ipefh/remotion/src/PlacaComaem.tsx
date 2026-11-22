@@ -349,13 +349,13 @@ const Cierre: React.FC = () => {
         <path d="M0,210 C340,160 680,260 1080,190 L1080,260 L0,260 Z" fill={NAVY2} transform={`translate(0 ${(1 - ondas) * 120})`} />
       </svg>
       {/* logo arriba */}
-      <div style={{position: 'absolute', left: W / 2 - 250, top: 120, width: 500, opacity: logo, transform: `translateY(${(1 - logo) * -40}px) scale(${0.92 + 0.08 * logo})`, filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.45))'}}>
+      <div style={{position: 'absolute', left: W / 2 - 230, top: 96, width: 460, opacity: logo, transform: `translateY(${(1 - logo) * -40}px) scale(${0.92 + 0.08 * logo})`, filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.45))'}}>
         <Img src={LOGO} style={{width: '100%', display: 'block'}} />
         <Img src={LOGO} style={{position: 'absolute', left: 0, top: 0, width: '100%', clipPath: `polygon(${(barridoLogo - 0.08) * 100}% 0, ${(barridoLogo + 0.06) * 100}% 0, ${barridoLogo * 100}% 100%, ${(barridoLogo - 0.14) * 100}% 100%)`, filter: 'brightness(2) drop-shadow(0 0 8px white)'}} />
       </div>
-      <div style={{position: 'absolute', left: W / 2 - 160 * logo, top: 345, width: 320 * logo, height: 6, borderRadius: 3, background: AMARILLO}} />
+      <div style={{position: 'absolute', left: W / 2 - 160 * logo, top: 300, width: 320 * logo, height: 6, borderRadius: 3, background: AMARILLO}} />
       {/* titular */}
-      <div style={{position: 'absolute', left: 0, right: 0, top: 385, textAlign: 'center'}}>
+      <div style={{position: 'absolute', left: 0, right: 0, top: 330, textAlign: 'center'}}>
         <div style={{display: 'inline-block'}}>
           <Linea texto="Tu vocación merece" at={6} size={74} peso={800} paso={2} />
         </div>
@@ -364,37 +364,37 @@ const Cierre: React.FC = () => {
         </div>
       </div>
       {/* foto con marco y sello */}
-      <div style={{position: 'absolute', left: 110, right: 110, top: 655, height: 360, opacity: foto, transform: `translateY(${(1 - foto) * 80}px) rotate(${-2.5 + (1 - foto) * -6}deg)`}}>
+      <div style={{position: 'absolute', left: 160, right: 160, top: 600, height: 527, opacity: foto, transform: `translateY(${(1 - foto) * 80}px) rotate(${-2.5 + (1 - foto) * -6}deg)`}}>
         <div style={{position: 'absolute', inset: 0, borderRadius: 26, background: BLANCO, padding: 10, boxShadow: '0 30px 70px rgba(0,0,0,0.5)'}}>
           <div style={{width: '100%', height: '100%', borderRadius: 18, overflow: 'hidden'}}>
-            <Img src={staticFile('placa/foto_61.jpg')} style={{width: '100%', height: '100%', objectFit: 'cover', objectPosition: '50% 42%', transform: `scale(${1.12 - 0.08 * foto})`}} />
+            <Img src={staticFile('placa/foto_61.jpg')} style={{width: '100%', height: '100%', objectFit: 'contain', transform: `scale(${1.04 - 0.04 * foto})`}} />
           </div>
         </div>
-        <div style={{position: 'absolute', right: -60, bottom: -90}}>
+        <div style={{position: 'absolute', right: -100, bottom: -125}}>
           <Sello p={sello} giro={f * 1.2} />
         </div>
       </div>
       {/* puntos de valor */}
-      <div style={{position: 'absolute', left: 90, right: 90, top: 1075}}>
-        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 56, color: BLANCO, opacity: tw(f, [34, 44], [0, 1]), transform: `translateY(${(1 - tw(f, [34, 44], [0, 1], ease.out)) * 20}px)`}}>
+      <div style={{position: 'absolute', left: 90, right: 90, top: 1185}}>
+        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 52, color: BLANCO, opacity: tw(f, [34, 44], [0, 1]), transform: `translateY(${(1 - tw(f, [34, 44], [0, 1], ease.out)) * 20}px)`}}>
           Estudia <span style={{color: AMARILLO}}>Médico Cirujano</span>
         </div>
         {PUNTOS.map((t, i) => {
           const q = tw(f, [42 + i * 7, 54 + i * 7], [0, 1], ease.out);
           return (
-            <div key={i} style={{display: 'flex', alignItems: 'center', gap: 20, marginTop: 20, padding: '16px 24px', borderRadius: 18, background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.18)', opacity: q, transform: `translateX(${(1 - q) * -80}px)`}}>
+            <div key={i} style={{display: 'flex', alignItems: 'center', gap: 18, marginTop: 14, padding: '12px 22px', borderRadius: 16, background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.18)', opacity: q, transform: `translateX(${(1 - q) * -80}px)`}}>
               <div style={{flex: 'none', width: 44, height: 44, borderRadius: 22, background: VERDE, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 <svg viewBox="0 0 24 24" style={{width: 28, height: 28}}>
                   <path d="M5 12.5 L10 17 L19 7.5" fill="none" stroke={BLANCO} strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={22} strokeDashoffset={22 * (1 - tw(f, [48 + i * 7, 58 + i * 7], [0, 1]))} />
                 </svg>
               </div>
-              <div style={{fontFamily: F.sans, fontWeight: 700, fontSize: 36, color: BLANCO}}>{t}</div>
+              <div style={{fontFamily: F.sans, fontWeight: 700, fontSize: 33, color: BLANCO}}>{t}</div>
             </div>
           );
         })}
       </div>
       {/* botón */}
-      <div style={{position: 'absolute', left: 100, right: 100, top: 1530, height: 128}}>
+      <div style={{position: 'absolute', left: 110, right: 110, top: 1555, height: 116}}>
         {[0, 1].map((r) => {
           const fase = ((f - 76 - r * 20) % 40) / 40;
           return f > 76 + r * 20 ? <div key={r} style={{position: 'absolute', inset: 0, borderRadius: 64, border: `4px solid ${AMARILLO}`, opacity: (1 - fase) * 0.7, transform: `scale(${1 + fase * 0.18}, ${1 + fase * 0.5})`}} /> : null;
@@ -413,7 +413,7 @@ const Cierre: React.FC = () => {
 
 export const PlacaComaem: React.FC = () => {
   const musica = (fr: number) => {
-    const base = interpolate(fr, [0, 2, PLACA_FRAMES - 14, PLACA_FRAMES], [0, 0.9, 0.9, 0], clamp);
+    const base = interpolate(fr, [0, 36, PLACA_FRAMES - 14, PLACA_FRAMES], [0, 0.9, 0.9, 0], {...clamp, easing: (x) => x * x * (3 - 2 * x)});
     const voz = interpolate(fr, [414, 422, 536, 546], [1, 0.3, 0.3, 1], clamp);
     return base * voz;
   };
@@ -471,7 +471,6 @@ export const PlacaComaem: React.FC = () => {
         </Sequence>
       ))}
       <Grain opacity={0.03} />
-      <Sfx at={0} name="impact" volume={0.35} />
       <Sfx at={90} name="down_bass" volume={0.9} />
       <Sfx at={90} name="impact" volume={0.4} />
       <Sfx at={40} name="whoosh" volume={0.3} />
