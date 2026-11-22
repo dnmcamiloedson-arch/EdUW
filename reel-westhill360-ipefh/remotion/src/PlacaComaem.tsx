@@ -31,7 +31,7 @@ const BLANCO = '#FFFFFF';
 const vid = (n: string) => staticFile(`proxies/placa/${n}.mp4`);
 const LOGO = staticFile('logos/logo_westhill_blanco_total.png');
 export const PLACA_FRAMES = 741; // dura lo mismo que la pista (24.7 s)
-const CIERRE = 615;
+const CIERRE = 585;
 
 type Toma = {src: string; at: number; dur: number; desde: number; rate?: number; origen?: string; zoom?: [number, number]};
 const TOMAS: Toma[] = [
@@ -39,11 +39,11 @@ const TOMAS: Toma[] = [
   {src: '1126', at: 90, dur: 92, desde: 2.6, zoom: [1.06, 1.16]},
   {src: '1121', at: 180, dur: 52, desde: 1.0, zoom: [1.0, 1.08]},
   {src: '11211', at: 230, dur: 57, desde: 0.6, zoom: [1.04, 1.1]},
-  {src: 'IMG_4448', at: 285, dur: 47, desde: 0.5, zoom: [1.02, 1.1]},
-  {src: 'IMG_4449', at: 330, dur: 47, desde: 0.4, zoom: [1.02, 1.1]},
-  {src: '11217', at: 375, dur: 47, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
-  {src: '112110', at: 420, dur: 122, desde: 0.0, origen: '50% 40%', zoom: [1.2, 1.3]},
-  {src: 'IMG_4526', at: 540, dur: 77, desde: 0.2, zoom: [1.0, 1.08]},
+  {src: 'IMG_4448', at: 285, dur: 42, desde: 0.5, zoom: [1.02, 1.1]},
+  {src: 'IMG_4449', at: 325, dur: 42, desde: 0.4, zoom: [1.02, 1.1]},
+  {src: '11217', at: 365, dur: 42, desde: 2.0, origen: '40% 50%', zoom: [1.0, 1.08]},
+  {src: '112110', at: 405, dur: 122, desde: 0.0, origen: '50% 40%', zoom: [1.2, 1.3]},
+  {src: 'IMG_4526', at: 525, dur: 62, desde: 0.2, zoom: [1.0, 1.08]},
 ];
 
 const Clip: React.FC<{t: Toma}> = ({t}) => {
@@ -183,7 +183,7 @@ const TARJETAS: {n: string; tipo: 'check' | 'ciclo' | 'escudo'; titulo: string; 
  * Las tres tarjetas se apilan: cada una entra desde la derecha con su ícono dibujándose y su barra de progreso
  * (1/3, 2/3, 3/3); la anterior sube, se encoge y se queda detrás, como una pila de notificaciones.
  */
-const PASO = 45;
+const PASO = 40;
 const Tarjetas: React.FC<{dur: number}> = ({dur}) => {
   const f = useCurrentFrame();
   const sale = tw(f, [dur - 7, dur], [0, 1], ease.in);
@@ -319,15 +319,60 @@ const CHISPAS = Array.from({length: 46}, (_, i) => ({x: ((i * 397) % 1000) / 100
  * chispas doradas y las ondas verde-amarillo de las cápsulas entrando desde los lados.
  */
 const PUNTOS = ['Plan incorporado a la UNAM', 'Distinción de Excelencia COMAEM', 'Primera universidad privada en recibirla'];
+/**
+ * Titular cinético del cierre: "Tu", "vocación", "merece" y "EXCELENCIA." llenan la pantalla uno por uno, al
+ * ritmo, y cada palabra vuela a su lugar en el titular final mientras entra la siguiente. Los anchos salen de
+ * Montserrat medido (800 a 74 px para la primera línea, 900 a 138 px para EXCELENCIA).
+ */
+type PalabraT = {w: string; peso: number; size: number; ancho: number; x: number; y: number; at: number; vuela: number; dorado?: boolean};
+const PAL_T: PalabraT[] = [
+  {w: 'Tu', peso: 800, size: 74, ancho: 97.2, x: 197.6, y: 372, at: 0, vuela: 6},
+  {w: 'vocación', peso: 800, size: 74, ancho: 350.8, x: 441.6, y: 372, at: 8, vuela: 14},
+  {w: 'merece', peso: 800, size: 74, ancho: 294.3, x: 784.2, y: 372, at: 16, vuela: 22},
+  {w: 'EXCELENCIA.', peso: 900, size: 138, ancho: 1006.8, x: 540, y: 488, at: 24, vuela: 38, dorado: true},
+];
+const TitularCinetico: React.FC = () => {
+  const f = useCurrentFrame();
+  const shine = interpolate(f, [52, 76], [-0.3, 1.3], clamp);
+  return (
+    <AbsoluteFill>
+      {/* destello en cada golpe de palabra */}
+      {PAL_T.map((p) => (
+        <AbsoluteFill key={p.w} style={{background: p.dorado ? 'radial-gradient(circle at 50% 50%, rgba(255,227,138,0.55), rgba(242,201,76,0) 60%)' : 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.28), rgba(255,255,255,0) 55%)', opacity: interpolate(f - p.at, [0, 1, 7], [0, 1, 0], clamp)}} />
+      ))}
+      {PAL_T.map((p) => {
+        const a = f - p.at;
+        if (a < 0) return null;
+        const grande = Math.min(p.dorado ? 1.04 : 8, 1000 / p.ancho);
+        const entra = tw(a, [0, 5], [0, 1], ease.out);
+        const vuela = tw(f, [p.vuela, p.vuela + (p.dorado ? 14 : 10)], [0, 1], ease.inOut);
+        // escala: entra un poco más grande (golpe), se asienta en "grande" y luego baja a 1 al volar
+        const golpe = p.dorado ? interpolate(a, [0, 10], [2.2, 1], {...clamp, easing: ease.out}) : 1.25 - 0.25 * entra;
+        const esc = Math.pow(grande * golpe, 1 - Math.min(1, vuela * 1.6));
+        const cx = 540 * (1 - vuela) + p.x * vuela;
+        const cy = 960 * (1 - vuela) + p.y * vuela;
+        const estilo: React.CSSProperties = p.dorado
+          ? {color: 'transparent', backgroundImage: `linear-gradient(105deg, rgba(255,255,255,0) ${(shine - 0.08) * 100}%, rgba(255,255,255,0.95) ${shine * 100}%, rgba(255,255,255,0) ${(shine + 0.08) * 100}%), linear-gradient(180deg, #FFE38A 0%, ${AMARILLO} 60%, #D9A91F 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', letterSpacing: 2, filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.45))'}
+          : {color: BLANCO, letterSpacing: -0.5, textShadow: '0 6px 24px rgba(0,0,0,0.45)'};
+        return (
+          <div key={p.w} style={{position: 'absolute', left: cx, top: cy, transform: `translate(-50%, -50%) scale(${esc})`, opacity: Math.min(1, entra * 1.5), filter: entra < 1 ? `blur(${(1 - entra) * 10}px)` : undefined, whiteSpace: 'nowrap'}}>
+            <span style={{fontFamily: F.sans, fontWeight: p.peso, fontSize: p.size, lineHeight: 1, display: 'inline-block', ...estilo}}>{p.w}</span>
+          </div>
+        );
+      })}
+    </AbsoluteFill>
+  );
+};
+
 const Cierre: React.FC = () => {
   const f = useCurrentFrame();
-  const logo = tw(f, [0, 14], [0, 1], ease.out);
-  const barridoLogo = interpolate(f, [12, 34], [-0.2, 1.2], clamp);
-  const foto = tw(f, [16, 30], [0, 1], ease.out);
-  const sello = tw(f, [28, 42], [0, 1], ease.out);
-  const boton = tw(f, [64, 76], [0, 1], ease.out);
-  const late = f > 76 ? 1 + 0.04 * Math.max(0, Math.sin(((f - 76) / 15) * Math.PI)) : 1;
-  const brillo = interpolate((f - 80) % 40, [0, 16], [-0.3, 1.3], clamp);
+  const logo = tw(f, [40, 54], [0, 1], ease.out);
+  const barridoLogo = interpolate(f, [52, 74], [-0.2, 1.2], clamp);
+  const foto = tw(f, [52, 66], [0, 1], ease.out);
+  const sello = tw(f, [64, 78], [0, 1], ease.out);
+  const boton = tw(f, [96, 108], [0, 1], ease.out);
+  const late = f > 108 ? 1 + 0.04 * Math.max(0, Math.sin(((f - 108) / 15) * Math.PI)) : 1;
+  const brillo = interpolate((f - 112) % 40, [0, 16], [-0.3, 1.3], clamp);
   const ondas = tw(f, [0, 18], [0, 1], ease.out);
   return (
     <AbsoluteFill style={{background: NAVY2, overflow: 'hidden'}}>
@@ -354,15 +399,7 @@ const Cierre: React.FC = () => {
         <Img src={LOGO} style={{position: 'absolute', left: 0, top: 0, width: '100%', clipPath: `polygon(${(barridoLogo - 0.08) * 100}% 0, ${(barridoLogo + 0.06) * 100}% 0, ${barridoLogo * 100}% 100%, ${(barridoLogo - 0.14) * 100}% 100%)`, filter: 'brightness(2) drop-shadow(0 0 8px white)'}} />
       </div>
       <div style={{position: 'absolute', left: W / 2 - 160 * logo, top: 300, width: 320 * logo, height: 6, borderRadius: 3, background: AMARILLO}} />
-      {/* titular */}
-      <div style={{position: 'absolute', left: 0, right: 0, top: 330, textAlign: 'center'}}>
-        <div style={{display: 'inline-block'}}>
-          <Linea texto="Tu vocación merece" at={6} size={74} peso={800} paso={2} />
-        </div>
-        <div style={{marginTop: 4, transform: `scale(${interpolate(f, [12, 18, 24], [1.4, 0.96, 1], clamp)})`, opacity: tw(f, [12, 18], [0, 1])}}>
-          <span style={{fontFamily: F.sans, fontWeight: 900, fontSize: 138, letterSpacing: 2, lineHeight: 1.05, color: 'transparent', backgroundImage: `linear-gradient(105deg, rgba(255,255,255,0) ${(interpolate(f, [22, 46], [-0.3, 1.3], clamp) - 0.08) * 100}%, rgba(255,255,255,0.95) ${interpolate(f, [22, 46], [-0.3, 1.3], clamp) * 100}%, rgba(255,255,255,0) ${(interpolate(f, [22, 46], [-0.3, 1.3], clamp) + 0.08) * 100}%), linear-gradient(180deg, #FFE38A 0%, ${AMARILLO} 60%, #D9A91F 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.45))'}}>EXCELENCIA.</span>
-        </div>
-      </div>
+      <TitularCinetico />
       {/* foto con marco y sello */}
       <div style={{position: 'absolute', left: 160, right: 160, top: 600, height: 527, opacity: foto, transform: `translateY(${(1 - foto) * 80}px) rotate(${-2.5 + (1 - foto) * -6}deg)`}}>
         <div style={{position: 'absolute', inset: 0, borderRadius: 26, background: BLANCO, padding: 10, boxShadow: '0 30px 70px rgba(0,0,0,0.5)'}}>
@@ -376,16 +413,16 @@ const Cierre: React.FC = () => {
       </div>
       {/* puntos de valor */}
       <div style={{position: 'absolute', left: 90, right: 90, top: 1185}}>
-        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 52, color: BLANCO, opacity: tw(f, [34, 44], [0, 1]), transform: `translateY(${(1 - tw(f, [34, 44], [0, 1], ease.out)) * 20}px)`}}>
+        <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 52, color: BLANCO, opacity: tw(f, [68, 78], [0, 1]), transform: `translateY(${(1 - tw(f, [68, 78], [0, 1], ease.out)) * 20}px)`}}>
           Estudia <span style={{color: AMARILLO}}>Médico Cirujano</span>
         </div>
         {PUNTOS.map((t, i) => {
-          const q = tw(f, [42 + i * 7, 54 + i * 7], [0, 1], ease.out);
+          const q = tw(f, [74 + i * 6, 86 + i * 6], [0, 1], ease.out);
           return (
             <div key={i} style={{display: 'flex', alignItems: 'center', gap: 18, marginTop: 14, padding: '12px 22px', borderRadius: 16, background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.18)', opacity: q, transform: `translateX(${(1 - q) * -80}px)`}}>
               <div style={{flex: 'none', width: 44, height: 44, borderRadius: 22, background: VERDE, display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
                 <svg viewBox="0 0 24 24" style={{width: 28, height: 28}}>
-                  <path d="M5 12.5 L10 17 L19 7.5" fill="none" stroke={BLANCO} strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={22} strokeDashoffset={22 * (1 - tw(f, [48 + i * 7, 58 + i * 7], [0, 1]))} />
+                  <path d="M5 12.5 L10 17 L19 7.5" fill="none" stroke={BLANCO} strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={22} strokeDashoffset={22 * (1 - tw(f, [80 + i * 6, 90 + i * 6], [0, 1]))} />
                 </svg>
               </div>
               <div style={{fontFamily: F.sans, fontWeight: 700, fontSize: 33, color: BLANCO}}>{t}</div>
@@ -396,8 +433,8 @@ const Cierre: React.FC = () => {
       {/* botón */}
       <div style={{position: 'absolute', left: 110, right: 110, top: 1555, height: 116}}>
         {[0, 1].map((r) => {
-          const fase = ((f - 76 - r * 20) % 40) / 40;
-          return f > 76 + r * 20 ? <div key={r} style={{position: 'absolute', inset: 0, borderRadius: 64, border: `4px solid ${AMARILLO}`, opacity: (1 - fase) * 0.7, transform: `scale(${1 + fase * 0.18}, ${1 + fase * 0.5})`}} /> : null;
+          const fase = ((f - 108 - r * 20) % 40) / 40;
+          return f > 108 + r * 20 ? <div key={r} style={{position: 'absolute', inset: 0, borderRadius: 64, border: `4px solid ${AMARILLO}`, opacity: (1 - fase) * 0.7, transform: `scale(${1 + fase * 0.18}, ${1 + fase * 0.5})`}} /> : null;
         })}
         <div style={{position: 'absolute', inset: 0, borderRadius: 64, background: `linear-gradient(180deg, #FFE38A 0%, ${AMARILLO} 55%, #E0B12E 100%)`, boxShadow: '0 16px 40px rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 22, overflow: 'hidden', opacity: boton, transform: `translateY(${(1 - boton) * 50}px) scale(${late * (0.8 + 0.2 * boton)})`}}>
           <div style={{position: 'absolute', top: 0, bottom: 0, left: `${brillo * 100}%`, width: 130, transform: 'translateX(-50%) skewX(-18deg)', background: 'linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.7), rgba(255,255,255,0))'}} />
@@ -414,7 +451,7 @@ const Cierre: React.FC = () => {
 export const PlacaComaem: React.FC = () => {
   const musica = (fr: number) => {
     const base = interpolate(fr, [0, 36, PLACA_FRAMES - 14, PLACA_FRAMES], [0, 0.9, 0.9, 0], {...clamp, easing: (x) => x * x * (3 - 2 * x)});
-    const voz = interpolate(fr, [414, 422, 536, 546], [1, 0.3, 0.3, 1], clamp);
+    const voz = interpolate(fr, [399, 407, 521, 531], [1, 0.3, 0.3, 1], clamp);
     return base * voz;
   };
   return (
@@ -443,20 +480,20 @@ export const PlacaComaem: React.FC = () => {
           <Linea texto="Hoy, Westhill es la *primera *universidad *privada en recibirla." at={2} size={66} paso={1.4} />
         </Panel>
       </Sequence>
-      <Sequence from={285} durationInFrames={135}>
+      <Sequence from={285} durationInFrames={120}>
         <div style={{position: 'absolute', left: 72, right: 72, top: 840, textShadow: '0 6px 26px rgba(0,0,0,0.7)'}}>
           <Linea texto="¿Qué significa *para *ti?" at={0} size={76} paso={2} />
         </div>
       </Sequence>
-      <Sequence from={285} durationInFrames={135}>
-        <Tarjetas dur={135} />
+      <Sequence from={285} durationInFrames={120}>
+        <Tarjetas dur={120} />
       </Sequence>
-      <Sequence from={420} durationInFrames={120}>
+      <Sequence from={405} durationInFrames={120}>
         <Voz />
         <Audio src={staticFile('placa/asisclo.wav')} />
       </Sequence>
-      <Sequence from={540} durationInFrames={75}>
-        <Vigencia dur={75} />
+      <Sequence from={525} durationInFrames={60}>
+        <Vigencia dur={60} />
       </Sequence>
       <Sequence durationInFrames={CIERRE}>
         <Encabezado />
@@ -475,19 +512,22 @@ export const PlacaComaem: React.FC = () => {
       <Sfx at={90} name="impact" volume={0.4} />
       <Sfx at={40} name="whoosh" volume={0.3} />
       <Sfx at={52} name="impact" volume={0.45} />
-      {[180, 230, 285, 330, 375, 420, 540].map((at) => (
+      {[180, 230, 285, 325, 365, 405, 525].map((at) => (
         <Sfx key={at} at={at - 3} name="ref_swoosh_short" volume={0.28} />
       ))}
-      {[289, 334, 379].map((at) => (
+      {[289, 329, 369].map((at) => (
         <Sfx key={at} at={at} name="pop" volume={0.35} />
       ))}
-      <Sfx at={566} name="ding" volume={0.3} />
+      <Sfx at={551} name="ding" volume={0.3} />
       <Sfx at={CIERRE - 10} name="whoosh_largo" volume={0.35} />
-      <Sfx at={CIERRE} name="down_bass" volume={0.8} />
-      <Sfx at={CIERRE + 6} name="impact" volume={0.3} />
-      <Sfx at={CIERRE + 34} name="ref_shutter" volume={0.3} />
-      <Sfx at={CIERRE + 58} name="pop" volume={0.35} />
-      <Sfx at={CIERRE + 82} name="ding" volume={0.3} />
+      {[0, 8, 16].map((k) => (
+        <Sfx key={k} at={CIERRE + k} name="impact" volume={0.28} />
+      ))}
+      <Sfx at={CIERRE + 24} name="down_bass" volume={0.85} />
+      <Sfx at={CIERRE + 38} name="whoosh" volume={0.3} />
+      <Sfx at={CIERRE + 52} name="ref_shutter" volume={0.3} />
+      <Sfx at={CIERRE + 74} name="pop" volume={0.35} />
+      <Sfx at={CIERRE + 96} name="ding" volume={0.3} />
       <Audio src={staticFile('placa/solace.wav')} volume={musica} />
     </AbsoluteFill>
   );
