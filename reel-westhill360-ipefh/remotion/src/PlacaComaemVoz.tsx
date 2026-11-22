@@ -494,7 +494,7 @@ export const PlacaComaemVoz: React.FC = () => {
       <Sequence from={108} durationInFrames={192}>
         <Panel dur={192}>
           <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 32, letterSpacing: 2, color: VERDE, marginBottom: 14}}>DISTINCIÓN DE EXCELENCIA COMAEM</div>
-          <Linea texto="El *máximo *reconocimiento que otorga *COMAEM." at={60} size={64} paso={1.8} />
+          <Linea texto="El *máximo *reconocimiento que otorga *COMAEM." at={78} size={64} paso={2.2} />
         </Panel>
       </Sequence>
       <Sequence from={300} durationInFrames={105}>
@@ -538,9 +538,13 @@ export const PlacaComaemVoz: React.FC = () => {
       ))}
       <Grain opacity={0.03} />
       {/* narración: hasta "…independiente." y, después del Dr. Asisclo, desde "Profesores" */}
-      {/* se quita "en México" de la narración (9.16–9.98 s de la voz): queda "…a la educación médica." */}
-      <Sequence durationInFrames={275}>
-        <Audio src={staticFile('placa/voz_ia.wav')} />
+      {/* "¿Vas a estudiar Medicina?…" de la primera grabación; la frase de la placa es la que se regrabó
+          ("Recibimos la Distinción de Excelencia, el máximo reconocimiento que otorga la COMAEM", sin "en México") */}
+      <Sequence durationInFrames={108}>
+        <Audio src={staticFile('placa/voz_ia.wav')} volume={(fr) => interpolate(fr, [100, 108], [1, 0], clamp)} />
+      </Sequence>
+      <Sequence from={110} durationInFrames={180}>
+        <Audio src={staticFile('placa/voz_ia2.wav')} />
       </Sequence>
       <Sequence from={299} durationInFrames={393}>
         <Audio src={staticFile('placa/voz_ia.wav')} startFrom={299} />
