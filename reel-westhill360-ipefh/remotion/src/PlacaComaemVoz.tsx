@@ -478,7 +478,7 @@ export const PlacaComaemVoz: React.FC = () => {
   const musica = (fr: number) => {
     const base = interpolate(fr, [0, 30, PLACA_VOZ_FRAMES - 20, PLACA_VOZ_FRAMES], [0, 0.9, 0.9, 0], {...clamp, easing: (x) => x * x * (3 - 2 * x)});
     // baja debajo de la narración; un poco más bajo con la voz del Dr. Asisclo; sube al terminar la narración
-    const bajo = interpolate(fr, [0, 6, 690, 700, 815, 825, 1232, 1250], [1, 0.4, 0.4, 0.3, 0.3, 0.4, 0.4, 0.85], clamp);
+    const bajo = interpolate(fr, [0, 6, 690, 700, 815, 825, 1232, 1250], [1, 0.24, 0.24, 0.18, 0.18, 0.24, 0.24, 0.6], clamp);
     return base * bajo;
   };
   return (
