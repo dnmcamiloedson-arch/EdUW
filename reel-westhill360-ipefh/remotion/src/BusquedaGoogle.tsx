@@ -610,7 +610,7 @@ const Cta: React.FC = () => {
   const boton = tw(f, [66, 78], [0, 1], ease.out);
   const late = f > 78 ? 1 + 0.045 * Math.max(0, Math.sin(((f - 78) / 15) * Math.PI)) : 1;
   const brillo = interpolate((f - 80) % 40, [0, 16], [-0.3, 1.3], clamp);
-  const logo = tw(f, [74, 88], [0, 1], ease.out);
+  const logo = tw(f, [20, 40], [0, 1], ease.out);
   const negro = tw(f, [CTA_F - 10, CTA_F], [0, 1]);
   return (
     <AbsoluteFill>
@@ -639,7 +639,9 @@ const Cta: React.FC = () => {
         <div style={{position: 'absolute', top: 0, bottom: 0, left: `${brillo * 100}%`, width: 120, transform: 'translateX(-50%) skewX(-18deg)', background: 'linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.7), rgba(255,255,255,0))'}} />
         <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 50, color: NAVY}}>SOLICITA INFORMACIÓN →</span>
       </div>
-      <Img src={LOGO} style={{position: 'absolute', left: W / 2 - 170, top: 1790, width: 340, opacity: logo}} />
+      {/* logo arriba, sobre una franja oscura para que se lea encima del collage */}
+      <div style={{position: 'absolute', left: 0, right: 0, top: 0, height: 470, background: 'linear-gradient(180deg, rgba(10,33,65,0.92) 0%, rgba(10,33,65,0.75) 55%, rgba(10,33,65,0) 100%)', opacity: logo}} />
+      <Img src={LOGO} style={{position: 'absolute', left: W / 2 - 220, top: 150, width: 440, opacity: logo, transform: `translateY(${(1 - logo) * -40}px)`, filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.5))'}} />
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
     </AbsoluteFill>
   );
