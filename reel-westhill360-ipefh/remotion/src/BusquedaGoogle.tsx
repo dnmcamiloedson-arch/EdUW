@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, Audio, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, Audio, Freeze, Img, interpolate, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {Sfx} from './shots';
 import {F, ease, tw} from './theme';
 
@@ -9,7 +9,7 @@ import {F, ease, tw} from './theme';
 //  1. Gancho + escritura: "¿Qué sale si buscas WESTHILL en Google?" y una lupa sobre el campo (teclado completo
 //     abajo; la pantalla de navegación privada queda tapada).
 //  2. Carga: la página acelerada y desenfocada con barra de progreso.
-//  3. #1: nuestra noticia (uw.edu.mx) es el primer resultado.
+//  3. #1: nuestra noticia (uw.edu.mx) es el primer resultado; se abre la página (uw.mp4), se subraya y se cierra.
 //  4. La visión general por IA: "la primera universidad privada" resaltado ("Hasta Google lo reconoce").
 //  5. Scroll a Excélsior y su vista previa: titular resaltado ("Lo publicó Excélsior").
 //  6. Cada nota: vista previa y luego se "abre" a pantalla completa con la página real (Excélsior → La Crónica →
@@ -37,20 +37,22 @@ const S_PAGINA = 7.0;
 const ESCRIBE_F = Math.round((S_CARGA - S_ESCRIBE) * 30); // 86
 const CARGA_F = 36;
 const PRIMERO_F = 75;
+const UW_F = 190;
 const DESLIZA_F = 33;
 const IA_F = 135;
 const SCROLL_F = 60;
-const EXC_F = 201;
-const CRON_F = 196;
-const MVS_F = 181;
+const EXC_F = 244;
+const CRON_F = 255;
+const MVS_F = 236;
+const COIN_F = 190;
 const REF_F = 110;
-const COLLAGE_F = 110;
-const CTA_F = 140;
-const SOLAPE = 12; // las tarjetas de las notas se enciman para que el paso de una a otra sea continuo
+const COLLAGE_F = 125;
+const CTA_F = 190;
+const SOLAPE = 16; // las tarjetas de las notas se enciman para que el paso de una a otra sea continuo
 const T = (() => {
   let t = 0;
   const r: Record<string, number> = {};
-  for (const [k, d] of [['escribe', ESCRIBE_F], ['carga', CARGA_F], ['primero', PRIMERO_F], ['desliza', DESLIZA_F], ['ia', IA_F], ['scroll', SCROLL_F], ['exc', EXC_F], ['cron', CRON_F], ['mvs', MVS_F], ['ref', REF_F], ['collage', COLLAGE_F], ['cta', CTA_F]] as [string, number][]) {
+  for (const [k, d] of [['escribe', ESCRIBE_F], ['carga', CARGA_F], ['primero', PRIMERO_F], ['uw', UW_F], ['desliza', DESLIZA_F], ['ia', IA_F], ['scroll', SCROLL_F], ['exc', EXC_F], ['cron', CRON_F], ['mvs', MVS_F], ['coin', COIN_F], ['ref', REF_F], ['collage', COLLAGE_F], ['cta', CTA_F]] as [string, number][]) {
     r[k] = t;
     t += d;
   }
@@ -158,7 +160,7 @@ const PRIMERO: Rect = {x0: 12, y0: 795, x1: 1068, y1: 1290};
 const PRIMERO_TIT: Rect = {x0: 40, y0: 935, x1: 1020, y1: 1085};
 const Primero: React.FC = () => {
   const f = useCurrentFrame();
-  const apaga = 1 - tw(f, [PRIMERO_F - 16, PRIMERO_F], [0, 1], ease.inOut);
+  const apaga = 1;
   const luz = tw(f, [8, 26], [0, 1], ease.out) * apaga;
   const res = tw(f, [20, 38], [0, 1], ease.out) * apaga;
   const insignia = tw(f, [14, 26], [0, 1], ease.out) * apaga;
@@ -170,6 +172,55 @@ const Primero: React.FC = () => {
       <div style={{position: 'absolute', right: 30, top: PRIMERO.y0 - 58, width: 116, height: 116, borderRadius: 58, background: AMARILLO, color: NAVY, fontFamily: F.sans, fontWeight: 900, fontSize: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 30px rgba(0,0,0,0.5)', transform: `scale(${insignia}) rotate(${(1 - insignia) * -40}deg)`}}>#1</div>
       <div style={{position: 'absolute', inset: 0, opacity: apaga}}>
         <Etiqueta texto="Primer resultado: *nuestra *noticia" top={PRIMERO.y0 - 200} at={12} size={50} />
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// 3b. Se abre nuestra nota (uw.edu.mx) desde el resultado #1, se subraya y se vuelve a cerrar en el resultado
+// ---------------------------------------------------------------------------
+const UW = staticFile('proxies/grabacion/uw.mp4');
+const UW_DESDE = 1.6;
+const UW_RATE = 1.25; // el scroll de la grabación (2–5.8 s) llega al subtítulo hacia el cuadro 106
+const UW_CONGELA = 116; // a partir de aquí la página se queda quieta (fuente 6.43 s)
+const UW_ABRE = 20;
+const UW_CIERRA = 20;
+const UW_MARCAS: Rect[] = [
+  {x0: 52, x1: 1031, y0: 698, y1: 758},
+  {x0: 104, x1: 974, y0: 766, y1: 822},
+];
+const PaginaUW: React.FC = () => {
+  const f = useCurrentFrame();
+  const o = Math.min(tw(f, [0, UW_ABRE], [0, 1], ease.inOut), 1 - tw(f, [UW_F - UW_CIERRA, UW_F], [0, 1], ease.inOut));
+  const k0 = (PRIMERO.x1 - PRIMERO.x0) / W;
+  const h0 = (PRIMERO.y1 - PRIMERO.y0) / k0;
+  const k = k0 + (1 - k0) * o;
+  const visible = h0 + (H - h0) * o;
+  const radio = (26 / k0) * (1 - o);
+  const fuera = 1 - tw(f, [8, 16], [0, 1]); // la etiqueta y el #1 se van al abrir
+  const luz = 1 - tw(f, [UW_F - UW_CIERRA / 2, UW_F], [0, 1], ease.inOut);
+  const tarjeta = 1 - tw(f, [UW_F - 9, UW_F], [0, 1]);
+  const pagina = (
+    <AbsoluteFill style={{background: '#fff'}}>
+      <Grabacion src={UW} desde={UW_DESDE} rate={UW_RATE} top={0} />
+    </AbsoluteFill>
+  );
+  return (
+    <AbsoluteFill style={{background: '#202124'}}>
+      <Freeze frame={0}>
+        <Grabacion src={INTRO} desde={7.95} top={0} />
+      </Freeze>
+      <Reflector x={PRIMERO.x0} y={PRIMERO.y0} w={PRIMERO.x1 - PRIMERO.x0} h={PRIMERO.y1 - PRIMERO.y0} p={luz} />
+      <div style={{position: 'absolute', inset: 0, opacity: fuera}}>
+        <div style={{position: 'absolute', right: 30, top: PRIMERO.y0 - 58, width: 116, height: 116, borderRadius: 58, background: AMARILLO, color: NAVY, fontFamily: F.sans, fontWeight: 900, fontSize: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 30px rgba(0,0,0,0.5)'}}>#1</div>
+        <Etiqueta texto="Primer resultado: *nuestra *noticia" top={PRIMERO.y0 - 200} at={-100} size={50} />
+      </div>
+      <div style={{position: 'absolute', left: PRIMERO.x0 * (1 - o), top: PRIMERO.y0 * (1 - o), width: W, height: H, transform: `scale(${k})`, transformOrigin: '0 0', clipPath: `inset(0 0 ${H - visible}px 0 round ${radio}px)`, opacity: tarjeta}}>
+        {f < UW_CONGELA ? pagina : <Freeze frame={UW_CONGELA}>{pagina}</Freeze>}
+        {UW_MARCAS.map((m, i) => (
+          <Marcador key={i} x={m.x0} y={m.y0} w={m.x1 - m.x0} h={m.y1 - m.y0} p={tw(f, [120 + i * 8, 134 + i * 8], [0, 1], ease.out)} />
+        ))}
       </div>
     </AbsoluteFill>
   );
@@ -254,7 +305,7 @@ const EXC: Rect[] = [{x0: 40, y0: 228, x1: 1045, y1: 1645}];
 const EXC_MARCAS: Rect[] = [
   {x0: 88, x1: 972, y0: 668, y1: 752},
   {x0: 88, x1: 897, y0: 762, y1: 846},
-  {x0: 88, x1: 817, y0: 856, y1: 940},
+  {x0: 88, x1: 900, y0: 856, y1: 940},
   {x0: 88, x1: 514, y0: 950, y1: 1032},
 ];
 
@@ -266,8 +317,8 @@ const CRON: Rect[] = [
   {x0: 40, y0: 1160, x1: 1035, y1: 1625},
 ];
 const CRON_MARCAS: Rect[] = [
-  {x0: 88, x1: 1005, y0: 1330, y1: 1392},
-  {x0: 88, x1: 712, y0: 1392, y1: 1454},
+  {x0: 88, x1: 915, y0: 1330, y1: 1392},
+  {x0: 88, x1: 945, y0: 1392, y1: 1454},
 ];
 
 // ---------------------------------------------------------------------------
@@ -284,8 +335,22 @@ const MVS_TOP = 720;
 // siguiente; la última no sale (se encoge hacia el collage).
 // ---------------------------------------------------------------------------
 type Previo = {src: string; desde: number; rate?: number; partes: Rect[]; top: number; marcas: Rect[]; etiqueta: string; lineas?: boolean; marcasAt?: number; dur: number};
-type Pagina = {src: string; desde: number; rate?: number; marcas?: Rect[]; blur?: Rect[]; marcasAt?: number};
-const ABRE_F = 18;
+/** Párrafo del cuerpo: tras el titular, la página "baja" (barrido con desenfoque, sin mostrar los anuncios
+ *  del scroll) y queda quieta en un tramo sin movimiento de la grabación; `foco` es el párrafo, `at` el cuadro
+ *  (contado desde que se abre la página) en que empieza el barrido. */
+type Parrafo = {desde: number; rate?: number; at: number; marcas: Rect[]; blur?: Rect[]; foco: Rect};
+type Pagina = {src: string; desde: number; rate?: number; marcas?: Rect[]; blur?: Rect[]; marcasAt?: number; parrafo?: Parrafo};
+
+/** Rectángulo desenfocado de la grabación (anuncios) */
+const Desenfoque: React.FC<{src: string; desde: number; rate?: number; r: Rect}> = ({src, desde, rate = 1, r}) => (
+  <div style={{position: 'absolute', left: r.x0, top: r.y0, width: r.x1 - r.x0, height: r.y1 - r.y0, overflow: 'hidden', borderRadius: 18}}>
+    <div style={{position: 'absolute', left: -r.x0, top: -r.y0, width: W, height: SH, filter: 'blur(38px)'}}>
+      <OffthreadVideo src={src} startFrom={Math.round(desde * 30)} playbackRate={rate} muted style={{width: W, height: SH}} />
+    </div>
+    <div style={{position: 'absolute', inset: 0, background: 'rgba(14,44,82,0.35)'}} />
+  </div>
+);
+const ABRE_F = 24;
 const NotaCompleta: React.FC<{dur: number; previo?: Previo; pagina: Pagina; sinSalida?: boolean}> = ({dur, previo, pagina, sinSalida}) => {
   const f = useCurrentFrame();
   const pf = previo ? previo.dur : 0;
@@ -312,8 +377,12 @@ const NotaCompleta: React.FC<{dur: number; previo?: Previo; pagina: Pagina; sinS
   const radio = (28 / k0) * (1 - o);
   // entrada sin vista previa (zoom con desenfoque) y salida hacia la izquierda
   const entraZ = previo ? 1 : tw(f, [0, 22], [0, 1], ease.out);
-  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 4, dur], [0, 1], ease.inOut);
+  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 6, dur], [0, 1], ease.inOut);
+  const zp = sinSalida ? 1 : 1 + (0.03 * Math.max(0, f - pf)) / Math.max(1, dur - pf);
   const pg = f - pf; // cuadros desde que se abre la página
+  const par = pagina.parrafo;
+  const sube = par ? tw(pg, [par.at, par.at + 12], [0, 1], ease.in) : 0;
+  const llega = par ? tw(pg, [par.at + 6, par.at + 22], [0, 1], ease.out) : 0;
   return (
     <AbsoluteFill style={{overflow: 'hidden'}}>
       {previo && f < pf + ABRE_F && (
@@ -325,19 +394,30 @@ const NotaCompleta: React.FC<{dur: number; previo?: Previo; pagina: Pagina; sinS
         <div style={{position: 'absolute', inset: 0, transform: `translateX(${-sale * 650}px) rotate(${-sale * 4}deg) scale(${(1.12 - 0.12 * entraZ) * (1 - 0.06 * sale)})`, filter: entraZ < 1 ? `blur(${(1 - entraZ) * 14}px)` : undefined, opacity: Math.min(1, entraZ * 1.3) * (1 - sale)}}>
           <div style={{position: 'absolute', left: x, top: y, width: W, height: H, transform: `scale(${k})`, transformOrigin: '0 0', clipPath: `inset(0 0 ${H - visible}px 0 round ${radio}px)`, boxShadow: o < 1 ? '0 40px 90px rgba(0,0,0,0.6)' : undefined}}>
             <Sequence from={pf} layout="none">
-              <AbsoluteFill style={{background: '#fff'}}>
-                <Grabacion src={pagina.src} desde={pagina.desde} rate={pagina.rate} top={0} z={1 + 0.03 * Math.max(0, pg) / Math.max(1, dur - pf)} cy={900} />
-                {(pagina.blur ?? []).map((r, i) => (
-                  <div key={i} style={{position: 'absolute', left: r.x0, top: r.y0, width: r.x1 - r.x0, height: r.y1 - r.y0, overflow: 'hidden', borderRadius: 18}}>
-                    <div style={{position: 'absolute', left: -r.x0, top: -r.y0, width: W, height: SH, filter: 'blur(38px)'}}>
-                      <OffthreadVideo src={pagina.src} startFrom={Math.round(pagina.desde * 30)} playbackRate={pagina.rate ?? 1} muted style={{width: W, height: SH}} />
-                    </div>
-                    <div style={{position: 'absolute', inset: 0, background: 'rgba(14,44,82,0.35)'}} />
-                  </div>
-                ))}
-                {(pagina.marcas ?? []).map((m, i) => (
-                  <Marcador key={i} x={m.x0} y={m.y0} w={m.x1 - m.x0} h={m.y1 - m.y0} p={tw(pg, [(pagina.marcasAt ?? 16) + i * 6, (pagina.marcasAt ?? 16) + 12 + i * 6], [0, 1], ease.out)} />
-                ))}
+              <AbsoluteFill style={{background: '#fff', transform: `scale(${zp})`, transformOrigin: '540px 900px'}}>
+                <AbsoluteFill style={{background: '#fff', transform: `translateY(${-sube * 900}px)`, filter: sube > 0.01 ? `blur(${sube * 20}px)` : undefined, opacity: 1 - tw(pg, [par ? par.at + 8 : 1e9, par ? par.at + 14 : 1e9 + 1], [0, 1])}}>
+                  <Grabacion src={pagina.src} desde={pagina.desde} rate={pagina.rate} top={0} />
+                  {(pagina.blur ?? []).map((r, i) => (
+                    <Desenfoque key={i} src={pagina.src} desde={pagina.desde} rate={pagina.rate} r={r} />
+                  ))}
+                  {(pagina.marcas ?? []).map((m, i) => (
+                    <Marcador key={i} x={m.x0} y={m.y0} w={m.x1 - m.x0} h={m.y1 - m.y0} p={tw(pg, [(pagina.marcasAt ?? 16) + i * 6, (pagina.marcasAt ?? 16) + 12 + i * 6], [0, 1], ease.out)} />
+                  ))}
+                </AbsoluteFill>
+                {par && pg >= par.at + 4 && (
+                  <Sequence from={par.at + 4} layout="none">
+                    <AbsoluteFill style={{background: '#fff', transform: `translateY(${(1 - llega) * 900}px)`, filter: llega < 0.99 ? `blur(${(1 - llega) * 20}px)` : undefined}}>
+                      <Grabacion src={pagina.src} desde={par.desde} rate={par.rate} top={0} />
+                      {(par.blur ?? []).map((r, i) => (
+                        <Desenfoque key={i} src={pagina.src} desde={par.desde} rate={par.rate} r={r} />
+                      ))}
+                      <Reflector x={par.foco.x0} y={par.foco.y0} w={par.foco.x1 - par.foco.x0} h={par.foco.y1 - par.foco.y0} p={0.7 * tw(pg, [par.at + 22, par.at + 40], [0, 1], ease.inOut)} />
+                      {par.marcas.map((m, i) => (
+                        <Marcador key={i} x={m.x0} y={m.y0} w={m.x1 - m.x0} h={m.y1 - m.y0} p={tw(pg, [par.at + 34 + i * 8, par.at + 48 + i * 8], [0, 1], ease.out)} />
+                      ))}
+                    </AbsoluteFill>
+                  </Sequence>
+                )}
               </AbsoluteFill>
             </Sequence>
           </div>
@@ -359,9 +439,23 @@ const CRON_PAG_MARCAS: Rect[] = [
 const MVS_PAG_MARCAS: Rect[] = [
   {x0: 48, x1: 996, y0: 648, y1: 735},
   {x0: 48, x1: 962, y0: 737, y1: 822},
-  {x0: 48, x1: 206, y0: 826, y1: 912},
+  {x0: 48, x1: 335, y0: 826, y1: 912},
 ];
 const MVS_PAG_BLUR: Rect[] = [{x0: 95, x1: 990, y0: 945, y1: 1672}];
+const EXC_PARR_M: Rect[] = [
+  {x0: 467, x1: 935, y0: 1268, y1: 1321},
+  {x0: 50, x1: 809, y0: 1327, y1: 1380},
+];
+const CRON_PARR_M: Rect[] = [
+  {x0: 51, x1: 1000, y0: 659, y1: 721},
+  {x0: 50, x1: 888, y0: 740, y1: 791},
+  {x0: 49, x1: 993, y0: 821, y1: 883},
+];
+const MVS_PARR_M: Rect[] = [
+  {x0: 37, x1: 863, y0: 677, y1: 742},
+  {x0: 39, x1: 1026, y0: 759, y1: 823},
+  {x0: 39, x1: 984, y0: 841, y1: 905},
+];
 const REF_PAG_MARCAS: Rect[] = [
   {x0: 48, x1: 704, y0: 975, y1: 1072},
   {x0: 48, x1: 1002, y0: 1075, y1: 1172},
@@ -369,9 +463,81 @@ const REF_PAG_MARCAS: Rect[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// 6b. Las 3 notas dicen lo mismo: los párrafos reales (recortes de las grabaciones) uno sobre otro
+// ---------------------------------------------------------------------------
+type Tira = {img: string; h: number; marcas: Rect[]; medio: string};
+const TIRAS: Tira[] = [
+  {img: 'coin_exc.jpg', h: 363, medio: 'EXCÉLSIOR', marcas: [
+    {x0: 317, x1: 911, y0: 69, y1: 121},
+    {x0: 49, x1: 1004, y0: 128, y1: 180},
+    {x0: 50, x1: 894, y0: 187, y1: 239},
+    {x0: 49, x1: 977, y0: 246, y1: 298},
+    {x0: 47, x1: 176, y0: 305, y1: 348},
+  ]},
+  {img: 'coin_cron.jpg', h: 636, medio: 'LA CRÓNICA DE HOY', marcas: [
+    {x0: 732, x1: 1015, y0: 10, y1: 72},
+    {x0: 51, x1: 1021, y0: 91, y1: 142},
+    {x0: 51, x1: 983, y0: 171, y1: 233},
+    {x0: 52, x1: 898, y0: 252, y1: 303},
+    {x0: 52, x1: 709, y0: 332, y1: 394},
+    {x0: 52, x1: 907, y0: 414, y1: 475},
+    {x0: 52, x1: 1025, y0: 494, y1: 555},
+    {x0: 52, x1: 394, y0: 574, y1: 625},
+  ]},
+  {img: 'coin_mvs.jpg', h: 570, medio: 'MVS NOTICIAS', marcas: [
+    {x0: 545, x1: 976, y0: 7, y1: 71},
+    {x0: 38, x1: 1039, y0: 89, y1: 155},
+    {x0: 39, x1: 953, y0: 174, y1: 225},
+    {x0: 37, x1: 993, y0: 254, y1: 318},
+    {x0: 38, x1: 878, y0: 338, y1: 401},
+    {x0: 37, x1: 980, y0: 418, y1: 483},
+    {x0: 39, x1: 358, y0: 500, y1: 554},
+  ]},
+];
+const TIRA_S = 0.76;
+const TIRA_PAD = 16; // margen blanco arriba y abajo del recorte
+const Coinciden: React.FC = () => {
+  const f = useCurrentFrame();
+  const sale = tw(f, [COIN_F - 4, COIN_F + SOLAPE], [0, 1], ease.inOut);
+  const t1 = tw(f, [140, 154], [0, 1], ease.out);
+  const t2 = tw(f, [150, 164], [0, 1], ease.out);
+  const golpe = interpolate(f, [150, 157, 166], [1.3, 0.97, 1], clamp);
+  let y = 250;
+  let inicioMarcas = 46;
+  return (
+    <AbsoluteFill style={{opacity: 1 - sale, transform: `scale(${1 - 0.06 * sale})`}}>
+      <Etiqueta texto="Las *3 notas dicen *lo *mismo" top={70} at={4} size={54} />
+      {TIRAS.map((t, i) => {
+        const k = tw(f, [8 + i * 14, 30 + i * 14], [0, 1], ease.out);
+        const lado = i % 2 === 0 ? -1 : 1;
+        const top = y;
+        const st = inicioMarcas;
+        y += t.h * TIRA_S + 2 * TIRA_PAD + 54;
+        inicioMarcas += t.marcas.length * 5 + 6;
+        return (
+          <div key={t.img} style={{position: 'absolute', left: (W - W * TIRA_S) / 2, top, width: W * TIRA_S, height: t.h * TIRA_S + 2 * TIRA_PAD, opacity: k, transform: `translateX(${(1 - k) * 700 * lado}px) rotate(${(1 - k) * 5 * lado}deg)`}}>
+            <div style={{position: 'absolute', inset: 0, borderRadius: 22, overflow: 'hidden', background: '#fff', boxShadow: '0 24px 60px rgba(0,0,0,0.55)'}}>
+              <Img src={staticFile(`grabacion/${t.img}`)} style={{position: 'absolute', left: 0, top: TIRA_PAD, width: W * TIRA_S, height: t.h * TIRA_S, display: 'block'}} />
+              {t.marcas.map((m, j) => (
+                <Marcador key={j} x={m.x0 * TIRA_S} y={TIRA_PAD + m.y0 * TIRA_S} w={(m.x1 - m.x0) * TIRA_S} h={(m.y1 - m.y0) * TIRA_S} p={tw(f, [st + j * 5, st + j * 5 + 12], [0, 1], ease.out)} />
+              ))}
+            </div>
+            <div style={{position: 'absolute', left: 18, top: -46, padding: '6px 18px', borderRadius: 24, background: NAVY, border: `3px solid ${AMARILLO}`, fontFamily: F.sans, fontWeight: 900, fontSize: 24, letterSpacing: 2, color: AMARILLO, boxShadow: '0 8px 20px rgba(0,0,0,0.45)'}}>{t.medio}</div>
+          </div>
+        );
+      })}
+      <div style={{position: 'absolute', left: 0, right: 0, top: 1712, textAlign: 'center', fontFamily: F.sans, color: '#fff', textShadow: '0 8px 30px rgba(0,0,0,0.8)'}}>
+        <div style={{fontWeight: 800, fontSize: 44, opacity: t1, transform: `translateY(${(1 - t1) * 20}px)`}}>Antes, solo <span style={{color: AMARILLO}}>2 instituciones públicas</span>.</div>
+        <div style={{fontWeight: 900, fontSize: 52, marginTop: 6, whiteSpace: 'nowrap', opacity: t2, transform: `scale(${golpe})`}}>Hoy, <span style={{color: AMARILLO}}>WESTHILL</span>: la primera privada.</div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+// ---------------------------------------------------------------------------
 // 7. Collage: la última nota se hace pequeña y las demás llegan a acomodarse sobre el video de la placa
 // ---------------------------------------------------------------------------
-type Pieza = {img: string; w: number; h: number; cx: number; cy: number; s: number; rot: number; at: number; desdeX: number; desdeY: number; desdeRot: number; desdeS?: number};
+type Pieza = {img: string; w: number; h: number; cx: number; cy: number; s: number; rot: number; at: number; desdeX: number; desdeY: number; desdeRot: number; desdeS?: number; marcas?: Rect[]};
 const PIEZAS: Pieza[] = [
   {img: 'excelsior_pag.jpg', w: 1080, h: 1760, cx: 200, cy: 470, s: 0.29, rot: -6, at: 8, desdeX: -500, desdeY: 300, desdeRot: -25},
   {img: 'cronica_pag.jpg', w: 1080, h: 1410, cx: 545, cy: 425, s: 0.3, rot: 2, at: 13, desdeX: 540, desdeY: -700, desdeRot: 15},
@@ -379,7 +545,7 @@ const PIEZAS: Pieza[] = [
   {img: 'ia.jpg', w: 1036, h: 568, cx: 795, cy: 895, s: 0.42, rot: 3, at: 23, desdeX: 1700, desdeY: 900, desdeRot: 20},
   {img: 'mvs.jpg', w: 1050, h: 490, cx: 540, cy: 1165, s: 0.44, rot: -2, at: 28, desdeX: 540, desdeY: 2300, desdeRot: 10},
   // la última nota (Reforma) parte de pantalla completa
-  {img: 'reforma_pag.jpg', w: 1080, h: 1920, cx: 885, cy: 480, s: 0.29, rot: 6, at: 0, desdeX: 540, desdeY: 960, desdeRot: 0, desdeS: 1},
+  {img: 'reforma_pag.jpg', w: 1080, h: 1920, cx: 885, cy: 480, s: 0.29, rot: 6, at: 0, desdeX: 540, desdeY: 960, desdeRot: 0, desdeS: 1, marcas: REF_PAG_MARCAS},
 ];
 
 /** Fondo de las notas y del collage: el video de la develación de la placa, oscurecido */
@@ -396,8 +562,9 @@ const FondoPlaca: React.FC<{blur?: number; oscuro?: number}> = ({blur = 10, oscu
 const Collage: React.FC<{f: number; salida?: number}> = ({f, salida = 0}) => (
   <AbsoluteFill style={{transform: `translateY(${-170 * salida}px) scale(${1 - 0.12 * salida})`, transformOrigin: '50% 30%', filter: salida > 0.02 ? `blur(${3.5 * salida}px) brightness(${1 - 0.35 * salida})` : undefined}}>
     {PIEZAS.map((p) => {
-      const k = tw(f, [p.at, p.at + 18], [0, 1], ease.out);
-      const asienta = interpolate(f - p.at - 18, [0, 6, 12], [0, 1, 0], clamp);
+      const d = p.desdeS ? 34 : 18;
+      const k = tw(f, [p.at, p.at + d], [0, 1], p.desdeS ? ease.inOut : ease.out);
+      const asienta = interpolate(f - p.at - d, [0, 6, 12], [0, 1, 0], clamp);
       const s0 = p.desdeS ?? p.s * 1.8;
       const cx = p.desdeX + (p.cx - p.desdeX) * k;
       const cy = p.desdeY + (p.cy - p.desdeY) * k;
@@ -407,6 +574,9 @@ const Collage: React.FC<{f: number; salida?: number}> = ({f, salida = 0}) => (
       return (
         <div key={p.img} style={{position: 'absolute', left: cx - (p.w * s) / 2, top: cy - (p.h * s) / 2, width: p.w * s, height: p.h * s, transform: `rotate(${rot}deg)`, borderRadius: 18, overflow: 'hidden', border: `${6 * k}px solid #fff`, boxShadow: `0 ${20 + 14 * asienta}px 50px rgba(0,0,0,0.55)`}}>
           <Img src={staticFile(`grabacion/${p.img}`)} style={{width: '100%', height: '100%', display: 'block'}} />
+          {(p.marcas ?? []).map((m, i) => (
+            <Marcador key={i} x={m.x0 * s} y={m.y0 * s} w={(m.x1 - m.x0) * s} h={(m.y1 - m.y0) * s} p={1} />
+          ))}
         </div>
       );
     })}
@@ -497,6 +667,9 @@ export const BusquedaGoogle: React.FC = () => (
     <Sequence from={T.primero} durationInFrames={PRIMERO_F}>
       <Primero />
     </Sequence>
+    <Sequence from={T.uw} durationInFrames={UW_F}>
+      <PaginaUW />
+    </Sequence>
     {/* el scroll de la grabación entre el #1 y la IA se deja correr (sin cortes) */}
     <Sequence from={T.desliza} durationInFrames={DESLIZA_F}>
       <AbsoluteFill style={{background: '#202124'}}>
@@ -509,20 +682,23 @@ export const BusquedaGoogle: React.FC = () => (
     {/* de la IA a la otra grabación (mismos resultados): fundido */}
     <Sequence from={T.scroll - 15} durationInFrames={SCROLL_F + 15 + 20}>
       <Fundido entra={15}>
-        <Grabacion src={NOTAS} desde={1.2} rate={((3.4 - 1.2) * 30) / SCROLL_F} top={0} />
+        <Grabacion src={NOTAS} desde={1.2} rate={((3.5 - 1.2) * 30) / (SCROLL_F + 35)} top={0} />
       </Fundido>
     </Sequence>
     <Sequence from={T.exc} durationInFrames={T.fin - T.exc}>
       <FondoPlaca />
     </Sequence>
     <Sequence from={T.exc} durationInFrames={EXC_F + SOLAPE}>
-      <NotaCompleta dur={EXC_F + SOLAPE} previo={{src: NOTAS, desde: 3.9, partes: EXC, top: 330, marcas: EXC_MARCAS, etiqueta: 'Lo publicó *Excélsior', marcasAt: 22, dur: 80}} pagina={{src: NOTA3, desde: 0.2, rate: 0.36}} />
+      <NotaCompleta dur={EXC_F + SOLAPE} previo={{src: NOTAS, desde: 3.9, partes: EXC, top: 330, marcas: EXC_MARCAS, etiqueta: 'Lo publicó *Excélsior', marcasAt: 22, dur: 80}} pagina={{src: NOTA3, desde: 0.2, rate: 0.36, parrafo: {desde: 4.8, rate: 0.45, at: 54, marcas: EXC_PARR_M, blur: [{x0: 0, x1: W, y0: 450, y1: 640}, {x0: 0, x1: W, y0: 1430, y1: 1920}], foco: {x0: 30, x1: 1050, y0: 780, y1: 1392}}}} />
     </Sequence>
     <Sequence from={T.cron} durationInFrames={CRON_F + SOLAPE}>
-      <NotaCompleta dur={CRON_F + SOLAPE} previo={{src: NOTAS, desde: 10.9, rate: 0.45, partes: CRON, top: 560, marcas: CRON_MARCAS, etiqueta: 'También *La *Crónica *de *Hoy', marcasAt: 22, dur: 75}} pagina={{src: NOTA2, desde: 3.5, rate: 0.3, marcas: CRON_PAG_MARCAS, marcasAt: 46}} />
+      <NotaCompleta dur={CRON_F + SOLAPE} previo={{src: NOTAS, desde: 10.9, rate: 0.45, partes: CRON, top: 560, marcas: CRON_MARCAS, etiqueta: 'También *La *Crónica *de *Hoy', marcasAt: 22, dur: 75}} pagina={{src: NOTA2, desde: 3.5, rate: 0.3, marcas: CRON_PAG_MARCAS, marcasAt: 30, parrafo: {desde: 9.0, rate: 0.45, at: 70, marcas: CRON_PARR_M, blur: [{x0: 0, x1: W, y0: 1650, y1: 1920}], foco: {x0: 30, x1: 1050, y0: 565, y1: 1612}}}} />
     </Sequence>
     <Sequence from={T.mvs} durationInFrames={MVS_F + SOLAPE}>
-      <NotaCompleta dur={MVS_F + SOLAPE} previo={{src: NOTAS, desde: 8.6, rate: 0.36, partes: MVS, top: MVS_TOP, marcas: MVS_MARCAS, etiqueta: 'Y *MVS *Noticias', lineas: true, marcasAt: 18, dur: 60}} pagina={{src: MVSPAG, desde: 0.2, rate: 0.36, marcas: MVS_PAG_MARCAS, blur: MVS_PAG_BLUR, marcasAt: 26}} />
+      <NotaCompleta dur={MVS_F + SOLAPE} previo={{src: NOTAS, desde: 8.6, rate: 0.36, partes: MVS, top: MVS_TOP, marcas: MVS_MARCAS, etiqueta: 'Y *MVS *Noticias', lineas: true, marcasAt: 18, dur: 60}} pagina={{src: MVSPAG, desde: 0.2, rate: 0.36, marcas: MVS_PAG_MARCAS, blur: MVS_PAG_BLUR, marcasAt: 26, parrafo: {desde: 7.0, rate: 0.45, at: 66, marcas: MVS_PARR_M, blur: [{x0: 0, x1: W, y0: 315, y1: 450}], foco: {x0: 25, x1: 1055, y0: 500, y1: 1160}}}} />
+    </Sequence>
+    <Sequence from={T.coin} durationInFrames={COIN_F + SOLAPE}>
+      <Coinciden />
     </Sequence>
     <Sequence from={T.ref} durationInFrames={REF_F}>
       <NotaCompleta dur={REF_F} pagina={{src: REFORMA, desde: 0.15, rate: 0.3, marcas: REF_PAG_MARCAS, marcasAt: 26}} sinSalida />
@@ -539,6 +715,10 @@ export const BusquedaGoogle: React.FC = () => (
     <Sfx at={T.carga - 2} name="ref_tap" volume={0.5} />
     <Sfx at={T.carga} name="whoosh" volume={0.3} />
     <Sfx at={T.primero + 14} name="pop" volume={0.3} />
+    <Sfx at={T.uw - 2} name="ref_tap" volume={0.45} />
+    <Sfx at={T.uw} name="whoosh" volume={0.25} />
+    <Sfx at={T.uw + 112} name="ref_shutter" volume={0.22} />
+    <Sfx at={T.uw + UW_F - 20} name="ref_swoosh" volume={0.22} />
     <Sfx at={T.desliza} name="swipe" volume={0.2} />
     <Sfx at={T.ia + 6} name="whoosh" volume={0.22} />
     <Sfx at={T.ia + 40} name="ding" volume={0.28} />
@@ -547,6 +727,18 @@ export const BusquedaGoogle: React.FC = () => (
     <Sfx at={T.exc + 22} name="ref_shutter" volume={0.25} />
     <Sfx at={T.cron - 8} name="ref_swoosh" volume={0.26} />
     <Sfx at={T.mvs - 8} name="ref_swoosh" volume={0.26} />
+    {[T.exc + 80 + 54, T.cron + 75 + 70, T.mvs + 60 + 66].map((at) => (
+      <React.Fragment key={at}>
+        <Sfx at={at} name="swipe" volume={0.3} />
+        <Sfx at={at + 34} name="ref_shutter" volume={0.2} />
+      </React.Fragment>
+    ))}
+    {[8, 22, 36].map((k) => (
+      <Sfx key={k} at={T.coin + k} name="ref_swoosh_short" volume={0.25} />
+    ))}
+    <Sfx at={T.coin + 4} name="pop" volume={0.25} />
+    <Sfx at={T.coin + 150} name="impact" volume={0.35} />
+    <Sfx at={T.coin + 150} name="down_bass" volume={0.6} />
     <Sfx at={T.ref - 8} name="whoosh" volume={0.3} />
     {[T.exc + 80, T.cron + 75, T.mvs + 60].map((at) => (
       <Sfx key={at} at={at} name="ref_tap" volume={0.4} />
@@ -564,7 +756,7 @@ export const BusquedaGoogle: React.FC = () => (
     <Sfx at={T.cta + 10} name="whoosh_largo" volume={0.3} />
     <Sfx at={T.cta + 50} name="ding" volume={0.28} />
     <Sfx at={T.cta + 66} name="pop" volume={0.3} />
-    <Audio src={staticFile('placa/solace_largo.wav')} volume={(fr) => interpolate(fr, [0, 20, BUSQUEDA_FRAMES - 45, BUSQUEDA_FRAMES], [0, 0.5, 0.5, 0], clamp)} />
+    <Audio src={staticFile('placa/solace_65.wav')} volume={(fr) => interpolate(fr, [0, 20, BUSQUEDA_FRAMES - 45, BUSQUEDA_FRAMES], [0, 0.5, 0.5, 0], clamp)} />
   </AbsoluteFill>
 );
 
