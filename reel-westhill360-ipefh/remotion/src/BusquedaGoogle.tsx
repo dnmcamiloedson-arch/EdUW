@@ -35,21 +35,22 @@ const S_ESCRIBE = 1.55;
 const S_CARGA = 4.4;
 const S_PAGINA = 7.0;
 const ESCRIBE_F = Math.round((S_CARGA - S_ESCRIBE) * 30); // 86
-const CARGA_F = 28;
-const PRIMERO_F = 54;
-const IA_F = 84;
-const SCROLL_F = 28;
-const EXC_F = 114;
-const CRON_F = 102;
-const MVS_F = 93;
-const REF_F = 64;
-const COLLAGE_F = 96;
-const CTA_F = 126;
-const SOLAPE = 6; // las tarjetas de las notas se enciman para que el paso de una a otra sea continuo
+const CARGA_F = 36;
+const PRIMERO_F = 75;
+const DESLIZA_F = 33;
+const IA_F = 135;
+const SCROLL_F = 60;
+const EXC_F = 201;
+const CRON_F = 196;
+const MVS_F = 181;
+const REF_F = 110;
+const COLLAGE_F = 110;
+const CTA_F = 140;
+const SOLAPE = 12; // las tarjetas de las notas se enciman para que el paso de una a otra sea continuo
 const T = (() => {
   let t = 0;
   const r: Record<string, number> = {};
-  for (const [k, d] of [['escribe', ESCRIBE_F], ['carga', CARGA_F], ['primero', PRIMERO_F], ['ia', IA_F], ['scroll', SCROLL_F], ['exc', EXC_F], ['cron', CRON_F], ['mvs', MVS_F], ['ref', REF_F], ['collage', COLLAGE_F], ['cta', CTA_F]] as [string, number][]) {
+  for (const [k, d] of [['escribe', ESCRIBE_F], ['carga', CARGA_F], ['primero', PRIMERO_F], ['desliza', DESLIZA_F], ['ia', IA_F], ['scroll', SCROLL_F], ['exc', EXC_F], ['cron', CRON_F], ['mvs', MVS_F], ['ref', REF_F], ['collage', COLLAGE_F], ['cta', CTA_F]] as [string, number][]) {
     r[k] = t;
     t += d;
   }
@@ -157,16 +158,19 @@ const PRIMERO: Rect = {x0: 12, y0: 795, x1: 1068, y1: 1290};
 const PRIMERO_TIT: Rect = {x0: 40, y0: 935, x1: 1020, y1: 1085};
 const Primero: React.FC = () => {
   const f = useCurrentFrame();
-  const luz = tw(f, [4, 16], [0, 1], ease.out);
-  const res = tw(f, [14, 30], [0, 1], ease.out);
-  const insignia = tw(f, [10, 20], [0, 1], ease.out);
+  const apaga = 1 - tw(f, [PRIMERO_F - 16, PRIMERO_F], [0, 1], ease.inOut);
+  const luz = tw(f, [8, 26], [0, 1], ease.out) * apaga;
+  const res = tw(f, [20, 38], [0, 1], ease.out) * apaga;
+  const insignia = tw(f, [14, 26], [0, 1], ease.out) * apaga;
   return (
     <AbsoluteFill style={{background: '#202124'}}>
-      <Grabacion src={INTRO} desde={S_PAGINA} rate={0.55} top={0} z={1 + 0.02 * (f / PRIMERO_F)} cy={1040} />
+      <Grabacion src={INTRO} desde={S_PAGINA} rate={((7.95 - S_PAGINA) * 30) / PRIMERO_F} top={0} />
       <Reflector x={PRIMERO.x0} y={PRIMERO.y0} w={PRIMERO.x1 - PRIMERO.x0} h={PRIMERO.y1 - PRIMERO.y0} p={luz} />
       <Marcador x={PRIMERO_TIT.x0} y={PRIMERO_TIT.y1 - 10} w={PRIMERO_TIT.x1 - PRIMERO_TIT.x0} h={10} p={res} linea />
       <div style={{position: 'absolute', right: 30, top: PRIMERO.y0 - 58, width: 116, height: 116, borderRadius: 58, background: AMARILLO, color: NAVY, fontFamily: F.sans, fontWeight: 900, fontSize: 56, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 30px rgba(0,0,0,0.5)', transform: `scale(${insignia}) rotate(${(1 - insignia) * -40}deg)`}}>#1</div>
-      <Etiqueta texto="Primer resultado: *nuestra *noticia" top={PRIMERO.y0 - 200} at={8} size={50} />
+      <div style={{position: 'absolute', inset: 0, opacity: apaga}}>
+        <Etiqueta texto="Primer resultado: *nuestra *noticia" top={PRIMERO.y0 - 200} at={12} size={50} />
+      </div>
     </AbsoluteFill>
   );
 };
@@ -185,22 +189,22 @@ const CENTRO_SRC = 1306;
 const CENTRO_OUT = 1090;
 const IA: React.FC = () => {
   const f = useCurrentFrame();
-  const k = tw(f, [0, 22], [0, 1], ease.inOut);
-  const z = 1.02 + (ZMAX - 1.02) * k;
+  const k = tw(f, [0, 34], [0, 1], ease.inOut);
+  const z = 1 + (ZMAX - 1) * k;
   const despl = (CENTRO_OUT - CENTRO_SRC) * k;
   const mapY = (y: number) => (y - CENTRO_SRC) * z + CENTRO_SRC + despl;
   const mapX = (x: number) => (x - 540) * z + 540;
-  const luz = tw(f, [10, 26], [0, 1], ease.out);
+  const luz = tw(f, [16, 36], [0, 1], ease.out);
   return (
     <AbsoluteFill style={{background: '#202124', overflow: 'hidden'}}>
       <div style={{position: 'absolute', inset: 0, transform: `translateY(${despl}px)`}}>
-        <Grabacion src={INTRO} desde={S_IA} top={0} z={z} cy={CENTRO_SRC} />
+        <Grabacion src={INTRO} desde={S_IA} rate={((11.6 - S_IA) * 30) / IA_F} top={0} z={z} cy={CENTRO_SRC} />
       </div>
       <Reflector x={mapX(PARR.x0)} y={mapY(PARR.y0)} w={(PARR.x1 - PARR.x0) * z} h={(PARR.y1 - PARR.y0) * z} p={luz} />
       {RES_IA.map((r, i) => (
-        <Marcador key={i} x={mapX(r.x0)} y={mapY(r.y0)} w={(r.x1 - r.x0) * z} h={(r.y1 - r.y0) * z} p={tw(f, [26 + i * 10, 40 + i * 10], [0, 1], ease.out)} />
+        <Marcador key={i} x={mapX(r.x0)} y={mapY(r.y0)} w={(r.x1 - r.x0) * z} h={(r.y1 - r.y0) * z} p={tw(f, [40 + i * 12, 56 + i * 12], [0, 1], ease.out)} />
       ))}
-      <Etiqueta texto="Hasta *Google lo reconoce" top={mapY(PARR.y0) - 190} at={18} />
+      <Etiqueta texto="Hasta *Google lo reconoce" top={mapY(PARR.y0) - 190} at={26} />
     </AbsoluteFill>
   );
 };
@@ -211,8 +215,8 @@ const IA: React.FC = () => {
 /** Tarjeta: un recorte de la grabación (vista previa de una nota) sobre fondo azul con la grabación desenfocada */
 const Tarjeta: React.FC<{src: string; desde: number; rate?: number; partes: Rect[]; top: number; dur: number; marcas: Rect[]; etiqueta: string; marcasAt?: number; sinSalida?: boolean; lineas?: boolean}> = ({src, desde, rate = 1, partes, top, dur, marcas, etiqueta, marcasAt = 20, sinSalida, lineas}) => {
   const f = useCurrentFrame();
-  const entra = tw(f, [0, 12], [0, 1], ease.out);
-  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 2, dur], [0, 1], ease.in);
+  const entra = tw(f, [0, 20], [0, 1], ease.out);
+  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 4, dur], [0, 1], ease.inOut);
   const ancho = Math.max(...partes.map((p) => p.x1 - p.x0));
   const s = Math.min(1.02, 1000 / ancho);
   const left = (W - ancho * s) / 2;
@@ -225,7 +229,7 @@ const Tarjeta: React.FC<{src: string; desde: number; rate?: number; partes: Rect
   const altoTotal = y - top;
   return (
     <AbsoluteFill style={{overflow: 'hidden'}}>
-      <div style={{position: 'absolute', left, top, width: ancho * s, height: altoTotal, borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 90px rgba(0,0,0,0.6)', transform: `translateX(${(1 - entra) * 1150 - sale * 1150}px) rotate(${(1 - entra) * 7 - sale * 7}deg) scale(${0.94 + 0.06 * entra + 0.02 * (f / dur)})`}}>
+      <div style={{position: 'absolute', left, top, width: ancho * s, height: altoTotal, borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 90px rgba(0,0,0,0.6)', opacity: entra * (1 - sale), transform: `translateX(${(1 - entra) * 650 - sale * 650}px) rotate(${(1 - entra) * 4 - sale * 4}deg) scale(${0.94 + 0.06 * entra + 0.02 * (f / dur)})`}}>
         {bloques.map(({p, y: by}, i) => (
           <div key={i} style={{position: 'absolute', left: 0, top: by - top, width: (p.x1 - p.x0) * s, height: (p.y1 - p.y0) * s, overflow: 'hidden'}}>
             <div style={{position: 'absolute', left: -p.x0 * s, top: -p.y0 * s, width: W * s, height: SH * s}}>
@@ -281,7 +285,7 @@ const MVS_TOP = 720;
 // ---------------------------------------------------------------------------
 type Previo = {src: string; desde: number; rate?: number; partes: Rect[]; top: number; marcas: Rect[]; etiqueta: string; lineas?: boolean; marcasAt?: number; dur: number};
 type Pagina = {src: string; desde: number; rate?: number; marcas?: Rect[]; blur?: Rect[]; marcasAt?: number};
-const ABRE_F = 12;
+const ABRE_F = 18;
 const NotaCompleta: React.FC<{dur: number; previo?: Previo; pagina: Pagina; sinSalida?: boolean}> = ({dur, previo, pagina, sinSalida}) => {
   const f = useCurrentFrame();
   const pf = previo ? previo.dur : 0;
@@ -307,8 +311,8 @@ const NotaCompleta: React.FC<{dur: number; previo?: Previo; pagina: Pagina; sinS
   const visible = h0 + (H - h0) * o;
   const radio = (28 / k0) * (1 - o);
   // entrada sin vista previa (zoom con desenfoque) y salida hacia la izquierda
-  const entraZ = previo ? 1 : tw(f, [0, 12], [0, 1], ease.out);
-  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 2, dur], [0, 1], ease.in);
+  const entraZ = previo ? 1 : tw(f, [0, 22], [0, 1], ease.out);
+  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 4, dur], [0, 1], ease.inOut);
   const pg = f - pf; // cuadros desde que se abre la página
   return (
     <AbsoluteFill style={{overflow: 'hidden'}}>
@@ -318,7 +322,7 @@ const NotaCompleta: React.FC<{dur: number; previo?: Previo; pagina: Pagina; sinS
         </div>
       )}
       {f >= pf && (
-        <div style={{position: 'absolute', inset: 0, transform: `translateX(${-sale * 1150}px) rotate(${-sale * 7}deg) scale(${(1.2 - 0.2 * entraZ) * (1 - 0.08 * sale)})`, filter: entraZ < 1 ? `blur(${(1 - entraZ) * 18}px)` : undefined, opacity: Math.min(1, entraZ * 1.6)}}>
+        <div style={{position: 'absolute', inset: 0, transform: `translateX(${-sale * 650}px) rotate(${-sale * 4}deg) scale(${(1.12 - 0.12 * entraZ) * (1 - 0.06 * sale)})`, filter: entraZ < 1 ? `blur(${(1 - entraZ) * 14}px)` : undefined, opacity: Math.min(1, entraZ * 1.3) * (1 - sale)}}>
           <div style={{position: 'absolute', left: x, top: y, width: W, height: H, transform: `scale(${k})`, transformOrigin: '0 0', clipPath: `inset(0 0 ${H - visible}px 0 round ${radio}px)`, boxShadow: o < 1 ? '0 40px 90px rgba(0,0,0,0.6)' : undefined}}>
             <Sequence from={pf} layout="none">
               <AbsoluteFill style={{background: '#fff'}}>
@@ -382,7 +386,7 @@ const PIEZAS: Pieza[] = [
 const FondoPlaca: React.FC<{blur?: number; oscuro?: number}> = ({blur = 10, oscuro = 0.62}) => {
   const f = useCurrentFrame();
   return (
-    <AbsoluteFill style={{background: NAVY2, overflow: 'hidden'}}>
+    <AbsoluteFill style={{background: NAVY2, overflow: 'hidden', opacity: tw(f, [0, 18], [0, 1], ease.inOut)}}>
       <OffthreadVideo src={staticFile('proxies/placa/11218.mp4')} playbackRate={0.8} muted style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.1 + 0.0004 * f})`, filter: `blur(${blur}px) saturate(0.9)`}} />
       <AbsoluteFill style={{background: `linear-gradient(180deg, rgba(10,33,65,${oscuro + 0.15}) 0%, rgba(10,33,65,${oscuro - 0.1}) 50%, rgba(10,33,65,${oscuro + 0.2}) 100%)`}} />
     </AbsoluteFill>
@@ -411,8 +415,8 @@ const Collage: React.FC<{f: number; salida?: number}> = ({f, salida = 0}) => (
 
 const CollageEscena: React.FC = () => {
   const f = useCurrentFrame();
-  const t1 = tw(f, [44, 56], [0, 1], ease.out);
-  const golpe = interpolate(f, [44, 50, 58], [1.4, 0.95, 1], clamp);
+  const t1 = tw(f, [50, 64], [0, 1], ease.out);
+  const golpe = interpolate(f, [50, 57, 66], [1.3, 0.97, 1], clamp);
   return (
     <AbsoluteFill>
       <Collage f={f} />
@@ -471,6 +475,12 @@ const Cta: React.FC = () => {
   );
 };
 
+/** Envoltura que entra con fundido */
+const Fundido: React.FC<{entra: number; children: React.ReactNode}> = ({entra, children}) => {
+  const f = useCurrentFrame();
+  return <AbsoluteFill style={{background: '#202124', opacity: tw(f, [0, entra], [0, 1], ease.inOut)}}>{children}</AbsoluteFill>;
+};
+
 const Flash: React.FC = () => {
   const f = useCurrentFrame();
   return <AbsoluteFill style={{background: '#FFFDF4', opacity: interpolate(f, [0, 1, 8], [0.7, 0.55, 0], clamp)}} />;
@@ -487,28 +497,35 @@ export const BusquedaGoogle: React.FC = () => (
     <Sequence from={T.primero} durationInFrames={PRIMERO_F}>
       <Primero />
     </Sequence>
+    {/* el scroll de la grabación entre el #1 y la IA se deja correr (sin cortes) */}
+    <Sequence from={T.desliza} durationInFrames={DESLIZA_F}>
+      <AbsoluteFill style={{background: '#202124'}}>
+        <Grabacion src={INTRO} desde={7.95} rate={((S_IA - 7.95) * 30) / DESLIZA_F} top={0} />
+      </AbsoluteFill>
+    </Sequence>
     <Sequence from={T.ia} durationInFrames={IA_F}>
       <IA />
     </Sequence>
-    <Sequence from={T.scroll} durationInFrames={SCROLL_F}>
-      <AbsoluteFill style={{background: '#202124'}}>
-        <Grabacion src={NOTAS} desde={1.2} rate={(3.6 - 1.2) * 30 / SCROLL_F} top={0} />
-      </AbsoluteFill>
+    {/* de la IA a la otra grabación (mismos resultados): fundido */}
+    <Sequence from={T.scroll - 15} durationInFrames={SCROLL_F + 15 + 20}>
+      <Fundido entra={15}>
+        <Grabacion src={NOTAS} desde={1.2} rate={((3.4 - 1.2) * 30) / SCROLL_F} top={0} />
+      </Fundido>
     </Sequence>
     <Sequence from={T.exc} durationInFrames={T.fin - T.exc}>
       <FondoPlaca />
     </Sequence>
     <Sequence from={T.exc} durationInFrames={EXC_F + SOLAPE}>
-      <NotaCompleta dur={EXC_F + SOLAPE} previo={{src: NOTAS, desde: 3.9, partes: EXC, top: 330, marcas: EXC_MARCAS, etiqueta: 'Lo publicó *Excélsior', marcasAt: 12, dur: 48}} pagina={{src: NOTA3, desde: 0.2, rate: 0.8}} />
+      <NotaCompleta dur={EXC_F + SOLAPE} previo={{src: NOTAS, desde: 3.9, partes: EXC, top: 330, marcas: EXC_MARCAS, etiqueta: 'Lo publicó *Excélsior', marcasAt: 22, dur: 80}} pagina={{src: NOTA3, desde: 0.2, rate: 0.36}} />
     </Sequence>
     <Sequence from={T.cron} durationInFrames={CRON_F + SOLAPE}>
-      <NotaCompleta dur={CRON_F + SOLAPE} previo={{src: NOTAS, desde: 10.9, rate: 0.75, partes: CRON, top: 560, marcas: CRON_MARCAS, etiqueta: 'También *La *Crónica *de *Hoy', marcasAt: 10, dur: 45}} pagina={{src: NOTA2, desde: 3.5, rate: 0.9, marcas: CRON_PAG_MARCAS, marcasAt: 22}} />
+      <NotaCompleta dur={CRON_F + SOLAPE} previo={{src: NOTAS, desde: 10.9, rate: 0.45, partes: CRON, top: 560, marcas: CRON_MARCAS, etiqueta: 'También *La *Crónica *de *Hoy', marcasAt: 22, dur: 75}} pagina={{src: NOTA2, desde: 3.5, rate: 0.3, marcas: CRON_PAG_MARCAS, marcasAt: 46}} />
     </Sequence>
     <Sequence from={T.mvs} durationInFrames={MVS_F + SOLAPE}>
-      <NotaCompleta dur={MVS_F + SOLAPE} previo={{src: NOTAS, desde: 8.6, rate: 0.5, partes: MVS, top: MVS_TOP, marcas: MVS_MARCAS, etiqueta: 'Y *MVS *Noticias', lineas: true, marcasAt: 8, dur: 36}} pagina={{src: MVSPAG, desde: 0.3, marcas: MVS_PAG_MARCAS, blur: MVS_PAG_BLUR, marcasAt: 14}} />
+      <NotaCompleta dur={MVS_F + SOLAPE} previo={{src: NOTAS, desde: 8.6, rate: 0.36, partes: MVS, top: MVS_TOP, marcas: MVS_MARCAS, etiqueta: 'Y *MVS *Noticias', lineas: true, marcasAt: 18, dur: 60}} pagina={{src: MVSPAG, desde: 0.2, rate: 0.36, marcas: MVS_PAG_MARCAS, blur: MVS_PAG_BLUR, marcasAt: 26}} />
     </Sequence>
     <Sequence from={T.ref} durationInFrames={REF_F}>
-      <NotaCompleta dur={REF_F} pagina={{src: REFORMA, desde: 0.15, rate: 0.5, marcas: REF_PAG_MARCAS, marcasAt: 16}} sinSalida />
+      <NotaCompleta dur={REF_F} pagina={{src: REFORMA, desde: 0.15, rate: 0.3, marcas: REF_PAG_MARCAS, marcasAt: 26}} sinSalida />
     </Sequence>
     <Sequence from={T.collage} durationInFrames={COLLAGE_F}>
       <CollageEscena />
@@ -516,43 +533,38 @@ export const BusquedaGoogle: React.FC = () => (
     <Sequence from={T.cta} durationInFrames={CTA_F}>
       <Cta />
     </Sequence>
-    {[T.primero, T.exc, T.cta].map((at) => (
-      <Sequence key={at} from={at} durationInFrames={8}>
-        <Flash />
-      </Sequence>
-    ))}
     {TECLAS.map((t) => (
       <Sfx key={t} at={Math.round((t - S_ESCRIBE) * 30)} name="ref_click" volume={0.4} />
     ))}
     <Sfx at={T.carga - 2} name="ref_tap" volume={0.5} />
     <Sfx at={T.carga} name="whoosh" volume={0.3} />
-    <Sfx at={T.primero} name="impact" volume={0.35} />
-    <Sfx at={T.primero + 10} name="pop" volume={0.35} />
-    <Sfx at={T.ia} name="whoosh" volume={0.28} />
-    <Sfx at={T.ia + 26} name="ding" volume={0.3} />
-    <Sfx at={T.scroll} name="swipe" volume={0.3} />
-    <Sfx at={T.exc} name="impact" volume={0.35} />
-    <Sfx at={T.exc + 20} name="ref_shutter" volume={0.3} />
-    <Sfx at={T.cron - 4} name="ref_swoosh" volume={0.32} />
-    <Sfx at={T.mvs - 4} name="ref_swoosh" volume={0.32} />
-    <Sfx at={T.ref - 4} name="whoosh" volume={0.35} />
-    {[T.exc + 48, T.cron + 45, T.mvs + 36].map((at) => (
-      <Sfx key={at} at={at} name="ref_tap" volume={0.45} />
+    <Sfx at={T.primero + 14} name="pop" volume={0.3} />
+    <Sfx at={T.desliza} name="swipe" volume={0.2} />
+    <Sfx at={T.ia + 6} name="whoosh" volume={0.22} />
+    <Sfx at={T.ia + 40} name="ding" volume={0.28} />
+    <Sfx at={T.scroll - 10} name="swipe" volume={0.22} />
+    <Sfx at={T.exc + 4} name="whoosh" volume={0.25} />
+    <Sfx at={T.exc + 22} name="ref_shutter" volume={0.25} />
+    <Sfx at={T.cron - 8} name="ref_swoosh" volume={0.26} />
+    <Sfx at={T.mvs - 8} name="ref_swoosh" volume={0.26} />
+    <Sfx at={T.ref - 8} name="whoosh" volume={0.3} />
+    {[T.exc + 80, T.cron + 75, T.mvs + 60].map((at) => (
+      <Sfx key={at} at={at} name="ref_tap" volume={0.4} />
     ))}
-    {[T.exc + 49, T.cron + 46, T.mvs + 37].map((at) => (
-      <Sfx key={at} at={at} name="swipe" volume={0.3} />
+    {[T.exc + 81, T.cron + 76, T.mvs + 61].map((at) => (
+      <Sfx key={at} at={at} name="swipe" volume={0.25} />
     ))}
-    <Sfx at={T.collage} name="whoosh" volume={0.3} />
-    {[8, 14, 20, 26].map((k) => (
-      <Sfx key={k} at={T.collage + k + 14} name="ref_shutter" volume={0.25} />
+    <Sfx at={T.collage} name="whoosh" volume={0.28} />
+    {[8, 13, 18, 23, 28].map((k) => (
+      <Sfx key={k} at={T.collage + k + 14} name="ref_shutter" volume={0.22} />
     ))}
-    <Sfx at={T.collage + 44} name="down_bass" volume={0.8} />
-    <Sfx at={T.collage + 44} name="impact" volume={0.4} />
-    <Sfx at={T.cta - 30} name="riser" volume={0.35} />
-    <Sfx at={T.cta + 10} name="whoosh_largo" volume={0.35} />
-    <Sfx at={T.cta + 50} name="ding" volume={0.3} />
-    <Sfx at={T.cta + 66} name="pop" volume={0.35} />
-    <Audio src={staticFile('placa/solace_ext.wav')} volume={(fr) => interpolate(fr, [0, 20, BUSQUEDA_FRAMES - 20, BUSQUEDA_FRAMES], [0, 0.5, 0.5, 0], clamp)} />
+    <Sfx at={T.collage + 50} name="down_bass" volume={0.75} />
+    <Sfx at={T.collage + 50} name="impact" volume={0.35} />
+    <Sfx at={T.cta - 30} name="riser" volume={0.3} />
+    <Sfx at={T.cta + 10} name="whoosh_largo" volume={0.3} />
+    <Sfx at={T.cta + 50} name="ding" volume={0.28} />
+    <Sfx at={T.cta + 66} name="pop" volume={0.3} />
+    <Audio src={staticFile('placa/solace_largo.wav')} volume={(fr) => interpolate(fr, [0, 20, BUSQUEDA_FRAMES - 45, BUSQUEDA_FRAMES], [0, 0.5, 0.5, 0], clamp)} />
   </AbsoluteFill>
 );
 
