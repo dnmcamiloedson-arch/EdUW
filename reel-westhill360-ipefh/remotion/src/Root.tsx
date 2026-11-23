@@ -19,6 +19,7 @@ import {MuseoChocolate, CHOCO_FRAMES} from './MuseoChocolate';
 import {MuseoBanxico, BANXICO_FRAMES} from './MuseoBanxico';
 import {PlacaComaem, PLACA_FRAMES} from './PlacaComaem';
 import {PlacaComaemVoz, PLACA_VOZ_FRAMES} from './PlacaComaemVoz';
+import {GrabacionNoticia, GRAB_FRAMES} from './GrabacionNoticia';
 import {Comaem, COMAEM_FRAMES, COMAEM_H, COMAEM_W} from './Comaem';
 import {CongresoDerecho, CONGRESO_FRAMES} from './CongresoDerecho';
 import {OpinionCongreso, OPINION_FRAMES} from './OpinionCongreso';
@@ -63,6 +64,7 @@ export const Root: React.FC = () => (
     <Composition id="MuseoBanxico" component={MuseoBanxico} durationInFrames={BANXICO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="PlacaComaem" component={PlacaComaem} durationInFrames={PLACA_FRAMES} fps={FPS} width={W} height={H} />
     <Composition id="PlacaComaemVoz" component={PlacaComaemVoz} durationInFrames={PLACA_VOZ_FRAMES} fps={FPS} width={W} height={H} />
+    <Composition id="GrabacionNoticia" component={GrabacionNoticia} durationInFrames={GRAB_FRAMES} fps={FPS} width={W} height={H} />
     <Composition id="RecapOctubre" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="RecapOctubreSinMusica" component={RecapOctubre} durationInFrames={RECAP_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: false}} />
     <Composition id="RecapTeaser" component={RecapTeaser} durationInFrames={TEASER_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
