@@ -12,9 +12,10 @@ import {F, ease, tw} from './theme';
 //  3. #1: nuestra noticia (uw.edu.mx) es el primer resultado.
 //  4. La visión general por IA: "la primera universidad privada" resaltado ("Hasta Google lo reconoce").
 //  5. Scroll a Excélsior y su vista previa: titular resaltado ("Lo publicó Excélsior").
-//  6. Más medios: La Crónica de Hoy, MVS Noticias y COMAEM (sus títulos subrayados).
-//  7. Vista previa de La Crónica: "han obtenido la máxima distinción del organismo acreditador".
-//  8. Cierre: la placa real, "Tu vocación merece EXCELENCIA" y Solicita información.
+//  6. Las notas pasan una tras otra deslizándose (Excélsior → La Crónica → MVS) sobre el video de la placa.
+//  7. Collage: la última nota se encoge y las demás llegan a acomodarse ("Todos hablan de WESTHILL").
+//  8. CTA: el collage se va atrás y entra una hoja de periódico genérica: "El próximo titular puede ser el tuyo."
+//     + Solicita información.
 // Todas las coordenadas (x, y) son de la grabación (1080x2348).
 // ---------------------------------------------------------------------------
 const W = 1080;
@@ -37,14 +38,16 @@ const CARGA_F = 28;
 const PRIMERO_F = 54;
 const IA_F = 84;
 const SCROLL_F = 28;
-const EXC_F = 84;
-const MEDIOS_F = 66;
-const CRON_F = 57;
-const CIERRE_F = 120;
+const EXC_F = 72;
+const CRON_F = 60;
+const MVS_F = 54;
+const COLLAGE_F = 96;
+const CTA_F = 126;
+const SOLAPE = 6; // las tarjetas de las notas se enciman para que el paso de una a otra sea continuo
 const T = (() => {
   let t = 0;
   const r: Record<string, number> = {};
-  for (const [k, d] of [['escribe', ESCRIBE_F], ['carga', CARGA_F], ['primero', PRIMERO_F], ['ia', IA_F], ['scroll', SCROLL_F], ['exc', EXC_F], ['medios', MEDIOS_F], ['cron', CRON_F], ['cierre', CIERRE_F]] as [string, number][]) {
+  for (const [k, d] of [['escribe', ESCRIBE_F], ['carga', CARGA_F], ['primero', PRIMERO_F], ['ia', IA_F], ['scroll', SCROLL_F], ['exc', EXC_F], ['cron', CRON_F], ['mvs', MVS_F], ['collage', COLLAGE_F], ['cta', CTA_F]] as [string, number][]) {
     r[k] = t;
     t += d;
   }
@@ -204,10 +207,10 @@ const IA: React.FC = () => {
 // 5. Scroll a Excélsior y su vista previa
 // ---------------------------------------------------------------------------
 /** Tarjeta: un recorte de la grabación (vista previa de una nota) sobre fondo azul con la grabación desenfocada */
-const Tarjeta: React.FC<{src: string; desde: number; rate?: number; partes: Rect[]; top: number; dur: number; marcas: Rect[]; etiqueta: string; marcasAt?: number}> = ({src, desde, rate = 1, partes, top, dur, marcas, etiqueta, marcasAt = 20}) => {
+const Tarjeta: React.FC<{src: string; desde: number; rate?: number; partes: Rect[]; top: number; dur: number; marcas: Rect[]; etiqueta: string; marcasAt?: number; sinSalida?: boolean; lineas?: boolean}> = ({src, desde, rate = 1, partes, top, dur, marcas, etiqueta, marcasAt = 20, sinSalida, lineas}) => {
   const f = useCurrentFrame();
-  const entra = tw(f, [0, 10], [0, 1], ease.out);
-  const sale = tw(f, [dur - 6, dur], [0, 1], ease.in);
+  const entra = tw(f, [0, 12], [0, 1], ease.out);
+  const sale = sinSalida ? 0 : tw(f, [dur - SOLAPE - 2, dur], [0, 1], ease.in);
   const ancho = Math.max(...partes.map((p) => p.x1 - p.x0));
   const s = Math.min(1.02, 1000 / ancho);
   const left = (W - ancho * s) / 2;
@@ -219,12 +222,8 @@ const Tarjeta: React.FC<{src: string; desde: number; rate?: number; partes: Rect
   });
   const altoTotal = y - top;
   return (
-    <AbsoluteFill style={{background: NAVY2, overflow: 'hidden'}}>
-      <div style={{position: 'absolute', inset: 0, opacity: 0.45}}>
-        <Grabacion src={src} desde={desde} rate={rate} top={0} blur={30} z={1.15} />
-      </div>
-      <AbsoluteFill style={{background: `linear-gradient(180deg, rgba(10,33,65,0.75) 0%, rgba(10,33,65,0.55) 50%, rgba(10,33,65,0.85) 100%)`}} />
-      <div style={{position: 'absolute', left, top, width: ancho * s, height: altoTotal, borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 90px rgba(0,0,0,0.6)', opacity: entra * (1 - sale), transform: `translateY(${(1 - entra) * 80}px) scale(${0.94 + 0.06 * entra + 0.02 * (f / dur)})`}}>
+    <AbsoluteFill style={{overflow: 'hidden'}}>
+      <div style={{position: 'absolute', left, top, width: ancho * s, height: altoTotal, borderRadius: 28, overflow: 'hidden', boxShadow: '0 40px 90px rgba(0,0,0,0.6)', transform: `translateX(${(1 - entra) * 1150 - sale * 1150}px) rotate(${(1 - entra) * 7 - sale * 7}deg) scale(${0.94 + 0.06 * entra + 0.02 * (f / dur)})`}}>
         {bloques.map(({p, y: by}, i) => (
           <div key={i} style={{position: 'absolute', left: 0, top: by - top, width: (p.x1 - p.x0) * s, height: (p.y1 - p.y0) * s, overflow: 'hidden'}}>
             <div style={{position: 'absolute', left: -p.x0 * s, top: -p.y0 * s, width: W * s, height: SH * s}}>
@@ -233,12 +232,14 @@ const Tarjeta: React.FC<{src: string; desde: number; rate?: number; partes: Rect
             {marcas
               .filter((m) => m.y0 >= p.y0 && m.y1 <= p.y1)
               .map((m, j) => (
-                <Marcador key={j} x={(m.x0 - p.x0) * s} y={(m.y0 - p.y0) * s} w={(m.x1 - m.x0) * s} h={(m.y1 - m.y0) * s} p={tw(f, [marcasAt + marcas.indexOf(m) * 7, marcasAt + 12 + marcas.indexOf(m) * 7], [0, 1], ease.out)} />
+                <Marcador key={j} x={(m.x0 - p.x0) * s} y={(m.y0 - p.y0) * s} w={(m.x1 - m.x0) * s} h={(m.y1 - m.y0) * s} p={tw(f, [marcasAt + marcas.indexOf(m) * 7, marcasAt + 12 + marcas.indexOf(m) * 7], [0, 1], ease.out)} linea={lineas} />
               ))}
           </div>
         ))}
       </div>
-      <Etiqueta texto={etiqueta} top={top - 200} at={8} size={60} />
+      <div style={{position: 'absolute', inset: 0, opacity: 1 - sale}}>
+        <Etiqueta texto={etiqueta} top={top - 200} at={6} size={60} />
+      </div>
     </AbsoluteFill>
   );
 };
@@ -250,27 +251,6 @@ const EXC_MARCAS: Rect[] = [
   {x0: 88, x1: 817, y0: 856, y1: 940},
   {x0: 88, x1: 514, y0: 950, y1: 1032},
 ];
-
-// ---------------------------------------------------------------------------
-// 6. Más medios
-// ---------------------------------------------------------------------------
-const MEDIOS_TIT: Rect[] = [
-  {x0: 40, x1: 900, y0: 635, y1: 785},
-  {x0: 40, x1: 1040, y0: 1185, y1: 1335},
-  {x0: 40, x1: 1040, y0: 1735, y1: 1885},
-];
-const Medios: React.FC = () => {
-  const f = useCurrentFrame();
-  return (
-    <AbsoluteFill style={{background: '#202124'}}>
-      <Grabacion src={NOTAS} desde={8.55} rate={0.5} top={60} />
-      {MEDIOS_TIT.map((r, i) => (
-        <Marcador key={i} x={r.x0} y={r.y0 - 60} w={r.x1 - r.x0} h={r.y1 - r.y0} p={tw(f, [10 + i * 9, 24 + i * 9], [0, 1], ease.out)} linea />
-      ))}
-      <Etiqueta texto="También *La *Crónica, *MVS y *COMAEM" top={300} at={4} size={54} />
-    </AbsoluteFill>
-  );
-};
 
 // ---------------------------------------------------------------------------
 // 7. La Crónica: encabezado + el párrafo (sin el espacio del anuncio)
@@ -285,31 +265,114 @@ const CRON_MARCAS: Rect[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// 8. Cierre
+// 6. MVS Noticias (resultado de búsqueda) — es la última nota: no sale, se encoge hacia el collage
 // ---------------------------------------------------------------------------
-const Cierre: React.FC = () => {
+const MVS: Rect[] = [{x0: 15, y0: 1040, x1: 1065, y1: 1530}];
+const MVS_MARCAS: Rect[] = [{x0: 40, x1: 1040, y0: 1185, y1: 1335}];
+const MVS_TOP = 720;
+
+// ---------------------------------------------------------------------------
+// 7. Collage: la última nota se hace pequeña y las demás llegan a acomodarse sobre el video de la placa
+// ---------------------------------------------------------------------------
+type Pieza = {img: string; w: number; h: number; cx: number; cy: number; s: number; rot: number; at: number; desdeX: number; desdeY: number; desdeRot: number; desdeS?: number};
+const MVS_S0 = Math.min(1.02, 1000 / (MVS[0].x1 - MVS[0].x0)) * 1.02;
+const PIEZAS: Pieza[] = [
+  {img: 'excelsior.jpg', w: 1005, h: 1417, cx: 285, cy: 520, s: 0.4, rot: -6, at: 8, desdeX: -700, desdeY: 300, desdeRot: -25},
+  {img: 'cronica.jpg', w: 995, h: 797, cx: 790, cy: 430, s: 0.44, rot: 5, at: 14, desdeX: 1700, desdeY: 200, desdeRot: 25},
+  {img: 'google1.jpg', w: 1056, h: 495, cx: 762, cy: 830, s: 0.47, rot: -3, at: 20, desdeX: 1700, desdeY: 900, desdeRot: 20},
+  {img: 'ia.jpg', w: 1036, h: 568, cx: 298, cy: 1010, s: 0.44, rot: 4, at: 26, desdeX: -700, desdeY: 1100, desdeRot: -20},
+  // la última nota (MVS) parte de donde se quedó su tarjeta
+  {img: 'mvs.jpg', w: 1050, h: 490, cx: 770, cy: 1225, s: 0.45, rot: -4, at: 0, desdeX: 540, desdeY: MVS_TOP + (490 * MVS_S0) / 2, desdeRot: 0, desdeS: MVS_S0},
+];
+
+/** Fondo de las notas y del collage: el video de la develación de la placa, oscurecido */
+const FondoPlaca: React.FC<{blur?: number; oscuro?: number}> = ({blur = 10, oscuro = 0.62}) => {
   const f = useCurrentFrame();
-  const a = tw(f, [0, 14], [0, 1], ease.out);
-  const t1 = tw(f, [8, 20], [0, 1], ease.out);
-  const t2 = tw(f, [16, 26], [0, 1], ease.out);
-  const golpe = interpolate(f, [16, 22, 28], [1.5, 0.95, 1], clamp);
-  const b = tw(f, [34, 46], [0, 1], ease.out);
-  const late = f > 46 ? 1 + 0.04 * Math.max(0, Math.sin(((f - 46) / 15) * Math.PI)) : 1;
-  const brillo = interpolate((f - 50) % 40, [0, 16], [-0.3, 1.3], clamp);
-  const negro = tw(f, [CIERRE_F - 12, CIERRE_F], [0, 1]);
   return (
     <AbsoluteFill style={{background: NAVY2, overflow: 'hidden'}}>
-      <OffthreadVideo src={staticFile('proxies/placa/1126.mp4')} startFrom={78} muted style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.08 + 0.06 * (f / CIERRE_F)})`, filter: 'saturate(0.9)'}} />
-      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(10,33,65,0.88) 0%, rgba(10,33,65,0.45) 38%, rgba(10,33,65,0.55) 62%, rgba(10,33,65,0.92) 100%)'}} />
-      <Img src={LOGO} style={{position: 'absolute', left: W / 2 - 230, top: 140, width: 460, opacity: a, transform: `translateY(${(1 - a) * -30}px)`, filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))'}} />
-      <div style={{position: 'absolute', left: 0, right: 0, top: 1180, textAlign: 'center', fontFamily: F.sans, color: '#fff', textShadow: '0 6px 26px rgba(0,0,0,0.6)'}}>
-        <div style={{fontWeight: 800, fontSize: 76, opacity: t1, transform: `translateY(${(1 - t1) * 20}px)`}}>Tu vocación merece</div>
-        <div style={{fontWeight: 900, fontSize: 138, lineHeight: 1.05, color: AMARILLO, opacity: t2, transform: `scale(${golpe})`}}>EXCELENCIA.</div>
+      <OffthreadVideo src={staticFile('proxies/placa/11218.mp4')} playbackRate={0.8} muted style={{position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${1.1 + 0.0004 * f})`, filter: `blur(${blur}px) saturate(0.9)`}} />
+      <AbsoluteFill style={{background: `linear-gradient(180deg, rgba(10,33,65,${oscuro + 0.15}) 0%, rgba(10,33,65,${oscuro - 0.1}) 50%, rgba(10,33,65,${oscuro + 0.2}) 100%)`}} />
+    </AbsoluteFill>
+  );
+};
+
+const Collage: React.FC<{f: number; salida?: number}> = ({f, salida = 0}) => (
+  <AbsoluteFill style={{transform: `translateY(${-170 * salida}px) scale(${1 - 0.12 * salida})`, transformOrigin: '50% 30%', filter: salida > 0.02 ? `blur(${3.5 * salida}px) brightness(${1 - 0.35 * salida})` : undefined}}>
+    {PIEZAS.map((p) => {
+      const k = tw(f, [p.at, p.at + 18], [0, 1], ease.out);
+      const asienta = interpolate(f - p.at - 18, [0, 6, 12], [0, 1, 0], clamp);
+      const s0 = p.desdeS ?? p.s * 1.8;
+      const cx = p.desdeX + (p.cx - p.desdeX) * k;
+      const cy = p.desdeY + (p.cy - p.desdeY) * k;
+      const s = s0 + (p.s - s0) * k;
+      const rot = p.desdeRot + (p.rot - p.desdeRot) * k;
+      if (f < p.at && p.img !== 'mvs.jpg') return null;
+      return (
+        <div key={p.img} style={{position: 'absolute', left: cx - (p.w * s) / 2, top: cy - (p.h * s) / 2, width: p.w * s, height: p.h * s, transform: `rotate(${rot}deg)`, borderRadius: 18, overflow: 'hidden', border: `${6 * (0.5 + 0.5 * k)}px solid #fff`, boxShadow: `0 ${20 + 14 * asienta}px 50px rgba(0,0,0,0.55)`}}>
+          <Img src={staticFile(`grabacion/${p.img}`)} style={{width: '100%', height: '100%', display: 'block'}} />
+        </div>
+      );
+    })}
+  </AbsoluteFill>
+);
+
+const CollageEscena: React.FC = () => {
+  const f = useCurrentFrame();
+  const t1 = tw(f, [44, 56], [0, 1], ease.out);
+  const golpe = interpolate(f, [44, 50, 58], [1.4, 0.95, 1], clamp);
+  return (
+    <AbsoluteFill>
+      <Collage f={f} />
+      <div style={{position: 'absolute', left: 0, right: 0, top: 1440, textAlign: 'center', fontFamily: F.sans, color: '#fff', textShadow: '0 8px 30px rgba(0,0,0,0.7)', opacity: t1}}>
+        <div style={{fontWeight: 800, fontSize: 64, transform: `translateY(${(1 - t1) * 20}px)`}}>Todos hablan de</div>
+        <div style={{fontWeight: 900, fontSize: 150, lineHeight: 1, color: AMARILLO, transform: `scale(${golpe})`}}>WESTHILL</div>
       </div>
-      <div style={{position: 'absolute', left: 110, right: 110, top: 1560, height: 120, borderRadius: 60, background: `linear-gradient(180deg, #FFE38A 0%, ${AMARILLO} 55%, #E0B12E 100%)`, boxShadow: '0 16px 40px rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: b, transform: `translateY(${(1 - b) * 40}px) scale(${late * (0.85 + 0.15 * b)})`}}>
+    </AbsoluteFill>
+  );
+};
+
+// ---------------------------------------------------------------------------
+// 8. CTA: el collage se va atrás y aparece "el próximo titular puede ser el tuyo"
+// ---------------------------------------------------------------------------
+const PALABRAS_TIT = ['El', 'próximo', 'titular', 'puede', 'ser', 'el', 'tuyo.'];
+const Cta: React.FC = () => {
+  const f = useCurrentFrame();
+  const atras = tw(f, [0, 18], [0, 1], ease.inOut);
+  const hoja = tw(f, [10, 26], [0, 1], ease.out);
+  const sub = tw(f, [52, 64], [0, 1], ease.out);
+  const boton = tw(f, [66, 78], [0, 1], ease.out);
+  const late = f > 78 ? 1 + 0.045 * Math.max(0, Math.sin(((f - 78) / 15) * Math.PI)) : 1;
+  const brillo = interpolate((f - 80) % 40, [0, 16], [-0.3, 1.3], clamp);
+  const logo = tw(f, [74, 88], [0, 1], ease.out);
+  const negro = tw(f, [CTA_F - 10, CTA_F], [0, 1]);
+  return (
+    <AbsoluteFill>
+      <Collage f={COLLAGE_F + f} salida={atras} />
+      <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 62%, rgba(10,33,65,0.35) 0%, rgba(10,33,65,0.8) 70%)`, opacity: atras}} />
+      {/* hoja de periódico (genérica) con el titular */}
+      <div style={{position: 'absolute', left: 70, right: 70, top: 920, padding: '44px 50px 50px', borderRadius: 14, background: '#F7F3EA', boxShadow: '0 40px 100px rgba(0,0,0,0.6)', transform: `translateY(${(1 - hoja) * 500}px) rotate(${(1 - hoja) * 8 - 1.5}deg)`, opacity: hoja}}>
+        <div style={{display: 'flex', justifyContent: 'space-between', fontFamily: F.sans, fontWeight: 800, fontSize: 24, letterSpacing: 3, color: '#6B6457', borderBottom: '3px solid #2B2B2B', paddingBottom: 12}}>
+          <span>MEDICINA · WESTHILL</span>
+          <span>TU HISTORIA</span>
+        </div>
+        <div style={{marginTop: 26, fontFamily: F.serif, fontStyle: 'italic', fontWeight: 700, fontSize: 92, lineHeight: 1.05, color: '#1B1B1B'}}>
+          {PALABRAS_TIT.map((w, i) => {
+            const q = tw(f, [22 + i * 4, 32 + i * 4], [0, 1], ease.out);
+            const dorado = w === 'tuyo.';
+            return (
+              <span key={i} style={{display: 'inline-block', marginRight: 22, opacity: q, transform: `translateY(${(1 - q) * 30}px)`, color: dorado ? '#B8860B' : undefined, backgroundImage: dorado ? `linear-gradient(${AMARILLO}, ${AMARILLO})` : undefined, backgroundSize: dorado ? `${tw(f, [50, 60], [0, 1]) * 100}% 30%` : undefined, backgroundPosition: '0 85%', backgroundRepeat: 'no-repeat'}}>
+                {w}
+              </span>
+            );
+          })}
+        </div>
+        <div style={{marginTop: 26, fontFamily: F.sans, fontWeight: 700, fontSize: 38, color: '#3A3A3A', opacity: sub, transform: `translateY(${(1 - sub) * 16}px)`}}>Estudia Médico Cirujano en la primera universidad privada con Distinción de Excelencia COMAEM.</div>
+      </div>
+      <div style={{position: 'absolute', left: 110, right: 110, top: 1620, height: 124, borderRadius: 62, background: `linear-gradient(180deg, #FFE38A 0%, ${AMARILLO} 55%, #E0B12E 100%)`, boxShadow: '0 16px 40px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', opacity: boton, transform: `translateY(${(1 - boton) * 50}px) scale(${late * (0.85 + 0.15 * boton)})`}}>
         <div style={{position: 'absolute', top: 0, bottom: 0, left: `${brillo * 100}%`, width: 120, transform: 'translateX(-50%) skewX(-18deg)', background: 'linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,0.7), rgba(255,255,255,0))'}} />
-        <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 48, color: NAVY}}>SOLICITA INFORMACIÓN →</span>
+        <span style={{position: 'relative', fontFamily: F.sans, fontWeight: 900, fontSize: 50, color: NAVY}}>SOLICITA INFORMACIÓN →</span>
       </div>
+      <Img src={LOGO} style={{position: 'absolute', left: W / 2 - 170, top: 1790, width: 340, opacity: logo}} />
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
     </AbsoluteFill>
   );
@@ -339,19 +402,25 @@ export const BusquedaGoogle: React.FC = () => (
         <Grabacion src={NOTAS} desde={1.2} rate={(3.6 - 1.2) * 30 / SCROLL_F} top={0} />
       </AbsoluteFill>
     </Sequence>
-    <Sequence from={T.exc} durationInFrames={EXC_F}>
-      <Tarjeta src={NOTAS} desde={3.9} partes={EXC} top={330} dur={EXC_F} marcas={EXC_MARCAS} etiqueta="Lo publicó *Excélsior" />
+    <Sequence from={T.exc} durationInFrames={T.fin - T.exc}>
+      <FondoPlaca />
     </Sequence>
-    <Sequence from={T.medios} durationInFrames={MEDIOS_F}>
-      <Medios />
+    <Sequence from={T.exc} durationInFrames={EXC_F + SOLAPE}>
+      <Tarjeta src={NOTAS} desde={3.9} partes={EXC} top={330} dur={EXC_F + SOLAPE} marcas={EXC_MARCAS} etiqueta="Lo publicó *Excélsior" />
     </Sequence>
-    <Sequence from={T.cron} durationInFrames={CRON_F}>
-      <Tarjeta src={NOTAS} desde={10.9} rate={0.75} partes={CRON} top={560} dur={CRON_F} marcas={CRON_MARCAS} etiqueta="*La *Crónica *de *Hoy" marcasAt={14} />
+    <Sequence from={T.cron} durationInFrames={CRON_F + SOLAPE}>
+      <Tarjeta src={NOTAS} desde={10.9} rate={0.75} partes={CRON} top={560} dur={CRON_F + SOLAPE} marcas={CRON_MARCAS} etiqueta="También *La *Crónica *de *Hoy" marcasAt={14} />
     </Sequence>
-    <Sequence from={T.cierre} durationInFrames={CIERRE_F}>
-      <Cierre />
+    <Sequence from={T.mvs} durationInFrames={MVS_F}>
+      <Tarjeta src={NOTAS} desde={8.6} rate={0.5} partes={MVS} top={MVS_TOP} dur={MVS_F} marcas={MVS_MARCAS} etiqueta="Y *MVS *Noticias" marcasAt={14} sinSalida lineas />
     </Sequence>
-    {[T.primero, T.exc, T.cierre].map((at) => (
+    <Sequence from={T.collage} durationInFrames={COLLAGE_F}>
+      <CollageEscena />
+    </Sequence>
+    <Sequence from={T.cta} durationInFrames={CTA_F}>
+      <Cta />
+    </Sequence>
+    {[T.primero, T.exc, T.cta].map((at) => (
       <Sequence key={at} from={at} durationInFrames={8}>
         <Flash />
       </Sequence>
@@ -368,13 +437,18 @@ export const BusquedaGoogle: React.FC = () => (
     <Sfx at={T.scroll} name="swipe" volume={0.3} />
     <Sfx at={T.exc} name="impact" volume={0.35} />
     <Sfx at={T.exc + 20} name="ref_shutter" volume={0.3} />
-    {[0, 9, 18].map((k) => (
-      <Sfx key={k} at={T.medios + 10 + k} name="pop" volume={0.28} />
+    <Sfx at={T.cron - 4} name="ref_swoosh" volume={0.32} />
+    <Sfx at={T.mvs - 4} name="ref_swoosh" volume={0.32} />
+    <Sfx at={T.collage} name="whoosh" volume={0.3} />
+    {[8, 14, 20, 26].map((k) => (
+      <Sfx key={k} at={T.collage + k + 14} name="ref_shutter" volume={0.25} />
     ))}
-    <Sfx at={T.cron} name="ref_swoosh" volume={0.3} />
-    <Sfx at={T.cierre - 8} name="whoosh_largo" volume={0.35} />
-    <Sfx at={T.cierre} name="down_bass" volume={0.8} />
-    <Sfx at={T.cierre + 46} name="pop" volume={0.35} />
+    <Sfx at={T.collage + 44} name="down_bass" volume={0.8} />
+    <Sfx at={T.collage + 44} name="impact" volume={0.4} />
+    <Sfx at={T.cta - 30} name="riser" volume={0.35} />
+    <Sfx at={T.cta + 10} name="whoosh_largo" volume={0.35} />
+    <Sfx at={T.cta + 50} name="ding" volume={0.3} />
+    <Sfx at={T.cta + 66} name="pop" volume={0.35} />
     <Audio src={staticFile('placa/solace_ext.wav')} volume={(fr) => interpolate(fr, [0, 20, BUSQUEDA_FRAMES - 20, BUSQUEDA_FRAMES], [0, 0.5, 0.5, 0], clamp)} />
   </AbsoluteFill>
 );
