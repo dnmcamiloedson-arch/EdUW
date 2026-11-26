@@ -7,10 +7,11 @@ import {F, ease, tw} from './theme';
 // Reel (9:16, ~46 s): Experiencia Gastronómica de Relaciones Internacionales.
 // Al compás de la música original (sfx/generar_musica_fiesta.py, 120 BPM, 1 compás = 60 cuadros):
 //  1. Gancho (2 compases): cuatro saludos rápidos y el título.
-//  2. El arranque (4 compases): autoridades con los alumnos y la vista de los stands, con tres textos cortos.
+//  2. El arranque (5 compases): autoridades con los alumnos (placas con nombre y cargo) y la vista de los stands.
 //  3. Recorrido (7 × 2 compases): cada país con su comida y el saludo del equipo; entre países barre una cortina
 //     con los colores de la bandera.
 //  4. Despedida: mosaico con los 7 equipos saludando y el logo arriba; golpe final de la música.
+// Música: python3 sfx/generar_musica_fiesta.py remotion/public/gastro/fiesta.wav 2 7 23
 // Clips en public/proxies/gastro (1080x1920, 30 fps; originales 4K en media/gastro/fuente). IMG_4793 (horizontal)
 // no se usa.
 // ---------------------------------------------------------------------------
@@ -25,7 +26,11 @@ const v = (n: number) => staticFile(`proxies/gastro/IMG_${n}.mp4`);
 
 // Textos (los nombres de las autoridades se cambian aquí)
 const TEXTO_1 = 'Hoy vivimos la *Experiencia *Gastronómica de Relaciones Internacionales';
-const TEXTO_2 = 'Nos acompañaron el *Dr. *Julio y *Guillermo, director de la carrera';
+const TEXTO_2 = ''; // en esta toma van las placas de las autoridades
+const AUTORIDADES: [string, string][] = [
+  ['Dr. Julio César Gómez', 'Director General Académico y de Enlace'],
+  ['Guillermo López Andrade', 'Director de la carrera de Relaciones Internacionales'],
+];
 const TEXTO_3 = 'junto con alumnos de *Universidad *Westhill';
 
 // ---------------------------------------------------------------------------
@@ -151,7 +156,7 @@ const EtiquetaPais: React.FC<{p: Pais; i: number; dur: number}> = ({p, i, dur}) 
       <div style={{borderRadius: 14, overflow: 'hidden', border: '5px solid #fff', boxShadow: '0 12px 30px rgba(0,0,0,0.45)', transform: `rotate(${(1 - entra) * -20 - 4}deg) scale(${0.6 + 0.4 * entra})`}}>{p.bandera(150, 100)}</div>
       <div>
         <div style={{fontFamily: F.sans, fontWeight: 800, fontSize: 28, letterSpacing: 4, color: AMARILLO, textShadow: '0 3px 12px rgba(0,0,0,0.7)'}}>PARADA {String(i + 1).padStart(2, '0')} / 07</div>
-        <div style={{fontFamily: F.display, fontSize: largo ? 92 : 118, lineHeight: 1, color: '#fff', textShadow: '0 8px 26px rgba(0,0,0,0.6)', letterSpacing: 2}}>{p.nombre}</div>
+        <div style={{fontFamily: F.display, fontSize: largo ? 92 : 118, lineHeight: 1, marginTop: 18, color: '#fff', textShadow: '0 8px 26px rgba(0,0,0,0.6)', letterSpacing: 2}}>{p.nombre}</div>
       </div>
     </div>
   );
@@ -210,10 +215,34 @@ const Gancho: React.FC = () => {
 // ---------------------------------------------------------------------------
 const ARRANQUE: {n: number; desde: number; dur: number; texto: string}[] = [
   {n: 4775, desde: 0.3, dur: 75, texto: TEXTO_1},
-  {n: 4778, desde: 0.6, dur: 105, texto: TEXTO_2},
-  {n: 4779, desde: 1.4, dur: 60, texto: TEXTO_3},
+  {n: 4778, desde: 0.6, dur: 150, texto: TEXTO_2},
+  {n: 4779, desde: 1.4, dur: 75, texto: TEXTO_3},
 ];
-const ARRANQUE_F = ARRANQUE.reduce((a, c) => a + c.dur, 0); // 240 = 4 compases
+const ARRANQUE_F = ARRANQUE.reduce((a, c) => a + c.dur, 0); // 300 = 5 compases
+
+/** Placas con nombre y cargo de las autoridades */
+const Placas: React.FC<{dur: number}> = ({dur}) => {
+  const f = useCurrentFrame();
+  const sale = tw(f, [dur - 8, dur], [0, 1], ease.in);
+  const titulo = tw(f, [2, 12], [0, 1], ease.out);
+  return (
+    <div style={{position: 'absolute', left: 60, right: 60, top: 1200, opacity: 1 - sale, transform: `translateY(${sale * -20}px)`}}>
+      <div style={{display: 'inline-block', padding: '10px 26px', borderRadius: 30, background: NAVY, border: `3px solid ${AMARILLO}`, fontFamily: F.sans, fontWeight: 800, fontSize: 36, color: '#fff', opacity: titulo, transform: `translateY(${(1 - titulo) * 16}px)`}}>Nos acompañaron</div>
+      {AUTORIDADES.map(([nombre, cargo], i) => {
+        const k = tw(f, [10 + i * 12, 24 + i * 12], [0, 1], ease.out);
+        return (
+          <div key={nombre} style={{marginTop: 22, display: 'flex', borderRadius: 22, overflow: 'hidden', background: 'rgba(255,255,255,0.96)', boxShadow: '0 20px 50px rgba(0,0,0,0.35)', opacity: k, transform: `translateX(${(1 - k) * -120}px)`}}>
+            <div style={{width: 14, background: AMARILLO}} />
+            <div style={{padding: '20px 28px'}}>
+              <div style={{fontFamily: F.sans, fontWeight: 900, fontSize: 50, lineHeight: 1.1, color: NAVY}}>{nombre}</div>
+              <div style={{marginTop: 6, fontFamily: F.sans, fontWeight: 700, fontSize: 32, lineHeight: 1.2, color: '#5A6B80'}}>{cargo}</div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+};
 
 // ---------------------------------------------------------------------------
 // 3. Recorrido: comida y la visita de las autoridades (1 compás, cortes en el tiempo) + saludo (1 compás)
@@ -333,7 +362,7 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
           <Sequence key={a.n} from={from} durationInFrames={a.dur}>
             <Clip n={a.n} desde={a.desde} dur={a.dur} z0={1.0} z1={1.07} />
             <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(8,20,40,0) 55%, rgba(8,20,40,0.6) 100%)'}} />
-            <Rotulo texto={a.texto} top={1430} dur={a.dur} />
+            {a.texto ? <Rotulo texto={a.texto} top={1430} dur={a.dur} /> : <Placas dur={a.dur} />}
           </Sequence>
         );
       })}
@@ -371,7 +400,7 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
       {MOSAICO.map((m, i) => (
         <Sfx key={m.n} at={T_MOSAICO + 6 + i * 4} name="pop" volume={0.14} />
       ))}
-      <Sfx at={22 * COMPAS} name="impact" volume={0.35} />
+      <Sfx at={T_MOSAICO + 2 * COMPAS} name="impact" volume={0.35} />
       {music && <Audio src={staticFile('gastro/fiesta.wav')} volume={(fr) => interpolate(fr, [0, 6, GASTRO_FRAMES - 30, GASTRO_FRAMES], [0, 0.55, 0.55, 0], clamp)} />}
     </AbsoluteFill>
   );
