@@ -10,7 +10,8 @@ import {F, ease, tw} from './theme';
 //  2. El arranque (5 compases): autoridades con los alumnos (placas con nombre y cargo) y la vista de los stands.
 //  3. Recorrido (7 × 2 compases): cada país con su comida y el saludo del equipo; entre países barre una cortina
 //     con los colores de la bandera.
-//  4. Despedida: mosaico con los 7 equipos saludando y el logo arriba; golpe final de la música.
+//  4. Despedida: los 7 equipos diciendo adiós (un corte por tiempo, "¡Hasta la próxima!") y toma final del patio
+//     con el logo arriba sobre el golpe final de la música. Todos los clips van sin audio.
 // Música: python3 sfx/generar_musica_fiesta.py remotion/public/gastro/fiesta.wav 2 7 23
 // Clips en public/proxies/gastro (1080x1920, 30 fps; originales 4K en media/gastro/fuente). IMG_4793 (horizontal)
 // no se usa.
@@ -181,10 +182,10 @@ const Cortina: React.FC<{colores: string[]; mitad: number}> = ({colores, mitad})
 // ---------------------------------------------------------------------------
 const GANCHO_F = 2 * COMPAS;
 const GANCHO: [number, number][] = [
-  [4801, 3.2],
-  [4784, 2.8],
-  [4780, 1.9],
-  [4807, 1.4],
+  [4801, 3.6],
+  [4784, 3.0],
+  [4780, 2.8],
+  [4807, 2.4],
 ];
 const Gancho: React.FC = () => {
   const f = useCurrentFrame();
@@ -248,15 +249,15 @@ const Placas: React.FC<{dur: number}> = ({dur}) => {
 // 3. Recorrido: comida y la visita de las autoridades (1 compás, cortes en el tiempo) + saludo (1 compás)
 // ---------------------------------------------------------------------------
 // comida: [clip, desde (s), cuadros]; los cuadros de cada parada suman un compás (60)
-type Parada = {pais: string; comida: [number, number, number][]; saludo: [number, number]; cy?: number};
+type Parada = {pais: string; comida: [number, number, number][]; saludo: [number, number, number?]; cy?: number};
 const PARADAS: Parada[] = [
-  {pais: 'italia', comida: [[4788, 0.5, 30], [4818, 0.8, 30]], saludo: [4780, 1.6]},
-  {pais: 'grecia', comida: [[4790, 0.3, 15], [4791, 0.3, 15], [4814, 0.8, 30]], saludo: [4781, 1.4]},
-  {pais: 'francia', comida: [[4792, 0.5, 15], [4794, 0.5, 15], [4812, 0.8, 30]], saludo: [4782, 2.2]},
-  {pais: 'eu', comida: [[4795, 0.5, 15], [4796, 0.5, 15], [4808, 0.8, 30]], saludo: [4783, 2.2]},
-  {pais: 'espana', comida: [[4789, 0.5, 30], [4799, 0.6, 30]], saludo: [4784, 2.3]},
-  {pais: 'mexico', comida: [[4802, 0.5, 15], [4804, 0.5, 15], [4825, 0.8, 30]], saludo: [4801, 2.8]},
-  {pais: 'colombia', comida: [[4787, 0.8, 30], [4785, 1.0, 30]], saludo: [4807, 1.0]},
+  {pais: 'italia', comida: [[4788, 0.5, 30], [4818, 0.8, 30]], saludo: [4780, 2.3]},
+  {pais: 'grecia', comida: [[4790, 0.3, 15], [4791, 0.3, 15], [4814, 0.8, 30]], saludo: [4781, 1.7]},
+  {pais: 'francia', comida: [[4792, 0.5, 15], [4794, 0.5, 15], [4812, 0.8, 30]], saludo: [4782, 2.7, 0.7]},
+  {pais: 'eu', comida: [[4795, 0.5, 15], [4796, 0.5, 15], [4808, 0.8, 30]], saludo: [4783, 2.6]},
+  {pais: 'espana', comida: [[4789, 0.5, 30], [4799, 0.6, 30]], saludo: [4784, 2.6]},
+  {pais: 'mexico', comida: [[4802, 0.5, 15], [4804, 0.5, 15], [4825, 0.8, 30]], saludo: [4801, 3.2]},
+  {pais: 'colombia', comida: [[4787, 0.8, 30], [4785, 1.0, 30]], saludo: [4807, 2.0]},
 ];
 const PARADA_F = 2 * COMPAS;
 const RECORRIDO_F = PARADAS.length * PARADA_F;
@@ -274,7 +275,7 @@ const ParadaEscena: React.FC<{p: Parada; i: number}> = ({p, i}) => {
         );
       })}
       <Sequence from={COMPAS} durationInFrames={COMPAS}>
-        <Clip n={p.saludo[0]} desde={p.saludo[1]} dur={COMPAS} z0={1.08} z1={1.0} cy={45} volumen={0.35} />
+        <Clip n={p.saludo[0]} desde={p.saludo[1]} rate={p.saludo[2] ?? 1} dur={COMPAS} z0={1.08} z1={1.0} cy={45} />
       </Sequence>
       <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(8,20,40,0.55) 0%, rgba(8,20,40,0) 22%)'}} />
       <EtiquetaPais p={PAISES[p.pais]} i={i} dur={PARADA_F} />
@@ -283,58 +284,65 @@ const ParadaEscena: React.FC<{p: Parada; i: number}> = ({p, i}) => {
 };
 
 // ---------------------------------------------------------------------------
-// 4. Despedida: mosaico de saludos con el logo arriba
+// 4. Despedida: los 7 equipos diciendo adiós, un corte por tiempo, y toma final del patio con el logo arriba
 // ---------------------------------------------------------------------------
-const MOSAICO_F = 195;
-const MOSAICO: {pais: string; n: number; desde: number; dur: number; cy: number}[] = [
-  {pais: 'italia', n: 4780, desde: 0.6, dur: 4.38, cy: 48},
-  {pais: 'grecia', n: 4781, desde: 0.6, dur: 4.2, cy: 55},
-  {pais: 'francia', n: 4782, desde: 1.0, dur: 5.29, cy: 52},
-  {pais: 'eu', n: 4783, desde: 1.0, dur: 4.67, cy: 50},
-  {pais: 'espana', n: 4784, desde: 1.0, dur: 5.08, cy: 50},
-  {pais: 'mexico', n: 4801, desde: 1.5, dur: 5.54, cy: 50},
-  {pais: 'colombia', n: 4807, desde: 0.3, dur: 4.79, cy: 55},
+const ADIOS_F = 2 * COMPAS;
+const FINAL_F = 105;
+const CIERRE_F = ADIOS_F + FINAL_F;
+// [país, clip, segundo (los dos ya están saludando), velocidad]
+const ADIOS: [string, number, number, number][] = [
+  ['italia', 4780, 3.2, 1],
+  ['grecia', 4781, 2.6, 1],
+  ['francia', 4782, 3.0, 0.7],
+  ['eu', 4783, 3.4, 1],
+  ['espana', 4784, 3.4, 1],
+  ['mexico', 4801, 4.0, 1],
+  ['colombia', 4807, 2.8, 1],
 ];
-const CELDA_W = 516;
-const CELDA_H = 366;
-const MOS_TOP = 330;
-const Mosaico: React.FC = () => {
+const CORTE = 15;
+const Despedida: React.FC = () => {
   const f = useCurrentFrame();
-  const logo = tw(f, [4, 20], [0, 1], ease.out);
-  const negro = tw(f, [MOSAICO_F - 14, MOSAICO_F], [0, 1]);
+  const t = tw(f, [4, 16], [0, 1], ease.out);
+  const sale = tw(f, [ADIOS_F - 8, ADIOS_F], [0, 1], ease.in);
+  const i = Math.min(ADIOS.length - 1, Math.floor(f / CORTE));
+  const p = PAISES[ADIOS[i][0]];
   return (
-    <AbsoluteFill style={{background: `radial-gradient(ellipse at 50% 30%, #17406F 0%, ${NAVY} 55%, #071729 100%)`}}>
-      <Img src={LOGO} style={{position: 'absolute', left: W / 2 - 200, top: 70, width: 400, opacity: logo, transform: `translateY(${(1 - logo) * -30}px)`, filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))'}} />
-      {MOSAICO.map((m, i) => {
-        const col = i % 2;
-        const fila = Math.floor(i / 2);
-        const at = 6 + i * 4;
-        const k = tw(f, [at, at + 14], [0, 1], ease.out);
-        const x = 16 + col * (CELDA_W + 16);
-        const y = MOS_TOP + fila * (CELDA_H + 16);
-        const rate = Math.max(0.5, Math.min(1, ((m.dur - m.desde - 0.1) * 30) / MOSAICO_F));
-        const p = PAISES[m.pais];
-        return (
-          <div key={m.n} style={{position: 'absolute', left: x, top: y, width: CELDA_W, height: CELDA_H, borderRadius: 22, overflow: 'hidden', border: '4px solid rgba(255,255,255,0.9)', boxShadow: '0 16px 40px rgba(0,0,0,0.45)', opacity: k, transform: `scale(${0.7 + 0.3 * k}) rotate(${(1 - k) * (col ? 6 : -6)}deg)`}}>
-            <OffthreadVideo src={v(m.n)} startFrom={Math.round(m.desde * 30)} playbackRate={rate} muted style={{position: 'absolute', left: 0, width: CELDA_W, height: (CELDA_W * 16) / 9, top: -((CELDA_W * 16) / 9) * (m.cy / 100) + CELDA_H / 2}} />
-            <div style={{position: 'absolute', left: 12, bottom: 12, display: 'flex', alignItems: 'center', gap: 10, padding: '6px 14px 6px 8px', borderRadius: 30, background: 'rgba(14,44,82,0.85)'}}>
-              <div style={{borderRadius: 4, overflow: 'hidden', border: '2px solid #fff'}}>{p.bandera(42, 28)}</div>
-              <span style={{fontFamily: F.sans, fontWeight: 800, fontSize: 22, color: '#fff', letterSpacing: 1}}>{p.nombre}</span>
-            </div>
-          </div>
-        );
-      })}
-      {/* celda 8: el nombre de la experiencia */}
-      {(() => {
-        const k = tw(f, [40, 56], [0, 1], ease.out);
-        return (
-          <div style={{position: 'absolute', left: 16 + CELDA_W + 16, top: MOS_TOP + 3 * (CELDA_H + 16), width: CELDA_W, height: CELDA_H, borderRadius: 22, background: AMARILLO, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', opacity: k, transform: `scale(${0.7 + 0.3 * k})`, boxShadow: '0 16px 40px rgba(0,0,0,0.45)'}}>
-            <div style={{fontFamily: F.display, fontSize: 64, lineHeight: 1, color: NAVY}}>EXPERIENCIA</div>
-            <div style={{fontFamily: F.display, fontSize: 64, lineHeight: 1, color: NAVY}}>GASTRONÓMICA</div>
-            <div style={{marginTop: 14, fontFamily: F.sans, fontWeight: 800, fontSize: 28, color: NAVY}}>Relaciones Internacionales</div>
-          </div>
-        );
-      })()}
+    <AbsoluteFill>
+      {ADIOS.map(([pais, n, d, rate], k) => (
+        <Sequence key={pais} from={k * CORTE} durationInFrames={k === ADIOS.length - 1 ? ADIOS_F - k * CORTE : CORTE}>
+          <Clip n={n} desde={d} rate={rate} dur={CORTE} z0={1.1} z1={1.04} cy={45} />
+        </Sequence>
+      ))}
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(8,20,40,0) 55%, rgba(8,20,40,0.7) 100%)'}} />
+      <div style={{position: 'absolute', left: 0, right: 0, top: 1460, textAlign: 'center', opacity: t * (1 - sale)}}>
+        <div style={{fontFamily: F.display, fontSize: 150, lineHeight: 1, color: '#fff', textShadow: '0 10px 30px rgba(0,0,0,0.55)', transform: `scale(${1.25 - 0.25 * t})`}}>
+          ¡HASTA LA <span style={{color: AMARILLO}}>PRÓXIMA!</span>
+        </div>
+        <div style={{display: 'inline-flex', alignItems: 'center', gap: 14, marginTop: 18, padding: '8px 22px 8px 10px', borderRadius: 40, background: 'rgba(14,44,82,0.9)'}}>
+          <div style={{borderRadius: 6, overflow: 'hidden', border: '3px solid #fff'}}>{p.bandera(66, 44)}</div>
+          <span style={{fontFamily: F.sans, fontWeight: 800, fontSize: 34, letterSpacing: 2, color: '#fff'}}>{p.nombre}</span>
+        </div>
+      </div>
+    </AbsoluteFill>
+  );
+};
+
+const TomaFinal: React.FC = () => {
+  const f = useCurrentFrame();
+  const logo = tw(f, [2, 18], [0, 1], ease.out);
+  const t1 = tw(f, [10, 24], [0, 1], ease.out);
+  const t2 = tw(f, [18, 32], [0, 1], ease.out);
+  const negro = tw(f, [FINAL_F - 16, FINAL_F], [0, 1]);
+  return (
+    <AbsoluteFill>
+      <Clip n={4824} desde={0.4} dur={FINAL_F} rate={0.8} z0={1.14} z1={1.0} />
+      <AbsoluteFill style={{background: 'linear-gradient(180deg, rgba(8,20,40,0.85) 0%, rgba(8,20,40,0.35) 28%, rgba(8,20,40,0.1) 50%, rgba(8,20,40,0.75) 100%)'}} />
+      <Img src={LOGO} style={{position: 'absolute', left: W / 2 - 230, top: 110, width: 460, opacity: logo, transform: `translateY(${(1 - logo) * -30}px)`, filter: 'drop-shadow(0 8px 20px rgba(0,0,0,0.5))'}} />
+      <div style={{position: 'absolute', left: 0, right: 0, top: 1440, textAlign: 'center'}}>
+        <div style={{fontFamily: F.display, fontSize: 124, lineHeight: 0.95, color: '#fff', textShadow: '0 10px 30px rgba(0,0,0,0.5)', opacity: t1, transform: `translateY(${(1 - t1) * 30}px)`}}>EXPERIENCIA</div>
+        <div style={{fontFamily: F.display, fontSize: 124, lineHeight: 0.95, color: AMARILLO, textShadow: '0 10px 30px rgba(0,0,0,0.5)', opacity: t1, transform: `translateY(${(1 - t1) * 30}px)`}}>GASTRONÓMICA</div>
+        <div style={{display: 'inline-block', marginTop: 22, padding: '12px 30px', borderRadius: 40, background: NAVY, border: `3px solid ${AMARILLO}`, fontFamily: F.sans, fontWeight: 800, fontSize: 40, color: '#fff', opacity: t2, transform: `translateY(${(1 - t2) * 20}px)`}}>Relaciones Internacionales</div>
+      </div>
       <AbsoluteFill style={{background: '#000', opacity: negro}} />
     </AbsoluteFill>
   );
@@ -345,8 +353,8 @@ const Mosaico: React.FC = () => {
 // ---------------------------------------------------------------------------
 const T_ARRANQUE = GANCHO_F;
 const T_RECORRIDO = T_ARRANQUE + ARRANQUE_F;
-const T_MOSAICO = T_RECORRIDO + RECORRIDO_F;
-export const GASTRO_FRAMES = T_MOSAICO + MOSAICO_F;
+const T_CIERRE = T_RECORRIDO + RECORRIDO_F;
+export const GASTRO_FRAMES = T_CIERRE + CIERRE_F;
 
 export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
   let t = T_ARRANQUE;
@@ -371,8 +379,11 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
           <ParadaEscena p={p} i={i} />
         </Sequence>
       ))}
-      <Sequence from={T_MOSAICO} durationInFrames={MOSAICO_F}>
-        <Mosaico />
+      <Sequence from={T_CIERRE} durationInFrames={ADIOS_F}>
+        <Despedida />
+      </Sequence>
+      <Sequence from={T_CIERRE + ADIOS_F} durationInFrames={FINAL_F}>
+        <TomaFinal />
       </Sequence>
       {/* cortinas con los colores de cada país al entrar a su parada, y una con los de Westhill al mosaico */}
       {PARADAS.map((p, i) => (
@@ -380,7 +391,7 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
           <Cortina colores={PAISES[p.pais].colores} mitad={14} />
         </Sequence>
       ))}
-      <Sequence from={T_MOSAICO - 14} durationInFrames={32}>
+      <Sequence from={T_CIERRE - 14} durationInFrames={32}>
         <Cortina colores={[NAVY, AMARILLO, '#17406F']} mitad={14} />
       </Sequence>
 
@@ -396,11 +407,12 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
           <Sfx at={T_RECORRIDO + i * PARADA_F + 8} name="pop" volume={0.25} />
         </React.Fragment>
       ))}
-      <Sfx at={T_MOSAICO - 10} name="whoosh_largo" volume={0.3} />
-      {MOSAICO.map((m, i) => (
-        <Sfx key={m.n} at={T_MOSAICO + 6 + i * 4} name="pop" volume={0.14} />
+      <Sfx at={T_CIERRE - 10} name="whoosh_largo" volume={0.3} />
+      {ADIOS.map(([pais], k) => (
+        <Sfx key={pais} at={T_CIERRE + k * CORTE} name="ref_swoosh_short" volume={0.16} />
       ))}
-      <Sfx at={T_MOSAICO + 2 * COMPAS} name="impact" volume={0.35} />
+      <Sfx at={T_CIERRE + ADIOS_F} name="impact" volume={0.35} />
+      <Sfx at={T_CIERRE + ADIOS_F} name="down_bass" volume={0.5} />
       {music && <Audio src={staticFile('gastro/fiesta.wav')} volume={(fr) => interpolate(fr, [0, 6, GASTRO_FRAMES - 30, GASTRO_FRAMES], [0, 0.55, 0.55, 0], clamp)} />}
     </AbsoluteFill>
   );
