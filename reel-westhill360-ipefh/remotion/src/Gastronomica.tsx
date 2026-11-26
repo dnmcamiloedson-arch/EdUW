@@ -5,14 +5,15 @@ import {F, ease, tw} from './theme';
 
 // ---------------------------------------------------------------------------
 // Reel (9:16, ~46 s): Experiencia Gastronómica de Relaciones Internacionales.
-// Al compás de la música original (sfx/generar_musica_fiesta.py, 120 BPM, 1 compás = 60 cuadros):
+// Al compás de la música original (sfx/generar_musica_emotiva.py, 120 BPM, 1 compás = 60 cuadros):
 //  1. Gancho (2 compases): cuatro saludos rápidos y el título.
 //  2. El arranque (5 compases): autoridades con los alumnos (placas con nombre y cargo) y la vista de los stands.
 //  3. Recorrido (7 × 2 compases): cada país con su comida y el saludo del equipo; entre países barre una cortina
 //     con los colores de la bandera.
 //  4. Despedida: los 7 equipos diciendo adiós (un corte por tiempo, "¡Hasta la próxima!") y toma final del patio
 //     con el logo arriba sobre el golpe final de la música. Todos los clips van sin audio.
-// Música: python3 sfx/generar_musica_fiesta.py remotion/public/gastro/fiesta.wav 2 7 23
+// Música: python3 sfx/generar_musica_emotiva.py remotion/public/gastro/emotiva.wav 2 7 21 23
+// (la primera versión, más infantil, era generar_musica_fiesta.py -> fiesta.wav)
 // Clips en public/proxies/gastro (1080x1920, 30 fps; originales 4K en media/gastro/fuente). IMG_4793 (horizontal)
 // no se usa.
 // ---------------------------------------------------------------------------
@@ -404,7 +405,6 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
       {PARADAS.map((p, i) => (
         <React.Fragment key={p.pais}>
           <Sfx at={T_RECORRIDO + i * PARADA_F - 10} name="whoosh" volume={0.3} />
-          <Sfx at={T_RECORRIDO + i * PARADA_F + 8} name="pop" volume={0.25} />
         </React.Fragment>
       ))}
       <Sfx at={T_CIERRE - 10} name="whoosh_largo" volume={0.3} />
@@ -413,7 +413,7 @@ export const Gastronomica: React.FC<{music?: boolean}> = ({music = true}) => {
       ))}
       <Sfx at={T_CIERRE + ADIOS_F} name="impact" volume={0.35} />
       <Sfx at={T_CIERRE + ADIOS_F} name="down_bass" volume={0.5} />
-      {music && <Audio src={staticFile('gastro/fiesta.wav')} volume={(fr) => interpolate(fr, [0, 6, GASTRO_FRAMES - 30, GASTRO_FRAMES], [0, 0.55, 0.55, 0], clamp)} />}
+      {music && <Audio src={staticFile('gastro/emotiva.wav')} volume={(fr) => interpolate(fr, [0, 6, GASTRO_FRAMES - 30, GASTRO_FRAMES], [0, 0.6, 0.6, 0], clamp)} />}
     </AbsoluteFill>
   );
 };
