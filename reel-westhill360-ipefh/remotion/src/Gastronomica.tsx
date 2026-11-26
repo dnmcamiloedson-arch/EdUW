@@ -216,29 +216,34 @@ const ARRANQUE: {n: number; desde: number; dur: number; texto: string}[] = [
 const ARRANQUE_F = ARRANQUE.reduce((a, c) => a + c.dur, 0); // 240 = 4 compases
 
 // ---------------------------------------------------------------------------
-// 3. Recorrido: comida (1 compás) + saludo (1 compás)
+// 3. Recorrido: comida y la visita de las autoridades (1 compás, cortes en el tiempo) + saludo (1 compás)
 // ---------------------------------------------------------------------------
-type Parada = {pais: string; comida: [number, number][]; saludo: [number, number]; cy?: number};
+// comida: [clip, desde (s), cuadros]; los cuadros de cada parada suman un compás (60)
+type Parada = {pais: string; comida: [number, number, number][]; saludo: [number, number]; cy?: number};
 const PARADAS: Parada[] = [
-  {pais: 'italia', comida: [[4788, 0.5]], saludo: [4780, 1.6]},
-  {pais: 'grecia', comida: [[4790, 0.3], [4791, 0.3]], saludo: [4781, 1.4]},
-  {pais: 'francia', comida: [[4792, 0.5], [4794, 0.5]], saludo: [4782, 2.2]},
-  {pais: 'eu', comida: [[4797, 0.4], [4795, 0.5], [4796, 0.5]], saludo: [4783, 2.2]},
-  {pais: 'espana', comida: [[4789, 0.5], [4799, 0.6], [4800, 0.6]], saludo: [4784, 2.3]},
-  {pais: 'mexico', comida: [[4802, 0.5]], saludo: [4801, 2.8]},
-  {pais: 'colombia', comida: [[4787, 0.8], [4785, 1.0], [4786, 1.2]], saludo: [4807, 1.0]},
+  {pais: 'italia', comida: [[4788, 0.5, 30], [4818, 0.8, 30]], saludo: [4780, 1.6]},
+  {pais: 'grecia', comida: [[4790, 0.3, 15], [4791, 0.3, 15], [4814, 0.8, 30]], saludo: [4781, 1.4]},
+  {pais: 'francia', comida: [[4792, 0.5, 15], [4794, 0.5, 15], [4812, 0.8, 30]], saludo: [4782, 2.2]},
+  {pais: 'eu', comida: [[4795, 0.5, 15], [4796, 0.5, 15], [4808, 0.8, 30]], saludo: [4783, 2.2]},
+  {pais: 'espana', comida: [[4789, 0.5, 30], [4799, 0.6, 30]], saludo: [4784, 2.3]},
+  {pais: 'mexico', comida: [[4802, 0.5, 15], [4804, 0.5, 15], [4825, 0.8, 30]], saludo: [4801, 2.8]},
+  {pais: 'colombia', comida: [[4787, 0.8, 30], [4785, 1.0, 30]], saludo: [4807, 1.0]},
 ];
 const PARADA_F = 2 * COMPAS;
 const RECORRIDO_F = PARADAS.length * PARADA_F;
 const ParadaEscena: React.FC<{p: Parada; i: number}> = ({p, i}) => {
-  const cada = COMPAS / p.comida.length;
+  let t = 0;
   return (
     <AbsoluteFill>
-      {p.comida.map(([n, d], k) => (
-        <Sequence key={n} from={k * cada} durationInFrames={cada}>
-          <Clip n={n} desde={d} dur={cada} z0={1.0} z1={1.08} />
-        </Sequence>
-      ))}
+      {p.comida.map(([n, d, cuadros]) => {
+        const from = t;
+        t += cuadros;
+        return (
+          <Sequence key={n} from={from} durationInFrames={cuadros}>
+            <Clip n={n} desde={d} dur={cuadros} z0={1.0} z1={1.06} />
+          </Sequence>
+        );
+      })}
       <Sequence from={COMPAS} durationInFrames={COMPAS}>
         <Clip n={p.saludo[0]} desde={p.saludo[1]} dur={COMPAS} z0={1.08} z1={1.0} cy={45} volumen={0.35} />
       </Sequence>
