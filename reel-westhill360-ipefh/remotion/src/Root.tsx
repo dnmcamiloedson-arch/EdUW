@@ -18,6 +18,7 @@ import {VacunacionUltimas, VACUNA_8_FRAMES} from './VacunacionUltimas';
 import {MuseoChocolate, CHOCO_FRAMES} from './MuseoChocolate';
 import {MuseoBanxico, BANXICO_FRAMES} from './MuseoBanxico';
 import {Gastronomica, GASTRO_FRAMES} from './Gastronomica';
+import {Mystika, MYSTIKA_FRAMES} from './Mystika';
 import {PlacaComaem, PLACA_FRAMES} from './PlacaComaem';
 import {PlacaComaemVoz, PLACA_VOZ_FRAMES} from './PlacaComaemVoz';
 import {GrabacionNoticia, GRAB_FRAMES} from './GrabacionNoticia';
@@ -63,6 +64,7 @@ export const Root: React.FC = () => (
     <Composition id="VacunacionYa" component={VacunacionYa} durationInFrames={VACUNA_YA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="VacunacionUltimas" component={VacunacionUltimas} durationInFrames={VACUNA_8_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="MuseoChocolate" component={MuseoChocolate} durationInFrames={CHOCO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
+    <Composition id="Mystika" component={Mystika} durationInFrames={MYSTIKA_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="Gastronomica" component={Gastronomica} durationInFrames={GASTRO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="MuseoBanxico" component={MuseoBanxico} durationInFrames={BANXICO_FRAMES} fps={FPS} width={W} height={H} defaultProps={{music: true}} />
     <Composition id="PlacaComaem" component={PlacaComaem} durationInFrames={PLACA_FRAMES} fps={FPS} width={W} height={H} />
